@@ -125,7 +125,8 @@ const Shopping = () => {
 
     const handleLoginSubmit = async (event) => {
         event.preventDefault();
-        const password = event.target[0].value.trim();
+        const username = event.target[0].value.trim();
+        const password = event.target[1].value.trim();
         const action = event.nativeEvent.submitter.value;
         if (!password || "validate" !== action) {
             setMessage("No password provided. Continuing as guest");
@@ -136,7 +137,7 @@ const Shopping = () => {
                 getData();
             }, constants.TIMEOUT_DELAY);
         } else {
-            makeGenericRequest(() => post('/login', password), () => {
+            makeGenericRequest(() => post('/login', {[constants.USERNAME]: username, [constants.PASSWORD]: password}), () => {
                 setIsLoading(true);
                 setIsLoginFormVisible(false);
                 getData();
