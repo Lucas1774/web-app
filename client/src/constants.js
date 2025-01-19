@@ -31,6 +31,7 @@ export const CATEGORY_KEY = "CATEGORY";
 export const CATEGORY_ID_KEY = "CATEGORY_ID";
 export const CATEGORY_ORDER_KEY = "ORDER";
 export const QUANTITY_KEY = "QUANTITY";
+export const IS_RARE_KEY= "IS_RARE";
 export const EDIT_KEY = "EDIT";
 export const REMOVE_KEY = "REMOVE";
 export const STRING = "string";

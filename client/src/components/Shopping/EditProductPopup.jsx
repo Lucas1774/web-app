@@ -4,13 +4,13 @@ import { Button, Form } from "react-bootstrap";
 import * as constants from "../../constants";
 
 const EditProductPopup = (props) => {
-
     const [isSelectVisible, setIsSelectVisible] = useState(true);
 
     const nameRef = useRef(null);
     // hack to have a 2 in 1 input
     const categoryRef = useRef(null);
     const categoryRef2 = useRef(null);
+    const isRareRef = useRef(null);
 
     useEffect(() => {
         if (props.categories.length === 0) {
@@ -28,18 +28,19 @@ const EditProductPopup = (props) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         const name = nameRef.current.value;
+        const isRare = isRareRef.current.checked;
         let categoryId;
         let categoryName;
         if (isSelectVisible) {
             categoryId = parseInt(categoryRef.current.value);
-            categoryName = props.categories.find((cat) => cat[constants.CATEGORY_ID_KEY] === categoryId)[constants.NAME_KEY]
+            categoryName = props.categories.find((cat) => cat[constants.CATEGORY_ID_KEY] === categoryId)[constants.NAME_KEY];
         } else {
             categoryName = categoryRef2.current.value;
             const category = props.categories.find((cat) => cat[constants.NAME_KEY] === categoryName);
             categoryId = category ? category[constants.CATEGORY_ID_KEY] : null;
         }
         if (name && categoryName) {
-            props.onSubmit(props.content[constants.ID_KEY], name, categoryId, categoryName);
+            props.onSubmit(props.content[constants.ID_KEY], name, isRare, categoryId, categoryName);
         }
     };
 
@@ -71,10 +72,14 @@ const EditProductPopup = (props) => {
                         : <Form.Control
                             type="text" ref={categoryRef2} defaultValue={"Create a new category"}
                         />}
+                    <Form.Check
+                        type="checkbox" ref={isRareRef} label="Is Rare"
+                        defaultChecked={props.content[constants.IS_RARE_KEY]}
+                    />
                     <Button type="submit" variant="success">Submit</Button>
                 </Form>
             </div>
-        </div >
+        </div>
     );
 };
 
