@@ -1,14 +1,15 @@
-package com.lucas.server.components.connection;
+package com.lucas.server.connection;
 
 import com.auth0.jwt.JWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lucas.server.components.calculator.Solver;
-import com.lucas.server.components.model.Category;
-import com.lucas.server.components.model.ShoppingItem;
-import com.lucas.server.components.model.User;
-import com.lucas.server.components.security.JwtUtil;
 import com.lucas.server.components.sudoku.Generator;
 import com.lucas.server.components.sudoku.Sudoku;
+import com.lucas.server.model.Category;
+import com.lucas.server.model.ShoppingItem;
+import com.lucas.server.model.User;
+import com.lucas.server.security.JwtUtil;
+import com.lucas.server.service.UserService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -34,18 +35,20 @@ public class Controller {
     private final Generator generator;
     private final Solver solver;
     private final SudokuParser sudokuParser;
+    private final UserService userService;
     private final boolean secure;
     private static final Logger LOGGER = LoggerFactory.getLogger(Controller.class);
     private final ObjectMapper objectMapper;
 
     public Controller(ObjectMapper objectMapper, JwtUtil jwtUtil, DAO dao, Generator generator, Solver solver,
-                      SudokuParser sudokuParser,
+                      SudokuParser sudokuParser, UserService userService,
                       @Value("${spring.security.jwt.secure}") boolean secure) {
         this.objectMapper = objectMapper;
         this.dao = dao;
         this.generator = generator;
         this.solver = solver;
         this.sudokuParser = sudokuParser;
+        this.userService = userService;
         this.jwtUtil = jwtUtil;
         this.secure = secure;
     }
@@ -113,7 +116,7 @@ public class Controller {
     @PostMapping("/update-product")
     public ResponseEntity<String> updateProduct(HttpServletRequest request, @RequestBody ShoppingItem data) {
         return this.handleRequest(() -> {
-            if (User.ADMIN.equals(this.retrieveUsername(request.getCookies()))) {
+            if (userService.isAdmin(this.retrieveUsername(request.getCookies()))) {
                 dao.updateProduct((data.getId()),
                         data.getName(),
                         data.getIsRare(),
@@ -155,7 +158,7 @@ public class Controller {
     @PostMapping("update-categories")
     public ResponseEntity<String> updateCategories(HttpServletRequest request, @RequestBody List<Category> categories) {
         return this.handleRequest(() -> {
-            if (User.ADMIN.equals(this.retrieveUsername(request.getCookies()))) {
+            if (userService.isAdmin(this.retrieveUsername(request.getCookies()))) {
                 dao.updateCategoryOrders(categories);
                 return "Categories updated";
             } else {
@@ -287,7 +290,7 @@ public class Controller {
     private String retrieveUsername(Cookie[] cookies) {
         return retrieveAuthCookie(cookies)
                 .map(jwt -> JWT.decode(jwt).getSubject())
-                .orElse(User.DEFAULT);
+                .orElse(UserService.DEFAULT);
     }
 
 }

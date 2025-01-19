@@ -1,4 +1,4 @@
-package com.lucas.server.components.config;
+package com.lucas.server.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

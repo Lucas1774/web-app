@@ -1,4 +1,4 @@
-package com.lucas.server.components.connection;
+package com.lucas.server.connection;
 
 import com.lucas.server.components.sudoku.Sudoku;
 import org.springframework.stereotype.Service;

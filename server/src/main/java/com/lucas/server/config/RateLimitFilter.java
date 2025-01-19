@@ -1,4 +1,4 @@
-package com.lucas.server.components.config;
+package com.lucas.server.config;
 
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;

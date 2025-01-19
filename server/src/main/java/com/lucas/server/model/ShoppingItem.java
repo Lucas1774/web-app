@@ -1,4 +1,4 @@
-package com.lucas.server.components.model;
+package com.lucas.server.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

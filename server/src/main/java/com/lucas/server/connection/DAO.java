@@ -1,7 +1,7 @@
-package com.lucas.server.components.connection;
+package com.lucas.server.connection;
 
-import com.lucas.server.components.model.Category;
-import com.lucas.server.components.model.ShoppingItem;
+import com.lucas.server.model.Category;
+import com.lucas.server.model.ShoppingItem;
 import com.lucas.server.components.sudoku.Sudoku;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;

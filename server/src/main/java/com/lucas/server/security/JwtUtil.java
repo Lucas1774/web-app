@@ -1,4 +1,4 @@
-package com.lucas.server.components.security;
+package com.lucas.server.security;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
