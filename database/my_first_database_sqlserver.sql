@@ -8,6 +8,7 @@ GO
 CREATE TABLE products (
     id INT IDENTITY(1,1) PRIMARY KEY,
     name VARCHAR(50) NOT NULL UNIQUE,
+    is_rare BIT NOT NULL DEFAULT 0,
     category_id INT NULL
 );
 GO

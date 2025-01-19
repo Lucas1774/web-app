@@ -116,6 +116,7 @@ public class Controller {
             if (User.ADMIN.equals(this.retrieveUsername(request.getCookies()))) {
                 dao.updateProduct((data.getId()),
                         data.getName(),
+                        data.getIsRare(),
                         data.getCategoryId(),
                         data.getCategory());
                 return "Product updated";

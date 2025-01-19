@@ -13,6 +13,7 @@ CREATE TABLE `my_first_database`.`categories` (
 CREATE TABLE `my_first_database`.`products` (
   `id` int NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(50) NOT NULL,
+  `is_rare` BOOLEAN NOT NULL DEFAULT FALSE,
   `category_id` int NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name_UNIQUE` (`name`)

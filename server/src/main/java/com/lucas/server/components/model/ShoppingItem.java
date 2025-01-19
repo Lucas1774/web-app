@@ -21,4 +21,6 @@ public class ShoppingItem {
     private Integer categoryOrder;
     @JsonProperty("QUANTITY")
     private Integer quantity;
+    @JsonProperty("IS_RARE")
+    private Boolean isRare;
 }

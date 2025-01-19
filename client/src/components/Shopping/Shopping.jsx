@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState, useRef } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Button, Form, Table } from "react-bootstrap";
 import { get, post } from "../../api";
 import deleteIcon from "../../assets/images/bin.png";
@@ -27,6 +27,7 @@ const Shopping = () => {
     const [filters, setFilters] = useState({});
     const [order, setOrder] = useState({ key: null, order: constants.DESC })
     const [isShowOnlyPositive, setIsShowOnlyPositive] = useState(false);
+    const [isShowOnlyCommon, setIsShowOnlyCommon] = useState(false);
 
     const inputsRef = useRef({});
     const debouncedValue = useDebounce(quantityInputValue, 1000);
@@ -109,8 +110,11 @@ const Shopping = () => {
         });
     }, []);
 
-    const updateProduct = async (id, name, categoryId, category) => {
-        makeGenericRequest(() => post('/update-product', { [constants.ID_KEY]: id, [constants.NAME_KEY]: name, [constants.CATEGORY_ID_KEY]: categoryId, [constants.CATEGORY_KEY]: category }), () => {
+    const updateProduct = async (id, name, isRare, categoryId, category) => {
+        makeGenericRequest(() => post('/update-product', {
+            [constants.ID_KEY]: id, [constants.NAME_KEY]: name,
+            [constants.IS_RARE_KEY]: isRare, [constants.CATEGORY_ID_KEY]: categoryId, [constants.CATEGORY_KEY]: category
+        }), () => {
             setIsLoading(true);
             setIsPopupVisible(false);
             getData();
@@ -137,7 +141,7 @@ const Shopping = () => {
                 getData();
             }, constants.TIMEOUT_DELAY);
         } else {
-            makeGenericRequest(() => post('/login', {[constants.USERNAME]: username, [constants.PASSWORD]: password}), () => {
+            makeGenericRequest(() => post('/login', { [constants.USERNAME]: username, [constants.PASSWORD]: password }), () => {
                 setIsLoading(true);
                 setIsLoginFormVisible(false);
                 getData();
@@ -176,11 +180,12 @@ const Shopping = () => {
         }
     };
 
-    const handleEditProduct = (id, name, category) => {
+    const handleEditProduct = (id, name, isRare, category) => {
         getPossibleCategories();
         setSelectedProductData({
             [constants.ID_KEY]: id,
             [constants.NAME_KEY]: name,
+            [constants.IS_RARE_KEY]: isRare,
             [constants.CATEGORY_KEY]: category
         });
         setPopup("editProduct");
@@ -223,15 +228,16 @@ const Shopping = () => {
 
     const applyFilters = (data, filters) => {
         return data.filter((row) => {
-            return (!isShowOnlyPositive || (isShowOnlyPositive && row[constants.QUANTITY_KEY] !== 0)) && Object.keys(filters).every((key) => {
-                if (constants.META.DATATYPE[key] === constants.NUMBER) {
-                    return isNaN(filters[key]) || row[key] === filters[key];
-                } else if (constants.META.DATATYPE[key] === constants.STRING) {
-                    return row[key].toString().toLowerCase().includes(filters[key].toLowerCase());
-                } else {
-                    return true;
-                }
-            });
+            return (!isShowOnlyPositive || row[constants.QUANTITY_KEY] !== 0)
+                && (!isShowOnlyCommon || !row[constants.IS_RARE_KEY]) && Object.keys(filters).every((key) => {
+                    if (constants.META.DATATYPE[key] === constants.NUMBER) {
+                        return isNaN(filters[key]) || row[key] === filters[key];
+                    } else if (constants.META.DATATYPE[key] === constants.STRING) {
+                        return row[key].toString().toLowerCase().includes(filters[key].toLowerCase());
+                    } else {
+                        return true;
+                    }
+                });
         });
     };
 
@@ -248,7 +254,7 @@ const Shopping = () => {
         });
     };
 
-    const renderColumn = (key, id, name, categoryId, category, quantity) => {
+    const renderColumn = (key, id, name, isRare, categoryId, category, quantity) => {
         if (key === constants.NAME_KEY) {
             return <td key={key} title={name} style={{ maxWidth: '100px' }}>{name}</td>;
         }
@@ -283,7 +289,7 @@ const Shopping = () => {
         if (key === constants.EDIT_KEY) {
             return (
                 <td key={key} title={constants.EDIT_KEY.toLowerCase()} style={{ padding: '5px' }}>
-                    <Button className="icon-button" onClick={() => handleEditProduct(id, name, { [constants.CATEGORY_ID_KEY]: categoryId, [constants.CATEGORY_KEY]: category })}>
+                    <Button className="icon-button" onClick={() => handleEditProduct(id, name, isRare, { [constants.CATEGORY_ID_KEY]: categoryId, [constants.CATEGORY_KEY]: category })}>
                         <img src={editIcon} alt=""></img>
                     </Button>
                 </td>
@@ -309,9 +315,9 @@ const Shopping = () => {
                     isLoading ? <Spinner /> :
                         isPopupVisible ? "editProduct" === popup
                             ? <EditProductPopup content={selectedProductData}
-                                onSubmit={(id, name, categoryId, category) => {
+                                onSubmit={(id, name, isRare, categoryId, category) => {
                                     setIsPopupVisible(false);
-                                    updateProduct(id, name, categoryId, category)
+                                    updateProduct(id, name, isRare, categoryId, category)
                                 }}
                                 onPopupClose={() => {
                                     setSelectedProductData({});
@@ -333,13 +339,18 @@ const Shopping = () => {
                             : <>{tableData && <>
                                 <Form onSubmit={(e) => handleAddProductSubmit(e)}>
                                     <Form.Control type="text" />
-                                    <Button className="fifty-percent" type="submit" variant="success">Add</Button>
-                                    <Button className="fifty-percent" onClick={() => setIsShowOnlyPositive((prev) => !prev)}>{
-                                        isShowOnlyPositive ? "Show all" : "Hide zero"
+                                    <Button className="thirty-percent" type="submit" variant="success">Add</Button>
+                                    <Button className="thirty-percent" onClick={() => setIsShowOnlyPositive((prev) => !prev)}>{
+                                        isShowOnlyPositive ? "Any value" : "Hide zero"
+                                    }</Button>
+                                    <Button className="thirty-percent" onClick={() => setIsShowOnlyCommon((prev) => !prev)}>{
+                                        isShowOnlyCommon ? "Any rarity" : "Hide rare"
                                     }</Button>
                                     <Button className="fifty-percent" onClick={() => {
                                         Object.values(inputsRef.current).forEach((input) => {
-                                            if (input) input.value = "";
+                                            if (input) {
+                                                input.value = "";
+                                            }
                                         });
                                         setFilters({});
                                     }}>Clear filters</Button>
@@ -379,8 +390,9 @@ const Shopping = () => {
                                                 <tr key={id}>
                                                     {constants.META.KEYS
                                                         .filter((key) => constants.META.VISIBLE[key])
-                                                        .map((key) => renderColumn(key, id,
-                                                            row[constants.NAME_KEY], row[constants.CATEGORY_ID_KEY], row[constants.CATEGORY_KEY], row[constants.QUANTITY_KEY]))}
+                                                        .map((key) => renderColumn(key, id, row[constants.NAME_KEY],
+                                                            row[constants.IS_RARE_KEY], row[constants.CATEGORY_ID_KEY],
+                                                            row[constants.CATEGORY_KEY], row[constants.QUANTITY_KEY]))}
                                                 </tr>
                                             );
                                         })}

@@ -73,7 +73,7 @@ public class DAO {
     }
 
     public List<ShoppingItem> getShoppingItems(String username) throws DataAccessException {
-        String sql = "SELECT a.id, a.name, c.id AS category_id, c.name AS category_name, c.category_order, s.quantity "
+        String sql = "SELECT a.id, a.name, a.is_rare, c.id AS category_id, c.name AS category_name, c.category_order, s.quantity "
                 + "FROM products a "
                 + "LEFT JOIN categories c ON c.id = a.category_id "
                 + "INNER JOIN shopping s ON s.product_id = a.id "
@@ -88,7 +88,8 @@ public class DAO {
                         resultSet.getObject("category_id", Integer.class),
                         Optional.ofNullable(resultSet.getString("category_name")).orElse(""),
                         resultSet.getInt("category_order"),
-                        resultSet.getInt("quantity")));
+                        resultSet.getInt("quantity"),
+                        resultSet.getBoolean("is_rare")));
     }
 
     public List<Category> getPossibleCategories() throws DataAccessException {
@@ -119,7 +120,7 @@ public class DAO {
     }
 
     @Transactional
-    public void updateProduct(int id, String productName, Integer categoryId, String categoryName)
+    public void updateProduct(int id, String productName, Boolean isRare, Integer categoryId, String categoryName)
             throws DataAccessException {
         if (null == categoryId) {
             String maxOrderSql = "SELECT MAX(category_order) FROM categories";
@@ -133,11 +134,12 @@ public class DAO {
             this.jdbcTemplate.update(insertCategorySql, parameters);
             categoryId = this.jdbcTemplate.queryForObject(getCategoryIdSql, parameters, Integer.class);
         }
-        String updateProductSql = "UPDATE products SET name = :productName, category_id = :categoryId "
+        String updateProductSql = "UPDATE products SET name = :productName, is_rare = :isRare, category_id = :categoryId "
                 + "WHERE id = :id";
         MapSqlParameterSource parameters = new MapSqlParameterSource();
         parameters.addValue("id", id);
         parameters.addValue("productName", productName);
+        parameters.addValue("isRare", isRare);
         parameters.addValue("categoryId", categoryId);
         this.jdbcTemplate.update(updateProductSql, parameters);
     }
