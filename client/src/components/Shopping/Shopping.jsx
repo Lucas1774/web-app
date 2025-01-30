@@ -9,6 +9,7 @@ import useDebounce from "../../hooks/useDebounce";
 import { handleError } from "../errorHandler";
 import LoginForm from "../LoginForm";
 import Spinner from "../Spinner";
+import ConfirmProductRemovalPopup from "./ConfirmProductRemovalPopup";
 import EditCategoriesPopup from "./EditCategoriesPopup";
 import EditProductPopup from "./EditProductPopup";
 import "./Shopping.css";
@@ -121,6 +122,13 @@ const Shopping = () => {
         });
     };
 
+    const removeProduct = async (id, name) => {
+        makeGenericRequest(() => post('/remove-product', { [constants.ID_KEY]: id, [constants.NAME_KEY]: name }), () => {
+            setIsLoading(true);
+            getData();
+        });
+    };
+
     useEffect(() => {
         if (debouncedValue?.value != null && debouncedValue?.rowId != null && debouncedValue?.rowName != null) {
             updateProductQuantity(debouncedValue.value, debouncedValue.rowId, debouncedValue.rowName);
@@ -199,10 +207,9 @@ const Shopping = () => {
     };
 
     const handleRemoveProduct = async (id, name) => {
-        makeGenericRequest(() => post('/remove-product', { [constants.ID_KEY]: id, [constants.NAME_KEY]: name }), () => {
-            setIsLoading(true);
-            getData();
-        });
+        setSelectedProductData({ [constants.ID_KEY]: id, [constants.NAME_KEY]: name });
+        setPopup("removeProduct");
+        setIsPopupVisible(true);
     };
 
     const handleOrderSave = async () => {
@@ -324,18 +331,28 @@ const Shopping = () => {
                                     setIsPopupVisible(false);
                                 }}
                                 categories={categories} />
-                            : <EditCategoriesPopup onOrderSave={handleOrderSave}
-                                onItemMove={(fromIndex, toIndex) => {
-                                    if (fromIndex === toIndex) {
-                                        return;
-                                    }
-                                    const updatedItems = [...categories];
-                                    const [movedItem] = updatedItems.splice(fromIndex, 1);
-                                    updatedItems.splice(toIndex, 0, movedItem);
-                                    setCategories(updatedItems);
-                                }}
-                                onPopupClose={() => setIsPopupVisible(false)}
-                                categories={categories} />
+                            : "removeProduct" === popup
+                                ? <ConfirmProductRemovalPopup content={selectedProductData}
+                                    onSubmit={(id, name) => {
+                                        setIsPopupVisible(false);
+                                        removeProduct(id, name);
+                                    }}
+                                    onPopupClose={() => {
+                                        setSelectedProductData({});
+                                        setIsPopupVisible(false);
+                                    }} />
+                                : <EditCategoriesPopup onOrderSave={handleOrderSave}
+                                    onItemMove={(fromIndex, toIndex) => {
+                                        if (fromIndex === toIndex) {
+                                            return;
+                                        }
+                                        const updatedItems = [...categories];
+                                        const [movedItem] = updatedItems.splice(fromIndex, 1);
+                                        updatedItems.splice(toIndex, 0, movedItem);
+                                        setCategories(updatedItems);
+                                    }}
+                                    onPopupClose={() => setIsPopupVisible(false)}
+                                    categories={categories} />
                             : <>{tableData && <>
                                 <Form onSubmit={(e) => handleAddProductSubmit(e)}>
                                     <Form.Control type="text" />
