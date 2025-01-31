@@ -22,4 +22,4 @@ server:
     enabled: true
     key-store: <classpath:path/to/keystore.jks>
     key-store-password: <password>
-    key-store-type: JKS
+    key-store-type: PKCS12
