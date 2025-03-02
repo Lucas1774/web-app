@@ -31,8 +31,8 @@ const Shopping = () => {
     const [isShowOnlyCommon, setIsShowOnlyCommon] = useState(false);
 
     const inputsRef = useRef({});
-    const debouncedValue = useDebounce(quantityInputValue, 1000);
-    const filterDebouncedValue = useDebounce(filterValue, 1000)
+    const debouncedValue = useDebounce(quantityInputValue, constants.DEBOUNCE_DELAY);
+    const filterDebouncedValue = useDebounce(filterValue, constants.DEBOUNCE_DELAY)
 
     useEffect(() => {
         if (filterDebouncedValue?.value != null && filterDebouncedValue?.column != null) {
@@ -76,39 +76,42 @@ const Shopping = () => {
         }
     };
 
-    const makeGenericRequest = async (request, callbackAfterSuccess) => {
-        setIsLoading(true);
-        let message = "";
+    const makeGenericRequest = async (request, callbackAfterSuccess, putToLoad = true) => {
+        setIsLoading(putToLoad);
         try {
             const response = await request();
-            message = response.data;
+            let message = response.data;
+            if (message) {
+                setMessage(message);
+                setTimeout(() => {
+                    setMessage(null);
+                    callbackAfterSuccess();
+                }, constants.TIMEOUT_DELAY);
+            } else {
+                callbackAfterSuccess();
+            }
         } catch (error) {
             handleError("Error sending data", error);
         } finally {
-            if (message === null) {
+            if (putToLoad) {
                 setIsLoading(false);
-            } else {
-                if (message) {
-                    setMessage(message);
-                    setTimeout(() => {
-                        setMessage(null);
-                        callbackAfterSuccess();
-                    }, constants.TIMEOUT_DELAY);
-                } else {
-                    callbackAfterSuccess();
-                }
             }
         }
     };
 
-    const updateProductQuantity = useCallback(async (value, id, name) => {
+    const updateProductQuantity = useCallback((value, id, name) => {
         if (isNaN(value) || parseInt(value) < 0) {
             return;
         }
         makeGenericRequest(() => post('/update-product-quantity', { [constants.ID_KEY]: id, [constants.NAME_KEY]: name, [constants.QUANTITY_KEY]: parseInt(value) }), () => {
-            setIsLoading(true);
-            getData();
-        });
+            setTableData(previous => {
+                return previous.map(product =>
+                    product[constants.ID_KEY] === id
+                        ? { ...product, [constants.QUANTITY_KEY]: value }
+                        : product
+                );
+            });
+        }, false);
     }, []);
 
     const updateProduct = async (id, name, isRare, categoryId, category) => {
@@ -272,10 +275,11 @@ const Shopping = () => {
             return (
                 <td key={key}>
                     <div className="cell-item-container">
-                        <Form.Control defaultValue={quantity}
+                        <Form.Control key={id + quantity} // here just to force a remount on quantity change.
+                            defaultValue={quantity}
                             inputMode="numeric"
                             onChange={(e) =>
-                                setQuantityInputValue({
+                                setQuantityInputValue({ // Maybe one var per input would be better.
                                     value: parseInt(e.target.value),
                                     rowId: id,
                                     rowName: name
