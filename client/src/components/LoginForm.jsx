@@ -1,3 +1,4 @@
+import { PropTypes } from 'prop-types';
 import { Button, Form } from 'react-bootstrap';
 
 const LoginForm = ({ onSubmit }) => {
@@ -10,6 +11,10 @@ const LoginForm = ({ onSubmit }) => {
             <Button className="fifty-percent" type="submit" value="continue">Use as Guest</Button>
         </Form>
     );
+};
+
+LoginForm.propTypes = {
+    onSubmit: PropTypes.func,
 };
 
 export default LoginForm;
