@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
-import React, { createRef, useEffect, useRef, useState } from "react";
+import React, { createRef, forwardRef, useEffect, useRef, useState } from "react";
 
-const SudokuGrid = ({ sudokuString, onSudokuChange, solved }) => {
+const SudokuGrid = forwardRef(({ sudokuString, onSudokuChange, solved }, ref) => {
     const [focusedIndex, setFocusedIndex] = useState(null);
     const [started, setStarted] = useState(false);
     const inputRefs = useRef(Array.from({ length: 81 }, () => createRef()));
@@ -56,14 +56,14 @@ const SudokuGrid = ({ sudokuString, onSudokuChange, solved }) => {
 
     return (
         <>
-            <div className="sudoku-grid">
+            <div className="sudoku-grid" ref={ref}>
                 {sudokuString.split("").map((digit, index) => (
                     <span className="sudoku-cell" key={index}>
                         <input
+                            onChange={() => { }}
                             ref={inputRefs.current[index]}
                             inputMode="numeric"
                             value={digit === "0" ? "" : digit}
-                            readOnly={false}
                             onKeyDown={(event) => onSudokuChange(index, inputRefs.current[index].current, event)}
                             onFocus={() => setFocusedIndex(index)}
                             onBlur={() => setFocusedIndex(null)}
@@ -74,7 +74,7 @@ const SudokuGrid = ({ sudokuString, onSudokuChange, solved }) => {
             <br></br>
         </>
     );
-};
+});
 
 SudokuGrid.propTypes = {
     sudokuString: PropTypes.string,

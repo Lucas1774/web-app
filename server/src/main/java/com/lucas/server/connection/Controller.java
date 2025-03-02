@@ -73,6 +73,7 @@ public class Controller {
             cookie.setPath("/");
             cookie.setMaxAge(31536000);
             cookie.setSecure(this.secure);
+            cookie.setAttribute("Partitioned", "");
             if (this.secure) {
                 cookie.setAttribute("SameSite", "None");
             }

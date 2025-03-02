@@ -16,6 +16,7 @@ import java.util.Optional;
 @Repository
 public class DAO {
 
+    private static final String USERNAME = "username";
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
     public DAO(NamedParameterJdbcTemplate jdbcTemplate) {
@@ -24,7 +25,7 @@ public class DAO {
 
     public Optional<String> getPassword(String username) throws DataAccessException {
         String sql = "SELECT password FROM users WHERE username = :username";
-        MapSqlParameterSource parameters = new MapSqlParameterSource("username", username);
+        MapSqlParameterSource parameters = new MapSqlParameterSource(USERNAME, username);
         try {
             return Optional.ofNullable(this.jdbcTemplate.queryForObject(sql, parameters, String.class));
         } catch (EmptyResultDataAccessException e) {
@@ -78,7 +79,7 @@ public class DAO {
                 + "LEFT JOIN categories c ON c.id = a.category_id "
                 + "INNER JOIN shopping s ON s.product_id = a.id "
                 + "WHERE s.user_id = (SELECT id FROM users WHERE username = :username)";
-        MapSqlParameterSource params = new MapSqlParameterSource("username", username);
+        MapSqlParameterSource params = new MapSqlParameterSource(USERNAME, username);
         return this.jdbcTemplate.query(
                 sql,
                 params,
@@ -114,7 +115,7 @@ public class DAO {
                 + "0)";
         MapSqlParameterSource parameters = new MapSqlParameterSource();
         parameters.addValue("product", product);
-        parameters.addValue("username", username);
+        parameters.addValue(USERNAME, username);
         this.jdbcTemplate.update(insertProductSql, parameters);
         this.jdbcTemplate.update(assignProductSql, parameters);
     }
@@ -151,14 +152,14 @@ public class DAO {
         MapSqlParameterSource parameters = new MapSqlParameterSource();
         parameters.addValue("id", id);
         parameters.addValue("quantity", quantity);
-        parameters.addValue("username", username);
+        parameters.addValue(USERNAME, username);
         this.jdbcTemplate.update(sql, parameters);
     }
 
     public void updateAllProductQuantity(String username) throws DataAccessException {
         String sql = "UPDATE shopping SET quantity = 0 "
                 + "WHERE user_id = (SELECT id FROM users WHERE username = :username)";
-        MapSqlParameterSource parameters = new MapSqlParameterSource("username", username);
+        MapSqlParameterSource parameters = new MapSqlParameterSource(USERNAME, username);
         this.jdbcTemplate.update(sql, parameters);
     }
 
@@ -173,7 +174,7 @@ public class DAO {
                 + "    WHERE product_id = :product)";
         MapSqlParameterSource parameters = new MapSqlParameterSource();
         parameters.addValue("product", id);
-        parameters.addValue("username", username);
+        parameters.addValue(USERNAME, username);
         this.jdbcTemplate.update(removeFromShoppingSql, parameters);
         this.jdbcTemplate.update(removeFromProductsSql, parameters);
     }

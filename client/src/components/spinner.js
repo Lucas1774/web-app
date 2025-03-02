@@ -1,3 +1,4 @@
+import { PropTypes } from 'prop-types'
 const Spinner = ({ color = "#fff", position = "relative" }) => {
     return <svg xmlns="http://www.w3.org/2000/svg"
         width="40"
@@ -28,6 +29,11 @@ const Spinner = ({ color = "#fff", position = "relative" }) => {
             </g>
         </g>
     </svg>
+};
+
+Spinner.propTypes = {
+    color: PropTypes.string,
+    position: PropTypes.string
 };
 
 export default Spinner;
