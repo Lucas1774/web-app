@@ -6,6 +6,7 @@ import editIcon from "../../assets/images/edit.png";
 import resetIcon from "../../assets/images/remove.png";
 import * as constants from "../../constants";
 import useDebounce from "../../hooks/useDebounce";
+import DebounceableInput from "../DebounceableInput";
 import { handleError } from "../errorHandler";
 import LoginForm from "../LoginForm";
 import Spinner from "../Spinner";
@@ -18,7 +19,6 @@ const Shopping = () => {
     const [tableData, setTableData] = useState(null);
     const [categories, setCategories] = useState([]);
     const [popup, setPopup] = useState(null);
-    const [quantityInputValue, setQuantityInputValue] = useState({});
     const [filterValue, setFilterValue] = useState({});
     const [message, setMessage] = useState(null);
     const [selectedProductData, setSelectedProductData] = useState({})
@@ -31,7 +31,6 @@ const Shopping = () => {
     const [isShowOnlyCommon, setIsShowOnlyCommon] = useState(false);
 
     const inputsRef = useRef({});
-    const debouncedValue = useDebounce(quantityInputValue, constants.DEBOUNCE_DELAY);
     const filterDebouncedValue = useDebounce(filterValue, constants.DEBOUNCE_DELAY)
 
     useEffect(() => {
@@ -131,12 +130,6 @@ const Shopping = () => {
             getData();
         });
     };
-
-    useEffect(() => {
-        if (debouncedValue?.value != null && debouncedValue?.rowId != null && debouncedValue?.rowName != null) {
-            updateProductQuantity(debouncedValue.value, debouncedValue.rowId, debouncedValue.rowName);
-        }
-    }, [debouncedValue, updateProductQuantity]);
 
     const handleLoginSubmit = async (event) => {
         event.preventDefault();
@@ -264,6 +257,11 @@ const Shopping = () => {
         });
     };
 
+    const handleDebouncedChange = useCallback(
+        (value, id, name) => updateProductQuantity(value, id, name),
+        [updateProductQuantity]
+    );
+
     const renderColumn = (key, id, name, isRare, categoryId, category, quantity) => {
         if (key === constants.NAME_KEY) {
             return <td key={key} title={name} style={{ maxWidth: '100px' }}>{name}</td>;
@@ -275,16 +273,12 @@ const Shopping = () => {
             return (
                 <td key={key}>
                     <div className="cell-item-container">
-                        <Form.Control key={id + quantity} // here just to force a remount on quantity change.
-                            defaultValue={quantity}
+                        <DebounceableInput
+                            value={quantity}
+                            id={id}
+                            name={name}
                             inputMode="numeric"
-                            onChange={(e) =>
-                                setQuantityInputValue({ // Maybe one var per input would be better.
-                                    value: parseInt(e.target.value),
-                                    rowId: id,
-                                    rowName: name
-                                })}
-                            onClick={(e) => e.target.select()}
+                            onDebouncedChange={handleDebouncedChange}
                         />
                         <Button className="icon-button" onClick={() => {
                             if (quantity !== 0) {
