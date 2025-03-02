@@ -21,29 +21,8 @@ const Sudoku = () => {
 
     const responseMessage = useRef("");
     const formRef = useRef(null);
+    const gridRef = useRef(null);
     const wakeLock = useRef(null);
-
-    const handleArrowKeyPress = useCallback((event) => {
-        if (event.key === "ArrowUp" && difficulty < 9) {
-            event.preventDefault();
-            setDifficulty(prevDifficulty => prevDifficulty + 1);
-        } else if (event.key === "ArrowDown" && difficulty > 1) {
-            event.preventDefault();
-            setDifficulty(prevDifficulty => prevDifficulty - 1);
-        }
-    }, [difficulty]);
-
-    useEffect(() => {
-        if (isPickDifficultyVisible) {
-            document.addEventListener("keydown", handleArrowKeyPress);
-            formRef.current.focus();
-        } else {
-            document.removeEventListener("keydown", handleArrowKeyPress);
-        }
-        return () => {
-            document.removeEventListener("keydown", handleArrowKeyPress);
-        };
-    }, [handleArrowKeyPress, isPickDifficultyVisible]);
 
     const restoreDefaults = useCallback(() => {
         setSudoku("");
@@ -83,7 +62,7 @@ const Sudoku = () => {
             .then(response => {
                 if (response.data === 0 || response.data === 1) {
                     let color = response.data === 1 ? "green" : "red";
-                    let grid = document.querySelector(".sudoku-grid");
+                    let grid = gridRef.current;
                     if (grid !== null) {
                         showBorderThenRemove(grid, color);
                     }
@@ -136,26 +115,33 @@ const Sudoku = () => {
         }
     }, [check, initialSudoku, isSolved, sudoku.length]);
 
-    const handleGenerateOrReset = useCallback((event) => {
-        if (event.key === "Enter") {
+    const handleKeyPress = useCallback((event) => {
+        if (event.key === "ArrowUp" && difficulty < 9) {
+            event.preventDefault();
+            setDifficulty(prevDifficulty => prevDifficulty + 1);
+        } else if (event.key === "ArrowDown" && difficulty > 1) {
+            event.preventDefault();
+            setDifficulty(prevDifficulty => prevDifficulty - 1);
+        } else if (event.key === "Enter") {
             event.preventDefault();
             generateOrFetch(event.ctrlKey ? "fetch" : "generate");
         } else if (event.key === "Escape") {
             event.preventDefault();
             restoreDefaults();
         }
-    }, [generateOrFetch, restoreDefaults]);
+    }, [difficulty, generateOrFetch, restoreDefaults]);
 
     useEffect(() => {
         if (isPickDifficultyVisible) {
-            document.addEventListener("keydown", handleGenerateOrReset);
+            document.addEventListener("keydown", handleKeyPress);
+            formRef.current.focus();
         } else {
-            document.removeEventListener("keydown", handleGenerateOrReset);
+            document.removeEventListener("keydown", handleKeyPress);
         }
         return () => {
-            document.removeEventListener("keydown", handleGenerateOrReset);
+            document.removeEventListener("keydown", handleKeyPress);
         };
-    }, [handleGenerateOrReset, isPickDifficultyVisible]);
+    }, [handleKeyPress, isPickDifficultyVisible]);
 
     const solve = useCallback(() => {
         hideEverything();
@@ -303,7 +289,7 @@ const Sudoku = () => {
                         <Button id="fetch" onClick={(e) => generateOrFetch(e.target.id)}>Fetch</Button>
                     </Form>}
                 {isSudokuVisible &&
-                    <><SudokuGrid sudokuString={sudoku} onSudokuChange={handleSudokuChange} solved={isSolved} />
+                    <><SudokuGrid ref={gridRef} sudokuString={sudoku} onSudokuChange={handleSudokuChange} solved={isSolved} />
                         <Button type="submit" variant="success" onClick={solve}>Solve</Button>
                         <Button onClick={check}>Check</Button></>
                 }
