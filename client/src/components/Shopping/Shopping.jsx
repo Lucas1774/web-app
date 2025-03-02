@@ -103,13 +103,12 @@ const Shopping = () => {
             return;
         }
         makeGenericRequest(() => post('/update-product-quantity', { [constants.ID_KEY]: id, [constants.NAME_KEY]: name, [constants.QUANTITY_KEY]: parseInt(value) }), () => {
-            setTableData(previous => {
-                return previous.map(product =>
-                    product[constants.ID_KEY] === id
-                        ? { ...product, [constants.QUANTITY_KEY]: value }
-                        : product
-                );
-            });
+            setTableData(previous => previous.map(product =>
+                product[constants.ID_KEY] === id
+                    ? { ...product, [constants.QUANTITY_KEY]: value }
+                    : product
+            )
+            );
         }, false);
     }, []);
 
