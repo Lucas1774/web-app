@@ -22,6 +22,7 @@ export const EMPTY_TIMER = "-:--:---";
 export const DNF = "DNF";
 export const TIMER_REFRESH_RATE = 50;
 export const TIMEOUT_DELAY = 1000;
+export const DEBOUNCE_DELAY = 500;
 export const NEW = "new";
 export const DESC = "desc";
 export const ASC = "asc";
