@@ -9,7 +9,7 @@ import Scramble from "./scramblers/Scramble";
 import { SCRAMBLE_LENGTH as SEVEN_SCRAMBLE_LENGTH } from "./scramblers/sevenScrambler";
 import { SCRAMBLE_LENGTH as SIX_SCRAMBLE_LENGTH } from "./scramblers/sixScrambler";
 import { SCRAMBLE_LENGTH as SKEWB_SCRAMBLE_LENGTH } from "./scramblers/skewbScrambler";
-import {SCRAMBLE_LENGTH as SQUARE_SCRAMBLE_LENGTH} from "./scramblers/sqoneScrambler";
+import { SCRAMBLE_LENGTH as SQUARE_SCRAMBLE_LENGTH } from "./scramblers/sqoneScrambler";
 import { SCRAMBLE_LENGTH as THREE_SCRAMBLE_LENGTH } from "./scramblers/threeScrambler";
 import { SCRAMBLE_LENGTH as TWO_SCRAMBLE_LENGTH } from "./scramblers/twoScrambler";
 import { renderStats } from "./statsHelper";
@@ -374,7 +374,17 @@ test("sqone", () => {
 	}
 	for (let scramble of screen.getAllByTestId("scramble").map(scramble => scramble.textContent)) {
 		expect(scramble.split("(").length - 1).toBe(SQUARE_SCRAMBLE_LENGTH);
+		expect(scramble).not.toContain("NaN");
 		expect(scramble).not.toContain("-6");
+		expect(scramble).not.toContain("0, 0");
+		const allButFirstThree = scramble.split("/").slice(3).join("/");
+		expect(allButFirstThree.split("(").length - 1).toBe(SQUARE_SCRAMBLE_LENGTH - 3);
+		expect(allButFirstThree).not.toContain(", 1");
+		expect(allButFirstThree).not.toContain(", 2");
+		expect(allButFirstThree).not.toContain(", 3");
+		expect(allButFirstThree).not.toContain(", 4");
+		expect(allButFirstThree).not.toContain(", 5");
+		expect(allButFirstThree).not.toContain(", 6");
 	}
 })
 
