@@ -9,6 +9,7 @@ import Scramble from "./scramblers/Scramble";
 import { SCRAMBLE_LENGTH as SEVEN_SCRAMBLE_LENGTH } from "./scramblers/sevenScrambler";
 import { SCRAMBLE_LENGTH as SIX_SCRAMBLE_LENGTH } from "./scramblers/sixScrambler";
 import { SCRAMBLE_LENGTH as SKEWB_SCRAMBLE_LENGTH } from "./scramblers/skewbScrambler";
+import {SCRAMBLE_LENGTH as SQUARE_SCRAMBLE_LENGTH} from "./scramblers/sqoneScrambler";
 import { SCRAMBLE_LENGTH as THREE_SCRAMBLE_LENGTH } from "./scramblers/threeScrambler";
 import { SCRAMBLE_LENGTH as TWO_SCRAMBLE_LENGTH } from "./scramblers/twoScrambler";
 import { renderStats } from "./statsHelper";
@@ -366,6 +367,16 @@ test("skewb", () => {
 		checkSkewbScramble(axisMoves);
 	}
 });
+
+test("sqone", () => {
+	for (let i = 0; i < NUMBER_OF_RUNS; i++) {
+		render(<Scramble isNewScramble={true} onScrambleChange={() => { }} puzzle={constants.SQUARE} display="block" quantity={0} ></Scramble>)
+	}
+	for (let scramble of screen.getAllByTestId("scramble").map(scramble => scramble.textContent)) {
+		expect(scramble.split("(").length - 1).toBe(SQUARE_SCRAMBLE_LENGTH);
+		expect(scramble).not.toContain("-6");
+	}
+})
 
 test("5BLD", () => {
 	for (let i = 0; i < NUMBER_OF_RUNS; i++) {
