@@ -61,6 +61,11 @@
     line-height: 35px;
 }
 
+.app.rubikTimer h2.sqone {
+    font-size: 36px;
+    white-space: preserve;
+}
+
 @media (pointer: coarse) and (orientation: landscape) {
 
     .timerContainer {
