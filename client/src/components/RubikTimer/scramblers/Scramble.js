@@ -14,6 +14,7 @@ import { Scramble as pyraminxScrambler } from "./pyraScrambler";
 import { Scramble as sevenScrambler } from "./sevenScrambler";
 import { Scramble as sixScrambler } from "./sixScrambler";
 import { Scramble as skewbScrambler } from "./skewbScrambler";
+import { Scramble as sqoneScrambler } from "./sqoneScrambler";
 import { Scramble as threeScrambler } from "./threeScrambler";
 import { Scramble as twoScrambler } from "./twoScrambler";
 
@@ -64,7 +65,7 @@ const Scramble = ({ isNewScramble, onScrambleChange, puzzle, display, quantity }
                     newScramble = skewbScrambler().trim();
                     break;
                 case constants.SQUARE:
-                    newScramble = "not implemented";
+                    newScramble = sqoneScrambler().trim();
                     break;
                 case constants.FOUR_BLD:
                     newScramble = fourBldScrambler().trim();
@@ -120,9 +121,9 @@ export const SCRAMBLE_MOVES = [[
 
 export const generateMove = (availabilityMatrix, width = null) => {
     const validMoves = [];
-    const [layerStart, layerEnd] = width !== null 
-    ? [width * 2, width * 2 + 2] 
-    : [0, availabilityMatrix[0].length];
+    const [layerStart, layerEnd] = width !== null
+        ? [width * 2, width * 2 + 2]
+        : [0, availabilityMatrix[0].length];
     for (let axis = 0; axis < availabilityMatrix.length; axis++) {
         for (let layer = layerStart; layer < layerEnd; layer++) {
             if (availabilityMatrix[axis][layer]) {
