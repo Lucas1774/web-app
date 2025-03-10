@@ -36,7 +36,8 @@
     user-select: none;
 }
 
-.app.rubikTimer h2.five {
+.app.rubikTimer h2.five,
+.app.rubikTimer h2.five_bld {
     font-size: 40px;
     line-height: 40px;
 }
@@ -62,7 +63,7 @@
 }
 
 .app.rubikTimer h2.sqone {
-    font-size: 36px;
+    font-size: 35px;
     white-space: preserve;
 }
 
@@ -109,7 +110,8 @@
         line-height: 65px;
     }
 
-    .app.rubikTimer h2.five {
+    .app.rubikTimer h2.five,
+    .app.rubikTimer h2.five_bld {
         font-size: 37px;
         line-height: 37px;
     }

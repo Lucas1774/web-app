@@ -18,81 +18,68 @@ import { Scramble as sqoneScrambler } from "./sqoneScrambler";
 import { Scramble as threeScrambler } from "./threeScrambler";
 import { Scramble as twoScrambler } from "./twoScrambler";
 
-const Scramble = ({ isNewScramble, onScrambleChange, puzzle, display, quantity }) => {
+const scramblerMap = {
+    [constants.THREE]: threeScrambler,
+    [constants.TWO]: twoScrambler,
+    [constants.FOUR]: fourScrambler,
+    [constants.FIVE]: fiveScrambler,
+    [constants.SIX]: sixScrambler,
+    [constants.SEVEN]: sevenScrambler,
+    [constants.BLD]: bldScrambler,
+    [constants.FMC]: fmcScrambler,
+    [constants.OH]: threeScrambler,
+    [constants.CLOCK]: clockScrambler,
+    [constants.MEGAMINX]: megaScrambler,
+    [constants.PYRAMINX]: pyraminxScrambler,
+    [constants.SKEWB]: skewbScrambler,
+    [constants.SQUARE]: sqoneScrambler,
+    [constants.FOUR_BLD]: fourBldScrambler,
+    [constants.FIVE_BLD]: fiveBldScrambler,
+};
+
+const Scramble = ({ isNewScramble, onScrambleChange, puzzle, display, quantity, isHorizontal }) => {
     const [scramble, setScramble] = useState("");
 
     useEffect(() => {
         if (isNewScramble && display === "block") {
             let newScramble;
-            switch (puzzle) {
-                case constants.THREE:
-                    newScramble = threeScrambler().trim();
-                    break;
-                case constants.TWO:
-                    newScramble = twoScrambler().trim();
-                    break;
-                case constants.FOUR:
-                    newScramble = fourScrambler().trim();
-                    break;
-                case constants.FIVE:
-                    newScramble = fiveScrambler().trim();
-                    break;
-                case constants.SEVEN:
-                    newScramble = sevenScrambler().trim();
-                    break;
-                case constants.SIX:
-                    newScramble = sixScrambler().trim();
-                    break;
-                case constants.BLD:
-                    newScramble = bldScrambler().trim();
-                    break;
-                case constants.FMC:
-                    newScramble = fmcScrambler().trim();
-                    break;
-                case constants.OH:
-                    newScramble = threeScrambler().trim();
-                    break;
-                case constants.CLOCK:
-                    newScramble = clockScrambler().trim();
-                    break;
-                case constants.MEGAMINX:
-                    newScramble = megaScrambler().trim();
-                    break;
-                case constants.PYRAMINX:
-                    newScramble = pyraminxScrambler().trim();
-                    break;
-                case constants.SKEWB:
-                    newScramble = skewbScrambler().trim();
-                    break;
-                case constants.SQUARE:
-                    newScramble = sqoneScrambler().trim();
-                    break;
-                case constants.FOUR_BLD:
-                    newScramble = fourBldScrambler().trim();
-                    break;
-                case constants.FIVE_BLD:
-                    newScramble = fiveBldScrambler().trim();
-                    break;
-                case constants.MULTI: {
-                    let multiScrambles = [];
-                    for (let i = 0; i < quantity; i++) {
-                        multiScrambles.push(bldScrambler().trim());
-                    }
-                    newScramble = multiScrambles.map((scramble, index) => (
-                        <p key={index}>{index + 1}{")"} {scramble}</p>
-                    ));
-                    break;
+            if (puzzle === constants.MULTI) {
+                const scrambles = [];
+                for (let i = 0; i < quantity; i++) {
+                    scrambles.push(bldScrambler().trim());
                 }
-                default:
-                    newScramble = "";
+                newScramble = scrambles;
+            } else {
+                const scrambler = scramblerMap[puzzle];
+                if (scrambler) {
+                    newScramble = puzzle === constants.SQUARE ? scrambler(isHorizontal).trim() : scrambler().trim();
+                }
             }
             setScramble(newScramble);
             onScrambleChange(newScramble);
         }
-    }, [display, isNewScramble, onScrambleChange, puzzle, quantity]);
+    }, [display, isHorizontal, isNewScramble, onScrambleChange, puzzle, quantity]);
+
+    useEffect(() => {
+        if (!isNewScramble && puzzle === constants.SQUARE) {
+            const movesPerLine = isHorizontal ? 5 : 3;
+            const moves = scramble.replace(/(\r\n|\n|\r)/g, "").split("/ ");
+            for (let i = 0; i < moves.length - 1; i++) {
+                moves[i] += "/";
+                if (0 === (i + 1) % movesPerLine) {
+                    moves[i] += "\n";
+                }
+            }
+            setScramble(moves.join(" "));
+        }
+    }, [isHorizontal, isNewScramble, puzzle, scramble])
 
     return (
-        <h2 data-testid="scramble" className={puzzle} style={{ display: display }}>{scramble}</h2>
+        <h2 data-testid="scramble" className={puzzle} style={{ display: display }}>
+            {Array.isArray(scramble)
+                ? scramble.map((s, index) => <p key={index}>{index + 1}{")"} {s}</p>)
+                : scramble}
+        </h2>
     );
 };
 
@@ -155,7 +142,8 @@ Scramble.propTypes = {
     onScrambleChange: PropTypes.func,
     puzzle: PropTypes.string,
     display: PropTypes.string,
-    quantity: PropTypes.number
+    quantity: PropTypes.number,
+    isHorizontal: PropTypes.bool
 };
 
 export default Scramble;
