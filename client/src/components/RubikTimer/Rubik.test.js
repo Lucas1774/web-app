@@ -170,18 +170,6 @@ const checkSixScramble = (sanitizedMoves) => {
 	expect(sanitizedMoves).not.toContain(" L Lw 3Lw L ");
 };
 
-test("7X7", () => {
-	for (let i = 0; i < NUMBER_OF_RUNS; i++) {
-		render(<Scramble isNewScramble={true} onScrambleChange={() => { }} puzzle={constants.SEVEN} display="block" quantity={0} ></Scramble>)
-	}
-	for (let scramble of screen.getAllByTestId("scramble").map(scramble => scramble.textContent)) {
-		const axisMoves = scramble.replace(/[32'\sw]/g, "");
-		expect(axisMoves.length).toBe(SEVEN_SCRAMBLE_LENGTH);
-		const sanitizedMoves = scramble.replace(/[2']/g, "");
-		checkSixScramble(sanitizedMoves);
-	}
-});
-
 test("6x6", () => {
 	for (let i = 0; i < NUMBER_OF_RUNS; i++) {
 		render(<Scramble isNewScramble={true} onScrambleChange={() => { }} puzzle={constants.SIX} display="block" quantity={0} ></Scramble>)
@@ -213,6 +201,18 @@ test("6x6", () => {
 	expect(doubleMoves / NUMBER_OF_RUNS).toBeLessThan(SIX_SCRAMBLE_LENGTH * (2 / 5) + LIKELINESS_RELATIVE_ERROR * (200 / 5));
 	expect(tripleMoves / NUMBER_OF_RUNS).toBeGreaterThan(SIX_SCRAMBLE_LENGTH * (1 / 5) - LIKELINESS_RELATIVE_ERROR * (100 / 5));
 	expect(tripleMoves / NUMBER_OF_RUNS).toBeLessThan(SIX_SCRAMBLE_LENGTH * (1 / 5) + LIKELINESS_RELATIVE_ERROR * (100 / 5));
+});
+
+test("7X7", () => {
+	for (let i = 0; i < NUMBER_OF_RUNS; i++) {
+		render(<Scramble isNewScramble={true} onScrambleChange={() => { }} puzzle={constants.SEVEN} display="block" quantity={0} ></Scramble>)
+	}
+	for (let scramble of screen.getAllByTestId("scramble").map(scramble => scramble.textContent)) {
+		const axisMoves = scramble.replace(/[32'\sw]/g, "");
+		expect(axisMoves.length).toBe(SEVEN_SCRAMBLE_LENGTH);
+		const sanitizedMoves = scramble.replace(/[2']/g, "");
+		checkSixScramble(sanitizedMoves);
+	}
 });
 
 const checkBldScramble = (scramble, numberOfWideMoves) => {
