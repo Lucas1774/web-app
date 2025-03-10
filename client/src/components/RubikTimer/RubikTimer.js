@@ -318,8 +318,8 @@ const RubikTimer = () => {
                 <Button className="thirty-percent" id={constants.TWO} onClick={handleSubmit}>2x2</Button>
                 <Button className="thirty-percent" id={constants.FOUR} onClick={handleSubmit}>4x4</Button>
                 <Button className="thirty-percent" id={constants.FIVE} onClick={handleSubmit}>5X5</Button>
-                <Button className="thirty-percent" id={constants.SEVEN} onClick={handleSubmit}>7X7</Button>
                 <Button className="thirty-percent" id={constants.SIX} onClick={handleSubmit}>6X6</Button>
+                <Button className="thirty-percent" id={constants.SEVEN} onClick={handleSubmit}>7X7</Button>
                 <Button className="thirty-percent" id={constants.BLD} onClick={handleSubmit}>BLD</Button>
                 <Button className="thirty-percent" id={constants.FMC} onClick={handleSubmit}>FMC</Button>
                 <Button className="thirty-percent" id={constants.OH} onClick={handleSubmit}>OH</Button>
@@ -372,7 +372,8 @@ const RubikTimer = () => {
                 onScrambleChange={(s) => { setScramble(s); isNewScramble.current = false }}
                 puzzle={selectedPuzzle.current}
                 display={scrambleDisplayMode}
-                quantity={multiQuantity.current} />
+                quantity={multiQuantity.current}
+                isHorizontal={isHorizontal} />
         );
     };
 
