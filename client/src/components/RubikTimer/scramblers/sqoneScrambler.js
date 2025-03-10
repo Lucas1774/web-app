@@ -3,7 +3,7 @@ import { generateRandomBetweenZeroAndX } from "../../../constants";
 export const SCRAMBLE_LENGTH = 15;
 const INITIAL_STATE = [[0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2], [1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0]];
 
-export const Scramble = () => {
+export const Scramble = (isHorizontal) => {
 
     const slice = (state) => {
         const firstRowSix = state[0].slice(0, 6);
@@ -27,10 +27,11 @@ export const Scramble = () => {
         return availableIndexes;
     };
 
-    const mapIdxToMove = (idx, isSecond = false) => {
-        return idx < 7 ? isSecond ? " ".concat(idx.toString()) : idx.toString() : (idx - 12).toString();
+    const mapIdxToMove = (idx) => {
+        return idx < 7 ? " ".concat(idx.toString()) : (idx - 12).toString();
     };
 
+    const movesPerLine = isHorizontal ? 5 : 3;
     let scramble = "";
     let upIdx;
     let downIdx;
@@ -65,12 +66,12 @@ export const Scramble = () => {
         slice(state);
         scramble += "(".concat(mapIdxToMove(upIdx))
             .concat(",")
-            .concat(mapIdxToMove(downIdx, true))
+            .concat(mapIdxToMove(downIdx))
             .concat(")");
         if (i !== SCRAMBLE_LENGTH - 1 || 0 === generateRandomBetweenZeroAndX(3)) {
             scramble += "/ ";
         }
-        if (0 === (i + 1) % 3 && i !== SCRAMBLE_LENGTH - 1) {
+        if (0 === (i + 1) % movesPerLine && i !== SCRAMBLE_LENGTH - 1) {
             scramble += "\n";
         }
     }
