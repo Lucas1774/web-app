@@ -1,8 +1,9 @@
 package com.lucas.server.connection;
 
+import com.lucas.server.components.sudoku.Sudoku;
 import com.lucas.server.model.Category;
 import com.lucas.server.model.ShoppingItem;
-import com.lucas.server.components.sudoku.Sudoku;
+import com.lucas.server.model.Sortable;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -17,6 +18,7 @@ import java.util.Optional;
 public class DAO {
 
     private static final String USERNAME = "username";
+    private static final String ORDER = "order";
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
     public DAO(NamedParameterJdbcTemplate jdbcTemplate) {
@@ -74,7 +76,7 @@ public class DAO {
     }
 
     public List<ShoppingItem> getShoppingItems(String username) throws DataAccessException {
-        String sql = "SELECT a.id, a.name, a.is_rare, c.id AS category_id, c.name AS category_name, c.category_order, s.quantity "
+        String sql = "SELECT a.id, a.name, a.is_rare, a.product_order, c.id AS category_id, c.name AS category_name, c.category_order, s.quantity "
                 + "FROM products a "
                 + "LEFT JOIN categories c ON c.id = a.category_id "
                 + "INNER JOIN shopping s ON s.product_id = a.id "
@@ -90,7 +92,8 @@ public class DAO {
                         Optional.ofNullable(resultSet.getString("category_name")).orElse(""),
                         resultSet.getInt("category_order"),
                         resultSet.getInt("quantity"),
-                        resultSet.getBoolean("is_rare")));
+                        resultSet.getBoolean("is_rare"),
+                        resultSet.getInt("product_order")));
     }
 
     public List<Category> getPossibleCategories() throws DataAccessException {
@@ -105,8 +108,12 @@ public class DAO {
 
     @Transactional
     public void insertProduct(String product, String username) throws DataAccessException {
-        String insertProductSql = "INSERT INTO products (name) "
-                + "SELECT :product "
+        String maxOrderSql = "SELECT MAX(product_order) FROM products";
+        MapSqlParameterSource getMaxOrderParameters = new MapSqlParameterSource();
+        Integer maxOrder = jdbcTemplate.queryForObject(maxOrderSql, getMaxOrderParameters, Integer.class);
+        int newOrder = maxOrder != null ? maxOrder + 1 : 1;
+        String insertProductSql = "INSERT INTO products (name, product_order) "
+                + "SELECT :product, :order "
                 + "WHERE NOT EXISTS (SELECT 1 FROM products WHERE name = :product)";
         String assignProductSql = "INSERT INTO shopping (product_id, user_id, quantity) "
                 + "VALUES ("
@@ -116,6 +123,7 @@ public class DAO {
         MapSqlParameterSource parameters = new MapSqlParameterSource();
         parameters.addValue("product", product);
         parameters.addValue(USERNAME, username);
+        parameters.addValue(ORDER, newOrder);
         this.jdbcTemplate.update(insertProductSql, parameters);
         this.jdbcTemplate.update(assignProductSql, parameters);
     }
@@ -131,7 +139,7 @@ public class DAO {
             String insertCategorySql = "INSERT INTO categories (name, category_order) VALUES (:category, :order)";
             String getCategoryIdSql = "SELECT id FROM categories WHERE name = :category";
             parameters.addValue("category", categoryName);
-            parameters.addValue("order", newOrder);
+            parameters.addValue(ORDER, newOrder);
             this.jdbcTemplate.update(insertCategorySql, parameters);
             categoryId = this.jdbcTemplate.queryForObject(getCategoryIdSql, parameters, Integer.class);
         }
@@ -180,13 +188,18 @@ public class DAO {
     }
 
     @Transactional
-    public void updateCategoryOrders(List<Category> categories) {
-        String sql = "UPDATE categories SET category_order = :order WHERE id = :id";
-        MapSqlParameterSource[] params = categories.stream()
-                .map(category -> {
+    public void updateOrders(List<Sortable> elements) {
+        if (elements.isEmpty()) {
+            return;
+        }
+        Sortable someElement = elements.getFirst();
+        String sql = "UPDATE " + someElement.getTableName()
+                + " SET " + someElement.getOrderColumnName() + " = :order WHERE id = :id";
+        MapSqlParameterSource[] params = elements.stream()
+                .map(element -> {
                     MapSqlParameterSource parameters = new MapSqlParameterSource();
-                    parameters.addValue("id", category.getId());
-                    parameters.addValue("order", category.getOrder());
+                    parameters.addValue("id", element.getId());
+                    parameters.addValue(ORDER, element.getOrder());
                     return parameters;
                 })
                 .toArray(MapSqlParameterSource[]::new);

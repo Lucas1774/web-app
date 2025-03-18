@@ -11,13 +11,14 @@ import { handleError } from "../errorHandler";
 import LoginForm from "../LoginForm";
 import Spinner from "../Spinner";
 import ConfirmProductRemovalPopup from "./ConfirmProductRemovalPopup";
-import EditCategoriesPopup from "./EditCategoriesPopup";
 import EditProductPopup from "./EditProductPopup";
+import EditSortablesPopup from "./EditSortablesPopup";
 import "./Shopping.css";
 
 const Shopping = () => {
     const [tableData, setTableData] = useState(null);
-    const [categories, setCategories] = useState([]);
+    const [sortables, setSortables] = useState([]);
+    const [sortablesType, setSortablesType] = useState(null);
     const [popup, setPopup] = useState(null);
     const [filterValue, setFilterValue] = useState({});
     const [message, setMessage] = useState(null);
@@ -175,7 +176,8 @@ const Shopping = () => {
         setIsLoading(true);
         try {
             const response = await get("/get-possible-categories");
-            setCategories(response.data);
+            setSortables(response.data);
+            setSortablesType("categories");
         } catch (error) {
             handleError("Error fetching data", error);
         } finally {
@@ -195,9 +197,21 @@ const Shopping = () => {
         setIsPopupVisible(true);
     };
 
-    const handleEditCategories = () => {
-        getPossibleCategories();
-        setPopup("editCategories");
+    const handleEditSortables = (which) => {
+        if ("categories" === which) {
+            getPossibleCategories();
+            setSortablesType("categories");
+        } else if ("products" === which) {
+            const filteredData = tableData.map(item => ({
+                [constants.ID_KEY]: item[constants.ID_KEY],
+                [constants.NAME_KEY]: item[constants.NAME_KEY],
+                [constants.ORDER_KEY]: item[constants.ORDER_KEY],
+            }))
+                .sort((a, b) => a[constants.ORDER_KEY] - b[constants.ORDER_KEY]);
+            setSortables(filteredData);
+            setSortablesType("products");
+        }
+        setPopup("editSortables");
         setIsPopupVisible(true);
     };
 
@@ -208,10 +222,13 @@ const Shopping = () => {
     };
 
     const handleOrderSave = async () => {
-        categories.forEach((category, index) => {
-            category[constants.CATEGORY_ORDER_KEY] = index + 1;
-        });
-        makeGenericRequest(() => post('/update-categories', categories), () => {
+        const updatedSortables = sortables.map((sortable, index) => ({
+            ...sortable,
+            [constants.ORDER_KEY]: index + 1,
+            [constants.TYPE_KEY]: sortablesType,
+        }));
+        // use sortablestype to enrich "sortables"
+        makeGenericRequest(() => post('/update-sortables', updatedSortables), () => {
             setIsLoading(true);
             setIsPopupVisible(false);
             getData();
@@ -219,7 +236,7 @@ const Shopping = () => {
     };
 
     const handleOrderClick = (key) => {
-        const actualKey = key === constants.CATEGORY_KEY ? constants.CATEGORY_ORDER_KEY : key;
+        const actualKey = key === constants.CATEGORY_KEY ? constants.CATEGORY_ORDER_KEY : key === constants.NAME_KEY ? constants.ORDER_KEY : key;
         setOrder((prevOrder) => ({
             key: actualKey,
             order: prevOrder.key === actualKey
@@ -261,7 +278,7 @@ const Shopping = () => {
         [updateProductQuantity]
     );
 
-    const renderColumn = (key, id, name, isRare, categoryId, category, quantity) => {
+    const renderCell = (key, id, name, isRare, categoryId, category, quantity) => {
         if (key === constants.NAME_KEY) {
             return <td key={key} title={name} style={{ maxWidth: '100px' }}>{name}</td>;
         }
@@ -327,7 +344,7 @@ const Shopping = () => {
                                     setSelectedProductData({});
                                     setIsPopupVisible(false);
                                 }}
-                                categories={categories} />
+                                categories={sortables} />
                             : "removeProduct" === popup
                                 ? <ConfirmProductRemovalPopup content={selectedProductData}
                                     onSubmit={(id, name) => {
@@ -338,18 +355,18 @@ const Shopping = () => {
                                         setSelectedProductData({});
                                         setIsPopupVisible(false);
                                     }} />
-                                : <EditCategoriesPopup onOrderSave={handleOrderSave}
+                                : <EditSortablesPopup onOrderSave={handleOrderSave}
                                     onItemMove={(fromIndex, toIndex) => {
                                         if (fromIndex === toIndex) {
                                             return;
                                         }
-                                        const updatedItems = [...categories];
+                                        const updatedItems = [...sortables];
                                         const [movedItem] = updatedItems.splice(fromIndex, 1);
                                         updatedItems.splice(toIndex, 0, movedItem);
-                                        setCategories(updatedItems);
+                                        setSortables(updatedItems);
                                     }}
                                     onPopupClose={() => setIsPopupVisible(false)}
-                                    categories={categories} />
+                                    sortables={sortables} />
                             : <>{tableData && <>
                                 <Form onSubmit={(e) => handleAddProductSubmit(e)}>
                                     <Form.Control type="text" />
@@ -389,7 +406,9 @@ const Shopping = () => {
                                                     )}
                                                     {constants.META.SORTABLE[key] && (
                                                         <Button onClick={() => { handleOrderClick(key); }}>
-                                                            {(constants.CATEGORY_KEY === key && constants.CATEGORY_ORDER_KEY === order.key) || order.key === key
+                                                            {(constants.CATEGORY_KEY === key && constants.CATEGORY_ORDER_KEY === order.key)
+                                                                || (constants.NAME_KEY === key && constants.ORDER_KEY === order.key)
+                                                                || order.key === key
                                                                 ? order.order === constants.ASC ? '▲' : '▼' : 'Sort'}
                                                         </Button>
                                                     )}
@@ -404,7 +423,7 @@ const Shopping = () => {
                                                 <tr key={id}>
                                                     {constants.META.KEYS
                                                         .filter((key) => constants.META.VISIBLE[key])
-                                                        .map((key) => renderColumn(key, id, row[constants.NAME_KEY],
+                                                        .map((key) => renderCell(key, id, row[constants.NAME_KEY],
                                                             row[constants.IS_RARE_KEY], row[constants.CATEGORY_ID_KEY],
                                                             row[constants.CATEGORY_KEY], row[constants.QUANTITY_KEY]))}
                                                 </tr>
@@ -412,7 +431,10 @@ const Shopping = () => {
                                         })}
                                     </tbody>
                                 </Table>
-                                <Button onClick={handleEditCategories}>Sort categories</Button>
+                                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                    <Button className="fifty-percent" onClick={() => handleEditSortables("products")}>Sort products</Button>
+                                    <Button className="fifty-percent" onClick={() => handleEditSortables("categories")}>Sort categories</Button>
+                                </div>
                             </>}</>
             }</div></>
     );

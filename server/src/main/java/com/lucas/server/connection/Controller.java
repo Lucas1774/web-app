@@ -7,6 +7,7 @@ import com.lucas.server.components.sudoku.Generator;
 import com.lucas.server.components.sudoku.Sudoku;
 import com.lucas.server.model.Category;
 import com.lucas.server.model.ShoppingItem;
+import com.lucas.server.model.Sortable;
 import com.lucas.server.model.User;
 import com.lucas.server.security.JwtUtil;
 import com.lucas.server.service.UserService;
@@ -156,12 +157,12 @@ public class Controller {
         });
     }
 
-    @PostMapping("update-categories")
-    public ResponseEntity<String> updateCategories(HttpServletRequest request, @RequestBody List<Category> categories) {
+    @PostMapping("update-sortables")
+    public ResponseEntity<String> updateSortable(HttpServletRequest request, @RequestBody List<Sortable> elements) {
         return this.handleRequest(() -> {
             if (userService.isAdmin(this.retrieveUsername(request.getCookies()))) {
-                dao.updateCategoryOrders(categories);
-                return "Categories updated";
+                dao.updateOrders(elements);
+                return "Elements successfully sorted";
             } else {
                 return "Unauthorized";
             }
