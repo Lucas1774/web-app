@@ -431,7 +431,7 @@ const Shopping = () => {
                                         })}
                                     </tbody>
                                 </Table>
-                                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                <div className="flex-div">
                                     <Button className="fifty-percent" onClick={() => handleEditSortables("products")}>Sort products</Button>
                                     <Button className="fifty-percent" onClick={() => handleEditSortables("categories")}>Sort categories</Button>
                                 </div>

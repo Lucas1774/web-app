@@ -70,7 +70,7 @@ const Popup = ({ content, justEditLast = false, onPopupClose }) => {
 
     return (
         <div>
-            <div className="popup-header">
+            <div className="flex-div">
                 {!isEditTimeVisible && !isStatisticSelected
                     ? <Button className="popup-icon" onClick={selectContent}>
                         <img src={icon} alt="" width={"20x"} height={"20px"}></img>
@@ -96,7 +96,7 @@ const Popup = ({ content, justEditLast = false, onPopupClose }) => {
                     }
                     </div>
                     : isEditTimeVisible
-                        ? <div style={{ display: "flex", justifyContent: "space-between" }}>
+                        ? <div className="flex-div">
                             <Button className="fifty-percent" onClick={setToEmpty}>DNF</Button>
                             <Button className="fifty-percent restart" onClick={deleteTime}>Delete</Button>
                         </div>
