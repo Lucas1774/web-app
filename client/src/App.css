@@ -20,7 +20,7 @@ h1 {
     width: 360px;
 }
 
-.app .popup-header {
+.app .flex-div {
     display: flex;
     justify-content: space-between;
 }
