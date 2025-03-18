@@ -5,7 +5,7 @@ import SortableList from "../SortableList";
 const EditSortablesPopup = (props) => {
     return (
         <div>
-            <div className="popup-header">
+            <div className="flex-div">
                 <div></div>
                 <Button className="restart popup-icon" onClick={props.onPopupClose} >X</Button>
             </div>
