@@ -33,11 +33,11 @@ const EditProductPopup = (props) => {
         let categoryName;
         if (isSelectVisible) {
             categoryId = parseInt(categoryRef.current.value);
-            categoryName = props.categories.find((cat) => cat[constants.CATEGORY_ID_KEY] === categoryId)[constants.NAME_KEY];
+            categoryName = props.categories.find((cat) => cat[constants.ID_KEY] === categoryId)[constants.NAME_KEY];
         } else {
             categoryName = categoryRef2.current.value;
             const category = props.categories.find((cat) => cat[constants.NAME_KEY] === categoryName);
-            categoryId = category ? category[constants.CATEGORY_ID_KEY] : null;
+            categoryId = category ? category[constants.ID_KEY] : null;
         }
         if (name && categoryName) {
             props.onSubmit(props.content[constants.ID_KEY], name, isRare, categoryId, categoryName);
@@ -65,7 +65,7 @@ const EditProductPopup = (props) => {
                                 }
                             }}>
                             {props.categories.map((option) => (
-                                <option key={option[constants.CATEGORY_ID_KEY]} value={option[constants.CATEGORY_ID_KEY]}>{option[constants.NAME_KEY]}</option>
+                                <option key={option[constants.ID_KEY]} value={option[constants.ID_KEY]}>{option[constants.NAME_KEY]}</option>
                             ))}
                             <option key={null} value={constants.NEW}>New</option>
                         </Form.Control>

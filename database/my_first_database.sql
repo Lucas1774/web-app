@@ -15,6 +15,7 @@ CREATE TABLE `my_first_database`.`products` (
   `name` VARCHAR(50) NOT NULL,
   `is_rare` BOOLEAN NOT NULL DEFAULT FALSE,
   `category_id` int NULL DEFAULT NULL,
+  `product_order` int NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name_UNIQUE` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
