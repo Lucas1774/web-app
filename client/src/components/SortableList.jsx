@@ -4,10 +4,10 @@ import { Button } from "react-bootstrap";
 import { DndContext, closestCenter, PointerSensor, TouchSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, arrayMove, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { NAME_KEY, CATEGORY_ID_KEY } from "../constants";
+import { NAME_KEY, ID_KEY } from "../constants";
 
 const DraggableItem = ({ item }) => {
-    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item[CATEGORY_ID_KEY] });
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item[ID_KEY] });
 
     const style = {
         transform: CSS.Transform.toString(transform),
@@ -51,10 +51,10 @@ const SortableList = ({ items, onOrderSave, onItemMove }) => {
             return;
         }
         const oldIndex = localItems.findIndex(
-            (item) => item[CATEGORY_ID_KEY] === active.id
+            (item) => item[ID_KEY] === active.id
         );
         const newIndex = localItems.findIndex(
-            (item) => item[CATEGORY_ID_KEY] === over.id
+            (item) => item[ID_KEY] === over.id
         );
 
         const newItems = arrayMove(localItems, oldIndex, newIndex);
@@ -63,16 +63,16 @@ const SortableList = ({ items, onOrderSave, onItemMove }) => {
     };
 
     return localItems.length === 0 ? (
-        <div>No categories</div>
+        <div>No elements</div>
     ) : (
         <>
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                 <SortableContext
-                    items={localItems.map((item) => item[CATEGORY_ID_KEY])}
+                    items={localItems.map((item) => item[ID_KEY])}
                     strategy={verticalListSortingStrategy}
                 >
                     {localItems.map((item) => (
-                        <DraggableItem key={item[CATEGORY_ID_KEY]} item={item} />
+                        <DraggableItem key={item[ID_KEY]} item={item} />
                     ))}
                 </SortableContext>
             </DndContext>
