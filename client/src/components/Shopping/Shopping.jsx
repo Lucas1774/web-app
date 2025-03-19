@@ -197,20 +197,7 @@ const Shopping = () => {
         setIsPopupVisible(true);
     };
 
-    const handleEditSortables = (which) => {
-        if ("categories" === which) {
-            getPossibleCategories();
-            setSortablesType("categories");
-        } else if ("products" === which) {
-            const filteredData = tableData.map(item => ({
-                [constants.ID_KEY]: item[constants.ID_KEY],
-                [constants.NAME_KEY]: item[constants.NAME_KEY],
-                [constants.ORDER_KEY]: item[constants.ORDER_KEY],
-            }))
-                .sort((a, b) => a[constants.ORDER_KEY] - b[constants.ORDER_KEY]);
-            setSortables(filteredData);
-            setSortablesType("products");
-        }
+    const showSortPopup = () => {
         setPopup("editSortables");
         setIsPopupVisible(true);
     };
@@ -432,8 +419,22 @@ const Shopping = () => {
                                     </tbody>
                                 </Table>
                                 <div className="flex-div">
-                                    <Button className="fifty-percent" onClick={() => handleEditSortables("products")}>Sort products</Button>
-                                    <Button className="fifty-percent" onClick={() => handleEditSortables("categories")}>Sort categories</Button>
+                                    <Button className="fifty-percent" onClick={() => {
+                                        const filteredData = tableData.map(item => ({
+                                            [constants.ID_KEY]: item[constants.ID_KEY],
+                                            [constants.NAME_KEY]: item[constants.NAME_KEY],
+                                            [constants.ORDER_KEY]: item[constants.ORDER_KEY],
+                                        }))
+                                            .sort((a, b) => a[constants.ORDER_KEY] - b[constants.ORDER_KEY]);
+                                        setSortables(filteredData);
+                                        setSortablesType("products");
+                                        showSortPopup();
+                                    }}>Sort products</Button>
+                                    <Button className="fifty-percent" onClick={() => {
+                                        getPossibleCategories();
+                                        setSortablesType("categories");
+                                        showSortPopup();
+                                    }}>Sort categories</Button>
                                 </div>
                             </>}</>
             }</div></>
