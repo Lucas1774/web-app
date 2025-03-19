@@ -1,7 +1,6 @@
 import { PropTypes } from "prop-types";
 import { Button } from "react-bootstrap";
 import SortableList from "../SortableList";
-
 const EditSortablesPopup = (props) => {
     return (
         <div>
@@ -9,7 +8,7 @@ const EditSortablesPopup = (props) => {
                 <div></div>
                 <Button className="restart popup-icon" onClick={props.onPopupClose} >X</Button>
             </div>
-            <div>
+            <div style={{ paddingRight: "20%" }}>
                 <SortableList items={props.sortables} onOrderSave={props.onOrderSave} onItemMove={props.onItemMove} />
             </div>
         </div >
