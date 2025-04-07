@@ -36,12 +36,7 @@ const SortableList = ({ items, onOrderSave, onItemMove }) => {
             distance: 8,
         },
     });
-    const touchSensor = useSensor(TouchSensor, {
-        activationConstraint: {
-            delay: 150,
-            tolerance: 5,
-        },
-    });
+    const touchSensor = useSensor(TouchSensor);
 
     const sensors = useSensors(/Android/i.test(navigator.userAgent) ? touchSensor : pointerSensor);
 
