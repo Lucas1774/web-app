@@ -12,11 +12,11 @@ import lombok.Setter;
 @AllArgsConstructor
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 public class Category implements Sortable {
-    @JsonProperty("ID")
+    @JsonProperty("id")
     private int id;
-    @JsonProperty("NAME")
+    @JsonProperty("name")
     private String name;
-    @JsonProperty("ORDER")
+    @JsonProperty("order")
     private int order;
 
     @Override

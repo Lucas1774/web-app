@@ -57,7 +57,7 @@ echo 'Existing server stopped, if any.'
 
 echo "Starting $OUTPUT_FILE on the VM..."
 if ! ssh "$VM_URL" "sudo nohup java -jar $OUTPUT_FILE > server.out 2>&1 &"; then
-    echo "Error: Failed to start server.jar on the VM."
+    echo "Error: Failed to start $OUTPUT_FILE on the VM."
     exit 1
 fi
 echo 'Server started successfully!'

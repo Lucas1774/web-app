@@ -9,8 +9,8 @@ import lombok.Setter;
 @Getter
 @AllArgsConstructor
 public class User {
-    @JsonProperty("USERNAME")
+    @JsonProperty("username")
     private String username;
-    @JsonProperty("PASSWORD")
+    @JsonProperty("password")
     private String password;
 }

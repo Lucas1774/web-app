@@ -36,13 +36,13 @@ public class DAO {
     }
 
     public void insert(Double number) throws DataAccessException {
-        String sql = "UPDATE my_table SET ans = :number, text_mode = 0 WHERE id = 1";
+        String sql = "UPDATE my_table SET ans = :number, text_mode = FALSE WHERE id = 1";
         MapSqlParameterSource parameters = new MapSqlParameterSource("number", number);
         this.jdbcTemplate.update(sql, parameters);
     }
 
     public void insertString(String text) throws DataAccessException {
-        String sql = "UPDATE my_table SET text = :text, text_mode = 1 WHERE id = 1";
+        String sql = "UPDATE my_table SET text = :text, text_mode = TRUE WHERE id = 1";
         MapSqlParameterSource parameters = new MapSqlParameterSource("text", text);
         this.jdbcTemplate.update(sql, parameters);
     }

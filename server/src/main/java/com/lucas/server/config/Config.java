@@ -3,7 +3,6 @@ package com.lucas.server.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -21,7 +20,7 @@ public class Config {
     List<String> ipAddress;
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+    public CorsFilter corsFilter(CorsConfigurationSource corsConfigurationSource) {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(ipAddress);
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
@@ -29,38 +28,23 @@ public class Config {
         configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
-        return source;
+
+        return new CorsFilter(source);
     }
 
     @Bean
-    @DependsOn("corsConfigurationSource")
-    public CorsFilter corsFilter() {
-        return new CorsFilter(corsConfigurationSource());
-    }
-
-    @Bean
-    @DependsOn("corsFilter")
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf()
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, CorsFilter corsFilter,
+                                                   RateLimitFilter rateLimitingFilter) throws Exception {
+        http.csrf()
                 .disable()
                 .authorizeHttpRequests()
                 .anyRequest().authenticated()
                 .and()
-                .addFilterBefore(corsFilter(), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
                 .httpBasic()
                 .and()
                 .formLogin();
-        return http.build();
-    }
-
-    @Bean
-    @DependsOn("filterChain")
-    public SecurityFilterChain rateLimitFilterChain(HttpSecurity http, RateLimitFilter rateLimitingFilter)
-            throws Exception {
-        http
-                .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class);
-
         return http.build();
     }
 }

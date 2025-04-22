@@ -12,21 +12,21 @@ import lombok.Setter;
 @AllArgsConstructor
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 public class ShoppingItem implements Sortable {
-    @JsonProperty("ID")
+    @JsonProperty("id")
     private int id;
-    @JsonProperty("NAME")
+    @JsonProperty("name")
     private String name;
-    @JsonProperty("CATEGORY_ID")
+    @JsonProperty("categoryId")
     private Integer categoryId;
-    @JsonProperty("CATEGORY")
+    @JsonProperty("category")
     private String category;
-    @JsonProperty("CATEGORY_ORDER")
+    @JsonProperty("categoryOrder")
     private Integer categoryOrder;
-    @JsonProperty("QUANTITY")
+    @JsonProperty("quantity")
     private Integer quantity;
-    @JsonProperty("IS_RARE")
+    @JsonProperty("isRare")
     private Boolean isRare;
-    @JsonProperty("ORDER")
+    @JsonProperty("order")
     private int order;
 
     @Override
