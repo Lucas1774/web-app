@@ -1,0 +1,46 @@
+spring:
+  IPAddress: ${SOME_IP_ADDRESS}
+  security:
+    jwt:
+      secret: secret
+      secure: false
+    user:
+      name: ${SPRING_USER}
+      password: ${SPRING_PASSWORD}
+    admin: ${ADMIN_USERS}
+  docker:
+    compose:
+      enabled: true
+      file: ./docker/dev/compose.yaml
+  datasource:
+    url: jdbc:postgresql://localhost:5432/${DB_NAME}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show-sql: true
+  ai:
+    azure:
+      openai:
+        api-key: ${OPENAI_KEY}
+        endpoint: ${OPENAI_ENDPOINT}
+        chat:
+          options:
+            deployment-name: ${OPENAI_MODEL}
+            temperature: 1
+            maxTokens: 800
+    model:
+      chat: azure-openai
+
+server:
+  port: 8080
+  ssl:
+    enabled: false
+    key-store: classpath:certificates/keystore.jks
+    key-store-password: ${KEY_STORE_PASSWORD}
+    key-store-type: PKCS12

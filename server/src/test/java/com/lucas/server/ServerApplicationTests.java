@@ -1,16 +1,18 @@
 package com.lucas.server;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+@Import(TestcontainersConfiguration.class)
 @SpringBootTest
 class ServerApplicationTests {
 
 	@Test
 	void contextLoads() {
-		assertTrue(true); // useless assertion so Sonar doesn't cry
+		assertTrue(true);
 	}
 
 }

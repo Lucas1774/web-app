@@ -1,11 +1,11 @@
 #!/bin/bash
 
-YAML_FILE="src\main\resources\application-prod.yml"
+ENV_FILE=".env"
 
-KEYSTORE_PASSWORD=$(grep -oP '^.*key-store-password: *\K.*' "$YAML_FILE" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+KEYSTORE_PASSWORD=$(grep -oP '^KEY_STORE_PASSWORD\s*=\s*\K.*' "$ENV_FILE" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
 
 if [ -z "$KEYSTORE_PASSWORD" ]; then
-  echo "Key store password not found in $YAML_FILE"
+  echo "Key store password not found in $ENV_FILE"
   exit 1
 fi
 

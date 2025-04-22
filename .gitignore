@@ -4,11 +4,9 @@
 client/node_modules
 
 # keys
-server/src/main/resources/application.yml
-server/src/main/resources/application-dev.yml
-server/src/main/resources/application-prod.yml
 server/src/main/resources/certificates/keystore.jks
-client/.env
+.env
+!server/docker/dev/.env
 
 # production
 client/build

@@ -5,8 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Random;
 import java.util.stream.Stream;
@@ -14,15 +12,12 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@SpringBootTest
 class SudokuTest {
 
     private static final int NUM_RUNS = 1000;
 
-    @Autowired
-    Random random;
-    @Autowired
-    Generator generator;
+    private final Random random = new Random();
+    private final Generator generator = new Generator(random);
 
     @Test
     void solve() {
