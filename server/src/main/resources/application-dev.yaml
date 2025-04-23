@@ -37,6 +37,10 @@ spring:
     model:
       chat: azure-openai
 
+market-data:
+    api-key: ${ALPHAVANTAGE_KEY}
+    endpoint: ${ALPHAVANTAGE_ENDPOINT}
+
 server:
   port: 8080
   ssl:
