@@ -1,0 +1,142 @@
+package com.lucas.server.components.tradingbot.marketdata.mapper;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lucas.server.common.JsonProcessingException;
+import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+class MarketApiResponseToMarketDataTest {
+
+    private final MarketApiResponseToMarketData mapper = new MarketApiResponseToMarketData(new ObjectMapper());
+
+    @Test
+    void whenMapValidJson_thenReturnMarketData() throws JsonProcessingException {
+        // given
+        String json = """
+                {
+                    "Global Quote": {
+                        "01. symbol": "IBM",
+                        "02. open": "140.5000",
+                        "03. high": "142.0000",
+                        "04. low": "139.5000",
+                        "05. price": "141.2500",
+                        "06. volume": "4832356",
+                        "07. latest trading day": "2023-12-15",
+                        "08. previous close": "140.0000",
+                        "09. change": "1.2500",
+                        "10. change percent": "0.8928%"
+                    }
+                }
+                """;
+
+        // when
+        MarketData result = mapper.map(json);
+
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.getSymbol()).isEqualTo("IBM");
+        assertThat(result.getOpen()).isEqualByComparingTo(BigDecimal.valueOf(140.5000));
+        assertThat(result.getHigh()).isEqualByComparingTo(BigDecimal.valueOf(142.0000));
+        assertThat(result.getLow()).isEqualByComparingTo(BigDecimal.valueOf(139.5000));
+        assertThat(result.getPrice()).isEqualByComparingTo(BigDecimal.valueOf(141.2500));
+        assertThat(result.getVolume()).isEqualByComparingTo(4832356L);
+        assertThat(result.getDate()).isEqualTo(LocalDate.parse("2023-12-15"));
+        assertThat(result.getPreviousClose()).isEqualByComparingTo(BigDecimal.valueOf(140.0000));
+        assertThat(result.getChange()).isEqualByComparingTo(BigDecimal.valueOf(1.2500));
+        assertThat(result.getChangePercent()).isEqualTo("0.8928%");
+    }
+
+    @Test
+    void map_InvalidJson_ThrowsException() {
+        // given
+        String invalidJson = "{ invalid json }";
+
+        // when & then
+        assertThatThrownBy(() -> mapper.map(invalidJson)).isInstanceOf(JsonProcessingException.class);
+    }
+
+    @Test
+    void whenMapAllValidJson_thenReturnMarketDataList() throws JsonProcessingException {
+        // given
+        String json = """
+                {
+                    "Weekly Time Series": {
+                        "2023-12-15": {
+                            "1. open": "140.5000",
+                            "2. high": "142.0000",
+                            "3. low": "139.5000",
+                            "4. close": "141.2500",
+                            "5. volume": "4832356"
+                        },
+                        "2023-12-08": {
+                            "1. open": "139.0000",
+                            "2. high": "141.0000",
+                            "3. low": "138.5000",
+                            "4. close": "140.0000",
+                            "5. volume": "4532356"
+                        }
+                    }
+                }
+                """;
+        String symbol = "IBM";
+
+        // when
+        List<MarketData> result = mapper.mapAll(json, symbol);
+
+        // then
+        assertThat(result).isNotNull().hasSize(2);
+
+        MarketData firstEntry = result.getFirst();
+        assertThat(firstEntry.getSymbol()).isEqualTo(symbol);
+        assertThat(firstEntry.getOpen()).isEqualByComparingTo(BigDecimal.valueOf(140.5000));
+        assertThat(firstEntry.getHigh()).isEqualByComparingTo(BigDecimal.valueOf(142.0000));
+        assertThat(firstEntry.getLow()).isEqualByComparingTo(BigDecimal.valueOf(139.5000));
+        assertThat(firstEntry.getPrice()).isEqualByComparingTo(BigDecimal.valueOf(141.2500));
+        assertThat(firstEntry.getVolume()).isEqualByComparingTo(4832356L);
+        assertThat(firstEntry.getDate()).isEqualTo(LocalDate.parse("2023-12-15"));
+
+        MarketData secondEntry = result.get(1);
+        assertThat(secondEntry.getSymbol()).isEqualTo(symbol);
+        assertThat(secondEntry.getOpen()).isEqualByComparingTo(BigDecimal.valueOf(139.0000));
+        assertThat(secondEntry.getHigh()).isEqualByComparingTo(BigDecimal.valueOf(141.0000));
+        assertThat(secondEntry.getLow()).isEqualByComparingTo(BigDecimal.valueOf(138.5000));
+        assertThat(secondEntry.getPrice()).isEqualByComparingTo(BigDecimal.valueOf(140.0000));
+        assertThat(secondEntry.getVolume()).isEqualByComparingTo(4532356L);
+        assertThat(secondEntry.getDate()).isEqualTo(LocalDate.parse("2023-12-08"));
+    }
+
+    @Test
+    void whenMapAllInvalidJson_thenThrowException() {
+        // given
+        String invalidJson = "{ invalid json }";
+        String symbol = "IBM";
+
+        // when & then
+        assertThatThrownBy(() -> mapper.mapAll(invalidJson, symbol)).isInstanceOf(JsonProcessingException.class);
+    }
+
+    @Test
+    void whenMapAllEmptyTimeSeries_thenReturnEmptyList() throws JsonProcessingException {
+        // given
+        String json = """
+                {
+                    "Weekly Time Series": {
+                    }
+                }
+                """;
+        String symbol = "IBM";
+
+        // when
+        List<MarketData> result = mapper.mapAll(json, symbol);
+
+        // then
+        assertThat(result).isNotNull().isEmpty();
+    }
+}

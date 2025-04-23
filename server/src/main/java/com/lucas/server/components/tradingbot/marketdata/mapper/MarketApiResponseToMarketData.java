@@ -10,6 +10,10 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 @Component
 public class MarketApiResponseToMarketData implements Mapper<String, MarketData> {
@@ -41,4 +45,33 @@ public class MarketApiResponseToMarketData implements Mapper<String, MarketData>
             throw new JsonProcessingException("Error mapping market data", e.getCause());
         }
     }
+
+    public List<MarketData> mapAll(String json, String symbol) throws JsonProcessingException {
+        try {
+            JsonNode series = objectMapper.readTree(json).path("Weekly Time Series");
+
+            List<MarketData> history = new ArrayList<>();
+            Iterator<Map.Entry<String, JsonNode>> fields = series.fields();
+            while (fields.hasNext()) {
+                Map.Entry<String, JsonNode> entry = fields.next();
+                LocalDate date = LocalDate.parse(entry.getKey(), Constants.DATE_FMT);
+                JsonNode data = entry.getValue();
+                MarketData md = new MarketData(
+                        symbol,
+                        new BigDecimal(data.path("1. open").asText()),
+                        new BigDecimal(data.path("2. high").asText()),
+                        new BigDecimal(data.path("3. low").asText()),
+                        new BigDecimal(data.path("4. close").asText()),
+                        data.path("5. volume").asLong(),
+                        date, null, null, null
+                );
+                history.add(md);
+            }
+
+            return history;
+        } catch (Exception e) {
+            throw new JsonProcessingException("Error mapping market data", e.getCause());
+        }
+    }
+
 }

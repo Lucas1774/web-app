@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/market")
 public class MarketDataController {
@@ -32,6 +34,17 @@ public class MarketDataController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
         return ResponseEntity.ok(jpaService.save(entity));
+    }
+
+    @GetMapping("/historic/{symbol}")
+    public ResponseEntity<List<MarketData>> fetchAndSaveHistoric(@PathVariable String symbol) {
+        List<MarketData> entities;
+        try {
+            entities = client.retrieveWeeklySeries(symbol);
+        } catch (JsonProcessingException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+        return ResponseEntity.ok(jpaService.saveAll(entities));
     }
 
 }

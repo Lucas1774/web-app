@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
+
 @Service
 public class MarketDataClient {
 
@@ -30,7 +32,18 @@ public class MarketDataClient {
                 endpoint, symbol, apiKey
         );
         String response = restTemplate.getForObject(url, String.class);
+
         return this.mapper.map(response);
+    }
+
+    public List<MarketData> retrieveWeeklySeries(String symbol) throws JsonProcessingException {
+        String url = String.format(
+                "%s?function=TIME_SERIES_WEEKLY&symbol=%s&apikey=%s",
+                endpoint, symbol, apiKey
+        );
+        String response = restTemplate.getForObject(url, String.class);
+
+        return this.mapper.mapAll(response, symbol);
     }
 
 }

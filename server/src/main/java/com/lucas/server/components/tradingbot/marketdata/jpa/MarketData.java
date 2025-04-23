@@ -3,6 +3,7 @@ package com.lucas.server.components.tradingbot.marketdata.jpa;
 import com.lucas.server.common.jpa.JpaEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
@@ -10,8 +11,10 @@ import java.time.LocalDate;
 
 @Getter
 @Setter
+@NoArgsConstructor
 @Entity
-@Table(name = "market_data")
+@EntityListeners(MarketDataListener.class)
+@Table(name = "market_data", uniqueConstraints = @UniqueConstraint(columnNames = {"symbol", "trade_date"}))
 public class MarketData implements JpaEntity {
 
     @Id
@@ -35,8 +38,8 @@ public class MarketData implements JpaEntity {
 
     private Long volume;
 
-    @Column(name = "last_trading_day")
-    private LocalDate lastTradingDay;
+    @Column(name = "trade_date", nullable = false)
+    private LocalDate date;
 
     @Column(name = "previous_close", precision = 15, scale = 4)
     private BigDecimal previousClose;
@@ -44,21 +47,21 @@ public class MarketData implements JpaEntity {
     @Column(precision = 15, scale = 4)
     private BigDecimal change;
 
-
     @Column(name = "change_percent", length = 8)
     private String changePercent;
 
-    public MarketData(String symbol, BigDecimal open, BigDecimal high, BigDecimal low, BigDecimal price, Long volume,
-                      LocalDate lastTradingDay, BigDecimal previousClose, BigDecimal change, String changePercent) {
+    public MarketData(String symbol, BigDecimal open, BigDecimal high, BigDecimal low, BigDecimal price,
+                      Long volume, LocalDate date, BigDecimal previousClose, BigDecimal change, String changePercent) {
         this.symbol = symbol;
         this.open = open;
         this.high = high;
         this.low = low;
         this.price = price;
         this.volume = volume;
-        this.lastTradingDay = lastTradingDay;
+        this.date = date;
         this.previousClose = previousClose;
         this.change = change;
         this.changePercent = changePercent;
     }
+
 }
