@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -43,7 +44,7 @@ public class MarketDataClient {
         );
         String response = restTemplate.getForObject(url, String.class);
 
-        return this.mapper.mapAll(response, symbol);
+        return this.mapper.mapAll(response, symbol).stream().sorted(Comparator.comparing(MarketData::getDate)).toList();
     }
 
 }

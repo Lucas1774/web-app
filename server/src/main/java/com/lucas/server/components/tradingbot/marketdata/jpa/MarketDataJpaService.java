@@ -1,6 +1,7 @@
 package com.lucas.server.components.tradingbot.marketdata.jpa;
 
 import com.lucas.server.common.jpa.JpaService;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -31,8 +32,26 @@ public class MarketDataJpaService implements JpaService<MarketData> {
         this.repository.deleteAll();
     }
 
+    @Override
+    public List<MarketData> findAll() {
+        return repository.findAll();
+    }
+
     public Optional<MarketData> findTopBySymbolAndDateBeforeOrderByDateDesc(String symbol, LocalDate date) {
         return this.repository.findTopBySymbolAndDateBeforeOrderByDateDesc(symbol, date);
+    }
+
+    public List<MarketData> saveAllIgnoringDuplicates(List<MarketData> entities) {
+        return entities.stream()
+                .map(md -> {
+                    try {
+                        return Optional.of(repository.save(md));
+                    } catch (DataIntegrityViolationException e) {
+                        return Optional.<MarketData>empty();
+                    }
+                })
+                .flatMap(Optional::stream)
+                .toList();
     }
 
 }

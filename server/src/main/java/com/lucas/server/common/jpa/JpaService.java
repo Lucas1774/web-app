@@ -9,4 +9,6 @@ public interface JpaService<E extends JpaEntity> {
     List<E> saveAll(Iterable<E> entities);
 
     void deleteAll();
+
+    List<E> findAll();
 }
