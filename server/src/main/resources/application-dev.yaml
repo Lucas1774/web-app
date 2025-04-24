@@ -38,8 +38,12 @@ spring:
       chat: azure-openai
 
 market-data:
-    api-key: ${ALPHAVANTAGE_KEY}
-    endpoint: ${ALPHAVANTAGE_ENDPOINT}
+  api-key: ${ALPHAVANTAGE_KEY}
+  endpoint: ${ALPHAVANTAGE_ENDPOINT}
+
+market-news:
+  api-key: ${FINNHUB_KEY}
+  endpoint: ${FINNHUB_ENDPOINT}
 
 server:
   port: 8080
