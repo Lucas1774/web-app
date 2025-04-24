@@ -6,6 +6,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.hibernate.annotations.Array;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 
@@ -14,6 +17,7 @@ import java.time.LocalDateTime;
 @Accessors(chain = true)
 @NoArgsConstructor
 @Entity
+@EntityListeners(NewsListener.class)
 @Table(name = "news")
 public class News implements JpaEntity {
 
@@ -47,6 +51,11 @@ public class News implements JpaEntity {
 
     @Column(name = "image_url", length = 512)
     private String image;
+
+    @Column(name = "embedding")
+    @JdbcTypeCode(SqlTypes.VECTOR)
+    @Array(length = 3072)
+    private float[] embeddings;
 
     public News(Long externalId, String symbol, LocalDateTime date, String headline,
                 String summary, String url, String source, String category, String image) {

@@ -12,4 +12,6 @@ public interface JpaService<E extends JpaEntity> {
     void deleteAll();
 
     List<E> findAll();
+
+    Optional<E> findById(String id);
 }

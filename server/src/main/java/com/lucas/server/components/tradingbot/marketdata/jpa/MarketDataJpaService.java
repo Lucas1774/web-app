@@ -36,7 +36,12 @@ public class MarketDataJpaService implements JpaService<MarketData> {
 
     @Override
     public List<MarketData> findAll() {
-        return repository.findAll();
+        return this.repository.findAll();
+    }
+
+    @Override
+    public Optional<MarketData> findById(String id) {
+        return this.repository.findById(Long.valueOf(id));
     }
 
     public Optional<MarketData> findTopBySymbolAndDateBeforeOrderByDateDesc(String symbol, LocalDate date) {

@@ -37,4 +37,9 @@ public class NewsJpaService implements JpaService<News> {
     public List<News> findAll() {
         return repository.findAll();
     }
+
+    @Override
+    public Optional<News> findById(String id) {
+        return this.repository.findById(Long.valueOf(id));
+    }
 }
