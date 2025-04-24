@@ -16,9 +16,9 @@ public class MarketDataKpiGenerator {
         this.service = service;
     }
 
-    public void computeDerivedFields(MarketData md) {
+    public MarketData computeDerivedFields(MarketData md) {
         this.service.findTopBySymbolAndDateBeforeOrderByDateDesc(md.getSymbol(), md.getDate())
-                .ifPresentOrElse(previous -> {
+                .ifPresent(previous -> {
                     BigDecimal previousPrice = previous.getPrice();
                     md.setPreviousClose(previousPrice);
                     BigDecimal change = md.getPrice().subtract(previousPrice);
@@ -29,6 +29,8 @@ public class MarketDataKpiGenerator {
                                 .setScale(2, RoundingMode.HALF_UP) + "%";
                         md.setChangePercent(percentage);
                     }
-                }, () -> {/* Do nothing */});
+                });
+
+        return md;
     }
 }
