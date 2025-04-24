@@ -12,7 +12,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class MarketApiResponseToMarketDataTest {
+class AlphavantageMarketResponseMapperTest {
 
     private final AlphavantageMarketResponseMapper mapper = new AlphavantageMarketResponseMapper();
 
