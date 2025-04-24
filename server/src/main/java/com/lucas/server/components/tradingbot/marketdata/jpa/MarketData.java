@@ -63,5 +63,4 @@ public class MarketData implements JpaEntity {
         this.change = change;
         this.changePercent = changePercent;
     }
-
 }

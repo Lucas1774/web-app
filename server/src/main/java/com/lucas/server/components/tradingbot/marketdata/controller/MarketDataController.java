@@ -46,5 +46,4 @@ public class MarketDataController {
         }
         return ResponseEntity.ok(jpaService.saveAllIgnoringDuplicates(entities));
     }
-
 }

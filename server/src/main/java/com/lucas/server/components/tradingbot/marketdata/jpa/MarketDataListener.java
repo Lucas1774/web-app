@@ -26,5 +26,4 @@ public class MarketDataListener implements ApplicationContextAware {
         }
         kpiGenerator.computeDerivedFields(md);
     }
-
 }

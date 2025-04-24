@@ -10,9 +10,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @SpringBootTest
 class ServerApplicationTests {
 
-	@Test
-	void contextLoads() {
-		assertTrue(true);
-	}
-
+    @Test
+    void contextLoads() {
+        assertTrue(true);
+    }
 }

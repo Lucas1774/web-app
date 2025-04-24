@@ -12,5 +12,4 @@ public class OpenAIConfig {
     OpenAIClient openAIClient(OpenAIClientBuilder builder) {
         return builder.buildClient();
     }
-
 }

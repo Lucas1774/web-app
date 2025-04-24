@@ -46,5 +46,4 @@ public class MarketDataClient {
 
         return this.mapper.mapAll(response, symbol).stream().sorted(Comparator.comparing(MarketData::getDate)).toList();
     }
-
 }

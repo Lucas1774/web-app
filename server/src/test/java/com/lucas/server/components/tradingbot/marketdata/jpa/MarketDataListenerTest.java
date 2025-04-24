@@ -46,5 +46,4 @@ class MarketDataListenerTest {
         assertThat(current.getChangePercent()).isEqualTo("3.33%");
         verify(kpiGenerator, times(1)).computeDerivedFields(current);
     }
-
 }

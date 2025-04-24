@@ -73,5 +73,4 @@ public class MarketApiResponseToMarketData implements Mapper<String, MarketData>
             throw new JsonProcessingException("Error mapping market data", e.getCause());
         }
     }
-
 }

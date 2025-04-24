@@ -95,5 +95,4 @@ class MarketDataJpaServiceTest {
                         tuple(symbolB, date2, 155.0)
                 );
     }
-
 }

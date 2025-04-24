@@ -53,5 +53,4 @@ public class MarketDataJpaService implements JpaService<MarketData> {
                 .flatMap(Optional::stream)
                 .toList();
     }
-
 }
