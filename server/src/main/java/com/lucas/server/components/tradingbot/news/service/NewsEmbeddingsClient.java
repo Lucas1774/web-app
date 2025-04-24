@@ -2,7 +2,7 @@ package com.lucas.server.components.tradingbot.news.service;
 
 import com.azure.ai.openai.OpenAIClient;
 import com.azure.ai.openai.models.EmbeddingsOptions;
-
+import com.lucas.server.common.ClientException;
 import com.lucas.server.components.tradingbot.news.jpa.News;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -22,7 +22,7 @@ public class NewsEmbeddingsClient {
         this.model = model;
     }
 
-    public News embed(News news) {
+    public News embed(News news) throws ClientException {
         String contentToEmbed = news.getHeadline();
         if (news.getSummary() != null && !news.getSummary().isEmpty()) {
             contentToEmbed += " " + news.getSummary();
@@ -30,19 +30,23 @@ public class NewsEmbeddingsClient {
         EmbeddingsOptions options = new EmbeddingsOptions(List.of(contentToEmbed))
                 .setModel(model);
 
-        float[] embeddings = client.getEmbeddings(model, options)
-                .getData()
-                .stream()
-                .findFirst()
-                .map(item -> {
-                    List<Float> vector = item.getEmbedding();
-                    float[] array = new float[vector.size()];
-                    IntStream.range(0, vector.size())
-                            .forEach(i -> array[i] = vector.get(i));
-                    return array;
-                })
-                .orElse(new float[0]);
+        try {
+            float[] embeddings = client.getEmbeddings(model, options)
+                    .getData()
+                    .stream()
+                    .findFirst()
+                    .map(item -> {
+                        List<Float> vector = item.getEmbedding();
+                        float[] array = new float[vector.size()];
+                        IntStream.range(0, vector.size())
+                                .forEach(i -> array[i] = vector.get(i));
+                        return array;
+                    })
+                    .orElse(new float[0]);
 
-        return news.setEmbeddings(embeddings);
+            return news.setEmbeddings(embeddings);
+        } catch (Exception e) {
+            throw new ClientException(e);
+        }
     }
 }
