@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Import;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -94,5 +95,26 @@ class MarketDataJpaServiceTest {
                         tuple(symbolA, date2, 150.0),
                         tuple(symbolB, date2, 155.0)
                 );
+    }
+
+    @Test
+    void save_shouldReturnOptionalEmptyForDuplicate() {
+        // given:
+        MarketData md = new MarketData();
+        md.setSymbol("AAPL");
+        md.setDate(LocalDate.of(2023, 12, 15));
+        md.setPrice(BigDecimal.valueOf(150.00));
+
+        MarketData dup = new MarketData();
+        dup.setSymbol("AAPL");
+        dup.setDate(LocalDate.of(2023, 12, 15));
+        dup.setPrice(BigDecimal.valueOf(150.00));
+
+        // when:
+        marketDataJpaService.save(md);
+        Optional<MarketData> result = marketDataJpaService.save(dup);
+
+        // then:
+        assertThat(result).isEmpty();
     }
 }
