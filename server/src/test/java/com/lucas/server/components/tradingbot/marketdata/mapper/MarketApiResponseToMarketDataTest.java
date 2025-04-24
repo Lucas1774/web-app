@@ -14,10 +14,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class MarketApiResponseToMarketDataTest {
 
-    private final MarketApiResponseToMarketData mapper = new MarketApiResponseToMarketData(new ObjectMapper());
+    private final AlphavantageMarketResponseMapper mapper = new AlphavantageMarketResponseMapper();
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
 
     @Test
-    void whenMapValidJson_thenReturnMarketData() throws JsonProcessingException {
+    void whenMapValidJson_thenReturnMarketData() throws JsonProcessingException, com.fasterxml.jackson.core.JsonProcessingException {
         // given
         String json = """
                 {
@@ -37,7 +40,7 @@ class MarketApiResponseToMarketDataTest {
                 """;
 
         // when
-        MarketData result = mapper.map(json);
+        MarketData result = mapper.map(objectMapper.readTree(json));
 
         // then
         assertThat(result).isNotNull();
@@ -54,16 +57,16 @@ class MarketApiResponseToMarketDataTest {
     }
 
     @Test
-    void map_InvalidJson_ThrowsException() {
+    void whenMapInvalidJson_thenThrowException() {
         // given
-        String invalidJson = "{ invalid json }";
+        String invalidJson = "{}";
 
         // when & then
-        assertThatThrownBy(() -> mapper.map(invalidJson)).isInstanceOf(JsonProcessingException.class);
+        assertThatThrownBy(() -> mapper.map(objectMapper.readTree(invalidJson))).isInstanceOf(JsonProcessingException.class);
     }
 
     @Test
-    void whenMapAllValidJson_thenReturnMarketDataList() throws JsonProcessingException {
+    void whenMapAllValidJson_thenReturnMarketDataList() throws JsonProcessingException, com.fasterxml.jackson.core.JsonProcessingException {
         // given
         String json = """
                 {
@@ -88,7 +91,7 @@ class MarketApiResponseToMarketDataTest {
         String symbol = "IBM";
 
         // when
-        List<MarketData> result = mapper.mapAll(json, symbol);
+        List<MarketData> result = mapper.mapAll(objectMapper.readTree(json), symbol);
 
         // then
         assertThat(result).isNotNull().hasSize(2);
@@ -113,17 +116,7 @@ class MarketApiResponseToMarketDataTest {
     }
 
     @Test
-    void whenMapAllInvalidJson_thenThrowException() {
-        // given
-        String invalidJson = "{ invalid json }";
-        String symbol = "IBM";
-
-        // when & then
-        assertThatThrownBy(() -> mapper.mapAll(invalidJson, symbol)).isInstanceOf(JsonProcessingException.class);
-    }
-
-    @Test
-    void whenMapAllEmptyTimeSeries_thenReturnEmptyList() throws JsonProcessingException {
+    void whenMapAllEmptyTimeSeries_thenReturnEmptyList() throws JsonProcessingException, com.fasterxml.jackson.core.JsonProcessingException {
         // given
         String json = """
                 {
@@ -134,7 +127,7 @@ class MarketApiResponseToMarketDataTest {
         String symbol = "IBM";
 
         // when
-        List<MarketData> result = mapper.mapAll(json, symbol);
+        List<MarketData> result = mapper.mapAll(objectMapper.readTree(json), symbol);
 
         // then
         assertThat(result).isNotNull().isEmpty();

@@ -1,7 +1,6 @@
 package com.lucas.server.components.tradingbot.marketdata.mapper;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lucas.server.common.Constants;
 import com.lucas.server.common.JsonProcessingException;
 import com.lucas.server.common.Mapper;
@@ -9,6 +8,7 @@ import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -16,18 +16,12 @@ import java.util.List;
 import java.util.Map;
 
 @Component
-public class MarketApiResponseToMarketData implements Mapper<String, MarketData> {
-
-    private final ObjectMapper objectMapper;
-
-    public MarketApiResponseToMarketData(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
+public class AlphavantageMarketResponseMapper implements Mapper<JsonNode, MarketData> {
 
     @Override
-    public MarketData map(String json) throws JsonProcessingException {
+    public MarketData map(JsonNode json) throws JsonProcessingException {
         try {
-            JsonNode quote = objectMapper.readTree(json).path("Global Quote");
+            JsonNode quote = json.path("Global Quote");
 
             String symbol = quote.path("01. symbol").asText();
             BigDecimal open = new BigDecimal(quote.path("02. open").asText());
@@ -42,13 +36,13 @@ public class MarketApiResponseToMarketData implements Mapper<String, MarketData>
 
             return new MarketData(symbol, open, high, low, price, volume, lastTradingDay, previousClose, change, changePercent);
         } catch (Exception e) {
-            throw new JsonProcessingException("Error mapping market data", e.getCause());
+            throw new JsonProcessingException(MessageFormat.format(Constants.JSON_MAPPING_ERROR, "market"), e.getCause());
         }
     }
 
-    public List<MarketData> mapAll(String json, String symbol) throws JsonProcessingException {
+    public List<MarketData> mapAll(JsonNode json, String symbol) throws JsonProcessingException {
         try {
-            JsonNode series = objectMapper.readTree(json).path("Weekly Time Series");
+            JsonNode series = json.path("Weekly Time Series");
 
             List<MarketData> history = new ArrayList<>();
             Iterator<Map.Entry<String, JsonNode>> fields = series.fields();
@@ -70,7 +64,7 @@ public class MarketApiResponseToMarketData implements Mapper<String, MarketData>
 
             return history;
         } catch (Exception e) {
-            throw new JsonProcessingException("Error mapping market data", e.getCause());
+            throw new JsonProcessingException(MessageFormat.format(Constants.JSON_MAPPING_ERROR, "market"), e.getCause());
         }
     }
 }

@@ -5,12 +5,14 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Getter
 @Setter
+@Accessors(chain = true)
 @NoArgsConstructor
 @Entity
 @EntityListeners(MarketDataListener.class)
@@ -62,5 +64,14 @@ public class MarketData implements JpaEntity {
         this.previousClose = previousClose;
         this.change = change;
         this.changePercent = changePercent;
+    }
+
+    @Override
+    public String toString() {
+        return "MarketData{" +
+                "id=" + id +
+                ", symbol='" + symbol + '\'' +
+                ", date=" + date +
+                '}';
     }
 }

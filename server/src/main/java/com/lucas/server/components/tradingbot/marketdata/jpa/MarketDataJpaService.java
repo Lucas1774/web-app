@@ -1,6 +1,9 @@
 package com.lucas.server.components.tradingbot.marketdata.jpa;
 
+import com.lucas.server.common.Constants;
 import com.lucas.server.common.jpa.JpaService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +15,7 @@ import java.util.Optional;
 public class MarketDataJpaService implements JpaService<MarketData> {
 
     private final MarketDataRepository repository;
+    private static final Logger logger = LoggerFactory.getLogger(MarketDataJpaService.class);
 
     public MarketDataJpaService(MarketDataRepository repository) {
         this.repository = repository;
@@ -19,7 +23,12 @@ public class MarketDataJpaService implements JpaService<MarketData> {
 
     @Override
     public MarketData save(MarketData entity) {
-        return this.repository.save(entity);
+        try {
+            return this.repository.save(entity);
+        } catch (DataIntegrityViolationException e) {
+            logger.warn(Constants.RECORD_IGNORED_BREAKS_UNIQUENESS_CONSTRAIN_WARN, entity, e);
+            return null;
+        }
     }
 
     @Override
@@ -47,6 +56,7 @@ public class MarketDataJpaService implements JpaService<MarketData> {
                     try {
                         return Optional.of(repository.save(md));
                     } catch (DataIntegrityViolationException e) {
+                        logger.warn(Constants.RECORD_IGNORED_BREAKS_UNIQUENESS_CONSTRAIN_WARN, md, e);
                         return Optional.<MarketData>empty();
                     }
                 })
