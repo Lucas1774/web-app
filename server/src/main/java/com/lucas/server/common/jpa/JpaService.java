@@ -1,10 +1,11 @@
 package com.lucas.server.common.jpa;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface JpaService<E extends JpaEntity> {
 
-    E save(E entity);
+    Optional<E> save(E entity);
 
     List<E> saveAll(Iterable<E> entities);
 

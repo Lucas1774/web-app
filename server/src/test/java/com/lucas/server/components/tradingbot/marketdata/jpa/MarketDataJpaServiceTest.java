@@ -68,7 +68,7 @@ class MarketDataJpaServiceTest {
         valid.setDate(date2);
         valid.setPrice(new BigDecimal("155.0000"));
 
-        List<MarketData> result = marketDataJpaService.saveAllIgnoringDuplicates(List.of(duplicate, valid));
+        List<MarketData> result = marketDataJpaService.saveAll(List.of(duplicate, valid));
 
         // then: only the valid new record is returned, compare as double
         assertThat(result)

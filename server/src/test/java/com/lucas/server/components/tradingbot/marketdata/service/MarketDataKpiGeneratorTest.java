@@ -52,7 +52,7 @@ class MarketDataKpiGeneratorTest {
         previousData.setPrice(BigDecimal.valueOf(140.00));
 
         // when
-        marketDataJpaService.saveAllIgnoringDuplicates(List.of(previousData, currentData));
+        marketDataJpaService.saveAll(List.of(previousData, currentData));
         kpiGenerator.computeDerivedFields(currentData);
 
         // then
@@ -74,7 +74,7 @@ class MarketDataKpiGeneratorTest {
         currentData.setPrice(BigDecimal.valueOf(150.00));
 
         // when
-        marketDataJpaService.saveAllIgnoringDuplicates(List.of(currentData));
+        marketDataJpaService.saveAll(List.of(currentData));
         kpiGenerator.computeDerivedFields(currentData);
 
         // then
@@ -102,7 +102,7 @@ class MarketDataKpiGeneratorTest {
         previousData.setPrice(BigDecimal.ZERO);
 
         // when
-        marketDataJpaService.saveAllIgnoringDuplicates(List.of(previousData, currentData));
+        marketDataJpaService.saveAll(List.of(previousData, currentData));
         kpiGenerator.computeDerivedFields(currentData);
 
         // then

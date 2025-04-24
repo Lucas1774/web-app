@@ -1,10 +1,7 @@
 package com.lucas.server.components.tradingbot.marketdata.jpa;
 
-import com.lucas.server.common.Constants;
 import com.lucas.server.common.jpa.JpaService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.dao.DataIntegrityViolationException;
+import com.lucas.server.common.jpa.UniqueConstraintWearyJpaServiceDelegate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -15,25 +12,21 @@ import java.util.Optional;
 public class MarketDataJpaService implements JpaService<MarketData> {
 
     private final MarketDataRepository repository;
-    private static final Logger logger = LoggerFactory.getLogger(MarketDataJpaService.class);
+    private final UniqueConstraintWearyJpaServiceDelegate<MarketDataRepository, MarketData> delegate;
 
-    public MarketDataJpaService(MarketDataRepository repository) {
+    public MarketDataJpaService(MarketDataRepository repository, UniqueConstraintWearyJpaServiceDelegate<MarketDataRepository, MarketData> delegate) {
         this.repository = repository;
+        this.delegate = delegate;
     }
 
     @Override
-    public MarketData save(MarketData entity) {
-        try {
-            return this.repository.save(entity);
-        } catch (DataIntegrityViolationException e) {
-            logger.warn(Constants.RECORD_IGNORED_BREAKS_UNIQUENESS_CONSTRAIN_WARN, entity, e);
-            return null;
-        }
+    public Optional<MarketData> save(MarketData entity) {
+        return this.delegate.save(repository, entity);
     }
 
     @Override
     public List<MarketData> saveAll(Iterable<MarketData> entities) {
-        return this.repository.saveAll(entities);
+        return this.delegate.saveAllIgnoringDuplicates(this.repository, entities);
     }
 
     @Override
@@ -48,19 +41,5 @@ public class MarketDataJpaService implements JpaService<MarketData> {
 
     public Optional<MarketData> findTopBySymbolAndDateBeforeOrderByDateDesc(String symbol, LocalDate date) {
         return this.repository.findTopBySymbolAndDateBeforeOrderByDateDesc(symbol, date);
-    }
-
-    public List<MarketData> saveAllIgnoringDuplicates(List<MarketData> entities) {
-        return entities.stream()
-                .map(md -> {
-                    try {
-                        return Optional.of(repository.save(md));
-                    } catch (DataIntegrityViolationException e) {
-                        logger.warn(Constants.RECORD_IGNORED_BREAKS_UNIQUENESS_CONSTRAIN_WARN, md, e);
-                        return Optional.<MarketData>empty();
-                    }
-                })
-                .flatMap(Optional::stream)
-                .toList();
     }
 }

@@ -46,7 +46,7 @@ public class MarketDataController {
         } catch (JsonProcessingException | HttpClientErrorException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-        jpaService.saveAllIgnoringDuplicates(entities);
+        jpaService.saveAll(entities);
         return ResponseEntity.ok(entities);
     }
 }
