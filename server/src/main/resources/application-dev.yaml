@@ -1,3 +1,6 @@
+security:
+  ip-address: http://localhost
+
 spring:
   IPAddress: ${SOME_IP_ADDRESS}
   security:
