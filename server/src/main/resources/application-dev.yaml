@@ -24,7 +24,6 @@ spring:
       ddl-auto: update
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
     show-sql: true
   ai:
@@ -32,6 +31,9 @@ spring:
       openai:
         api-key: ${OPENAI_KEY}
         endpoint: ${OPENAI_ENDPOINT}
+        embeddings:
+          options:
+            deployment-name: ${OPENAI_EMBEDDINGS_MODEL}
         chat:
           options:
             deployment-name: ${OPENAI_MODEL}
