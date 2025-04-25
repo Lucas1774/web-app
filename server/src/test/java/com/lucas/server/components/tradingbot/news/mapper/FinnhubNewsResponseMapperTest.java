@@ -16,7 +16,6 @@ import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 class FinnhubNewsResponseMapperTest {
 
     private final FinnhubNewsResponseMapper mapper = new FinnhubNewsResponseMapper();
-
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test

@@ -9,11 +9,13 @@ import org.testcontainers.utility.DockerImageName;
 @TestConfiguration(proxyBeanMethods = false)
 public class TestcontainersConfiguration {
 
+    @SuppressWarnings("resource")
+    private static final PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer<>(DockerImageName.parse("pgvector/pgvector:pg17"))
+            .withInitScript("init.sql");
+
     @Bean
     @ServiceConnection
-    @SuppressWarnings("resource")
     PostgreSQLContainer<?> postgresContainer() {
-        return new PostgreSQLContainer<>(DockerImageName.parse("pgvector/pgvector:pg17"))
-                .withInitScript("init.sql");
+        return postgresContainer;
     }
 }

@@ -22,7 +22,6 @@ import static org.mockito.Mockito.verify;
 @Import(TestcontainersConfiguration.class)
 class MarketDataKpiGeneratorTest {
 
-    @Autowired
     @MockitoSpyBean
     MarketDataJpaService marketDataJpaService;
 

@@ -15,9 +15,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class AlphavantageMarketResponseMapperTest {
 
     private final AlphavantageMarketResponseMapper mapper = new AlphavantageMarketResponseMapper();
-
     private final ObjectMapper objectMapper = new ObjectMapper();
-
 
     @Test
     void whenMapValidJson_thenReturnMarketData() throws JsonProcessingException, com.fasterxml.jackson.core.JsonProcessingException {
