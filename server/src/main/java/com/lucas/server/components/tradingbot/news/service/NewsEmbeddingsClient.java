@@ -43,8 +43,14 @@ public class NewsEmbeddingsClient {
                         return array;
                     })
                     .orElse(new float[0]);
+            if (embeddings.length > 0) {
+                Thread.sleep(3000);
+            }
 
             return news.setEmbeddings(embeddings);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return news;
         } catch (Exception e) {
             throw new ClientException(e);
         }
