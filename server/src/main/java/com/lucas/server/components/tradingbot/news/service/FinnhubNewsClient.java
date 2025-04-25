@@ -18,16 +18,15 @@ public class FinnhubNewsClient {
 
     private final FinnhubNewsResponseMapper mapper;
     private final HttpRequestClient httpRequestClient;
+    private final String endpoint;
+    private final String apiKey;
 
-    @Value("${market-news.endpoint}")
-    String endpoint;
-
-    @Value("${market-news.api-key}")
-    String apiKey;
-
-    public FinnhubNewsClient(FinnhubNewsResponseMapper mapper, HttpRequestClient httpRequestClient) {
+    public FinnhubNewsClient(FinnhubNewsResponseMapper mapper, HttpRequestClient httpRequestClient,
+                             @Value("${market-news.endpoint}") String endpoint, @Value("${market-news.api-key}") String apiKey) {
         this.httpRequestClient = httpRequestClient;
         this.mapper = mapper;
+        this.endpoint = endpoint;
+        this.apiKey = apiKey;
     }
 
     public List<News> retrieveLatestNews(String symbol) throws JsonProcessingException, ClientException {

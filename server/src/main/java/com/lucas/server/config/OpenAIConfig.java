@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 public class OpenAIConfig {
 
     @Bean
-    OpenAIClient openAIClient(OpenAIClientBuilder builder) {
+    public OpenAIClient openAIClient(OpenAIClientBuilder builder) {
         return builder.buildClient();
     }
 }

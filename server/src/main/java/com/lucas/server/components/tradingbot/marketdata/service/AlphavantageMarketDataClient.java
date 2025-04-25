@@ -18,16 +18,15 @@ public class AlphavantageMarketDataClient {
 
     private final AlphavantageMarketResponseMapper mapper;
     private final HttpRequestClient httpRequestClient;
+    private final String endpoint;
+    private final String apiKey;
 
-    @Value("${market-data.endpoint}")
-    String endpoint;
-
-    @Value("${market-data.api-key}")
-    String apiKey;
-
-    public AlphavantageMarketDataClient(AlphavantageMarketResponseMapper mapper, HttpRequestClient httpRequestClient) {
+    public AlphavantageMarketDataClient(AlphavantageMarketResponseMapper mapper, HttpRequestClient httpRequestClient,
+                                        @Value("${market-data.endpoint}") String endpoint, @Value("${market-data.api-key}") String apiKey) {
         this.httpRequestClient = httpRequestClient;
         this.mapper = mapper;
+        this.endpoint = endpoint;
+        this.apiKey = apiKey;
     }
 
     public MarketData retrieveMarketData(String symbol) throws JsonProcessingException, ClientException {
