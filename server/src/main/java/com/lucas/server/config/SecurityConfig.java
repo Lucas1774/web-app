@@ -20,7 +20,7 @@ public class SecurityConfig {
 
     private final List<String> ipAddress;
 
-    public SecurityConfig(@Value("${spring.IPAddress}") List<String> ipAddress) {
+    public SecurityConfig(@Value("${security.ip-address}") List<String> ipAddress) {
         this.ipAddress = ipAddress;
     }
 

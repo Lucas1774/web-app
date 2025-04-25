@@ -18,6 +18,8 @@ target/
 !server/**/src/main/**/target/
 !server/**/src/test/**/target/
 
+V0_update_passwords.sql
+
 # misc
 .vscode/
 .idea/

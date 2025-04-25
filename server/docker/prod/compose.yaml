@@ -1,0 +1,52 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - ../docker/prod/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - postgres:/var/lib/postgresql/data
+
+  app:
+    build:
+      context: ../..
+      dockerfile: docker/prod/Dockerfile
+    depends_on:
+      - postgres
+    ports:
+      - "443:443"
+    environment:
+      SOME_IP_ADDRESS: ${SOME_IP_ADDRESS}
+      KEY_STORE_PASSWORD: ${KEY_STORE_PASSWORD}
+
+      ADMIN_USERS: ${ADMIN_USERS}
+
+      SPRING_JWT_SECRET: ${SPRING_JWT_SECRET}
+      SPRING_PROFILE: ${SPRING_PROFILE}
+      SPRING_USER: ${SPRING_USER}
+      SPRING_PASSWORD: ${SPRING_PASSWORD}
+
+      DB_NAME: ${DB_NAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_USERNAME: ${DB_USERNAME}
+      
+      OPENAI_KEY: ${OPENAI_KEY}
+      OPENAI_ENDPOINT: ${OPENAI_ENDPOINT}
+      OPENAI_MODEL: ${OPENAI_MODEL}
+      OPENAI_EMBEDDINGS_MODEL: ${OPENAI_EMBEDDINGS_MODEL}
+      
+      ALPHAVANTAGE_ENDPOINT: ${ALPHAVANTAGE_ENDPOINT}
+      ALPHAVANTAGE_KEY: ${ALPHAVANTAGE_KEY}
+      
+      FINNHUB_KEY: ${FINNHUB_KEY}
+      FINNHUB_ENDPOINT: ${FINNHUB_ENDPOINT}
+
+    restart: on-failure
+
+volumes:
+  postgres:

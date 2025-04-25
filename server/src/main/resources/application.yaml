@@ -1,5 +1,39 @@
+security:
+  ip-address: ${SOME_IP_ADDRESS}
+
 spring:
   application:
     name: server
   profiles:
-    active: dev
+    active: ${SPRING_PROFILE}
+  security:
+    user:
+      name: ${SPRING_USER}
+      password: ${SPRING_PASSWORD}
+    admin: ${ADMIN_USERS}
+  datasource:
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  ai:
+    azure:
+      openai:
+        api-key: ${OPENAI_KEY}
+        endpoint: ${OPENAI_ENDPOINT}
+        embeddings:
+          options:
+            deployment-name: ${OPENAI_EMBEDDINGS_MODEL}
+        chat:
+          options:
+            deployment-name: ${OPENAI_MODEL}
+            temperature: 1
+            maxTokens: 800
+    model:
+      chat: azure-openai
+
+market-data:
+  api-key: ${ALPHAVANTAGE_KEY}
+  endpoint: ${ALPHAVANTAGE_ENDPOINT}
+
+market-news:
+  api-key: ${FINNHUB_KEY}
+  endpoint: ${FINNHUB_ENDPOINT}
