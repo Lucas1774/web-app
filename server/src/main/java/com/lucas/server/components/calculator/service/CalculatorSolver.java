@@ -1,10 +1,10 @@
-package com.lucas.server.components.calculator;
+package com.lucas.server.components.calculator.service;
 
 import net.objecthunter.exp4j.ExpressionBuilder;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
-public class Solver {
+@Component
+public class CalculatorSolver {
     public String solveExpression(String expression) {
         try {
             return String.valueOf(Double.parseDouble(expression));

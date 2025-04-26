@@ -6,10 +6,11 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 public class Sudoku {
+
     public static final int SIZE = 9;
-    protected static final int[] DIGITS = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+    public static final int[] DIGITS = {1, 2, 3, 4, 5, 6, 7, 8, 9};
     public static final int NUMBER_OF_CELLS = 81;
-    private int[] rawData = new int[NUMBER_OF_CELLS];
+    private int[] rawData;
 
     private Sudoku(int[] rawData) {
         this.rawData = rawData.clone();
@@ -198,7 +199,7 @@ public class Sudoku {
      * Check block acceptance only after checking row and column acceptance since it
      * is considerably slower
      */
-    boolean acceptsNumberInPlace(int place, int digit) {
+    public boolean acceptsNumberInPlace(int place, int digit) {
         int rowIndexOffset = place / SIZE * SIZE;
         int columnIndex = place % SIZE;
         for (int i = 0; i < SIZE; i++) {

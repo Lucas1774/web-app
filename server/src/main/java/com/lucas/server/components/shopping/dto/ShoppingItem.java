@@ -1,4 +1,4 @@
-package com.lucas.server.model;
+package com.lucas.server.components.shopping.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;

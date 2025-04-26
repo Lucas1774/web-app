@@ -58,7 +58,7 @@ const Sudoku = () => {
                 await new Promise(resolve => setTimeout(resolve, 200));
             }
         }
-        get(`/check/sudoku?initialSudoku=${initialSudoku}&currentSudoku=${sudoku}`)
+        get(`/sudoku/check/sudoku?initialSudoku=${initialSudoku}&currentSudoku=${sudoku}`)
             .then(response => {
                 if (response.data === 0 || response.data === 1) {
                     let color = response.data === 1 ? "green" : "red";
@@ -84,7 +84,7 @@ const Sudoku = () => {
         let params = generateOrFetch === "generate" ? `?difficulty=${difficulty}` : "";
         hideEverything();
         setIsLoading(true);
-        get(`/${generateOrFetch}/sudoku${params}`)
+        get(`/sudoku/${generateOrFetch}/sudoku${params}`)
             .then(response => {
                 if (response.data.match(/^\d{81}$/)) {
                     setSudoku(response.data);
@@ -146,7 +146,7 @@ const Sudoku = () => {
     const solve = useCallback(() => {
         hideEverything();
         setIsLoading(true);
-        get(`/solve/sudoku?sudoku=${initialSudoku}`)
+        get(`/sudoku/solve/sudoku?sudoku=${initialSudoku}`)
             .then(response => {
                 if (response.data.match(/^\d{81}$/)) {
                     setSudoku(response.data);
@@ -250,7 +250,7 @@ const Sudoku = () => {
     const sendFile = (content) => {
         hideEverything();
         setIsLoading(true);
-        post("/upload/sudokus", content)
+        post("/sudoku/upload/sudokus", content)
             .then((response) => {
                 if (response.data === 1) {
                     responseMessage.current = "Successfully uploaded!";

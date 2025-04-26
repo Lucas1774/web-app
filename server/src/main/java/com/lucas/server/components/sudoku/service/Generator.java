@@ -1,6 +1,7 @@
-package com.lucas.server.components.sudoku;
+package com.lucas.server.components.sudoku.service;
 
-import org.springframework.stereotype.Service;
+import com.lucas.server.components.sudoku.Sudoku;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -8,9 +9,14 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.IntStream;
 
-@Service
+@Component
 public class Generator {
-    private final Random random = new Random();
+
+    private final Random random;
+
+    public Generator(Random random) {
+        this.random = random;
+    }
 
     public Sudoku generateDefault(int difficulty) {
         Sudoku sudoku = Sudoku.withDefaultValues();
@@ -57,10 +63,10 @@ public class Generator {
         int[] digits = Sudoku.DIGITS.clone();
         for (int i = 0; i < digits.length - 1; i++) {
             int digit = digits[i];
-            possibleCells.remove(possibleCells.indexOf(possibleCells.get(IntStream.range(0, possibleCells.size())
+            possibleCells.remove(possibleCells.get(IntStream.range(0, possibleCells.size())
                     .filter(cellIndex -> digit == sudoku.get()[possibleCells.get(cellIndex)])
-                    .mapToObj(Integer::valueOf)
-                    .toList().get(random.nextInt(Sudoku.SIZE)))));
+                    .boxed()
+                    .toList().get(random.nextInt(Sudoku.SIZE))));
         }
         for (int i = 0; i < cellsToSetToZero; i++) {
             int randomCellIndex = random.nextInt(possibleCells.size());

@@ -1,13 +1,13 @@
-package com.lucas.server.connection;
+package com.lucas.server.components.sudoku.mapper;
 
 import com.lucas.server.components.sudoku.Sudoku;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Service
-public class SudokuParser {
+@Component
+public class SudokuFileToSudokuMapper {
 
     /**
      * Dumps a string representing sudoku into a list of sudoku

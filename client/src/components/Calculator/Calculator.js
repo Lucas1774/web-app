@@ -32,7 +32,7 @@ const Calculator = () => {
     let tempInput = input;
     setInput("");
     setIsLoading(true);
-    let action = isSubmit ? () => post("/ans", input) : () => get("/ans");
+    let action = isSubmit ? () => post("/calculator/ans", input) : () => get("/calculator/ans");
     action()
       .then(response => {
         setInput(isSubmit ? response.data.toString() : input + response.data.toString());

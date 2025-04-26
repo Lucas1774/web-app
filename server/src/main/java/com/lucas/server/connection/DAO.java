@@ -1,9 +1,9 @@
 package com.lucas.server.connection;
 
+import com.lucas.server.components.shopping.dto.Category;
+import com.lucas.server.components.shopping.dto.ShoppingItem;
+import com.lucas.server.components.shopping.dto.Sortable;
 import com.lucas.server.components.sudoku.Sudoku;
-import com.lucas.server.model.Category;
-import com.lucas.server.model.ShoppingItem;
-import com.lucas.server.model.Sortable;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;

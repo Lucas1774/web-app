@@ -48,7 +48,7 @@ const Shopping = () => {
         const checkAuth = async () => {
             setIsLoading(true);
             try {
-                const response = await get("/check-auth");
+                const response = await get("/authentication/check-auth");
                 if (response.data !== 1) {
                     setIsLoginFormVisible(true);
                 } else {
@@ -67,7 +67,7 @@ const Shopping = () => {
     const getData = async () => {
         setIsLoading(true);
         try {
-            const response = await get("/shopping");
+            const response = await get("/shopping/shopping");
             setTableData(response.data);
         } catch (error) {
             handleError("Error fetching data", error);
@@ -103,7 +103,7 @@ const Shopping = () => {
         if (isNaN(value) || parseInt(value) < 0) {
             return;
         }
-        makeGenericRequest(() => post('/update-product-quantity', { [constants.ID_KEY]: id, [constants.NAME_KEY]: name, [constants.QUANTITY_KEY]: parseInt(value) }), () => {
+        makeGenericRequest(() => post('/shopping/update-product-quantity', { [constants.ID_KEY]: id, [constants.NAME_KEY]: name, [constants.QUANTITY_KEY]: parseInt(value) }), () => {
             setTableData(previous => previous.map(product =>
                 product[constants.ID_KEY] === id
                     ? { ...product, [constants.QUANTITY_KEY]: value }
@@ -114,7 +114,7 @@ const Shopping = () => {
     }, []);
 
     const updateProduct = async (id, name, isRare, categoryId, category) => {
-        makeGenericRequest(() => post('/update-product', {
+        makeGenericRequest(() => post('/shopping/update-product', {
             [constants.ID_KEY]: id, [constants.NAME_KEY]: name,
             [constants.IS_RARE_KEY]: isRare, [constants.CATEGORY_ID_KEY]: categoryId, [constants.CATEGORY_KEY]: category
         }), () => {
@@ -125,7 +125,7 @@ const Shopping = () => {
     };
 
     const removeProduct = async (id, name) => {
-        makeGenericRequest(() => post('/remove-product', { [constants.ID_KEY]: id, [constants.NAME_KEY]: name }), () => {
+        makeGenericRequest(() => post('/shopping/remove-product', { [constants.ID_KEY]: id, [constants.NAME_KEY]: name }), () => {
             setIsLoading(true);
             getData();
         });
@@ -145,7 +145,7 @@ const Shopping = () => {
                 getData();
             }, constants.TIMEOUT_DELAY);
         } else {
-            makeGenericRequest(() => post('/login', { [constants.USERNAME]: username, [constants.PASSWORD]: password }), () => {
+            makeGenericRequest(() => post('/authentication/login', { [constants.USERNAME]: username, [constants.PASSWORD]: password }), () => {
                 setIsLoading(true);
                 setIsLoginFormVisible(false);
                 getData();
@@ -154,7 +154,7 @@ const Shopping = () => {
     };
 
     const handleResetAll = async () => {
-        makeGenericRequest(() => post('/update-all-product-quantity', null), () => {
+        makeGenericRequest(() => post('/shopping/update-all-product-quantity', null), () => {
             setIsLoading(true);
             getData();
         });
@@ -166,7 +166,7 @@ const Shopping = () => {
         if (!name) {
             return;
         }
-        makeGenericRequest(() => post('/new-product', name), () => {
+        makeGenericRequest(() => post('/shopping/new-product', name), () => {
             setIsLoading(true);
             getData();
         });
@@ -175,7 +175,7 @@ const Shopping = () => {
     const getPossibleCategories = async () => {
         setIsLoading(true);
         try {
-            const response = await get("/get-possible-categories");
+            const response = await get("/shopping/get-possible-categories");
             setSortables(response.data);
             setSortablesType("categories");
         } catch (error) {
@@ -215,7 +215,7 @@ const Shopping = () => {
             [constants.TYPE_KEY]: sortablesType,
         }));
         // use sortablestype to enrich "sortables"
-        makeGenericRequest(() => post('/update-sortables', updatedSortables), () => {
+        makeGenericRequest(() => post('/shopping/update-sortables', updatedSortables), () => {
             setIsLoading(true);
             setIsPopupVisible(false);
             getData();
