@@ -553,6 +553,329 @@
 					]
 				}
 			]
+		},
+		{
+			"name": "calculator/",
+			"item": [
+				{
+					"name": "cleanup text",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "\"hi\"",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/calculator/ans",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"calculator",
+								"ans"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "cleanup ans",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "\"0\"",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/calculator/ans",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"calculator",
+								"ans"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ans 1+hello Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"const body = pm.response.json();\r",
+									"\r",
+									"// assert that the 'text' property exists and is a string\r",
+									"pm.test(\"Body has a 'text' property\", () => {\r",
+									"    pm.expect(body).to.have.property(\"text\");\r",
+									"    pm.expect(body).to.have.property(\"ans\");\r",
+									"    pm.expect(body.text).to.be.a(\"string\");\r",
+									"    pm.expect(body.ans).to.be.a(\"string\");\r",
+									"    pm.expect(body.text).to.eql(\"hi\");\r",
+									"    pm.expect(body.ans).to.eql(\"0\")\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/calculator/ans",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"calculator",
+								"ans"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ans invalidexpression",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Body contains 'Invalid expression'\", () => {\r",
+									"    pm.expect(pm.response.text()).to.eql(\"Invalid expression\");\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "\"1+hello\"",
+							"options": {
+								"raw": {
+									"language": "text"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/calculator/ans",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"calculator",
+								"ans"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ans 1+hello",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"const body = pm.response.json();\r",
+									"\r",
+									"// assert textMode === true\r",
+									"pm.test(\"Body contains textMode: true\", () => {\r",
+									"    pm.expect(body.textMode).to.eql(true);\r",
+									"});\r",
+									"\r",
+									"// assert that the 'text' property exists and is a string\r",
+									"pm.test(\"Body has a 'text' property\", () => {\r",
+									"    pm.expect(body).to.have.property(\"text\");\r",
+									"    pm.expect(body.text).to.be.a(\"string\");\r",
+									"    pm.expect(body.text).to.eql(\"1+hello\");\r",
+									"    pm.expect(body.ans).to.eql(\"0\")\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/calculator/ans",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"calculator",
+								"ans"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ans validexpression",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Body contains '2'\", () => {\r",
+									"    pm.expect(pm.response.json().toString()).to.eql(\"2\");\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "\"1 + 1\"",
+							"options": {
+								"raw": {
+									"language": "text"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/calculator/ans",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"calculator",
+								"ans"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ans 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"const body = pm.response.json();\r",
+									"\r",
+									"// assert textMode === true\r",
+									"pm.test(\"Body contains textMode: false\", () => {\r",
+									"    pm.expect(body.textMode).to.eql(false);\r",
+									"});\r",
+									"\r",
+									"// assert that the 'text' property exists and is a string\r",
+									"pm.test(\"Body has a 'ans' property\", () => {\r",
+									"    pm.expect(body).to.have.property(\"ans\");\r",
+									"    pm.expect(body.ans).to.be.a(\"string\");\r",
+									"    pm.expect(body.ans.toString()).to.eql(\"2\")\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/calculator/ans",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"calculator",
+								"ans"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"auth": {

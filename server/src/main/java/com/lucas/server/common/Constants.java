@@ -8,6 +8,7 @@ public class Constants {
     }
 
     public static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    public static final String INVALID_EXPRESSION = "Invalid expression";
     public static final String COMPANY_NEWS = "/company-news";
     public static final String QUOTE_PATH = "GLOBAL_QUOTE";
     public static final String TIME_SERIES_WEEKLY = "TIME_SERIES_WEEKLY";

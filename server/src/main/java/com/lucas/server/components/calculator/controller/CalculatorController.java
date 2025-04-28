@@ -1,8 +1,9 @@
 package com.lucas.server.components.calculator.controller;
 
 import com.lucas.server.common.controller.ControllerUtil;
-import com.lucas.server.components.calculator.service.CalculatorSolver;
-import com.lucas.server.connection.DAO;
+import com.lucas.server.components.calculator.jpa.Calculator;
+import com.lucas.server.components.calculator.jpa.CalculatorJpaService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,34 +12,27 @@ import org.springframework.web.bind.annotation.*;
 public class CalculatorController {
 
     private final ControllerUtil controllerUtil;
-    private final DAO dao;
-    private final CalculatorSolver solver;
+    private final CalculatorJpaService calculatorService;
 
-    public CalculatorController(ControllerUtil controllerUtil, DAO dao, CalculatorSolver solver) {
+    public CalculatorController(ControllerUtil controllerUtil, CalculatorJpaService calculatorService) {
         this.controllerUtil = controllerUtil;
-        this.dao = dao;
-        this.solver = solver;
+        this.calculatorService = calculatorService;
     }
 
     @PostMapping("/ans")
     public ResponseEntity<String> post(@RequestBody String number) {
         if (number.length() > 200) {
-            return ResponseEntity.ok().body("Stop");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         } else {
-            return this.controllerUtil.handleRequest(() -> {
-                String result = solver.solveExpression(number);
-                if (!"Invalid expression".equals(result)) {
-                    dao.insert(Double.parseDouble(result));
-                } else {
-                    dao.insertString(number);
-                }
-                return result;
-            });
+            return controllerUtil.handleRequest(() -> calculatorService.computeAndSave(
+                    number.replace("\"", "")));
         }
     }
 
     @GetMapping("/ans")
-    public ResponseEntity<String> get() {
-        return this.controllerUtil.handleRequest(dao::get);
+    public ResponseEntity<Calculator> get() {
+        return calculatorService.find()
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 }

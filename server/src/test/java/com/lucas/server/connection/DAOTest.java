@@ -27,28 +27,11 @@ class DAOTest {
     @AfterEach
     void cleanDatabase() {
         jdbcTemplate.getJdbcOperations().execute(
-                "TRUNCATE TABLE shopping, products, categories, sudokus, users, my_table RESTART IDENTITY CASCADE"
-        );
-        jdbcTemplate.getJdbcOperations().execute(
-                "INSERT INTO my_table(id, ans, text, text_mode) VALUES (1, NULL, NULL, FALSE)"
+                "TRUNCATE TABLE shopping, products, categories, sudokus, users RESTART IDENTITY CASCADE"
         );
         jdbcTemplate.getJdbcOperations().execute(
                 "INSERT INTO users(username, password) VALUES ('admin','admin'), ('default','default')"
         );
-    }
-
-    @Test
-    void testInsertAndGetNumber() {
-        dao.insert(3.14);
-        String result = dao.get();
-        assertThat(result).isEqualTo("3.14");
-    }
-
-    @Test
-    void testInsertAndGetString() {
-        dao.insertString("hello");
-        String result = dao.get();
-        assertThat(result).isEqualTo("hello");
     }
 
     @Test

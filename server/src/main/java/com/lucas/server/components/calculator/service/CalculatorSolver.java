@@ -1,21 +1,26 @@
 package com.lucas.server.components.calculator.service;
 
+import com.lucas.server.common.Constants;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+
 @Component
 public class CalculatorSolver {
+
     public String solveExpression(String expression) {
         try {
-            return String.valueOf(Double.parseDouble(expression));
+            return new BigDecimal(expression).stripTrailingZeros().toPlainString();
         } catch (NumberFormatException e1) {
             try {
-                return String.valueOf(new ExpressionBuilder(expression.substring(1, expression.length() - 1)
-                        .replaceAll("\\s+", ""))
-                        .build()
-                        .evaluate());
+                return BigDecimal.valueOf(new ExpressionBuilder(expression.replaceAll("\\s+", ""))
+                                .build()
+                                .evaluate())
+                        .stripTrailingZeros()
+                        .toPlainString();
             } catch (IllegalArgumentException e2) {
-                return "Invalid expression";
+                return Constants.INVALID_EXPRESSION;
             }
         }
     }

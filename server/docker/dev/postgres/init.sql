@@ -45,5 +45,5 @@ INSERT INTO users(username, password) VALUES
   ('default', 'default')
 ON CONFLICT DO NOTHING;
 
-INSERT INTO my_table(id, ans, text) VALUES (1, NULL, NULL)
+INSERT INTO my_table(id, ans, text, text_mode) VALUES (1, 0, 'hello', false)
 ON CONFLICT (id) DO NOTHING;

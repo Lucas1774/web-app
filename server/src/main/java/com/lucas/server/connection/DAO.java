@@ -24,26 +24,6 @@ public class DAO {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public void insert(Double number) throws DataAccessException {
-        String sql = "UPDATE my_table SET ans = :number, text_mode = FALSE WHERE id = 1";
-        MapSqlParameterSource parameters = new MapSqlParameterSource("number", number);
-        this.jdbcTemplate.update(sql, parameters);
-    }
-
-    public void insertString(String text) throws DataAccessException {
-        String sql = "UPDATE my_table SET text = :text, text_mode = TRUE WHERE id = 1";
-        MapSqlParameterSource parameters = new MapSqlParameterSource("text", text);
-        this.jdbcTemplate.update(sql, parameters);
-    }
-
-    public String get() throws DataAccessException {
-        String sql = "SELECT * FROM my_table WHERE id = 1";
-        return this.jdbcTemplate.queryForObject(sql, new MapSqlParameterSource(),
-                (rs, rowNum) -> rs.getBoolean("text_mode")
-                        ? Optional.ofNullable(rs.getString("text")).orElse("Nothing here yet")
-                        : Optional.ofNullable(rs.getString("ans")).orElse("0"));
-    }
-
     public void insertSudokus(List<Sudoku> sudokus) throws DataAccessException {
         String sql = "INSERT INTO sudokus (state) "
                 + "SELECT :state "
