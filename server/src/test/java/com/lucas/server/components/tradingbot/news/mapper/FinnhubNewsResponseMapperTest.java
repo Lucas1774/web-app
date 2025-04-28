@@ -20,7 +20,7 @@ class FinnhubNewsResponseMapperTest {
 
     @Test
     void whenMapValidJson_thenReturnNewsEntity() throws Exception {
-        //given
+        // given
         long epoch = 1745463072L;
         String json = String.format("""
                 {
@@ -37,7 +37,7 @@ class FinnhubNewsResponseMapperTest {
 
         JsonNode node = objectMapper.readTree(json);
 
-        //when
+        // when
         News news = mapper.map(node);
 
         // then
@@ -89,7 +89,7 @@ class FinnhubNewsResponseMapperTest {
 
     @Test
     void whenMapAllEmptyOrNonArray_thenReturnEmptyList() throws Exception {
-        //given
+        // given
         JsonNode emptyArray = objectMapper.createArrayNode();
         JsonNode objNode = objectMapper.createObjectNode();
 
