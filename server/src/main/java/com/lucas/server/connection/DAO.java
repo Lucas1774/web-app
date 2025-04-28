@@ -5,7 +5,6 @@ import com.lucas.server.components.shopping.dto.ShoppingItem;
 import com.lucas.server.components.shopping.dto.Sortable;
 import com.lucas.server.components.sudoku.Sudoku;
 import org.springframework.dao.DataAccessException;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -23,16 +22,6 @@ public class DAO {
 
     public DAO(NamedParameterJdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
-    }
-
-    public Optional<String> getPassword(String username) throws DataAccessException {
-        String sql = "SELECT password FROM users WHERE username = :username";
-        MapSqlParameterSource parameters = new MapSqlParameterSource(USERNAME, username);
-        try {
-            return Optional.ofNullable(this.jdbcTemplate.queryForObject(sql, parameters, String.class));
-        } catch (EmptyResultDataAccessException e) {
-            return Optional.empty();
-        }
     }
 
     public void insert(Double number) throws DataAccessException {

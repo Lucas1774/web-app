@@ -1,359 +1,556 @@
 {
 	"info": {
 		"_postman_id": "db5d5aad-cdee-4389-9090-7a8e27630baf",
-		"name": "tradingbot",
+		"name": "webapp",
 		"description": "# 🚀 Get started here\n\nThis template guides you through CRUD operations (GET, POST, PUT, DELETE), variables, and tests.\n\n## 🔖 **How to use this template**\n\n#### **Step 1: Send requests**\n\nRESTful APIs allow you to perform CRUD operations using the POST, GET, PUT, and DELETE HTTP methods.\n\nThis collection contains each of these [request](https://learning.postman.com/docs/sending-requests/requests/) types. Open each request and click \"Send\" to see what happens.\n\n#### **Step 2: View responses**\n\nObserve the response tab for status code (200 OK), response time, and size.\n\n#### **Step 3: Send new Body data**\n\nUpdate or add new data in \"Body\" in the POST request. Typically, Body data is also used in PUT request.\n\n```\n{\n    \"name\": \"Add your name in the body\"\n}\n\n ```\n\n#### **Step 4: Update the variable**\n\nVariables enable you to store and reuse values in Postman. We have created a [variable](https://learning.postman.com/docs/sending-requests/variables/) called `base_url` with the sample request [https://postman-api-learner.glitch.me](https://postman-api-learner.glitch.me). Replace it with your API endpoint to customize this collection.\n\n#### **Step 5: Add tests in the \"Scripts\" tab**\n\nAdding tests to your requests can help you confirm that your API is working as expected. You can write test scripts in JavaScript and view the output in the \"Test Results\" tab.\n\n<img src=\"https://content.pstmn.io/fa30ea0a-373d-4545-a668-e7b283cca343/aW1hZ2UucG5n\" alt=\"\" height=\"1530\" width=\"2162\">\n\n## 💪 Pro tips\n\n- Use folders to group related requests and organize the collection.\n    \n- Add more [scripts](https://learning.postman.com/docs/writing-scripts/intro-to-scripts/) to verify if the API works as expected and execute workflows.\n    \n\n## 💡Related templates\n\n[API testing basics](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=e9a37a28-055b-49cd-8c7e-97494a21eb54&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)  \n[API documentation](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=e9c28f47-1253-44af-a2f3-20dce4da1f18&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)  \n[Authorization methods](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=31a9a6ed-4cdf-4ced-984c-d12c9aec1c27&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "44440825",
-		"_collection_link": "https://johndoe-483049.postman.co/workspace/66114b17-ce92-4db7-8551-7be733093137/collection/44440825-db5d5aad-cdee-4389-9090-7a8e27630baf?action=share&source=collection_link&creator=44440825"
+		"_collection_link": "https://johndoe-483049.postman.co/workspace/John-Doe's-Workspace~66114b17-ce92-4db7-8551-7be733093137/collection/44440825-db5d5aad-cdee-4389-9090-7a8e27630baf?action=share&source=collection_link&creator=44440825"
 	},
 	"item": [
 		{
-			"name": "market/",
+			"name": "authentication/",
 			"item": [
 				{
-					"name": "AAPL",
-					"event": [
+					"name": "valid user",
+					"item": [
 						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {\r",
-									"    pm.response.to.have.status(200);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Symbol is AAPL\", function () {\r",
-									"    const jsonData = pm.response.json();\r",
-									"    pm.expect(jsonData.symbol).to.eql(\"AAPL\");\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Price is not null\", function () {\r",
-									"    const jsonData = pm.response.json();\r",
-									"    pm.expect(jsonData.price).to.not.be.null;\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Date is not null and is today\", function () {\r",
-									"    const jsonData = pm.response.json();\r",
-									"    pm.expect(jsonData.date).to.not.be.null;\r",
-									"\r",
-									"    const today = new Date();\r",
-									"    const expectedDate = [\r",
-									"        today.getFullYear(),\r",
-									"        today.getMonth() + 1,\r",
-									"        today.getDate()\r",
-									"    ];\r",
-									"\r",
-									"    pm.expect(jsonData.date).to.eql(expectedDate);\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/market/AAPL",
-							"host": [
-								"{{base_url}}"
+							"name": "login validuser",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));\r",
+											"pm.test(\"Body is 'Granted access'\", () => {\r",
+											"    pm.expect(pm.response.text()).to.eql(\"Granted access\");\r",
+											"});\r",
+											"pm.test(\"authToken cookie set\", () => pm.expect(pm.cookies.has(\"authToken\")).to.be.true);\r",
+											"if (pm.cookies.has(\"authToken\")) {\r",
+											"    pm.environment.set(\"authToken\", pm.cookies.get(\"authToken\"));\r",
+											"}\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
 							],
-							"path": [
-								"market",
-								"AAPL"
-							]
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"username\": \"admin\",\r\n    \"password\": \"admin\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/authentication/login",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"authentication",
+										"login"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "check-auth validuser",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));\r",
+											"pm.test(\"Body is '1'\", () => pm.expect(pm.response.text()).to.eql(\"1\"));\r",
+											"pm.cookies.clear();"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/authentication/check-auth",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"authentication",
+										"check-auth"
+									]
+								}
+							},
+							"response": []
 						}
-					},
-					"response": []
+					]
 				},
 				{
-					"name": "historic/AAPL",
-					"event": [
+					"name": "invalid user",
+					"item": [
 						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {\r",
-									"    pm.response.to.have.status(200);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Response is an array\", function () {\r",
-									"    const jsonData = pm.response.json();\r",
-									"    pm.expect(jsonData).to.be.an(\"array\");\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Contains item for yesterday and 8 days ago\", function () {\r",
-									"    const jsonData = pm.response.json();\r",
-									"\r",
-									"    const now = new Date();\r",
-									"    const yesterday = new Date(now);\r",
-									"    const eightDaysAgo = new Date(now);\r",
-									"    yesterday.setDate(now.getDate() - 1);\r",
-									"    eightDaysAgo.setDate(now.getDate() - 8);\r",
-									"\r",
-									"    const toArray = (d) => [d.getFullYear(), d.getMonth() + 1, d.getDate()];\r",
-									"\r",
-									"    const yesterdayArray = toArray(yesterday);\r",
-									"    const eightDaysAgoArray = toArray(eightDaysAgo);\r",
-									"\r",
-									"    const hasYesterday = jsonData.some(item => JSON.stringify(item.date) === JSON.stringify(yesterdayArray));\r",
-									"    const hasEightDaysAgo = jsonData.some(item => JSON.stringify(item.date) === JSON.stringify(eightDaysAgoArray));\r",
-									"\r",
-									"    pm.expect(hasYesterday).to.be.true;\r",
-									"    pm.expect(hasEightDaysAgo).to.be.true;\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Each item has symbol AAPL and price not null\", function () {\r",
-									"    const jsonData = pm.response.json();\r",
-									"\r",
-									"    jsonData.forEach(item => {\r",
-									"        pm.expect(item.symbol).to.eql(\"AAPL\");\r",
-									"        pm.expect(item.price).to.not.be.null;\r",
-									"    });\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/market/historic/AAPL",
-							"host": [
-								"{{base_url}}"
+							"name": "login invaliduser",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));\r",
+											"pm.test(\"Body is guest message\", () => {\r",
+											"    pm.expect(pm.response.text()).to.eql(\"Wrong credentials. Continuing as guest\");\r",
+											"});\r",
+											"pm.test(\"No authToken cookie\", () => pm.expect(pm.cookies.has(\"authToken\")).to.be.false);\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
 							],
-							"path": [
-								"market",
-								"historic",
-								"AAPL"
-							]
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"username\": \"admin\",\r\n    \"password\": \"wrongPass\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/authentication/login",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"authentication",
+										"login"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "check-auth invaliduser",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));\r",
+											"pm.test(\"Body is 'Not authenticated'\", () => {\r",
+											"    pm.expect(pm.response.text()).to.eql(\"Not authenticated\");\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/authentication/check-auth",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"authentication",
+										"check-auth"
+									]
+								}
+							},
+							"response": []
 						}
-					},
-					"response": []
+					]
 				}
 			]
 		},
 		{
-			"name": "news/",
+			"name": "tradingbot",
 			"item": [
 				{
-					"name": "AAPL",
-					"event": [
+					"name": "market/",
+					"item": [
 						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 200\", () => {\r",
-									"  pm.response.to.have.status(200);\r",
-									"});\r",
-									"\r",
-									"const data = pm.response.json();\r",
-									"\r",
-									"pm.test(\"Response is an array\", () => {\r",
-									"  pm.expect(data).to.be.an(\"array\");\r",
-									"});\r",
-									"\r",
-									"// Define yesterday's date in [YYYY, M, D] format\r",
-									"const now = new Date();\r",
-									"const yesterday = new Date(now);\r",
-									"yesterday.setDate(now.getDate() - 1);\r",
-									"const expectedDate = [\r",
-									"  yesterday.getFullYear(),\r",
-									"  yesterday.getMonth() + 1,\r",
-									"  yesterday.getDate()\r",
-									"];\r",
-									"\r",
-									"pm.test(\"All items are from yesterday or today\", () => {\r",
-									"  const now = new Date();\r",
-									"  const today = [now.getFullYear(), now.getMonth() + 1, now.getDate()];\r",
-									"\r",
-									"  const yesterday = new Date(now);\r",
-									"  yesterday.setDate(yesterday.getDate() - 1);\r",
-									"  const yesterdayArr = [yesterday.getFullYear(), yesterday.getMonth() + 1, yesterday.getDate()];\r",
-									"\r",
-									"  data.forEach(item => {\r",
-									"    const [y, m, d] = item.date;\r",
-									"    const itemDate = [y, m, d];\r",
-									"\r",
-									"    const isToday = itemDate[0] === today[0] && itemDate[1] === today[1] && itemDate[2] === today[2];\r",
-									"    const isYesterday = itemDate[0] === yesterdayArr[0] && itemDate[1] === yesterdayArr[1] && itemDate[2] === yesterdayArr[2];\r",
-									"\r",
-									"    pm.expect(isToday || isYesterday, `item.date was ${itemDate}, expected today or yesterday`).to.be.true;\r",
-									"  });\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Every item has externalId, symbol AAPL, and headline not null\", () => {\r",
-									"  data.forEach(item => {\r",
-									"    pm.expect(item.externalId, \"externalId\").to.not.be.null;\r",
-									"    pm.expect(item.symbol, \"symbol\").to.eql(\"AAPL\");\r",
-									"    pm.expect(item.headline, \"headline\").to.not.be.null;\r",
-									"  });\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/news/AAPL",
-							"host": [
-								"{{base_url}}"
+							"name": "AAPL",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Symbol is AAPL\", function () {\r",
+											"    const jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.symbol).to.eql(\"AAPL\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Price is not null\", function () {\r",
+											"    const jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.price).to.not.be.null;\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Date is not null and is today\", function () {\r",
+											"    const jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.date).to.not.be.null;\r",
+											"\r",
+											"    const today = new Date();\r",
+											"    const expectedDate = [\r",
+											"        today.getFullYear(),\r",
+											"        today.getMonth() + 1,\r",
+											"        today.getDate()\r",
+											"    ];\r",
+											"\r",
+											"    pm.expect(jsonData.date).to.eql(expectedDate);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
 							],
-							"path": [
-								"news",
-								"AAPL"
-							]
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/market/AAPL",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"market",
+										"AAPL"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "historic/AAPL",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response is an array\", function () {\r",
+											"    const jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData).to.be.an(\"array\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Contains item for yesterday and 8 days ago\", function () {\r",
+											"    const jsonData = pm.response.json();\r",
+											"\r",
+											"    const now = new Date();\r",
+											"    const yesterday = new Date(now);\r",
+											"    const eightDaysAgo = new Date(now);\r",
+											"    yesterday.setDate(now.getDate() - 1);\r",
+											"    eightDaysAgo.setDate(now.getDate() - 8);\r",
+											"\r",
+											"    const toArray = (d) => [d.getFullYear(), d.getMonth() + 1, d.getDate()];\r",
+											"\r",
+											"    const yesterdayArray = toArray(yesterday);\r",
+											"    const eightDaysAgoArray = toArray(eightDaysAgo);\r",
+											"\r",
+											"    const hasYesterday = jsonData.some(item => JSON.stringify(item.date) === JSON.stringify(yesterdayArray));\r",
+											"    const hasEightDaysAgo = jsonData.some(item => JSON.stringify(item.date) === JSON.stringify(eightDaysAgoArray));\r",
+											"\r",
+											"    pm.expect(hasYesterday).to.be.true;\r",
+											"    pm.expect(hasEightDaysAgo).to.be.true;\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Each item has symbol AAPL and price not null\", function () {\r",
+											"    const jsonData = pm.response.json();\r",
+											"\r",
+											"    jsonData.forEach(item => {\r",
+											"        pm.expect(item.symbol).to.eql(\"AAPL\");\r",
+											"        pm.expect(item.price).to.not.be.null;\r",
+											"    });\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/market/historic/IBM",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"market",
+										"historic",
+										"IBM"
+									]
+								}
+							},
+							"response": []
 						}
-					},
-					"response": []
+					]
 				},
 				{
-					"name": "historic/AAPL/2025-04-20",
-					"event": [
+					"name": "news/",
+					"item": [
 						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 200\", () => {\r",
-									"  pm.response.to.have.status(200);\r",
-									"});\r",
-									"\r",
-									"const data = pm.response.json();\r",
-									"pm.test(\"Response is an array\", () => {\r",
-									"  pm.expect(Array.isArray(data)).to.be.true;\r",
-									"});\r",
-									"\r",
-									"// build numeric YYYYMMDD values for today and yesterday\r",
-									"const now = new Date();\r",
-									"const todayNum = now.getFullYear()*10000 + (now.getMonth()+1)*100 + now.getDate();\r",
-									"const yest = new Date(now);\r",
-									"yest.setDate(now.getDate()-1);\r",
-									"const yestNum = yest.getFullYear()*10000 + (yest.getMonth()+1)*100 + yest.getDate();\r",
-									"\r",
-									"// build required oldest numeric\r",
-									"const reqOldestNum = 2025*10000 + 4*100 + 20;\r",
-									"\r",
-									"// extract numeric dates from items\r",
-									"const nums = data.map(item => {\r",
-									"  const d = item.date;\r",
-									"  return d[0]*10000 + d[1]*100 + d[2];\r",
-									"});\r",
-									"\r",
-									"// check oldest exactly 2024-04-04\r",
-									"pm.test(\"Oldest is 2024-04-04\", () => {\r",
-									"  const min = Math.min(...nums);\r",
-									"  pm.expect(min).to.eql(reqOldestNum);\r",
-									"});\r",
-									"\r",
-									"// check newest is today or yesterday\r",
-									"pm.test(\"Newest is today or yesterday\", () => {\r",
-									"  const max = Math.max(...nums);\r",
-									"  pm.expect(max === todayNum || max === yestNum).to.be.true;\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Every item has externalId, symbol AAPL, and headline not null\", () => {\r",
-									"  data.forEach(item => {\r",
-									"    pm.expect(item.externalId, \"externalId\").to.not.be.null;\r",
-									"    pm.expect(item.symbol, \"symbol\").to.eql(\"AAPL\");\r",
-									"    pm.expect(item.headline, \"headline\").to.not.be.null;\r",
-									"  });\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/news/historic/AAPL/2025-04-20",
-							"host": [
-								"{{base_url}}"
+							"name": "AAPL",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", () => {\r",
+											"  pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const data = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response is an array\", () => {\r",
+											"  pm.expect(data).to.be.an(\"array\");\r",
+											"});\r",
+											"\r",
+											"// Define yesterday's date in [YYYY, M, D] format\r",
+											"const now = new Date();\r",
+											"const yesterday = new Date(now);\r",
+											"yesterday.setDate(now.getDate() - 1);\r",
+											"const expectedDate = [\r",
+											"  yesterday.getFullYear(),\r",
+											"  yesterday.getMonth() + 1,\r",
+											"  yesterday.getDate()\r",
+											"];\r",
+											"\r",
+											"pm.test(\"All items are from yesterday or today\", () => {\r",
+											"  const now = new Date();\r",
+											"  const today = [now.getFullYear(), now.getMonth() + 1, now.getDate()];\r",
+											"\r",
+											"  const yesterday = new Date(now);\r",
+											"  yesterday.setDate(yesterday.getDate() - 1);\r",
+											"  const yesterdayArr = [yesterday.getFullYear(), yesterday.getMonth() + 1, yesterday.getDate()];\r",
+											"\r",
+											"  data.forEach(item => {\r",
+											"    const [y, m, d] = item.date;\r",
+											"    const itemDate = [y, m, d];\r",
+											"\r",
+											"    const isToday = itemDate[0] === today[0] && itemDate[1] === today[1] && itemDate[2] === today[2];\r",
+											"    const isYesterday = itemDate[0] === yesterdayArr[0] && itemDate[1] === yesterdayArr[1] && itemDate[2] === yesterdayArr[2];\r",
+											"\r",
+											"    pm.expect(isToday || isYesterday, `item.date was ${itemDate}, expected today or yesterday`).to.be.true;\r",
+											"  });\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Every item has externalId, symbol AAPL, and headline not null\", () => {\r",
+											"  data.forEach(item => {\r",
+											"    pm.expect(item.externalId, \"externalId\").to.not.be.null;\r",
+											"    pm.expect(item.symbol, \"symbol\").to.eql(\"AAPL\");\r",
+											"    pm.expect(item.headline, \"headline\").to.not.be.null;\r",
+											"  });\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
 							],
-							"path": [
-								"news",
-								"historic",
-								"AAPL",
-								"2025-04-20"
-							]
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/news/AAPL",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"news",
+										"AAPL"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "historic/AAPL/2025-04-20",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", () => {\r",
+											"  pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const data = pm.response.json();\r",
+											"pm.test(\"Response is an array\", () => {\r",
+											"  pm.expect(Array.isArray(data)).to.be.true;\r",
+											"});\r",
+											"\r",
+											"// build numeric YYYYMMDD values for today and yesterday\r",
+											"const now = new Date();\r",
+											"const todayNum = now.getFullYear()*10000 + (now.getMonth()+1)*100 + now.getDate();\r",
+											"const yest = new Date(now);\r",
+											"yest.setDate(now.getDate()-1);\r",
+											"const yestNum = yest.getFullYear()*10000 + (yest.getMonth()+1)*100 + yest.getDate();\r",
+											"\r",
+											"// build required oldest numeric\r",
+											"const reqOldestNum = 2025*10000 + 4*100 + 20;\r",
+											"\r",
+											"// extract numeric dates from items\r",
+											"const nums = data.map(item => {\r",
+											"  const d = item.date;\r",
+											"  return d[0]*10000 + d[1]*100 + d[2];\r",
+											"});\r",
+											"\r",
+											"// check oldest exactly 2024-04-04\r",
+											"pm.test(\"Oldest is 2024-04-04\", () => {\r",
+											"  const min = Math.min(...nums);\r",
+											"  pm.expect(min).to.eql(reqOldestNum);\r",
+											"});\r",
+											"\r",
+											"// check newest is today or yesterday\r",
+											"pm.test(\"Newest is today or yesterday\", () => {\r",
+											"  const max = Math.max(...nums);\r",
+											"  pm.expect(max === todayNum || max === yestNum).to.be.true;\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Every item has externalId, symbol AAPL, and headline not null\", () => {\r",
+											"  data.forEach(item => {\r",
+											"    pm.expect(item.externalId, \"externalId\").to.not.be.null;\r",
+											"    pm.expect(item.symbol, \"symbol\").to.eql(\"AAPL\");\r",
+											"    pm.expect(item.headline, \"headline\").to.not.be.null;\r",
+											"  });\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/news/historic/AAPL/2025-04-20",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"news",
+										"historic",
+										"AAPL",
+										"2025-04-20"
+									]
+								}
+							},
+							"response": []
 						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "embeddings/",
-			"item": [
+					]
+				},
 				{
-					"name": "50",
-					"event": [
+					"name": "embeddings/",
+					"item": [
 						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Validate HTTP response\r",
-									"pm.test(\"Status code is 200\", () => {\r",
-									"    pm.response.to.have.status(200);\r",
-									"});\r",
-									"\r",
-									"// Parse body\r",
-									"const news = pm.response.json();\r",
-									"\r",
-									"// Validate it’s a single object, not an array\r",
-									"pm.test(\"Response is a single object\", () => {\r",
-									"    pm.expect(news).to.be.an(\"object\");\r",
-									"});\r",
-									"\r",
-									"pm.test(\"symbol is AAPL\", () => {\r",
-									"    pm.expect(news.symbol).to.eql(\"AAPL\");\r",
-									"});\r",
-									"\r",
-									"// id must equal 50\r",
-									"pm.test(\"id is 50\", () => {\r",
-									"    pm.expect(news.id).to.eql(50);\r",
-									"});\r",
-									"\r",
-									"// embeddings must be an array of length 3072\r",
-									"pm.test(\"embeddings is an array of length 3072\", () => {\r",
-									"    pm.expect(news.embeddings).to.be.an(\"array\");\r",
-									"    pm.expect(news.embeddings.length).to.eql(3072);\r",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/embeddings/50",
-							"host": [
-								"{{base_url}}"
+							"name": "50",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Validate HTTP response\r",
+											"pm.test(\"Status code is 200\", () => {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"// Parse body\r",
+											"const news = pm.response.json();\r",
+											"\r",
+											"// Validate it’s a single object, not an array\r",
+											"pm.test(\"Response is a single object\", () => {\r",
+											"    pm.expect(news).to.be.an(\"object\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"symbol is AAPL\", () => {\r",
+											"    pm.expect(news.symbol).to.eql(\"AAPL\");\r",
+											"});\r",
+											"\r",
+											"// id must equal 50\r",
+											"pm.test(\"id is 50\", () => {\r",
+											"    pm.expect(news.id).to.eql(50);\r",
+											"});\r",
+											"\r",
+											"// embeddings must be an array of length 3072\r",
+											"pm.test(\"embeddings is an array of length 3072\", () => {\r",
+											"    pm.expect(news.embeddings).to.be.an(\"array\");\r",
+											"    pm.expect(news.embeddings.length).to.eql(3072);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
 							],
-							"path": [
-								"embeddings",
-								"50"
-							]
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/embeddings/50",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"embeddings",
+										"50"
+									]
+								}
+							},
+							"response": []
 						}
-					},
-					"response": []
+					]
 				}
 			]
 		}
@@ -363,7 +560,7 @@
 		"basic": [
 			{
 				"key": "password",
-				"value": "",
+				"value": "password",
 				"type": "string"
 			},
 			{

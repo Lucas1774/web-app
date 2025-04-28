@@ -12,7 +12,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -50,19 +49,6 @@ class DAOTest {
         dao.insertString("hello");
         String result = dao.get();
         assertThat(result).isEqualTo("hello");
-    }
-
-    @Test
-    void testUserPasswordFlow() {
-        // prepare user
-        jdbcTemplate.getJdbcOperations().execute(
-                "INSERT INTO users(username, password) VALUES('alice','secret')"
-        );
-        Optional<String> pw = dao.getPassword("alice");
-        assertThat(pw).contains("secret");
-
-        Optional<String> missing = dao.getPassword("bob");
-        assertThat(missing).isEmpty();
     }
 
     @Test
