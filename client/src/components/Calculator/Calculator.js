@@ -35,12 +35,23 @@ const Calculator = () => {
     let action = isSubmit ? () => post("/calculator/ans", input) : () => get("/calculator/ans");
     action()
       .then(response => {
-        setInput(isSubmit ? response.data.toString() : input + response.data.toString());
+        let calculatorData = response.data;
+        setInput(
+          isSubmit
+            ? calculatorData.toString()
+            : input + (calculatorData.textMode
+              ? calculatorData.text.toString()
+              : calculatorData.ans.toString())
+        );
       })
       .catch(error => {
         const prefix = "Error " + (isSubmit ? "sending " : "receiving ") + "data";
-        handleError(prefix, error)
-        setInput(tempInput);
+        if (error.response && error.response.status === 403) {
+          setInput("stop");
+        } else {
+          handleError(prefix, error);
+          setInput(tempInput);
+        }
       })
       .finally(() => {
         setIsLoading(false);
@@ -87,7 +98,7 @@ const Calculator = () => {
           <Button onClick={handleClick} value=".">.</Button>
           <Button onClick={handleClick} value="*10^">EXP</Button>
           <Button onClick={(e) => handleSubmit(e, false)}>Ans</Button>
-          <Button type="submit" variant="success" onClick={(e) => {handleSubmit(e, true)}}>=</Button>
+          <Button type="submit" variant="success" onClick={(e) => { handleSubmit(e, true) }}>=</Button>
         </Row>
       </div></>
   );
