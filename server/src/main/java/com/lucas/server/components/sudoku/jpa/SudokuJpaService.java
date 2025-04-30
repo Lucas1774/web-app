@@ -11,10 +11,10 @@ import java.util.Optional;
 public class SudokuJpaService implements JpaService<Sudoku> {
 
     private final SudokuRepository repository;
-    private final UniqueConstraintWearyJpaServiceDelegate<SudokuRepository, Sudoku> delegate;
+    private final UniqueConstraintWearyJpaServiceDelegate<Sudoku> delegate;
 
 
-    public SudokuJpaService(SudokuRepository repository, UniqueConstraintWearyJpaServiceDelegate<SudokuRepository, Sudoku> delegate) {
+    public SudokuJpaService(SudokuRepository repository, UniqueConstraintWearyJpaServiceDelegate<Sudoku> delegate) {
         this.repository = repository;
         this.delegate = delegate;
     }
