@@ -7,7 +7,8 @@ import com.lucas.server.components.shopping.jpa.product.Product;
 import com.lucas.server.components.shopping.jpa.product.ProductJpaService;
 import com.lucas.server.components.shopping.jpa.shopping.ShoppingItem;
 import com.lucas.server.components.shopping.jpa.shopping.ShoppingItemJpaService;
-import com.lucas.server.components.sudoku.Sudoku;
+import com.lucas.server.components.sudoku.jpa.Sudoku;
+import com.lucas.server.components.sudoku.jpa.SudokuJpaService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,9 +25,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 class DataAccessTest {
 
     @Autowired
-    DAO dao;
-
-    @Autowired
     ShoppingItemJpaService shoppingItemService;
 
     @Autowired
@@ -34,6 +32,9 @@ class DataAccessTest {
 
     @Autowired
     ProductJpaService productService;
+
+    @Autowired
+    SudokuJpaService sudokuService;
 
     @Autowired
     NamedParameterJdbcTemplate jdbcTemplate;
@@ -77,9 +78,11 @@ class DataAccessTest {
     @Test
     void testInsertAndRetrieveSudoku() {
         Sudoku s1 = Sudoku.withDefaultValues();
-        dao.insertSudokus(List.of(s1));
-        List<Sudoku> out = dao.getSudokus();
-        assertThat(out.getFirst().get()).isEqualTo(s1.get());
+        sudokuService.save(s1);
+        assertThat(sudokuService.findAll())
+                .hasSize(1)
+                .extracting(Sudoku::getState)
+                .containsExactly(s1.getState());
     }
 
     @Test

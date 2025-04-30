@@ -1,5 +1,6 @@
 export const USERNAME = "username";
 export const PASSWORD = "password";
+export const STATE_KEY = "state";
 export const THREE = "three";
 export const TWO = "two";
 export const FOUR = "four";

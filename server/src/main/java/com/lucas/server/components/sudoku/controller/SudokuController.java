@@ -1,109 +1,105 @@
 package com.lucas.server.components.sudoku.controller;
 
-import com.lucas.server.common.controller.ControllerUtil;
-import com.lucas.server.components.sudoku.service.Generator;
-import com.lucas.server.components.sudoku.Sudoku;
-import com.lucas.server.connection.DAO;
+import com.lucas.server.common.JsonProcessingException;
+import com.lucas.server.components.sudoku.jpa.Sudoku;
+import com.lucas.server.components.sudoku.jpa.SudokuJpaService;
 import com.lucas.server.components.sudoku.mapper.SudokuFileToSudokuMapper;
+import com.lucas.server.components.sudoku.service.SudokuGenerator;
+import com.lucas.server.components.sudoku.service.SudokuSolver;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Random;
 
+import static com.lucas.server.common.Constants.SUDOKU_NUMBER_OF_CELLS;
+
 @RestController
 @RequestMapping("/sudoku")
 public class SudokuController {
 
-    private final ControllerUtil controllerUtil;
-    private final DAO dao;
-    private final Generator generator;
-    private final SudokuFileToSudokuMapper mapper;
+    private final SudokuJpaService sudokuService;
+    private final SudokuFileToSudokuMapper fromFileMapper;
+    private final SudokuGenerator generator;
+    private final SudokuSolver solver;
     private final Random random;
 
-    public SudokuController(ControllerUtil controllerUtil, DAO dao, Generator generator, SudokuFileToSudokuMapper mapper, Random random) {
-        this.controllerUtil = controllerUtil;
-        this.dao = dao;
+    public SudokuController(SudokuJpaService sudokuService, SudokuGenerator generator, SudokuSolver solver,
+                            SudokuFileToSudokuMapper fromFileMapper, Random random) {
+        this.sudokuService = sudokuService;
         this.generator = generator;
-        this.mapper = mapper;
+        this.fromFileMapper = fromFileMapper;
+        this.solver = solver;
         this.random = random;
     }
 
     @PostMapping("/upload/sudokus")
-    public ResponseEntity<String> handleFileUpload(@RequestBody String file) {
+    public ResponseEntity<List<Sudoku>> handleFileUpload(@RequestBody String file) {
         if (file.length() > 10000) {
-            return ResponseEntity.ok().body("Stop");
-        } else {
-            return this.controllerUtil.handleRequest(() -> {
-                List<Sudoku> sudokus = mapper.fromString(file.replace("\"", "")).stream()
-                        .filter(s -> {
-                            Sudoku copy = Sudoku.withValues(s.get());
-                            return s.isValid(-1) && copy.solveWithTimeout();
-                        })
-                        .toList();
-                if (!sudokus.isEmpty()) {
-                    dao.insertSudokus(sudokus);
-                    return "1";
-                } else {
-                    return "No sudokus were inserted";
-                }
-            });
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
+
+        List<Sudoku> sudoku;
+        try {
+            sudoku = fromFileMapper.map(file.replace("\"", "")).stream()
+                    .filter(s -> {
+                        Sudoku copy = Sudoku.withValues(s.getState());
+                        return this.solver.isValid(s, -1) && this.solver.solveWithTimeout(copy);
+                    })
+                    .toList();
+        } catch (JsonProcessingException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+
+        return ResponseEntity.ok(sudokuService.saveAll(sudoku));
     }
 
     @GetMapping("fetch/sudoku")
-    public ResponseEntity<String> getRandom() {
-        return this.controllerUtil.handleRequest(() -> {
-            List<Sudoku> sudokus = dao.getSudokus();
-            if (sudokus.isEmpty()) {
-                return "No sudokus found";
-            } else {
-                return sudokus.get(this.random.nextInt(sudokus.size())).serialize();
-            }
-        });
+    public ResponseEntity<Sudoku> getRandom() {
+        List<Sudoku> sudoku = this.sudokuService.findAll();
+        if (sudoku.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        } else {
+            return ResponseEntity.ok(sudoku.get(random.nextInt(sudoku.size())));
+        }
     }
 
     @GetMapping("generate/sudoku")
-    public ResponseEntity<String> generateRandom(@RequestParam("difficulty") int difficulty) {
-        return this.controllerUtil.handleRequest(() -> generator.generate(difficulty).serialize());
+    public ResponseEntity<Sudoku> generateRandom(@RequestParam("difficulty") int difficulty) {
+        return ResponseEntity.ok(this.generator.generate(difficulty));
     }
 
-    @GetMapping("/solve/sudoku")
-    public String solveSudoku(@RequestParam String sudoku) {
-        int[] values = Sudoku.deserialize(sudoku);
-        if (0 == values.length) {
-            return "Invalid sudoku";
+    @PostMapping("/solve/sudoku")
+    public ResponseEntity<Sudoku> solveSudoku(@RequestBody Sudoku sudoku) {
+        Sudoku s = Sudoku.withValues(sudoku.getState());
+        if (!this.solver.isValid(s, -1) || !this.solver.solveWithTimeout(s)) {
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
         }
-        Sudoku s = Sudoku.withValues(values);
-        if (!s.isValid(-1)) {
-            return "Sudoku might have more than one solution";
-        }
-        if (!s.solveWithTimeout()) {
-            return "Unsolvable sudoku";
-        }
-        return s.serialize();
+
+        return ResponseEntity.ok(s);
     }
 
-    @GetMapping("/check/sudoku")
-    public ResponseEntity<String> checkSudoku(@RequestParam String initialSudoku, @RequestParam String currentSudoku) {
-        return this.controllerUtil.handleRequest(() -> {
-            int[] values = Sudoku.deserialize(initialSudoku);
-            Sudoku s = Sudoku.withValues(values);
-            if (!s.isValid(-1)) {
-                return "Sudoku might have more than one solution";
+    @PostMapping("/check/sudoku")
+    public ResponseEntity<Boolean> checkSudoku(@RequestBody List<Sudoku> sudoku) {
+        if (2 != sudoku.size()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+
+        int[] initialValues = sudoku.getFirst().getState();
+        Sudoku s = Sudoku.withValues(initialValues);
+        if (!this.solver.isValid(s, -1) || !this.solver.solveWithTimeout(s)) {
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
+        }
+
+        int[] currentState = s.getState();
+        int[] initialState = sudoku.get(1).getState();
+        for (int i = 0; i < SUDOKU_NUMBER_OF_CELLS; i++) {
+            if (initialState[i] != 0 && currentState[i] != initialState[i]) {
+                return ResponseEntity.ok(false);
             }
-            if (!s.solveWithTimeout()) {
-                return "Unsolvable sudoku";
-            }
-            String serialized = s.serialize().replace("\"", "");
-            String solvable = "1";
-            for (int i = 0; i < Sudoku.NUMBER_OF_CELLS; i++) {
-                if (currentSudoku.charAt(i) != '0' && serialized.charAt(i) != currentSudoku.charAt(i)) {
-                    solvable = "0";
-                    break;
-                }
-            }
-            return solvable;
-        });
+        }
+
+        return ResponseEntity.ok(true);
     }
 }

@@ -1,13 +1,26 @@
 package com.lucas.server.components.sudoku.mapper;
 
-import com.lucas.server.components.sudoku.Sudoku;
+import com.lucas.server.common.Constants;
+import com.lucas.server.common.JsonProcessingException;
+import com.lucas.server.common.Mapper;
+import com.lucas.server.components.sudoku.jpa.Sudoku;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class SudokuFileToSudokuMapper {
+public class SudokuFileToSudokuMapper implements Mapper<String, List<Sudoku>> {
+
+    private final StringToSudokuMapper sudokuMapper;
+    private static final Logger logger = LoggerFactory.getLogger(SudokuFileToSudokuMapper.class);
+
+    public SudokuFileToSudokuMapper(StringToSudokuMapper sudokuMapper) {
+        this.sudokuMapper = sudokuMapper;
+    }
 
     /**
      * Dumps a string representing sudoku into a list of sudoku
@@ -17,29 +30,29 @@ public class SudokuFileToSudokuMapper {
      *
      * @param content the string to parse
      */
-    public List<Sudoku> fromString(String content) {
+    @Override
+    public List<Sudoku> map(String content) throws JsonProcessingException {
+        List<Sudoku> sudoku = new ArrayList<>();
+        String[] lines;
         try {
-            List<Sudoku> sudokus = new ArrayList<>();
-            String[] lines = content.split("\\\\r\\\\n|\\\\r|\\\\n");
-            String newRawData = "";
-            for (int i = 0; i < lines.length; i++) {
-                if (0 == i % 10) {
-                    int[] values = Sudoku.deserialize(newRawData);
-                    if (Sudoku.NUMBER_OF_CELLS == values.length) {
-                        sudokus.add(Sudoku.withValues(values));
-                    }
-                    newRawData = "";
-                } else {
-                    newRawData = newRawData.concat(lines[i]);
-                }
-            }
-            int[] values = Sudoku.deserialize(newRawData);
-            if (Sudoku.NUMBER_OF_CELLS == values.length) {
-                sudokus.add(Sudoku.withValues(values));
-            }
-            return sudokus;
+            lines = content.split("\\\\r\\\\n|\\\\r|\\\\n");
         } catch (Exception e) {
-            return new ArrayList<>();
+            throw new JsonProcessingException(MessageFormat.format(Constants.JSON_MAPPING_ERROR, "sudoku"), e.getCause());
         }
+        String newRawData = "";
+        for (int i = 1; i <= lines.length; i++) {
+            if (0 == i % 10) {
+                try {
+                    sudoku.add(sudokuMapper.map(newRawData));
+                } catch (JsonProcessingException e) {
+                    logger.warn(Constants.SUDOKU_IGNORED_MALFORMED_JSON_WARN, newRawData, e);
+                }
+                newRawData = "";
+            } else if (i != lines.length) {
+                newRawData = newRawData.concat(lines[i]);
+            }
+        }
+
+        return sudoku;
     }
 }

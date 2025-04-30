@@ -1,6 +1,6 @@
 package com.lucas.server.components.sudoku.service;
 
-import com.lucas.server.components.sudoku.Sudoku;
+import com.lucas.server.components.sudoku.jpa.Sudoku;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -9,12 +9,16 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.IntStream;
 
-@Component
-public class Generator {
+import static com.lucas.server.common.Constants.*;
 
+@Component
+public class SudokuGenerator {
+
+    private final SudokuSolver solver;
     private final Random random;
 
-    public Generator(Random random) {
+    public SudokuGenerator(SudokuSolver solver, Random random) {
+        this.solver = solver;
         this.random = random;
     }
 
@@ -33,14 +37,14 @@ public class Generator {
 
     public boolean doGenerate(Sudoku sudoku) {
         List<Integer> digits = new ArrayList<>();
-        for (int digit : Sudoku.DIGITS) {
+        for (int digit : DIGITS) {
             digits.add(digit);
         }
-        for (int place = 0; place < Sudoku.NUMBER_OF_CELLS; place++) {
-            if (0 == sudoku.get()[place]) {
+        for (int place = 0; place < SUDOKU_NUMBER_OF_CELLS; place++) {
+            if (0 == sudoku.getState()[place]) {
                 Collections.shuffle(digits, random);
                 for (int digit : digits) {
-                    if (sudoku.acceptsNumberInPlace(place, digit)) {
+                    if (this.solver.acceptsNumberInPlace(sudoku, place, digit)) {
                         sudoku.set(place, digit);
                         if (doGenerate(sudoku)) {
                             return true;
@@ -55,18 +59,18 @@ public class Generator {
     }
 
     private void setDifficulty(Sudoku sudoku, int difficulty) {
-        int cellsToSetToZero = (Sudoku.NUMBER_OF_CELLS - (17 + ((9 - difficulty) * 6)));
+        int cellsToSetToZero = (SUDOKU_NUMBER_OF_CELLS - (17 + ((9 - difficulty) * 6)));
         List<Integer> possibleCells = new ArrayList<>();
-        for (int i = 0; i < Sudoku.NUMBER_OF_CELLS; i++) {
+        for (int i = 0; i < SUDOKU_NUMBER_OF_CELLS; i++) {
             possibleCells.add(i);
         }
-        int[] digits = Sudoku.DIGITS.clone();
+        int[] digits = DIGITS.clone();
         for (int i = 0; i < digits.length - 1; i++) {
             int digit = digits[i];
             possibleCells.remove(possibleCells.get(IntStream.range(0, possibleCells.size())
-                    .filter(cellIndex -> digit == sudoku.get()[possibleCells.get(cellIndex)])
+                    .filter(cellIndex -> digit == sudoku.getState()[possibleCells.get(cellIndex)])
                     .boxed()
-                    .toList().get(random.nextInt(Sudoku.SIZE))));
+                    .toList().get(random.nextInt(SUDOKU_SIZE))));
         }
         for (int i = 0; i < cellsToSetToZero; i++) {
             int randomCellIndex = random.nextInt(possibleCells.size());
