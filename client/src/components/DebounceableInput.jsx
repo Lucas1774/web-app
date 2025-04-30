@@ -4,7 +4,7 @@ import Form from 'react-bootstrap/Form';
 import { DEBOUNCE_DELAY } from '../constants';
 import useDebounce from '../hooks/useDebounce';
 
-const DebounceableInput = ({ value, id, name, onDebouncedChange }) => {
+const DebounceableInput = ({ value, id, onDebouncedChange }) => {
   const [innerValue, setInnerValue] = useState(value);
   const [shouldListenToDebounce, setShouldListenToDebounce] = useState(false);
   const debouncedValue = useDebounce(innerValue, DEBOUNCE_DELAY);
@@ -18,10 +18,10 @@ const DebounceableInput = ({ value, id, name, onDebouncedChange }) => {
 
   useEffect(() => {
     if (shouldListenToDebounce && debouncedValue !== null && debouncedValue !== value) {
-      onDebouncedChange(debouncedValue, id, name);
+      onDebouncedChange(debouncedValue, id);
       inputRef.current.blur();
     }
-  }, [debouncedValue, id, name, onDebouncedChange, shouldListenToDebounce, value]);
+  }, [debouncedValue, id, onDebouncedChange, shouldListenToDebounce, value]);
 
   return (
     <Form.Control
@@ -43,7 +43,6 @@ const DebounceableInput = ({ value, id, name, onDebouncedChange }) => {
 DebounceableInput.propTypes = {
   value: PropTypes.number.isRequired,
   id: PropTypes.number.isRequired,
-  name: PropTypes.string.isRequired,
   onDebouncedChange: PropTypes.func,
 };
 

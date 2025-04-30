@@ -26,6 +26,7 @@ export const DEBOUNCE_DELAY = 500;
 export const NEW = "new";
 export const DESC = "desc";
 export const ASC = "asc";
+export const PRODUCT_KEY = "product";
 export const ID_KEY = "id";
 export const NAME_KEY = "name";
 export const ORDER_KEY = "order";

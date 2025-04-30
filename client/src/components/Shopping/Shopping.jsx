@@ -48,14 +48,14 @@ const Shopping = () => {
         const checkAuth = async () => {
             setIsLoading(true);
             try {
-                const response = await get("/authentication/check-auth");
-                if (response.data !== 1) {
+                await get("/authentication/check-auth");
+                await getData();
+            } catch (error) {
+                if (error.response?.status === 403) {
                     setIsLoginFormVisible(true);
                 } else {
-                    await getData();
+                    handleError("Error checking authentication", error);
                 }
-            } catch (error) {
-                handleError("Error checking authentication", error);
             } finally {
                 setIsLoading(false);
             }
@@ -68,7 +68,16 @@ const Shopping = () => {
         setIsLoading(true);
         try {
             const response = await get("/shopping/shopping");
-            setTableData(response.data);
+            setTableData(response.data.map(item => ({
+                [constants.ID_KEY]: item[constants.PRODUCT_KEY][constants.ID_KEY],
+                [constants.NAME_KEY]: item[constants.PRODUCT_KEY][constants.NAME_KEY],
+                [constants.QUANTITY_KEY]: item[constants.QUANTITY_KEY],
+                [constants.IS_RARE_KEY]: item[constants.PRODUCT_KEY][constants.IS_RARE_KEY],
+                [constants.ORDER_KEY]: item[constants.PRODUCT_KEY][constants.ORDER_KEY],
+                [constants.CATEGORY_ID_KEY]: item[constants.PRODUCT_KEY][constants.CATEGORY_KEY]?.[constants.ID_KEY] ?? null,
+                [constants.CATEGORY_KEY]: item[constants.PRODUCT_KEY][constants.CATEGORY_KEY]?.[constants.NAME_KEY] ?? "",
+                [constants.CATEGORY_ORDER_KEY]: item[constants.PRODUCT_KEY][constants.CATEGORY_KEY]?.[constants.ORDER_KEY] ?? null,
+            })));
         } catch (error) {
             handleError("Error fetching data", error);
         } finally {
@@ -76,59 +85,78 @@ const Shopping = () => {
         }
     };
 
-    const makeGenericRequest = async (request, callbackAfterSuccess, putToLoad = true) => {
-        setIsLoading(putToLoad);
-        try {
-            const response = await request();
-            let message = response.data;
-            if (message) {
-                setMessage(message);
-                setTimeout(() => {
-                    setMessage(null);
-                    callbackAfterSuccess();
-                }, constants.TIMEOUT_DELAY);
-            } else {
-                callbackAfterSuccess();
-            }
-        } catch (error) {
-            handleError("Error sending data", error);
-        } finally {
-            if (putToLoad) {
-                setIsLoading(false);
-            }
-        }
-    };
-
-    const updateProductQuantity = useCallback((value, id, name) => {
+    const updateProductQuantity = useCallback(async (value, id) => {
         if (isNaN(value) || parseInt(value) < 0) {
             return;
         }
-        makeGenericRequest(() => post('/shopping/update-product-quantity', { [constants.ID_KEY]: id, [constants.NAME_KEY]: name, [constants.QUANTITY_KEY]: parseInt(value) }), () => {
+        try {
+            await post('/shopping/update-product-quantity', {
+                [constants.PRODUCT_KEY]: {
+                    [constants.ID_KEY]: id,
+                    [constants.TYPE_KEY]: "products"
+                },
+                [constants.QUANTITY_KEY]: parseInt(value),
+            });
             setTableData(previous => previous.map(product =>
                 product[constants.ID_KEY] === id
                     ? { ...product, [constants.QUANTITY_KEY]: value }
                     : product
-            )
-            );
-        }, false);
+            ));
+        } catch (error) {
+            handleError("Error sending data", error);
+        }
     }, []);
 
     const updateProduct = async (id, name, isRare, categoryId, category) => {
-        makeGenericRequest(() => post('/shopping/update-product', {
-            [constants.ID_KEY]: id, [constants.NAME_KEY]: name,
-            [constants.IS_RARE_KEY]: isRare, [constants.CATEGORY_ID_KEY]: categoryId, [constants.CATEGORY_KEY]: category
-        }), () => {
-            setIsLoading(true);
-            setIsPopupVisible(false);
-            getData();
-        });
+        setIsLoading(true);
+        try {
+            await post('/shopping/update-product', {
+                [constants.ID_KEY]: id,
+                [constants.NAME_KEY]: name,
+                [constants.IS_RARE_KEY]: isRare,
+                [constants.TYPE_KEY]: "products",
+                [constants.CATEGORY_KEY]: {
+                    [constants.ID_KEY]: categoryId,
+                    [constants.NAME_KEY]: category,
+                    [constants.TYPE_KEY]: "categories"
+                }
+            });
+            setMessage("Product " + name + " updated successfully");
+            setTimeout(() => {
+                setMessage(null);
+                setIsLoading(true);
+                setIsPopupVisible(false);
+                getData();
+            }, constants.TIMEOUT_DELAY);
+        } catch (error) {
+            if (error.response?.status === 401) {
+                setMessage("Unauthorized");
+                setTimeout(() => {
+                    setMessage(null);
+                }, constants.TIMEOUT_DELAY);
+            } else {
+                handleError("Error sending data", error);
+            }
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const removeProduct = async (id, name) => {
-        makeGenericRequest(() => post('/shopping/remove-product', { [constants.ID_KEY]: id, [constants.NAME_KEY]: name }), () => {
-            setIsLoading(true);
-            getData();
-        });
+        setIsLoading(true);
+        try {
+            await post('/shopping/remove-product', { [constants.ID_KEY]: id, [constants.TYPE_KEY]: "products" });
+            setMessage("Product " + name + " removed successfully");
+            setTimeout(() => {
+                setMessage(null);
+                setIsLoading(true);
+                getData();
+            }, constants.TIMEOUT_DELAY);
+        } catch (error) {
+            handleError("Error sending data", error);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleLoginSubmit = async (event) => {
@@ -145,19 +173,49 @@ const Shopping = () => {
                 getData();
             }, constants.TIMEOUT_DELAY);
         } else {
-            makeGenericRequest(() => post('/authentication/login', { [constants.USERNAME]: username, [constants.PASSWORD]: password }), () => {
-                setIsLoading(true);
-                setIsLoginFormVisible(false);
-                getData();
-            });
+            setIsLoading(true);
+            try {
+                await post('/authentication/login', { [constants.USERNAME]: username, [constants.PASSWORD]: password });
+                setMessage("Login successful");
+                setTimeout(() => {
+                    setMessage(null);
+                    setIsLoading(true);
+                    setIsLoginFormVisible(false);
+                    getData();
+                }, constants.TIMEOUT_DELAY);
+            } catch (error) {
+                if (error.response?.status === 403) {
+                    setMessage("Wrong credentials. Continuing as guest");
+                    setTimeout(() => {
+                        setMessage(null);
+                        setIsLoading(true);
+                        setIsLoginFormVisible(false);
+                        getData();
+                    }, constants.TIMEOUT_DELAY);
+                } else {
+                    handleError("Error sending data", error);
+                }
+            } finally {
+                setIsLoading(false);
+            }
         }
     };
 
     const handleResetAll = async () => {
-        makeGenericRequest(() => post('/shopping/update-all-product-quantity', null), () => {
-            setIsLoading(true);
-            getData();
-        });
+        setIsLoading(true);
+        try {
+            await post('/shopping/update-all-product-quantity', 0);
+            setMessage("All quantities were set to 0");
+            setTimeout(() => {
+                setMessage(null);
+                setIsLoading(true);
+                getData();
+            }, constants.TIMEOUT_DELAY);
+        } catch (error) {
+            handleError("Error sending data", error);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleAddProductSubmit = async (event) => {
@@ -166,10 +224,27 @@ const Shopping = () => {
         if (!name) {
             return;
         }
-        makeGenericRequest(() => post('/shopping/new-product', name), () => {
-            setIsLoading(true);
-            getData();
-        });
+        setIsLoading(true);
+        try {
+            await post('/shopping/new-product', name);
+            setMessage("Product " + name + " added successfully");
+            setTimeout(() => {
+                setMessage(null);
+                setIsLoading(true);
+                getData();
+            }, constants.TIMEOUT_DELAY);
+        } catch (error) {
+            if (error.response?.status === 409) {
+                setMessage("Product already exists");
+                setTimeout(() => {
+                    setMessage(null);
+                }, constants.TIMEOUT_DELAY);
+            } else {
+                handleError("Error sending data", error);
+            }
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const getPossibleCategories = async () => {
@@ -215,11 +290,28 @@ const Shopping = () => {
             [constants.TYPE_KEY]: sortablesType,
         }));
         // use sortablestype to enrich "sortables"
-        makeGenericRequest(() => post('/shopping/update-sortables', updatedSortables), () => {
-            setIsLoading(true);
-            setIsPopupVisible(false);
-            getData();
-        });
+        setIsLoading(true);
+        try {
+            await post('/shopping/update-sortables', updatedSortables);
+            setMessage("Elements successfully sorted");
+            setTimeout(() => {
+                setMessage(null);
+                setIsLoading(true);
+                setIsPopupVisible(false);
+                getData();
+            }, constants.TIMEOUT_DELAY);
+        } catch (error) {
+            if (error.response?.status === 401) {
+                setMessage("Unauthorized");
+                setTimeout(() => {
+                    setMessage(null);
+                }, constants.TIMEOUT_DELAY);
+            } else {
+                handleError("Error sending data", error);
+            }
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleOrderClick = (key) => {
@@ -261,7 +353,7 @@ const Shopping = () => {
     };
 
     const handleDebouncedChange = useCallback(
-        (value, id, name) => updateProductQuantity(value, id, name),
+        (value, id) => updateProductQuantity(value, id),
         [updateProductQuantity]
     );
 
