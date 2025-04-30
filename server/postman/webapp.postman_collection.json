@@ -9,7 +9,7 @@
 	},
 	"item": [
 		{
-			"name": "authentication/",
+			"name": "authentication/ needs removedCookie",
 			"item": [
 				{
 					"name": "valid user",
@@ -22,9 +22,7 @@
 									"script": {
 										"exec": [
 											"pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));\r",
-											"pm.test(\"Body is 'Granted access'\", () => {\r",
-											"    pm.expect(pm.response.text()).to.eql(\"Granted access\");\r",
-											"});\r",
+											"\r",
 											"pm.test(\"authToken cookie set\", () => pm.expect(pm.cookies.has(\"authToken\")).to.be.true);\r",
 											"if (pm.cookies.has(\"authToken\")) {\r",
 											"    pm.environment.set(\"authToken\", pm.cookies.get(\"authToken\"));\r",
@@ -69,7 +67,7 @@
 									"script": {
 										"exec": [
 											"pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));\r",
-											"pm.test(\"Body is '1'\", () => pm.expect(pm.response.text()).to.eql(\"1\"));\r",
+											"\r",
 											"pm.cookies.clear();"
 										],
 										"type": "text/javascript",
@@ -115,11 +113,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));\r",
-											"pm.test(\"Body is guest message\", () => {\r",
-											"    pm.expect(pm.response.text()).to.eql(\"Wrong credentials. Continuing as guest\");\r",
-											"});\r",
-											"pm.test(\"No authToken cookie\", () => pm.expect(pm.cookies.has(\"authToken\")).to.be.false);\r",
+											"pm.test(\"Status code is 403\", () => pm.response.to.have.status(403));\r",
 											""
 										],
 										"type": "text/javascript",
@@ -169,10 +163,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));\r",
-											"pm.test(\"Body is 'Not authenticated'\", () => {\r",
-											"    pm.expect(pm.response.text()).to.eql(\"Not authenticated\");\r",
-											"});\r",
+											"pm.test(\"Status code is 403\", () => pm.response.to.have.status(403));\r",
 											""
 										],
 										"type": "text/javascript",
@@ -870,6 +861,734 @@
 							"path": [
 								"calculator",
 								"ans"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "shopping/",
+			"item": [
+				{
+					"name": "login validuser",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));\r",
+									"\r",
+									"pm.test(\"authToken cookie set\", () => pm.expect(pm.cookies.has(\"authToken\")).to.be.true);\r",
+									"if (pm.cookies.has(\"authToken\")) {\r",
+									"    pm.environment.set(\"authToken\", pm.cookies.get(\"authToken\"));\r",
+									"}\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"admin\",\r\n    \"password\": \"admin\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/authentication/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"authentication",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "shopping",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// 1) status is 200\r",
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"// 2) body is JSON array\r",
+									"let json = pm.response.json();\r",
+									"pm.test(\"Response is an array\", () => {\r",
+									"    pm.expect(Array.isArray(json)).to.be.true;\r",
+									"});\r",
+									"\r",
+									"// 3) each element has required properties\r",
+									"pm.test(\"Each item has required properties\", () => {\r",
+									"\r",
+									"    json.forEach(item => {\r",
+									"        pm.expect(item).to.have.property(\"quantity\").that.is.a(\"number\");\r",
+									"\r",
+									"        pm.expect(item).to.have.property(\"product\").that.is.an(\"object\");\r",
+									"        pm.expect(item.product).to.have.property(\"order\").that.is.a(\"number\");\r",
+									"        pm.expect(item.product).to.have.property(\"type\", \"products\");\r",
+									"        pm.expect(item.product).to.have.property(\"id\").that.is.a(\"number\");\r",
+									"        pm.expect(item.product).to.have.property(\"name\").that.is.a(\"string\");\r",
+									"        pm.expect(item.product).to.have.property(\"isRare\").that.is.a(\"boolean\");\r",
+									"        pm.expect(item.product).to.have.property(\"order\").that.is.a(\"number\");\r",
+									"\r",
+									"        const category = item.product.category;\r",
+									"        if (category && typeof category === \"object\") {\r",
+									"            foundObjectCategory = true;\r",
+									"            pm.expect(category).to.have.property(\"type\", \"categories\");\r",
+									"            pm.expect(category).to.have.property(\"id\").that.is.a(\"number\");\r",
+									"            pm.expect(category).to.have.property(\"name\").that.is.a(\"string\");\r",
+									"            pm.expect(category).to.have.property(\"order\").that.is.a(\"number\");\r",
+									"        } else {\r",
+									"            pm.expect(category).to.be.null;\r",
+									"        }\r",
+									"    });\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/shopping/shopping",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"shopping",
+								"shopping"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get-possible-categories",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// 1) status is 200\r",
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"// 2) body is JSON array\r",
+									"let json = pm.response.json();\r",
+									"pm.test(\"Response is an array\", () => {\r",
+									"    pm.expect(Array.isArray(json)).to.be.true;\r",
+									"});\r",
+									"\r",
+									"// 3) each element has id, product.name, quantity, productOrder\r",
+									"pm.test(\"Each item has required properties\", () => {\r",
+									"    json.forEach(item => {\r",
+									"        pm.expect(item).to.have.property(\"type\", \"categories\");\r",
+									"        pm.expect(item).to.have.property(\"id\").that.is.a(\"number\");\r",
+									"        pm.expect(item).to.have.property(\"name\").that.is.a(\"string\");\r",
+									"        pm.expect(item).to.have.property(\"order\").that.is.a(\"number\");\r",
+									"    });\r",
+									"});\r",
+									"\r",
+									"// 4) items are ordered by 'order' property\r",
+									"pm.test(\"Items are ordered by 'order'\", () => {\r",
+									"    const orders = json.map(item => item.order);\r",
+									"    const sorted = [...orders].sort((a, b) => a - b);\r",
+									"    pm.expect(orders).to.eql(sorted);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/shopping/get-possible-categories",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"shopping",
+								"get-possible-categories"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "new-product actuallynew",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// 1) status is 200\r",
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"// 2) body is a JSON object\r",
+									"const json = pm.response.json();\r",
+									"pm.test(\"Response is an object\", () => {\r",
+									"    pm.expect(json).to.be.an(\"object\");\r",
+									"});\r",
+									"\r",
+									"// 3) object has id, name, rare, category (nullable), and order\r",
+									"pm.test(\"Object has required properties\", () => {\r",
+									"    pm.expect(json).to.have.property(\"type\", \"products\");\r",
+									"    pm.expect(json).to.have.property(\"id\").that.is.a(\"number\");\r",
+									"    pm.expect(json).to.have.property(\"name\").that.is.a(\"string\");\r",
+									"    pm.expect(json).to.have.property(\"isRare\").that.is.a(\"boolean\");\r",
+									"    pm.expect(json).to.have.property(\"order\").that.is.a(\"number\");\r",
+									"    pm.expect(json).to.have.property(\"category\");\r",
+									"    pm.expect(json.category).to.be.null;\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "\"product1\"",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/shopping/new-product",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"shopping",
+								"new-product"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "new-product",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// 1) status is 200\r",
+									"pm.test(\"Status code is 409\", () => {\r",
+									"    pm.response.to.have.status(409);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "\"product1\"",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/shopping/new-product",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"shopping",
+								"new-product"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update-product",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));\r",
+									"const p = pm.response.json();\r",
+									"pm.test(\"Name updated\", () => pm.expect(p.name).to.eql(\"NewName\"));\r",
+									"pm.test(\"Rare flag true\", () => pm.expect(p.isRare).to.be.true);\r",
+									"pm.test(\"Category created or assigned\", () => {\r",
+									"  pm.expect(p.category).to.include.keys(\"id\",\"name\");\r",
+									"  pm.expect(p.category.name).to.eql(\"someNewCat5\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"type\": \"products\",\r\n    \"id\": 1,\r\n    \"name\": \"NewName\",\r\n    \"isRare\": true,\r\n    \"category\": {\r\n        \"type\": \"categories\",\r\n        \"id\": null,\r\n        \"name\": \"someNewCat5\"\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/shopping/update-product",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"shopping",
+								"update-product"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update-product-quantity",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));\r",
+									"const item = pm.response.json();\r",
+									"pm.test(\"Quantity updated\", () => pm.expect(item.quantity).to.eql(42));\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"product\": {\r\n        \"type\": \"products\",\r\n        \"id\": 1\r\n    },\r\n    \"quantity\": 42\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/shopping/update-product-quantity",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"shopping",
+								"update-product-quantity"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "login unatuhroizedUser",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));\r",
+									"\r",
+									"pm.test(\"authToken cookie set\", () => pm.expect(pm.cookies.has(\"authToken\")).to.be.true);\r",
+									"if (pm.cookies.has(\"authToken\")) {\r",
+									"    pm.environment.set(\"authToken\", pm.cookies.get(\"authToken\"));\r",
+									"}\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"default\",\r\n    \"password\": \"default\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/authentication/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"authentication",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update-product unauthorized",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 401\", () => pm.response.to.have.status(401));\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"type\": \"products\",\r\n    \"id\": 1,\r\n    \"name\": \"NewName\",\r\n    \"isRare\": true,\r\n    \"category\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/shopping/update-product",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"shopping",
+								"update-product"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update-all-product-quantity",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200\", () => pm.response.to.have.status(200));\r",
+									"const arr = pm.response.json();\r",
+									"pm.test(\"Array returned\", () => pm.expect(arr).to.be.an(\"array\"));\r",
+									"pm.test(\"All quantities are 7\", () => {\r",
+									"  arr.forEach(i => pm.expect(i.quantity).to.eql(7));\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "7",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/shopping/update-all-product-quantity",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"shopping",
+								"update-all-product-quantity"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "remove-product but already gone",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 500\", () => pm.response.to.have.status(500));\r",
+									"// then re-GET shopping items to verify\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id\": 23,\r\n    \"type\": \"products\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/shopping/remove-product",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"shopping",
+								"remove-product"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update-sortables unauthorized",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"401 Unauthorized\", () => pm.response.to.have.status(401));\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/shopping/update-sortables",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"shopping",
+								"update-sortables"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "login validuser",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));\r",
+									"\r",
+									"pm.test(\"authToken cookie set\", () => pm.expect(pm.cookies.has(\"authToken\")).to.be.true);\r",
+									"if (pm.cookies.has(\"authToken\")) {\r",
+									"    pm.environment.set(\"authToken\", pm.cookies.get(\"authToken\"));\r",
+									"}\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"admin\",\r\n    \"password\": \"admin\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/authentication/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"authentication",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "new-product actuallynew",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// 1) status is 200\r",
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"// 2) body is a JSON object\r",
+									"const json = pm.response.json();\r",
+									"pm.test(\"Response is an object\", () => {\r",
+									"    pm.expect(json).to.be.an(\"object\");\r",
+									"});\r",
+									"\r",
+									"// 3) object has id, name, rare, category (nullable), and order\r",
+									"pm.test(\"Object has required properties\", () => {\r",
+									"    pm.expect(json).to.have.property(\"type\", \"products\");\r",
+									"    pm.expect(json).to.have.property(\"id\").that.is.a(\"number\");\r",
+									"    pm.expect(json).to.have.property(\"name\").that.is.a(\"string\");\r",
+									"    pm.expect(json).to.have.property(\"isRare\").that.is.a(\"boolean\");\r",
+									"    pm.expect(json).to.have.property(\"order\").that.is.a(\"number\");\r",
+									"    pm.expect(json).to.have.property(\"category\");\r",
+									"    pm.expect(json.category).to.be.null;\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "\"product2\"",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/shopping/new-product",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"shopping",
+								"new-product"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update-sortables authorized",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"200 OK\", () => pm.response.to.have.status(200));\r",
+									"const out = pm.response.json();\r",
+									"pm.test(\"Returns array same length\", () => pm.expect(out.length).to.eql(2));\r",
+									"pm.test(\"Orders updated\", () => {\r",
+									"  pm.expect(out.find(x=>x.id===1).order).to.eql(2);\r",
+									"  pm.expect(out.find(x=>x.id===2).order).to.eql(1);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\r\n    {\r\n        \"type\": \"products\",\r\n        \"id\": 2\r\n    },\r\n    {\r\n        \"type\": \"products\",\r\n        \"id\": 1\r\n    }\r\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/shopping/update-sortables",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"shopping",
+								"update-sortables"
 							]
 						}
 					},

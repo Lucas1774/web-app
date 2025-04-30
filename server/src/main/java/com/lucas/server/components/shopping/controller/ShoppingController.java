@@ -1,107 +1,94 @@
 package com.lucas.server.components.shopping.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lucas.server.common.controller.ControllerUtil;
-import com.lucas.server.components.shopping.dto.Category;
-import com.lucas.server.components.shopping.dto.ShoppingItem;
+import com.lucas.server.common.jpa.OrderColumnJpaService;
 import com.lucas.server.components.shopping.dto.Sortable;
-import com.lucas.server.connection.DAO;
+import com.lucas.server.components.shopping.jpa.category.Category;
+import com.lucas.server.components.shopping.jpa.category.CategoryJpaService;
+import com.lucas.server.components.shopping.jpa.product.Product;
+import com.lucas.server.components.shopping.jpa.product.ProductJpaService;
+import com.lucas.server.components.shopping.jpa.shopping.ShoppingItem;
+import com.lucas.server.components.shopping.jpa.shopping.ShoppingItemJpaService;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/shopping")
 public class ShoppingController {
 
     private final ControllerUtil controllerUtil;
-    private final DAO dao;
-    private final ObjectMapper objectMapper;
+    private final ShoppingItemJpaService shoppingItemService;
+    private final ProductJpaService productService;
+    private final CategoryJpaService categoryJpaService;
+    private final Map<Class<? extends Sortable>, OrderColumnJpaService<? extends Sortable>> classToOrderColumnService;
 
-    public ShoppingController(ControllerUtil controllerUtil, DAO dao, ObjectMapper objectMapper) {
+    public ShoppingController(ControllerUtil controllerUtil, ShoppingItemJpaService shoppingItemService,
+                              ProductJpaService productService, CategoryJpaService categoryJpaService) {
         this.controllerUtil = controllerUtil;
-        this.dao = dao;
-        this.objectMapper = objectMapper;
+        this.shoppingItemService = shoppingItemService;
+        this.productService = productService;
+        this.categoryJpaService = categoryJpaService;
+        this.classToOrderColumnService = Map.of(Product.class, productService, Category.class, categoryJpaService);
     }
 
     @GetMapping("/shopping")
-    public ResponseEntity<String> getShoppingItems(HttpServletRequest request) {
-        return this.controllerUtil.handleRequest(() -> {
-            List<ShoppingItem> items = dao
-                    .getShoppingItems(this.controllerUtil.retrieveUsername(request.getCookies()));
-            return this.objectMapper.writeValueAsString(items);
-        });
+    public ResponseEntity<List<ShoppingItem>> getShoppingItems(HttpServletRequest request) {
+        return ResponseEntity.ok(this.shoppingItemService.findAllByUsername(this.controllerUtil.retrieveUsername(request.getCookies())));
     }
 
     @GetMapping("/get-possible-categories")
-    public ResponseEntity<String> getPossibleCategories() {
-        return this.controllerUtil.handleRequest(() -> {
-            List<Category> categories = dao.getPossibleCategories();
-            return this.objectMapper.writeValueAsString(categories);
-        });
+    public ResponseEntity<List<Category>> getPossibleCategories() {
+        return ResponseEntity.ok(categoryJpaService.findAllByOrderByOrderAsc());
     }
 
     @PostMapping("/new-product")
-    public ResponseEntity<String> postProduct(HttpServletRequest request, @RequestBody String itemName) {
-        return this.controllerUtil.handleRequest(() -> {
-            dao.insertProduct(itemName.replace("\"", ""), this.controllerUtil.retrieveUsername(request.getCookies()));
-            return "Product added";
-        });
+    public ResponseEntity<Product> postProduct(HttpServletRequest request, @RequestBody String name) {
+        return productService.createProductAndOrLinkToUser(name.replace("\"", ""), controllerUtil.retrieveUsername(request.getCookies()))
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.CONFLICT).build());
     }
 
     @PostMapping("/update-product")
-    public ResponseEntity<String> updateProduct(HttpServletRequest request, @RequestBody ShoppingItem data) {
-        return this.controllerUtil.handleRequest(() -> {
-            if (controllerUtil.isAdmin(this.controllerUtil.retrieveUsername(request.getCookies()))) {
-                dao.updateProduct((data.getId()),
-                        data.getName(),
-                        data.getIsRare(),
-                        data.getCategoryId(),
-                        data.getCategory());
-                return "Product updated";
-            } else {
-                return "Unauthorized";
-            }
-        });
+    public ResponseEntity<Product> updateProduct(HttpServletRequest request, @RequestBody Product product) {
+        if (!controllerUtil.isAdmin(this.controllerUtil.retrieveUsername(request.getCookies()))) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        return ResponseEntity.ok(productService.updateProductCreateCategoryIfNecessary(product));
     }
 
     @PostMapping("/update-product-quantity")
-    public ResponseEntity<String> updateProductQuantity(HttpServletRequest request,
-                                                        @RequestBody ShoppingItem data) {
-        return this.controllerUtil.handleRequest(() -> {
-            dao.updateProductQuantity(data.getId(), data.getQuantity(),
-                    this.controllerUtil.retrieveUsername(request.getCookies()));
-            return "";
-        });
+    public ResponseEntity<ShoppingItem> updateProductQuantity(HttpServletRequest request, @RequestBody ShoppingItem shoppingItem) {
+        return ResponseEntity.ok(shoppingItemService.updateShoppingItemQuantity(shoppingItem, this.controllerUtil.retrieveUsername(request.getCookies())));
     }
 
     @PostMapping("/update-all-product-quantity")
-    public ResponseEntity<String> updateAllProductQuantity(HttpServletRequest request) {
-        return this.controllerUtil.handleRequest(() -> {
-            dao.updateAllProductQuantity(this.controllerUtil.retrieveUsername(request.getCookies()));
-            return "All quantities were set to 0";
-        });
+    public ResponseEntity<List<ShoppingItem>> updateAllProductQuantity(HttpServletRequest request, @RequestBody Integer quantity) {
+        return ResponseEntity.ok(shoppingItemService.updateAllShoppingItemQuantities(this.controllerUtil.retrieveUsername(request.getCookies()), quantity));
     }
 
     @PostMapping("/remove-product")
-    public ResponseEntity<String> removeProduct(HttpServletRequest request, @RequestBody ShoppingItem data) {
-        return this.controllerUtil.handleRequest(() -> {
-            dao.removeProduct(data.getId(), this.controllerUtil.retrieveUsername(request.getCookies()));
-            return "Product " + data.getName() + " removed";
-        });
+    public ResponseEntity<ShoppingItem> removeProduct(HttpServletRequest request, @RequestBody Product product) {
+        return ResponseEntity.ok(shoppingItemService.deleteByProductAndUsernameRemoveOrphanedProductIfNecessary(product, this.controllerUtil.retrieveUsername(request.getCookies())));
     }
 
     @PostMapping("update-sortables")
-    public ResponseEntity<String> updateSortable(HttpServletRequest request, @RequestBody List<Sortable> elements) {
-        return this.controllerUtil.handleRequest(() -> {
-            if (controllerUtil.isAdmin(this.controllerUtil.retrieveUsername(request.getCookies()))) {
-                dao.updateOrders(elements);
-                return "Elements successfully sorted";
-            } else {
-                return "Unauthorized";
-            }
-        });
+    public <T extends Sortable> ResponseEntity<List<T>> updateSortable(HttpServletRequest request, @RequestBody List<T> elements) {
+        if (!controllerUtil.isAdmin(this.controllerUtil.retrieveUsername(request.getCookies()))) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        if (elements.isEmpty()) {
+            return ResponseEntity.ok(elements);
+        }
+        return ResponseEntity.ok(this.getService(elements).updateOrders(elements));
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T extends Sortable> OrderColumnJpaService<T> getService(List<T> elements) {
+        return (OrderColumnJpaService<T>) this.classToOrderColumnService.get(elements.getFirst().getClass());
     }
 }

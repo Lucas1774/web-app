@@ -1,8 +1,12 @@
 package com.lucas.server.connection;
 
 import com.lucas.server.TestcontainersConfiguration;
-import com.lucas.server.components.shopping.dto.Category;
-import com.lucas.server.components.shopping.dto.ShoppingItem;
+import com.lucas.server.components.shopping.jpa.category.Category;
+import com.lucas.server.components.shopping.jpa.category.CategoryJpaService;
+import com.lucas.server.components.shopping.jpa.product.Product;
+import com.lucas.server.components.shopping.jpa.product.ProductJpaService;
+import com.lucas.server.components.shopping.jpa.shopping.ShoppingItem;
+import com.lucas.server.components.shopping.jpa.shopping.ShoppingItemJpaService;
 import com.lucas.server.components.sudoku.Sudoku;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -17,9 +21,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @Import(TestcontainersConfiguration.class)
-class DAOTest {
+class DataAccessTest {
+
     @Autowired
     DAO dao;
+
+    @Autowired
+    ShoppingItemJpaService shoppingItemService;
+
+    @Autowired
+    CategoryJpaService categoryService;
+
+    @Autowired
+    ProductJpaService productService;
 
     @Autowired
     NamedParameterJdbcTemplate jdbcTemplate;
@@ -45,20 +59,18 @@ class DAOTest {
         );
 
         // insert product and assign
-        dao.insertProduct("item1", "bob");
-        List<ShoppingItem> items = dao.getShoppingItems("bob");
+        productService.createProductAndOrLinkToUser("item1", "bob");
+        List<ShoppingItem> items = shoppingItemService.findAllByUsername("bob");
         assertThat(items).hasSize(1);
         ShoppingItem item = items.getFirst();
-        assertThat(item.getName()).isEqualTo("item1");
+        assertThat(item.getProduct().getName()).isEqualTo("item1");
 
         // update quantity
-        dao.updateProductQuantity(item.getId(), 5, "bob");
-        items = dao.getShoppingItems("bob");
-        assertThat(items.getFirst().getQuantity()).isEqualTo(5);
+        assertThat(shoppingItemService.updateShoppingItemQuantity(new ShoppingItem().setProduct(item.getProduct()).setQuantity(5), "bob").getQuantity()).isEqualTo(5);
 
         // remove
-        dao.removeProduct(item.getId(), "bob");
-        items = dao.getShoppingItems("bob");
+        shoppingItemService.deleteByProductAndUsernameRemoveOrphanedProductIfNecessary(item.getProduct(), "bob");
+        items = shoppingItemService.findAllByUsername("bob");
         assertThat(items).isEmpty();
     }
 
@@ -75,7 +87,7 @@ class DAOTest {
         jdbcTemplate.getJdbcOperations().execute(
                 "INSERT INTO categories(name, category_order) VALUES('x',10),( 'y',20 )"
         );
-        List<Category> cats = dao.getPossibleCategories();
+        List<Category> cats = categoryService.findAllByOrderByOrderAsc();
         assertThat(cats).extracting(Category::getName).containsExactly("x", "y");
     }
 
@@ -85,15 +97,15 @@ class DAOTest {
         jdbcTemplate.getJdbcOperations().execute(
                 "INSERT INTO categories(name, category_order) VALUES('a',1),('b',2)"
         );
-        List<Category> cats = dao.getPossibleCategories();
+        List<Category> cats = categoryService.findAllByOrderByOrderAsc();
         // swap order
         Category first = cats.get(0);
         Category second = cats.get(1);
         first.setOrder(second.getOrder());
         second.setOrder(first.getOrder() - 1);
 
-        dao.updateOrders(List.of(first, second));
-        List<Category> updated = dao.getPossibleCategories();
+        categoryService.updateOrders(List.of(first, second));
+        List<Category> updated = categoryService.findAllByOrderByOrderAsc();
         assertThat(updated.getFirst().getOrder()).isEqualTo(second.getOrder());
     }
 
@@ -107,18 +119,20 @@ class DAOTest {
                 "INSERT INTO categories(name, category_order) VALUES('existingCat', 1)"
         );
         // insert a product
-        dao.insertProduct("prod1", "carol");
-        List<ShoppingItem> items = dao.getShoppingItems("carol");
-        int prodId = items.getFirst().getId();
+        productService.createProductAndOrLinkToUser("prod1", "carol");
+        List<ShoppingItem> items = shoppingItemService.findAllByUsername("carol");
+        Product item = items.getFirst().getProduct();
 
         // update product name, rarity and assign existing category
-        dao.updateProduct(prodId, "prod1Updated", true, 1, "existingCat");
+        this.productService.updateProductCreateCategoryIfNecessary(new Product().setId((item.getId())).setName("prod1Updated").setIsRare(true).setCategory(
+                new Category().setId(1L).setName("existingCat")
+        ));
 
         // verify update
-        List<ShoppingItem> updated = dao.getShoppingItems("carol");
-        assertThat(updated.getFirst().getName()).isEqualTo("prod1Updated");
-        assertThat(updated.getFirst().getIsRare()).isTrue();
-        assertThat(updated.getFirst().getCategoryId()).isEqualTo(1);
+        List<ShoppingItem> updated = shoppingItemService.findAllByUsername("carol");
+        assertThat(updated.getFirst().getProduct().getName()).isEqualTo("prod1Updated");
+        assertThat(updated.getFirst().getProduct().getIsRare()).isTrue();
+        assertThat(updated.getFirst().getProduct().getCategory().getId()).isEqualTo(1);
     }
 
     @Test
@@ -127,21 +141,25 @@ class DAOTest {
         jdbcTemplate.getJdbcOperations().execute(
                 "INSERT INTO users(username, password) VALUES('dave','pwd')"
         );
-        dao.insertProduct("prod2", "dave");
-        List<ShoppingItem> items = dao.getShoppingItems("dave");
-        int prodId = items.getFirst().getId();
+        productService.createProductAndOrLinkToUser("prod2", "dave");
+        List<ShoppingItem> items = shoppingItemService.findAllByUsername("dave");
+        Product item = items.getFirst().getProduct();
 
         // update product, passing null categoryId to force new category creation
-        dao.updateProduct(prodId, "prod2Updated", false, null, "newCat");
+        productService.updateProductCreateCategoryIfNecessary(
+                new Product().setId(item.getId()).setName("prod2Updated").setIsRare(true).setCategory(
+                        new Category().setId(null).setName("newCat")
+                )
+        );
 
         // verify that new category was created and assigned
-        List<Category> cats = dao.getPossibleCategories();
-        assertThat(cats).extracting(Category::getName).contains("newCat");
+        List<ShoppingItem> cats = shoppingItemService.findAllByUsername("dave");
+        assertThat(cats).extracting(c -> c.getProduct().getCategory().getName()).contains("newCat");
         int newCatId = cats.stream()
-                .filter(c -> "newCat".equals(c.getName()))
-                .findFirst().orElseThrow().getOrder();
-        List<ShoppingItem> updated = dao.getShoppingItems("dave");
-        assertThat(updated.getFirst().getCategoryId()).isEqualTo(newCatId);
+                .filter(c -> "newCat".equals(c.getProduct().getCategory().getName()))
+                .findFirst().orElseThrow().getProduct().getCategory().getOrder();
+        List<ShoppingItem> updated = shoppingItemService.findAllByUsername("dave");
+        assertThat(updated.getFirst().getProduct().getCategory().getId()).isEqualTo(newCatId);
     }
 
     @Test
@@ -154,20 +172,15 @@ class DAOTest {
                 "INSERT INTO categories(name, category_order) VALUES('c1',1),('c2',2)"
         );
         // insert two products for user
-        dao.insertProduct("p1", "eve");
-        dao.insertProduct("p2", "eve");
-        List<ShoppingItem> items = dao.getShoppingItems("eve");
+        productService.createProductAndOrLinkToUser("p1", "eve");
+        productService.createProductAndOrLinkToUser("p2", "eve");
         // set non-zero quantities
-        for (ShoppingItem it : items) {
-            dao.updateProductQuantity(it.getId(), 7, "eve");
-        }
-        // verify quantities updated
-        items = dao.getShoppingItems("eve");
-        assertThat(items).allMatch(i -> i.getQuantity() == 7);
+        List<ShoppingItem> updatedItems = shoppingItemService.updateAllShoppingItemQuantities("eve", 7);
+        assertThat(updatedItems).isNotEmpty().allMatch(i -> i.getQuantity() == 7);
 
         // call updateAllProductQuantity
-        dao.updateAllProductQuantity("eve");
-        List<ShoppingItem> reset = dao.getShoppingItems("eve");
+        shoppingItemService.updateAllShoppingItemQuantities("eve", 0);
+        List<ShoppingItem> reset = shoppingItemService.findAllByUsername("eve");
         assertThat(reset).isNotEmpty().allMatch(i -> i.getQuantity() == 0);
     }
 }

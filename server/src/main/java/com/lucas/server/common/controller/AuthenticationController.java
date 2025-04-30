@@ -6,8 +6,11 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/authentication")
@@ -24,32 +27,31 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> handleLogin(@RequestBody User user, HttpServletResponse response) {
-        return userService.findByUsername(user.getUsername())
-                .filter(u -> u.getPassword().equals(user.getPassword().replace("\"", "")))
-                .map(u -> {
-                    String token = this.controllerUtil.generateToken(u.getUsername());
-                    Cookie cookie = new Cookie("authToken", token);
-                    cookie.setHttpOnly(true);
-                    cookie.setPath("/");
-                    cookie.setMaxAge(31536000);
-                    cookie.setSecure(this.secure);
-                    cookie.setAttribute("Partitioned", "");
-                    if (this.secure) {
-                        cookie.setAttribute("SameSite", "None");
-                    }
-                    response.addCookie(cookie);
-                    return ResponseEntity.ok("Granted access");
-                })
-                .orElseGet(() ->
-                        ResponseEntity.ok("Wrong credentials. Continuing as guest")
-                );
+    public ResponseEntity<Void> handleLogin(@RequestBody User user, HttpServletResponse response) {
+        Optional<User> auth = userService.findByUsername(user.getUsername())
+                .filter(u -> u.getPassword().equals(user.getPassword()));
+        if (auth.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        Cookie cookie = new Cookie("authToken", controllerUtil.generateToken(user.getUsername()));
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(31536000);
+        cookie.setSecure(this.secure);
+        cookie.setAttribute("Partitioned", "");
+        if (this.secure) {
+            cookie.setAttribute("SameSite", "None");
+        }
+        response.addCookie(cookie);
+
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/check-auth")
-    public ResponseEntity<String> checkAuth(HttpServletRequest request) {
-        return this.controllerUtil.handleRequest(() -> this.controllerUtil.retrieveAuthCookie(request.getCookies()).isPresent()
-                ? "1"
-                : "Not authenticated");
+    public ResponseEntity<Void> checkAuth(HttpServletRequest request) {
+        if (this.controllerUtil.retrieveAuthCookie(request.getCookies()).isPresent()) {
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 }
