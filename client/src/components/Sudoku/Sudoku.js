@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { get, post } from "../../api";
-import { TIMEOUT_DELAY } from "../../constants";
+import { STATE_KEY, TIMEOUT_DELAY } from "../../constants";
 import { handleError } from "../errorHandler";
 import FileImporter from "../FileImporter";
 import Spinner from "../Spinner";
@@ -58,24 +58,24 @@ const Sudoku = () => {
                 await new Promise(resolve => setTimeout(resolve, 200));
             }
         }
-        get(`/sudoku/check/sudoku?initialSudoku=${initialSudoku}&currentSudoku=${sudoku}`)
+        post("/sudoku/check/sudoku", [{ [STATE_KEY]: initialSudoku.split("").map(Number) }, { [STATE_KEY]: sudoku.split("").map(Number) }])
             .then(response => {
-                if (response.data === 0 || response.data === 1) {
-                    let color = response.data === 1 ? "green" : "red";
-                    let grid = gridRef.current;
-                    if (grid !== null) {
-                        showBorderThenRemove(grid, color);
-                    }
-                } else {
-                    responseMessage.current = response.data;
+                let color = true === response.data ? "green" : "red";
+                let grid = gridRef.current;
+                if (grid !== null) {
+                    showBorderThenRemove(grid, color);
+                }
+            })
+            .catch(error => {
+                if (error.response?.status === 422) {
+                    responseMessage.current = "Original sudoku has none ore more than one solution";
                     setIsUploadResponseVisible(true);
                     setTimeout(() => {
                         restoreDefaults();
                     }, TIMEOUT_DELAY);
+                } else {
+                    handleError("Error sending data", error);
                 }
-            })
-            .catch(error => {
-                handleError("Error sending data", error);
                 restoreDefaults();
             });
     }, [initialSudoku, isSolved, restoreDefaults, sudoku]);
@@ -86,18 +86,19 @@ const Sudoku = () => {
         setIsLoading(true);
         get(`/sudoku/${generateOrFetch}/sudoku${params}`)
             .then(response => {
-                if (response.data.match(/^\d{81}$/)) {
-                    setSudoku(response.data);
-                    setInitialSudoku(response.data);
-                    setIsSudokuVisible(true);
-                    setIsRestartButtonVisible(true);
-                }
-                else {
-                    responseMessage.current = response.data;
+                if (response.status === 204) {
+                    responseMessage.current = "No sudoku found";
                     setIsUploadResponseVisible(true);
                     setTimeout(() => {
                         restoreDefaults();
                     }, TIMEOUT_DELAY);
+                }
+                else {
+                    let sudokuString = response.data[STATE_KEY].join("");
+                    setSudoku(sudokuString);
+                    setInitialSudoku(sudokuString);
+                    setIsSudokuVisible(true);
+                    setIsRestartButtonVisible(true);
                 }
             })
             .catch(error => {
@@ -146,24 +147,24 @@ const Sudoku = () => {
     const solve = useCallback(() => {
         hideEverything();
         setIsLoading(true);
-        get(`/sudoku/solve/sudoku?sudoku=${initialSudoku}`)
+        post("/sudoku/solve/sudoku", { [STATE_KEY]: initialSudoku.split("").map(Number) })
             .then(response => {
-                if (response.data.match(/^\d{81}$/)) {
-                    setSudoku(response.data);
-                    setInitialSudoku(response.data);
-                    setIsSudokuVisible(true);
-                    setIsRestartButtonVisible(true);
-                }
-                else {
-                    responseMessage.current = response.data;
+                let sudokuString = response.data[STATE_KEY].join("");
+                setSudoku(sudokuString);
+                setInitialSudoku(sudokuString);
+                setIsSudokuVisible(true);
+                setIsRestartButtonVisible(true);
+            })
+            .catch(error => {
+                if (error.response?.status === 422) {
+                    responseMessage.current = "Original sudoku has none ore more than one solution";
                     setIsUploadResponseVisible(true);
                     setTimeout(() => {
                         restoreDefaults();
                     }, TIMEOUT_DELAY);
+                } else {
+                    handleError("Error sending data", error);
                 }
-            })
-            .catch(error => {
-                handleError("Error sending data", error);
                 restoreDefaults();
             })
             .finally(() => {
@@ -252,10 +253,10 @@ const Sudoku = () => {
         setIsLoading(true);
         post("/sudoku/upload/sudokus", content)
             .then((response) => {
-                if (response.data === 1) {
-                    responseMessage.current = "Successfully uploaded!";
+                if (response.data.length > 0) {
+                    responseMessage.current = "Successfully uploaded " + response.data.length + " sudoku";
                 } else {
-                    responseMessage.current = response.data.toString();
+                    responseMessage.current = "No sudoku were inserted";
                 }
                 setIsUploadResponseVisible(true);
                 setTimeout(() => {
@@ -263,7 +264,16 @@ const Sudoku = () => {
                 }, TIMEOUT_DELAY);
             })
             .catch(error => {
-                handleError("Error sending data", error);
+                let message = error.response?.status === 403 ? "stop" : error.response?.status === 400 ? "Invalid file" : "";
+                if (message) {
+                    responseMessage.current = message;
+                    setIsUploadResponseVisible(true);
+                    setTimeout(() => {
+                        restoreDefaults();
+                    }, TIMEOUT_DELAY);
+                } else {
+                    handleError("Error sending data", error);
+                }
                 restoreDefaults();
             })
             .finally(() => {
