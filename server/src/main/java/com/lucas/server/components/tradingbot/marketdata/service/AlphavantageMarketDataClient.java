@@ -7,13 +7,13 @@ import com.lucas.server.common.JsonProcessingException;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.marketdata.mapper.AlphavantageMarketResponseMapper;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Comparator;
 import java.util.List;
 
-@Service
+@Component
 public class AlphavantageMarketDataClient {
 
     private final AlphavantageMarketResponseMapper mapper;
