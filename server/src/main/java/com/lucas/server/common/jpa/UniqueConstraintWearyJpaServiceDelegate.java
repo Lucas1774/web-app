@@ -12,11 +12,11 @@ import java.util.Optional;
 import java.util.stream.StreamSupport;
 
 @Component
-public class UniqueConstraintWearyJpaServiceDelegate<R extends JpaRepository<T, ?>, T extends JpaEntity> {
+public class UniqueConstraintWearyJpaServiceDelegate<T extends JpaEntity> {
 
     private static final Logger logger = LoggerFactory.getLogger(UniqueConstraintWearyJpaServiceDelegate.class);
 
-    public Optional<T> save(R repository, T entity) {
+    public Optional<T> save(JpaRepository<T, ?> repository, T entity) {
         try {
             return Optional.of(repository.save(entity));
         } catch (DataIntegrityViolationException e) {
@@ -25,7 +25,7 @@ public class UniqueConstraintWearyJpaServiceDelegate<R extends JpaRepository<T, 
         }
     }
 
-    public List<T> saveAllIgnoringDuplicates(R repository, Iterable<T> entities) {
+    public List<T> saveAllIgnoringDuplicates(JpaRepository<T, ?> repository, Iterable<T> entities) {
         return StreamSupport.stream(entities.spliterator(), false)
                 .map(entity -> this.save(repository, entity))
                 .flatMap(Optional::stream)

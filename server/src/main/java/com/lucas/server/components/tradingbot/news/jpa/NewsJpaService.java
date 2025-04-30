@@ -11,9 +11,9 @@ import java.util.Optional;
 public class NewsJpaService implements JpaService<News> {
 
     private final NewsRepository repository;
-    private final UniqueConstraintWearyJpaServiceDelegate<NewsRepository, News> delegate;
+    private final UniqueConstraintWearyJpaServiceDelegate<News> delegate;
 
-    public NewsJpaService(NewsRepository repository, UniqueConstraintWearyJpaServiceDelegate<NewsRepository, News> delegate) {
+    public NewsJpaService(NewsRepository repository, UniqueConstraintWearyJpaServiceDelegate<News> delegate) {
         this.repository = repository;
         this.delegate = delegate;
     }

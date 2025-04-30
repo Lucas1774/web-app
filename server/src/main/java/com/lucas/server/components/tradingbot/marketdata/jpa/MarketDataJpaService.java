@@ -12,9 +12,9 @@ import java.util.Optional;
 public class MarketDataJpaService implements JpaService<MarketData> {
 
     private final MarketDataRepository repository;
-    private final UniqueConstraintWearyJpaServiceDelegate<MarketDataRepository, MarketData> delegate;
+    private final UniqueConstraintWearyJpaServiceDelegate<MarketData> delegate;
 
-    public MarketDataJpaService(MarketDataRepository repository, UniqueConstraintWearyJpaServiceDelegate<MarketDataRepository, MarketData> delegate) {
+    public MarketDataJpaService(MarketDataRepository repository, UniqueConstraintWearyJpaServiceDelegate<MarketData> delegate) {
         this.repository = repository;
         this.delegate = delegate;
     }

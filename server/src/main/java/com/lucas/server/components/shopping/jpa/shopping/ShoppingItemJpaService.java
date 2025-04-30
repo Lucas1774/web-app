@@ -14,10 +14,10 @@ import java.util.Optional;
 public class ShoppingItemJpaService implements JpaService<ShoppingItem> {
 
     private final ShoppingItemRepository repository;
-    private final UniqueConstraintWearyJpaServiceDelegate<ShoppingItemRepository, ShoppingItem> delegate;
+    private final UniqueConstraintWearyJpaServiceDelegate<ShoppingItem> delegate;
     private final ProductRepository productRepository;
 
-    public ShoppingItemJpaService(ShoppingItemRepository repository, UniqueConstraintWearyJpaServiceDelegate<ShoppingItemRepository, ShoppingItem> delegate, ProductRepository productRepository) {
+    public ShoppingItemJpaService(ShoppingItemRepository repository, UniqueConstraintWearyJpaServiceDelegate<ShoppingItem> delegate, ProductRepository productRepository) {
         this.repository = repository;
         this.delegate = delegate;
         this.productRepository = productRepository;
