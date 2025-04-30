@@ -46,7 +46,7 @@ const Calculator = () => {
       })
       .catch(error => {
         const prefix = "Error " + (isSubmit ? "sending " : "receiving ") + "data";
-        if (error.response && error.response.status === 403) {
+        if (error.response?.status === 403) {
           setInput("stop");
         } else {
           handleError(prefix, error);

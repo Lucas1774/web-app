@@ -7,13 +7,13 @@ import com.lucas.server.common.JsonProcessingException;
 import com.lucas.server.components.tradingbot.news.jpa.News;
 import com.lucas.server.components.tradingbot.news.mapper.FinnhubNewsResponseMapper;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.LocalDate;
 import java.util.List;
 
-@Service
+@Component
 public class FinnhubNewsClient {
 
     private final FinnhubNewsResponseMapper mapper;
