@@ -1,7 +1,7 @@
 package com.lucas.server.components.tradingbot.news.jpa;
 
 import com.lucas.server.TestcontainersConfiguration;
-import com.lucas.server.common.ClientException;
+import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.components.tradingbot.news.service.NewsEmbeddingsClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
@@ -34,14 +35,22 @@ class NewsListenerTest {
     @Test
     void whenSaveSomeMarketData_thenItIsUpdatedWithPreviousMarketData() throws ClientException {
         // given
-        News previous = new News(1L, "AAPL", LocalDateTime.now(),
-                "Headline1", null, "url", null, null, null);
-        News current = new News(2L, "MSFT", LocalDateTime.now(),
-                "Headline2", null, "url", null, null, null);
+        News previous = new News();
+        previous.setSymbol("AAPL");
+        previous.setExternalId(1L);
+        previous.setDate(LocalDateTime.now());
+        previous.setHeadline("Headline1");
+        previous.setUrl("url");
 
-        // When
-        jpaService.save(previous);
-        jpaService.save(current);
+        News current = new News();
+        current.setSymbol("MSFT");
+        current.setExternalId(2L);
+        current.setDate(LocalDateTime.now());
+        current.setHeadline("Headline2");
+        current.setUrl("url");
+
+        // when
+        jpaService.saveAll(List.of(previous, current));
 
         // then
         verify(embeddingsClient, times(1)).embed(previous);

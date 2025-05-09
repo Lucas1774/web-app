@@ -1,8 +1,8 @@
 package com.lucas.server.components.sudoku.mapper;
 
 import com.lucas.server.common.Constants;
-import com.lucas.server.common.JsonProcessingException;
 import com.lucas.server.common.Mapper;
+import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.sudoku.jpa.Sudoku;
 import org.springframework.stereotype.Component;
 

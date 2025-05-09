@@ -1,6 +1,7 @@
 package com.lucas.server.common;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.lucas.server.common.exception.ClientException;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;

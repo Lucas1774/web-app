@@ -35,15 +35,17 @@ class MarketDataListenerTest {
     @Test
     void whenSaveSomeMarketData_thenItIsUpdatedWithPreviousMarketData() {
         // given
-        MarketData previous = new MarketData("AAPL", null, null, null,
-                new BigDecimal("150"), null, LocalDate.of(2024, 4, 20),
-                null, null, null);
+        MarketData previous = new MarketData();
+        previous.setSymbol("AAPL");
+        previous.setDate(LocalDate.of(2024, 4, 20));
+        previous.setPrice(new BigDecimal("150"));
 
-        MarketData current = new MarketData("AAPL", null, null, null,
-                new BigDecimal("155"), null, LocalDate.of(2024, 4, 21),
-                null, null, null);
+        MarketData current = new MarketData();
+        current.setSymbol("AAPL");
+        current.setDate(LocalDate.of(2024, 4, 21));
+        current.setPrice(new BigDecimal("155"));
 
-        // When
+        // when
         jpaService.save(previous);
         jpaService.save(current);
 

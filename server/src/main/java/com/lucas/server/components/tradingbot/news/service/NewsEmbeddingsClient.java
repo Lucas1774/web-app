@@ -2,7 +2,7 @@ package com.lucas.server.components.tradingbot.news.service;
 
 import com.azure.ai.openai.OpenAIClient;
 import com.azure.ai.openai.models.EmbeddingsOptions;
-import com.lucas.server.common.ClientException;
+import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.components.tradingbot.news.jpa.News;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;

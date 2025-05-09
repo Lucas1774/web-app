@@ -1,7 +1,7 @@
 package com.lucas.server.components.tradingbot.news.jpa;
 
-import com.lucas.server.common.ClientException;
 import com.lucas.server.common.Constants;
+import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.components.tradingbot.news.service.NewsEmbeddingsClient;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;

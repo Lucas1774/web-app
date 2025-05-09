@@ -1,6 +1,7 @@
 package com.lucas.server.common.jpa;
 
 import com.lucas.server.common.Constants;
+import org.hibernate.exception.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -20,8 +21,15 @@ public class UniqueConstraintWearyJpaServiceDelegate<T extends JpaEntity> {
         try {
             return Optional.of(repository.save(entity));
         } catch (DataIntegrityViolationException e) {
-            logger.warn(Constants.RECORD_IGNORED_BREAKS_UNIQUENESS_CONSTRAIN_WARN, entity, e);
-            return Optional.empty();
+            Throwable t = e;
+            while (null != t.getCause()) {
+                t = t.getCause();
+                if (t instanceof ConstraintViolationException) {
+                    logger.warn(Constants.RECORD_IGNORED_BREAKS_UNIQUENESS_CONSTRAIN_WARN, entity, t);
+                    return Optional.empty();
+                }
+            }
+            throw e;
         }
     }
 
