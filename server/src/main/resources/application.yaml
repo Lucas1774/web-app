@@ -19,7 +19,7 @@ spring:
       openai:
         api-key: ${OPENAI_KEY}
         endpoint: ${OPENAI_ENDPOINT}
-        embeddings:
+        embedding:
           options:
             deployment-name: ${OPENAI_EMBEDDINGS_MODEL}
         chat:
