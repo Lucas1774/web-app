@@ -52,20 +52,6 @@ public class MarketData implements JpaEntity {
     @Column(name = "change_percent", length = 8)
     private String changePercent;
 
-    public MarketData(String symbol, BigDecimal open, BigDecimal high, BigDecimal low, BigDecimal price,
-                      Long volume, LocalDate date, BigDecimal previousClose, BigDecimal change, String changePercent) {
-        this.symbol = symbol;
-        this.open = open;
-        this.high = high;
-        this.low = low;
-        this.price = price;
-        this.volume = volume;
-        this.date = date;
-        this.previousClose = previousClose;
-        this.change = change;
-        this.changePercent = changePercent;
-    }
-
     @Override
     public String toString() {
         return "MarketData{" +

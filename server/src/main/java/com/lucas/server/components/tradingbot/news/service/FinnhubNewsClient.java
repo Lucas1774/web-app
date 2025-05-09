@@ -1,9 +1,9 @@
 package com.lucas.server.components.tradingbot.news.service;
 
-import com.lucas.server.common.ClientException;
 import com.lucas.server.common.Constants;
 import com.lucas.server.common.HttpRequestClient;
-import com.lucas.server.common.JsonProcessingException;
+import com.lucas.server.common.exception.ClientException;
+import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.news.jpa.News;
 import com.lucas.server.components.tradingbot.news.mapper.FinnhubNewsResponseMapper;
 import org.springframework.beans.factory.annotation.Value;

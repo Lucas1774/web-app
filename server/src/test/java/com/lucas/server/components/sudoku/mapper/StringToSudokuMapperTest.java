@@ -1,6 +1,6 @@
 package com.lucas.server.components.sudoku.mapper;
 
-import com.lucas.server.common.JsonProcessingException;
+import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.sudoku.jpa.Sudoku;
 import com.lucas.server.components.sudoku.service.SudokuSolver;
 import org.junit.jupiter.params.ParameterizedTest;

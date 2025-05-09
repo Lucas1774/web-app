@@ -1,7 +1,7 @@
 package com.lucas.server.components.tradingbot.marketdata.mapper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lucas.server.common.JsonProcessingException;
+import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import org.junit.jupiter.api.Test;
 

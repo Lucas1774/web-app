@@ -1,4 +1,4 @@
-package com.lucas.server.common;
+package com.lucas.server.common.exception;
 
 import java.io.IOException;
 

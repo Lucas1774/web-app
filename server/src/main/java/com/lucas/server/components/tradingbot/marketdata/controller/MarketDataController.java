@@ -1,7 +1,7 @@
 package com.lucas.server.components.tradingbot.marketdata.controller;
 
-import com.lucas.server.common.ClientException;
-import com.lucas.server.common.JsonProcessingException;
+import com.lucas.server.common.exception.ClientException;
+import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataJpaService;
 import com.lucas.server.components.tradingbot.marketdata.service.AlphavantageMarketDataClient;

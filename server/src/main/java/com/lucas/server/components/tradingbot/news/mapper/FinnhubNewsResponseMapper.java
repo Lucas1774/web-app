@@ -2,8 +2,8 @@ package com.lucas.server.components.tradingbot.news.mapper;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.lucas.server.common.Constants;
-import com.lucas.server.common.JsonProcessingException;
 import com.lucas.server.common.Mapper;
+import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.news.jpa.News;
 import org.springframework.stereotype.Component;
 
@@ -27,14 +27,17 @@ public class FinnhubNewsResponseMapper implements Mapper<JsonNode, News> {
                     .atZone(ZoneOffset.UTC)
                     .toLocalDateTime();
 
-            return new News(externalId, null, date,
-                    json.path("headline").asText(),
-                    json.path("summary").asText(),
-                    json.path("url").asText(),
-                    json.path("source").asText(),
-                    json.path("category").asText(),
-                    json.path("image").asText()
-            );
+            News news = new News();
+            news.setExternalId(externalId);
+            news.setDate(date);
+            news.setHeadline(json.path("headline").asText());
+            news.setSummary(json.path("summary").asText());
+            news.setUrl(json.path("url").asText());
+            news.setSource(json.path("source").asText());
+            news.setCategory(json.path("category").asText());
+            news.setImage(json.path("image").asText());
+
+            return news;
         } catch (Exception e) {
             throw new JsonProcessingException(MessageFormat.format(Constants.JSON_MAPPING_ERROR, "news"), e.getCause());
         }

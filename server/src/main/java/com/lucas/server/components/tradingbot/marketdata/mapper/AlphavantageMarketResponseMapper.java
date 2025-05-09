@@ -2,8 +2,8 @@ package com.lucas.server.components.tradingbot.marketdata.mapper;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.lucas.server.common.Constants;
-import com.lucas.server.common.JsonProcessingException;
 import com.lucas.server.common.Mapper;
+import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import org.springframework.stereotype.Component;
 
@@ -22,19 +22,19 @@ public class AlphavantageMarketResponseMapper implements Mapper<JsonNode, Market
     public MarketData map(JsonNode json) throws JsonProcessingException {
         try {
             JsonNode quote = json.path("Global Quote");
+            MarketData md = new MarketData();
+            md.setSymbol(quote.path("01. symbol").asText());
+            md.setOpen(new BigDecimal(quote.path("02. open").asText()));
+            md.setHigh(new BigDecimal(quote.path("03. high").asText()));
+            md.setLow(new BigDecimal(quote.path("04. low").asText()));
+            md.setPrice(new BigDecimal(quote.path("05. price").asText()));
+            md.setVolume(quote.path("06. volume").asLong());
+            md.setDate(LocalDate.parse(quote.path("07. latest trading day").asText(), Constants.DATE_FMT));
+            md.setPreviousClose(new BigDecimal(quote.path("08. previous close").asText()));
+            md.setChange(new BigDecimal(quote.path("09. change").asText()));
+            md.setChangePercent(quote.path("10. change percent").asText());
 
-            String symbol = quote.path("01. symbol").asText();
-            BigDecimal open = new BigDecimal(quote.path("02. open").asText());
-            BigDecimal high = new BigDecimal(quote.path("03. high").asText());
-            BigDecimal low = new BigDecimal(quote.path("04. low").asText());
-            BigDecimal price = new BigDecimal(quote.path("05. price").asText());
-            Long volume = quote.path("06. volume").asLong();
-            LocalDate lastTradingDay = LocalDate.parse(quote.path("07. latest trading day").asText(), Constants.DATE_FMT);
-            BigDecimal previousClose = new BigDecimal(quote.path("08. previous close").asText());
-            BigDecimal change = new BigDecimal(quote.path("09. change").asText());
-            String changePercent = quote.path("10. change percent").asText();
-
-            return new MarketData(symbol, open, high, low, price, volume, lastTradingDay, previousClose, change, changePercent);
+            return md;
         } catch (Exception e) {
             throw new JsonProcessingException(MessageFormat.format(Constants.JSON_MAPPING_ERROR, "market"), e.getCause());
         }
@@ -50,15 +50,14 @@ public class AlphavantageMarketResponseMapper implements Mapper<JsonNode, Market
                 Map.Entry<String, JsonNode> entry = fields.next();
                 LocalDate date = LocalDate.parse(entry.getKey(), Constants.DATE_FMT);
                 JsonNode data = entry.getValue();
-                MarketData md = new MarketData(
-                        symbol,
-                        new BigDecimal(data.path("1. open").asText()),
-                        new BigDecimal(data.path("2. high").asText()),
-                        new BigDecimal(data.path("3. low").asText()),
-                        new BigDecimal(data.path("4. close").asText()),
-                        data.path("5. volume").asLong(),
-                        date, null, null, null
-                );
+                MarketData md = new MarketData();
+                md.setSymbol(symbol);
+                md.setOpen(new BigDecimal(data.path("1. open").asText()));
+                md.setHigh(new BigDecimal(data.path("2. high").asText()));
+                md.setLow(new BigDecimal(data.path("3. low").asText()));
+                md.setPrice(new BigDecimal(data.path("4. close").asText()));
+                md.setVolume(data.path("5. volume").asLong());
+                md.setDate(date);
                 history.add(md);
             }
 

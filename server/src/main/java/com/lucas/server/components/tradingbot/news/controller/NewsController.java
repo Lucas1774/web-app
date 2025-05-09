@@ -1,7 +1,7 @@
 package com.lucas.server.components.tradingbot.news.controller;
 
-import com.lucas.server.common.ClientException;
-import com.lucas.server.common.JsonProcessingException;
+import com.lucas.server.common.exception.ClientException;
+import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.news.jpa.News;
 import com.lucas.server.components.tradingbot.news.jpa.NewsJpaService;
 import com.lucas.server.components.tradingbot.news.service.FinnhubNewsClient;

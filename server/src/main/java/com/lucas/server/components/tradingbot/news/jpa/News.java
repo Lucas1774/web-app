@@ -57,19 +57,6 @@ public class News implements JpaEntity {
     @Array(length = 3072)
     private float[] embeddings;
 
-    public News(Long externalId, String symbol, LocalDateTime date, String headline,
-                String summary, String url, String source, String category, String image) {
-        this.externalId = externalId;
-        this.symbol = symbol;
-        this.date = date;
-        this.headline = headline;
-        this.summary = summary;
-        this.url = url;
-        this.source = source;
-        this.category = category;
-        this.image = image;
-    }
-
     @Override
     public String toString() {
         return "News{" +
