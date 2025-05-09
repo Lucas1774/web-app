@@ -1,6 +1,8 @@
 package com.lucas.server.components.tradingbot.news.jpa;
 
 import com.lucas.server.TestcontainersConfiguration;
+import com.lucas.server.components.tradingbot.common.jpa.Symbol;
+import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.news.service.NewsEmbeddingsClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -22,6 +24,9 @@ class NewsJpaServiceTest {
     @Autowired
     NewsJpaService newsJpaService;
 
+    @Autowired
+    SymbolJpaService symbolJpaService;
+
     @MockitoBean
     @SuppressWarnings("unused")
     NewsEmbeddingsClient newsEmbeddingsClient;
@@ -29,14 +34,18 @@ class NewsJpaServiceTest {
     @AfterEach
     void tearDown() {
         newsJpaService.deleteAll();
+        symbolJpaService.deleteAll();
     }
 
     @Test
     void saveAll_shouldPersistOnlyNewRecords() {
         // given
+        Symbol symbol = new Symbol().setName("AAPL");
+        Symbol symbol2 = new Symbol().setName("MSFT");
+        symbolJpaService.saveAll(List.of(symbol, symbol2));
         News n1 = new News()
                 .setExternalId(1L)
-                .setSymbol("AAPL")
+                .setSymbol(symbol)
                 .setDate(LocalDateTime.now())
                 .setHeadline("Headline1")
                 .setSummary("Summary1")
@@ -47,7 +56,7 @@ class NewsJpaServiceTest {
 
         News n2 = new News()
                 .setExternalId(2L)
-                .setSymbol("AAPL")
+                .setSymbol(symbol)
                 .setDate(LocalDateTime.now())
                 .setHeadline("Headline2")
                 .setSummary("Summary2")
@@ -64,14 +73,14 @@ class NewsJpaServiceTest {
                 .hasSize(2)
                 .extracting(News::getExternalId, News::getSymbol, News::getHeadline)
                 .containsExactlyInAnyOrder(
-                        tuple(1L, "AAPL", "Headline1"),
-                        tuple(2L, "AAPL", "Headline2")
+                        tuple(1L, symbol, "Headline1"),
+                        tuple(2L, symbol, "Headline2")
                 );
 
         // when: attempt to save duplicate and a new record
         News dup = new News()
                 .setExternalId(1L)
-                .setSymbol("AAPL")
+                .setSymbol(symbol)
                 .setDate(LocalDateTime.now())
                 .setHeadline("Headline1-dup")
                 .setSummary("Summary-dup")
@@ -82,7 +91,7 @@ class NewsJpaServiceTest {
 
         News n3 = new News()
                 .setExternalId(3L)
-                .setSymbol("MSFT")
+                .setSymbol(symbol2)
                 .setDate(LocalDateTime.now())
                 .setHeadline("Headline3")
                 .setSummary("Summary3")
@@ -97,7 +106,7 @@ class NewsJpaServiceTest {
         assertThat(second)
                 .hasSize(1)
                 .extracting(News::getExternalId, News::getSymbol, News::getHeadline)
-                .containsExactly(tuple(3L, "MSFT", "Headline3"));
+                .containsExactly(tuple(3L, symbol2, "Headline3"));
 
         // and: repository contains 3 entries total
         List<News> all = newsJpaService.findAll();
@@ -105,9 +114,9 @@ class NewsJpaServiceTest {
                 .hasSize(3)
                 .extracting(News::getExternalId, News::getSymbol, News::getHeadline)
                 .containsExactlyInAnyOrder(
-                        tuple(1L, "AAPL", "Headline1"),
-                        tuple(2L, "AAPL", "Headline2"),
-                        tuple(3L, "MSFT", "Headline3")
+                        tuple(1L, symbol, "Headline1"),
+                        tuple(2L, symbol, "Headline2"),
+                        tuple(3L, symbol2, "Headline3")
                 );
     }
 }

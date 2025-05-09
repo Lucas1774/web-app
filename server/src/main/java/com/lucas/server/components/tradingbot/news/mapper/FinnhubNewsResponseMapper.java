@@ -4,7 +4,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.lucas.server.common.Constants;
 import com.lucas.server.common.Mapper;
 import com.lucas.server.common.exception.JsonProcessingException;
+import com.lucas.server.components.tradingbot.common.jpa.Symbol;
+import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.news.jpa.News;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Component;
 
 import java.text.MessageFormat;
@@ -14,9 +17,16 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Component
 public class FinnhubNewsResponseMapper implements Mapper<JsonNode, News> {
+
+    private final SymbolJpaService symbolService;
+
+    public FinnhubNewsResponseMapper(SymbolJpaService symbolService) {
+        this.symbolService = symbolService;
+    }
 
     @Override
     public News map(JsonNode json) throws JsonProcessingException {
@@ -41,8 +51,11 @@ public class FinnhubNewsResponseMapper implements Mapper<JsonNode, News> {
         }
     }
 
+    @Transactional(rollbackOn = NoSuchElementException.class)
     private News map(JsonNode json, String symbol) throws JsonProcessingException {
-        return this.map(json).setSymbol(symbol);
+        return this.map(json).setSymbol(this.symbolService.findByName(symbol).orElseGet(
+                () -> this.symbolService.save(new Symbol().setName(symbol))
+                        .orElseThrow()));
     }
 
     public List<News> mapAll(JsonNode json, String symbol) throws JsonProcessingException {

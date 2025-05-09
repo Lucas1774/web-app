@@ -1,6 +1,8 @@
 package com.lucas.server.components.tradingbot.marketdata.jpa;
 
 import com.lucas.server.TestcontainersConfiguration;
+import com.lucas.server.components.tradingbot.common.jpa.Symbol;
+import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.marketdata.service.MarketDataKpiGenerator;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -28,21 +30,27 @@ class MarketDataListenerTest {
     @Autowired
     MarketDataJpaService jpaService;
 
+    @Autowired
+    SymbolJpaService symbolJpaService;
+
     @AfterEach
     void tearDown() {
         this.jpaService.deleteAll();
+        this.symbolJpaService.deleteAll();
     }
 
     @Test
     void whenSaveSomeMarketData_thenItIsUpdatedWithPreviousMarketData() {
         // given
+        Symbol symbol = new Symbol().setName("AAPL");
+        symbolJpaService.save(symbol);
         MarketData previous = new MarketData()
-                .setSymbol("AAPL")
+                .setSymbol(symbol)
                 .setDate(LocalDate.of(2024, 4, 20))
                 .setPrice(new BigDecimal("150"));
 
         MarketData current = new MarketData()
-                .setSymbol("AAPL")
+                .setSymbol(symbol)
                 .setDate(LocalDate.of(2024, 4, 21))
                 .setPrice(new BigDecimal("155"));
 

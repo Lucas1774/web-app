@@ -1,6 +1,7 @@
 package com.lucas.server.components.tradingbot.marketdata.jpa;
 
 import com.lucas.server.common.jpa.JpaEntity;
+import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,15 +17,16 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Entity
 @EntityListeners(MarketDataListener.class)
-@Table(name = "market_data", uniqueConstraints = @UniqueConstraint(columnNames = {"symbol", "trade_date"}))
+@Table(name = "market_data", uniqueConstraints = @UniqueConstraint(columnNames = {"symbol_id", "trade_date"}))
 public class MarketData implements JpaEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 10)
-    private String symbol;
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(name = "symbol_id", nullable = false)
+    private Symbol symbol;
 
     @Column(precision = 15, scale = 4)
     private BigDecimal open;

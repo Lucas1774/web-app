@@ -2,10 +2,17 @@ package com.lucas.server.components.tradingbot.news.mapper;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lucas.server.TestcontainersConfiguration;
 import com.lucas.server.common.Constants;
 import com.lucas.server.common.exception.JsonProcessingException;
+import com.lucas.server.components.tradingbot.common.jpa.Symbol;
+import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.news.jpa.News;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 
 import java.text.MessageFormat;
 import java.time.Instant;
@@ -17,10 +24,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
+@SpringBootTest
+@Import(TestcontainersConfiguration.class)
 class FinnhubNewsResponseMapperTest {
 
-    private final FinnhubNewsResponseMapper mapper = new FinnhubNewsResponseMapper();
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    SymbolJpaService symbolService;
+
+    @Autowired
+    FinnhubNewsResponseMapper mapper;
+
+    @Autowired
+    ObjectMapper objectMapper;
+
+    @AfterEach
+    void tearDown() {
+        symbolService.deleteAll();
+    }
 
     @Test
     void whenMapValidJson_thenReturnNewsEntity() throws Exception {
@@ -74,20 +94,22 @@ class FinnhubNewsResponseMapperTest {
                   { "id": %d, "datetime": %d, "headline": "H2", "summary": "S2", "url": "u2", "source": "src2", "category": "cat2", "image": "i2" }
                 ]
                 """, now, now, now + 60, now + 60);
+        Symbol symbol = new Symbol().setName("SYM"); // To be created by the mapper
 
         JsonNode arrayNode = objectMapper.readTree(jsonArray);
 
         // when
-        List<News> list = mapper.mapAll(arrayNode, "SYM");
+        List<News> list = mapper.mapAll(arrayNode, symbol.getName());
 
         // then
         assertThat(list)
                 .isNotNull()
                 .hasSize(2)
-                .extracting(News::getExternalId, News::getSymbol, News::getHeadline)
+                .allSatisfy(n -> assertThat(n.getSymbol().getName()).isEqualTo(symbol.getName()))
+                .extracting(News::getExternalId, News::getHeadline)
                 .containsExactly(
-                        tuple(now, "SYM", "H1"),
-                        tuple(now + 60, "SYM", "H2")
+                        tuple(now, "H1"),
+                        tuple(now + 60, "H2")
                 );
     }
 
@@ -96,10 +118,12 @@ class FinnhubNewsResponseMapperTest {
         // given
         JsonNode emptyArray = objectMapper.createArrayNode();
         JsonNode objNode = objectMapper.createObjectNode();
+        Symbol symbol = new Symbol().setName("SYM");
+        symbolService.save(symbol);
 
         // when & then
-        assertThat(mapper.mapAll(emptyArray, "SYM")).isEmpty();
-        assertThat(mapper.mapAll(objNode, "SYM")).isEmpty();
+        assertThat(mapper.mapAll(emptyArray, symbol.getName())).isEmpty();
+        assertThat(mapper.mapAll(objNode, symbol.getName())).isEmpty();
     }
 
     @Test

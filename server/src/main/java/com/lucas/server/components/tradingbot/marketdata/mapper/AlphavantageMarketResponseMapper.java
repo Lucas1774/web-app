@@ -4,7 +4,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.lucas.server.common.Constants;
 import com.lucas.server.common.Mapper;
 import com.lucas.server.common.exception.JsonProcessingException;
+import com.lucas.server.components.tradingbot.common.jpa.Symbol;
+import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -18,12 +21,21 @@ import java.util.Map;
 @Component
 public class AlphavantageMarketResponseMapper implements Mapper<JsonNode, MarketData> {
 
+    private final SymbolJpaService symbolService;
+
+    public AlphavantageMarketResponseMapper(SymbolJpaService symbolService) {
+        this.symbolService = symbolService;
+    }
+
     @Override
+    @Transactional(rollbackOn = JsonProcessingException.class)
     public MarketData map(JsonNode json) throws JsonProcessingException {
         try {
             JsonNode quote = json.get("Global Quote");
             return new MarketData()
-                    .setSymbol(quote.get("01. symbol").asText())
+                    .setSymbol(this.symbolService.findByName(quote.get("01. symbol").asText()).orElseGet(
+                            () -> this.symbolService.save(new Symbol().setName(quote.get("01. symbol").asText()))
+                                    .orElse(null)))
                     .setOpen(new BigDecimal(quote.get("02. open").asText()))
                     .setHigh(new BigDecimal(quote.get("03. high").asText()))
                     .setLow(new BigDecimal(quote.get("04. low").asText()))
@@ -38,6 +50,7 @@ public class AlphavantageMarketResponseMapper implements Mapper<JsonNode, Market
         }
     }
 
+    @Transactional(rollbackOn = JsonProcessingException.class)
     public List<MarketData> mapAll(JsonNode json, String symbol) throws JsonProcessingException {
         try {
             JsonNode series = json.get("Weekly Time Series");
@@ -49,7 +62,9 @@ public class AlphavantageMarketResponseMapper implements Mapper<JsonNode, Market
                 LocalDate date = LocalDate.parse(entry.getKey(), Constants.DATE_FMT);
                 JsonNode data = entry.getValue();
                 MarketData md = new MarketData()
-                        .setSymbol(symbol)
+                        .setSymbol(this.symbolService.findByName(symbol).orElseGet(
+                                () -> this.symbolService.save(new Symbol().setName(symbol))
+                                        .orElse(null)))
                         .setOpen(new BigDecimal(data.get("1. open").asText()))
                         .setHigh(new BigDecimal(data.get("2. high").asText()))
                         .setLow(new BigDecimal(data.get("3. low").asText()))

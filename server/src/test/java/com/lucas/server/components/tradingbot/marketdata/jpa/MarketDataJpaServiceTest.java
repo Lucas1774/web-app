@@ -1,6 +1,8 @@
 package com.lucas.server.components.tradingbot.marketdata.jpa;
 
 import com.lucas.server.TestcontainersConfiguration;
+import com.lucas.server.components.tradingbot.common.jpa.Symbol;
+import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,26 +24,31 @@ class MarketDataJpaServiceTest {
     @Autowired
     MarketDataJpaService marketDataJpaService;
 
+    @Autowired
+    SymbolJpaService  symbolJpaService;
+
     @AfterEach
     void tearDown() {
         marketDataJpaService.deleteAll();
+        symbolJpaService.deleteAll();
     }
 
     @Test
     void saveAllIgnoringDuplicates_shouldPersistOnlyNewRecords_andHandleTrailingZeros() {
         // given:
-        String symbolA = "AAPL";
-        String symbolB = "IBM";
+        Symbol symbol = new Symbol().setName("AAPL");
+        Symbol symbol2 = new Symbol().setName("IBM");
+        symbolJpaService.saveAll(List.of(symbol, symbol2));
         LocalDate date1 = LocalDate.of(2023, 12, 15);
         LocalDate date2 = LocalDate.of(2023, 12, 16);
 
         MarketData a1 = new MarketData()
-                .setSymbol(symbolA)
+                .setSymbol(symbol)
                 .setDate(date1)
                 .setPrice(new BigDecimal("150.0000"));
 
         MarketData a2 = new MarketData()
-                .setSymbol(symbolA)
+                .setSymbol(symbol)
                 .setDate(date2)
                 .setPrice(new BigDecimal("150.0000"));
 
@@ -54,18 +61,18 @@ class MarketDataJpaServiceTest {
                         md -> md.getPrice().doubleValue()
                 )
                 .containsExactlyInAnyOrder(
-                        tuple(symbolA, date1, 150.0),
-                        tuple(symbolA, date2, 150.0)
+                        tuple(symbol, date1, 150.0),
+                        tuple(symbol, date2, 150.0)
                 );
 
         // when: attempt to save a duplicate and a valid new record
         MarketData duplicate = new MarketData()
-                .setSymbol(symbolA)
+                .setSymbol(symbol)
                 .setDate(date1)
                 .setPrice(new BigDecimal("160.0000"));
 
         MarketData valid = new MarketData()
-                .setSymbol(symbolB)
+                .setSymbol(symbol2)
                 .setDate(date2)
                 .setPrice(new BigDecimal("155.0000"));
 
@@ -79,7 +86,7 @@ class MarketDataJpaServiceTest {
                         MarketData::getDate,
                         md -> md.getPrice().doubleValue()
                 )
-                .containsExactly(tuple(symbolB, date2, 155.0));
+                .containsExactly(tuple(symbol2, date2, 155.0));
 
         // and: database contains exactly 3 entries, values compared as double
         List<MarketData> all = marketDataJpaService.findAll();
@@ -91,22 +98,24 @@ class MarketDataJpaServiceTest {
                         md -> md.getPrice().doubleValue()
                 )
                 .containsExactlyInAnyOrder(
-                        tuple(symbolA, date1, 150.0),
-                        tuple(symbolA, date2, 150.0),
-                        tuple(symbolB, date2, 155.0)
+                        tuple(symbol, date1, 150.0),
+                        tuple(symbol, date2, 150.0),
+                        tuple(symbol2, date2, 155.0)
                 );
     }
 
     @Test
     void save_shouldReturnOptionalEmptyForDuplicate() {
         // given:
+        Symbol symbol = new Symbol().setName("AAPL");
+        symbolJpaService.save(symbol);
         MarketData md = new MarketData()
-                .setSymbol("AAPL")
+                .setSymbol(symbol)
                 .setDate(LocalDate.of(2023, 12, 15))
                 .setPrice(BigDecimal.valueOf(150.00));
 
         MarketData dup = new MarketData()
-                .setSymbol("AAPL")
+                .setSymbol(symbol)
                 .setDate(LocalDate.of(2023, 12, 15))
                 .setPrice(BigDecimal.valueOf(150.00));
 
