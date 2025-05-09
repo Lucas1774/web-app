@@ -11,6 +11,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -35,19 +36,18 @@ class MarketDataListenerTest {
     @Test
     void whenSaveSomeMarketData_thenItIsUpdatedWithPreviousMarketData() {
         // given
-        MarketData previous = new MarketData();
-        previous.setSymbol("AAPL");
-        previous.setDate(LocalDate.of(2024, 4, 20));
-        previous.setPrice(new BigDecimal("150"));
+        MarketData previous = new MarketData()
+                .setSymbol("AAPL")
+                .setDate(LocalDate.of(2024, 4, 20))
+                .setPrice(new BigDecimal("150"));
 
-        MarketData current = new MarketData();
-        current.setSymbol("AAPL");
-        current.setDate(LocalDate.of(2024, 4, 21));
-        current.setPrice(new BigDecimal("155"));
+        MarketData current = new MarketData()
+                .setSymbol("AAPL")
+                .setDate(LocalDate.of(2024, 4, 21))
+                .setPrice(new BigDecimal("155"));
 
         // when
-        jpaService.save(previous);
-        jpaService.save(current);
+        jpaService.saveAll(List.of(previous, current));
 
         // then
         assertThat(current.getPreviousClose()).isEqualByComparingTo(new BigDecimal("150"));

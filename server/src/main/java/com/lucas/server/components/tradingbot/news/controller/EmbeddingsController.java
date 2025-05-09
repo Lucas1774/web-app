@@ -29,7 +29,7 @@ public class EmbeddingsController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<News> generateEmbeddingsByNewsId(@PathVariable String id) {
+    public ResponseEntity<News> generateEmbeddingsByNewsId(@PathVariable Long id) {
         return service.findById(id)
                 .flatMap(entity -> {
                     try {

@@ -35,15 +35,15 @@ class MarketDataJpaServiceTest {
         LocalDate date1 = LocalDate.of(2023, 12, 15);
         LocalDate date2 = LocalDate.of(2023, 12, 16);
 
-        MarketData a1 = new MarketData();
-        a1.setSymbol(symbolA);
-        a1.setDate(date1);
-        a1.setPrice(new BigDecimal("150.0000"));
+        MarketData a1 = new MarketData()
+                .setSymbol(symbolA)
+                .setDate(date1)
+                .setPrice(new BigDecimal("150.0000"));
 
-        MarketData a2 = new MarketData();
-        a2.setSymbol(symbolA);
-        a2.setDate(date2);
-        a2.setPrice(new BigDecimal("150.0000"));
+        MarketData a2 = new MarketData()
+                .setSymbol(symbolA)
+                .setDate(date2)
+                .setPrice(new BigDecimal("150.0000"));
 
         List<MarketData> initialSave = marketDataJpaService.saveAll(List.of(a1, a2));
         assertThat(initialSave)
@@ -59,15 +59,15 @@ class MarketDataJpaServiceTest {
                 );
 
         // when: attempt to save a duplicate and a valid new record
-        MarketData duplicate = new MarketData();
-        duplicate.setSymbol(symbolA);
-        duplicate.setDate(date1);
-        duplicate.setPrice(new BigDecimal("160.0000"));
+        MarketData duplicate = new MarketData()
+                .setSymbol(symbolA)
+                .setDate(date1)
+                .setPrice(new BigDecimal("160.0000"));
 
-        MarketData valid = new MarketData();
-        valid.setSymbol(symbolB);
-        valid.setDate(date2);
-        valid.setPrice(new BigDecimal("155.0000"));
+        MarketData valid = new MarketData()
+                .setSymbol(symbolB)
+                .setDate(date2)
+                .setPrice(new BigDecimal("155.0000"));
 
         List<MarketData> result = marketDataJpaService.saveAll(List.of(duplicate, valid));
 
@@ -100,15 +100,15 @@ class MarketDataJpaServiceTest {
     @Test
     void save_shouldReturnOptionalEmptyForDuplicate() {
         // given:
-        MarketData md = new MarketData();
-        md.setSymbol("AAPL");
-        md.setDate(LocalDate.of(2023, 12, 15));
-        md.setPrice(BigDecimal.valueOf(150.00));
+        MarketData md = new MarketData()
+                .setSymbol("AAPL")
+                .setDate(LocalDate.of(2023, 12, 15))
+                .setPrice(BigDecimal.valueOf(150.00));
 
-        MarketData dup = new MarketData();
-        dup.setSymbol("AAPL");
-        dup.setDate(LocalDate.of(2023, 12, 15));
-        dup.setPrice(BigDecimal.valueOf(150.00));
+        MarketData dup = new MarketData()
+                .setSymbol("AAPL")
+                .setDate(LocalDate.of(2023, 12, 15))
+                .setPrice(BigDecimal.valueOf(150.00));
 
         // when:
         marketDataJpaService.save(md);

@@ -2,15 +2,19 @@ package com.lucas.server.components.tradingbot.news.mapper;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lucas.server.common.Constants;
+import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.news.jpa.News;
 import org.junit.jupiter.api.Test;
 
+import java.text.MessageFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
 class FinnhubNewsResponseMapperTest {
@@ -96,5 +100,22 @@ class FinnhubNewsResponseMapperTest {
         // when & then
         assertThat(mapper.mapAll(emptyArray, "SYM")).isEmpty();
         assertThat(mapper.mapAll(objNode, "SYM")).isEmpty();
+    }
+
+    @Test
+    void whenMapAllMissingFields_thenThrowsException() throws Exception {
+        // given
+        String jsonArray = """
+                [
+                  { "datetime": 1, "headline": "H1", "summary": "S1", "url": "u1", "source": "src1", "category": "cat1", "image": "i1" },
+                  { "datetime": 2, "headline": "H2", "summary": "S2", "url": "u2", "source": "src2", "category": "cat2", "image": "i2" }
+                ]
+                """;
+        JsonNode arrayNode = objectMapper.readTree(jsonArray);
+
+        // when & then
+        assertThatThrownBy(() -> mapper.mapAll(arrayNode, "SYM"))
+                .isInstanceOf(JsonProcessingException.class)
+                .hasMessageContaining(MessageFormat.format(Constants.JSON_MAPPING_ERROR, "news"));
     }
 }

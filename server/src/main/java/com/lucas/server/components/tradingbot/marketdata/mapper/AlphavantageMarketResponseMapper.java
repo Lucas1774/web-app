@@ -21,28 +21,26 @@ public class AlphavantageMarketResponseMapper implements Mapper<JsonNode, Market
     @Override
     public MarketData map(JsonNode json) throws JsonProcessingException {
         try {
-            JsonNode quote = json.path("Global Quote");
-            MarketData md = new MarketData();
-            md.setSymbol(quote.path("01. symbol").asText());
-            md.setOpen(new BigDecimal(quote.path("02. open").asText()));
-            md.setHigh(new BigDecimal(quote.path("03. high").asText()));
-            md.setLow(new BigDecimal(quote.path("04. low").asText()));
-            md.setPrice(new BigDecimal(quote.path("05. price").asText()));
-            md.setVolume(quote.path("06. volume").asLong());
-            md.setDate(LocalDate.parse(quote.path("07. latest trading day").asText(), Constants.DATE_FMT));
-            md.setPreviousClose(new BigDecimal(quote.path("08. previous close").asText()));
-            md.setChange(new BigDecimal(quote.path("09. change").asText()));
-            md.setChangePercent(quote.path("10. change percent").asText());
-
-            return md;
+            JsonNode quote = json.get("Global Quote");
+            return new MarketData()
+                    .setSymbol(quote.get("01. symbol").asText())
+                    .setOpen(new BigDecimal(quote.get("02. open").asText()))
+                    .setHigh(new BigDecimal(quote.get("03. high").asText()))
+                    .setLow(new BigDecimal(quote.get("04. low").asText()))
+                    .setPrice(new BigDecimal(quote.get("05. price").asText()))
+                    .setVolume(quote.get("06. volume").asLong())
+                    .setDate(LocalDate.parse(quote.get("07. latest trading day").asText(), Constants.DATE_FMT))
+                    .setPreviousClose(new BigDecimal(quote.get("08. previous close").asText()))
+                    .setChange(new BigDecimal(quote.get("09. change").asText()))
+                    .setChangePercent(quote.get("10. change percent").asText());
         } catch (Exception e) {
-            throw new JsonProcessingException(MessageFormat.format(Constants.JSON_MAPPING_ERROR, "market"), e.getCause());
+            throw new JsonProcessingException(MessageFormat.format(Constants.JSON_MAPPING_ERROR, "market"), e);
         }
     }
 
     public List<MarketData> mapAll(JsonNode json, String symbol) throws JsonProcessingException {
         try {
-            JsonNode series = json.path("Weekly Time Series");
+            JsonNode series = json.get("Weekly Time Series");
 
             List<MarketData> history = new ArrayList<>();
             Iterator<Map.Entry<String, JsonNode>> fields = series.fields();
@@ -50,20 +48,20 @@ public class AlphavantageMarketResponseMapper implements Mapper<JsonNode, Market
                 Map.Entry<String, JsonNode> entry = fields.next();
                 LocalDate date = LocalDate.parse(entry.getKey(), Constants.DATE_FMT);
                 JsonNode data = entry.getValue();
-                MarketData md = new MarketData();
-                md.setSymbol(symbol);
-                md.setOpen(new BigDecimal(data.path("1. open").asText()));
-                md.setHigh(new BigDecimal(data.path("2. high").asText()));
-                md.setLow(new BigDecimal(data.path("3. low").asText()));
-                md.setPrice(new BigDecimal(data.path("4. close").asText()));
-                md.setVolume(data.path("5. volume").asLong());
-                md.setDate(date);
+                MarketData md = new MarketData()
+                        .setSymbol(symbol)
+                        .setOpen(new BigDecimal(data.get("1. open").asText()))
+                        .setHigh(new BigDecimal(data.get("2. high").asText()))
+                        .setLow(new BigDecimal(data.get("3. low").asText()))
+                        .setPrice(new BigDecimal(data.get("4. close").asText()))
+                        .setVolume(data.get("5. volume").asLong())
+                        .setDate(date);
                 history.add(md);
             }
 
             return history;
         } catch (Exception e) {
-            throw new JsonProcessingException(MessageFormat.format(Constants.JSON_MAPPING_ERROR, "market"), e.getCause());
+            throw new JsonProcessingException(MessageFormat.format(Constants.JSON_MAPPING_ERROR, "market"), e);
         }
     }
 }

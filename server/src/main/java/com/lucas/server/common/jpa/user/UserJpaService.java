@@ -36,8 +36,8 @@ public class UserJpaService implements JpaService<User> {
     }
 
     @Override
-    public Optional<User> findById(String id) {
-        return this.repository.findById(Long.valueOf(id));
+    public Optional<User> findById(Long id) {
+        return this.repository.findById(id);
     }
 
     public Optional<User> findByUsername(String username) {

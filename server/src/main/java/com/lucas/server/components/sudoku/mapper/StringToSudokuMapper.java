@@ -27,7 +27,7 @@ public class StringToSudokuMapper implements Mapper<String, Sudoku> {
             }
             return Sudoku.withValues(this.attributeConverter.convertToEntityAttribute(sudoku));
         } catch (Exception e) {
-            throw new JsonProcessingException(MessageFormat.format(Constants.JSON_MAPPING_ERROR, "sudoku"), e.getCause());
+            throw new JsonProcessingException(MessageFormat.format(Constants.JSON_MAPPING_ERROR, "sudoku"), e);
         }
     }
 }

@@ -40,8 +40,8 @@ public class MarketDataJpaService implements JpaService<MarketData> {
     }
 
     @Override
-    public Optional<MarketData> findById(String id) {
-        return this.repository.findById(Long.valueOf(id));
+    public Optional<MarketData> findById(Long id) {
+        return this.repository.findById(id);
     }
 
     public Optional<MarketData> findTopBySymbolAndDateBeforeOrderByDateDesc(String symbol, LocalDate date) {

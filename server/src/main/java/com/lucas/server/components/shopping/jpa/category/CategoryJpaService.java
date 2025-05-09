@@ -40,8 +40,8 @@ public class CategoryJpaService implements JpaService<Category>, OrderColumnJpaS
     }
 
     @Override
-    public Optional<Category> findById(String id) {
-        return this.repository.findById(Long.valueOf(id));
+    public Optional<Category> findById(Long id) {
+        return this.repository.findById(id);
     }
 
     public List<Category> findAllByOrderByOrderAsc() {

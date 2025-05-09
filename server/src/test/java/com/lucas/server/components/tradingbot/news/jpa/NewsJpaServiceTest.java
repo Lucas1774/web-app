@@ -34,27 +34,27 @@ class NewsJpaServiceTest {
     @Test
     void saveAll_shouldPersistOnlyNewRecords() {
         // given
-        News n1 = new News();
-        n1.setExternalId(1L);
-        n1.setSymbol("AAPL");
-        n1.setDate(LocalDateTime.now());
-        n1.setHeadline("Headline1");
-        n1.setSummary("Summary1");
-        n1.setUrl("url1");
-        n1.setSource("src1");
-        n1.setCategory("cat1");
-        n1.setImage("img1");
+        News n1 = new News()
+                .setExternalId(1L)
+                .setSymbol("AAPL")
+                .setDate(LocalDateTime.now())
+                .setHeadline("Headline1")
+                .setSummary("Summary1")
+                .setUrl("url1")
+                .setSource("src1")
+                .setCategory("cat1")
+                .setImage("img1");
 
-        News n2 = new News();
-        n2.setExternalId(2L);
-        n2.setSymbol("AAPL");
-        n2.setDate(LocalDateTime.now());
-        n2.setHeadline("Headline2");
-        n2.setSummary("Summary2");
-        n2.setUrl("url2");
-        n2.setSource("src2");
-        n2.setCategory("cat2");
-        n2.setImage("img2");
+        News n2 = new News()
+                .setExternalId(2L)
+                .setSymbol("AAPL")
+                .setDate(LocalDateTime.now())
+                .setHeadline("Headline2")
+                .setSummary("Summary2")
+                .setUrl("url2")
+                .setSource("src2")
+                .setCategory("cat2")
+                .setImage("img2");
 
         // when: initial save
         List<News> initial = newsJpaService.saveAll(List.of(n1, n2));
@@ -69,27 +69,27 @@ class NewsJpaServiceTest {
                 );
 
         // when: attempt to save duplicate and a new record
-        News dup = new News();
-        dup.setExternalId(1L);
-        dup.setSymbol("AAPL");
-        dup.setDate(LocalDateTime.now());
-        dup.setHeadline("Headline1-dup");
-        dup.setSummary("Summary-dup");
-        dup.setUrl("url-dup");
-        dup.setSource("src-dup");
-        dup.setCategory("cat-dup");
-        dup.setImage("img-dup");
+        News dup = new News()
+                .setExternalId(1L)
+                .setSymbol("AAPL")
+                .setDate(LocalDateTime.now())
+                .setHeadline("Headline1-dup")
+                .setSummary("Summary-dup")
+                .setUrl("url-dup")
+                .setSource("src-dup")
+                .setCategory("cat-dup")
+                .setImage("img-dup");
 
-        News n3 = new News();
-        n3.setExternalId(3L);
-        n3.setSymbol("MSFT");
-        n3.setDate(LocalDateTime.now());
-        n3.setHeadline("Headline3");
-        n3.setSummary("Summary3");
-        n3.setUrl("url3");
-        n3.setSource("src3");
-        n3.setCategory("cat3");
-        n3.setImage("img3");
+        News n3 = new News()
+                .setExternalId(3L)
+                .setSymbol("MSFT")
+                .setDate(LocalDateTime.now())
+                .setHeadline("Headline3")
+                .setSummary("Summary3")
+                .setUrl("url3")
+                .setSource("src3")
+                .setCategory("cat3")
+                .setImage("img3");
 
         List<News> second = newsJpaService.saveAll(List.of(dup, n3));
 

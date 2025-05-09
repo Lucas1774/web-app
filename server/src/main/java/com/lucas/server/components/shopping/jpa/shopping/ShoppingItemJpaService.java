@@ -44,8 +44,8 @@ public class ShoppingItemJpaService implements JpaService<ShoppingItem> {
     }
 
     @Override
-    public Optional<ShoppingItem> findById(String id) {
-        return this.repository.findById(Long.valueOf(id));
+    public Optional<ShoppingItem> findById(Long id) {
+        return this.repository.findById(id);
     }
 
     public List<ShoppingItem> findAllByUsername(String username) {

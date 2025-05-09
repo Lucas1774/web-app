@@ -21,25 +21,23 @@ public class FinnhubNewsResponseMapper implements Mapper<JsonNode, News> {
     @Override
     public News map(JsonNode json) throws JsonProcessingException {
         try {
-            long externalId = json.path("id").asLong();
+            long externalId = json.get("id").asLong();
             LocalDateTime date = Instant
-                    .ofEpochSecond(json.path("datetime").asLong())
+                    .ofEpochSecond(json.get("datetime").asLong())
                     .atZone(ZoneOffset.UTC)
                     .toLocalDateTime();
 
-            News news = new News();
-            news.setExternalId(externalId);
-            news.setDate(date);
-            news.setHeadline(json.path("headline").asText());
-            news.setSummary(json.path("summary").asText());
-            news.setUrl(json.path("url").asText());
-            news.setSource(json.path("source").asText());
-            news.setCategory(json.path("category").asText());
-            news.setImage(json.path("image").asText());
-
-            return news;
+            return new News()
+                    .setExternalId(externalId)
+                    .setDate(date)
+                    .setHeadline(json.get("headline").asText())
+                    .setSummary(json.get("summary").asText())
+                    .setUrl(json.get("url").asText())
+                    .setSource(json.get("source").asText())
+                    .setCategory(json.get("category").asText())
+                    .setImage(json.get("image").asText());
         } catch (Exception e) {
-            throw new JsonProcessingException(MessageFormat.format(Constants.JSON_MAPPING_ERROR, "news"), e.getCause());
+            throw new JsonProcessingException(MessageFormat.format(Constants.JSON_MAPPING_ERROR, "news"), e);
         }
     }
 

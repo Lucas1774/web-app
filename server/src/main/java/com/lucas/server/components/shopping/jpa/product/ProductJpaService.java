@@ -54,8 +54,8 @@ public class ProductJpaService implements JpaService<Product>, OrderColumnJpaSer
     }
 
     @Override
-    public Optional<Product> findById(String id) {
-        return this.repository.findById(Long.valueOf(id));
+    public Optional<Product> findById(Long id) {
+        return this.repository.findById(id);
     }
 
     @Transactional
@@ -83,8 +83,7 @@ public class ProductJpaService implements JpaService<Product>, OrderColumnJpaSer
     @Transactional
     public Product updateProductCreateCategoryIfNecessary(Product input) {
         Product product = repository.findById(input.getId()).orElseThrow();
-        product.setName(input.getName());
-        product.setIsRare(input.getIsRare());
+        product.setName(input.getName()).setIsRare(input.getIsRare());
 
         Category category;
         if (null != input.getCategory().getId()) {
