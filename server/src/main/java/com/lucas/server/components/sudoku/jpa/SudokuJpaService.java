@@ -40,7 +40,7 @@ public class SudokuJpaService implements JpaService<Sudoku> {
     }
 
     @Override
-    public Optional<Sudoku> findById(String id) {
-        return this.repository.findById(Long.parseLong(id));
+    public Optional<Sudoku> findById(Long id) {
+        return this.repository.findById(id);
     }
 }

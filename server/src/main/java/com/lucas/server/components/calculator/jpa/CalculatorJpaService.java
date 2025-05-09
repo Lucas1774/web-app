@@ -41,8 +41,8 @@ public class CalculatorJpaService implements JpaService<Calculator> {
     }
 
     @Override
-    public Optional<Calculator> findById(String id) {
-        return this.repository.findById(Long.valueOf(id));
+    public Optional<Calculator> findById(Long id) {
+        return this.repository.findById(id);
     }
 
     public Optional<Calculator> find() {

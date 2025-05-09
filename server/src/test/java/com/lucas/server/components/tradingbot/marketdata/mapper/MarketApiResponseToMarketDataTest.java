@@ -1,11 +1,13 @@
 package com.lucas.server.components.tradingbot.marketdata.mapper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lucas.server.common.Constants;
 import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -129,5 +131,30 @@ class AlphavantageMarketResponseMapperTest {
 
         // then
         assertThat(result).isNotNull().isEmpty();
+    }
+
+    @Test
+    void whenMapAllMissingFields_thenThrowsException() {
+        // given
+        String json = """
+                {
+                    "Global Quote": {
+                        "01. symbol": "IBM",
+                        "02. open": "140.5000",
+                        "03. high": "142.0000",
+                        "05. price": "141.2500",
+                        "06. volume": "4832356",
+                        "07. latest trading day": "2023-12-15",
+                        "08. previous close": "140.0000",
+                        "09. change": "1.2500",
+                        "10. change percent": "0.8928%"
+                    }
+                }
+                """;
+
+        // when & then
+        assertThatThrownBy(() -> mapper.map(objectMapper.readTree(json)))
+                .isInstanceOf(JsonProcessingException.class)
+                .hasMessageContaining(MessageFormat.format(Constants.JSON_MAPPING_ERROR, "market"));
     }
 }

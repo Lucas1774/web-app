@@ -13,5 +13,5 @@ public interface JpaService<E extends JpaEntity> {
 
     List<E> findAll();
 
-    Optional<E> findById(String id);
+    Optional<E> findById(Long id);
 }

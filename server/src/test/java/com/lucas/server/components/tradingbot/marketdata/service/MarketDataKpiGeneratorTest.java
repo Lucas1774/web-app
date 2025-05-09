@@ -40,15 +40,15 @@ class MarketDataKpiGeneratorTest {
         LocalDate currentDate = LocalDate.of(2023, 12, 15);
         LocalDate previousDate = LocalDate.of(2023, 12, 14);
 
-        MarketData currentData = new MarketData();
-        currentData.setSymbol(symbol);
-        currentData.setDate(currentDate);
-        currentData.setPrice(BigDecimal.valueOf(150.00));
+        MarketData currentData = new MarketData()
+                .setSymbol(symbol)
+                .setDate(currentDate)
+                .setPrice(BigDecimal.valueOf(150.00));
 
-        MarketData previousData = new MarketData();
-        previousData.setSymbol(symbol);
-        previousData.setDate(previousDate);
-        previousData.setPrice(BigDecimal.valueOf(140.00));
+        MarketData previousData = new MarketData()
+                .setSymbol(symbol)
+                .setDate(previousDate)
+                .setPrice(BigDecimal.valueOf(140.00));
 
         // when
         marketDataJpaService.saveAll(List.of(previousData, currentData));
@@ -67,10 +67,10 @@ class MarketDataKpiGeneratorTest {
         String symbol = "AAPL";
         LocalDate currentDate = LocalDate.of(2023, 12, 15);
 
-        MarketData currentData = new MarketData();
-        currentData.setSymbol(symbol);
-        currentData.setDate(currentDate);
-        currentData.setPrice(BigDecimal.valueOf(150.00));
+        MarketData currentData = new MarketData()
+                .setSymbol(symbol)
+                .setDate(currentDate)
+                .setPrice(BigDecimal.valueOf(150.00));
 
         // when
         marketDataJpaService.saveAll(List.of(currentData));
@@ -90,15 +90,15 @@ class MarketDataKpiGeneratorTest {
         LocalDate currentDate = LocalDate.of(2023, 12, 15);
         LocalDate previousDate = LocalDate.of(2023, 12, 14);
 
-        MarketData currentData = new MarketData();
-        currentData.setSymbol(symbol);
-        currentData.setDate(currentDate);
-        currentData.setPrice(BigDecimal.valueOf(150.00));
+        MarketData currentData = new MarketData()
+                .setSymbol(symbol)
+                .setDate(currentDate)
+                .setPrice(BigDecimal.valueOf(150.00));
 
-        MarketData previousData = new MarketData();
-        previousData.setSymbol(symbol);
-        previousData.setDate(previousDate);
-        previousData.setPrice(BigDecimal.ZERO);
+        MarketData previousData = new MarketData()
+                .setSymbol(symbol)
+                .setDate(previousDate)
+                .setPrice(BigDecimal.ZERO);
 
         // when
         marketDataJpaService.saveAll(List.of(previousData, currentData));

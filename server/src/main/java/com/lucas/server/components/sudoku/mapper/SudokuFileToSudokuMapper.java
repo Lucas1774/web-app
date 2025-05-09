@@ -37,7 +37,7 @@ public class SudokuFileToSudokuMapper implements Mapper<String, List<Sudoku>> {
         try {
             lines = content.split("\\\\r\\\\n|\\\\r|\\\\n");
         } catch (Exception e) {
-            throw new JsonProcessingException(MessageFormat.format(Constants.JSON_MAPPING_ERROR, "sudoku"), e.getCause());
+            throw new JsonProcessingException(MessageFormat.format(Constants.JSON_MAPPING_ERROR, "sudoku"), e);
         }
         String newRawData = "";
         for (int i = 1; i <= lines.length; i++) {

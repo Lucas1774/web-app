@@ -115,9 +115,9 @@ class ProductJpaServiceTest {
                 .contains("NewCat");
 
         // when: update with a new category
-        updated.setName("UpdatedAgain");
-        updated.setIsRare(false);
-        updated.setCategory(new Category().setId(updated.getCategory().getId()));
+        updated.setName("UpdatedAgain")
+                .setIsRare(false)
+                .setCategory(new Category().setId(updated.getCategory().getId()));
         Product updated2 = productService.updateProductCreateCategoryIfNecessary(updated);
 
         // then: new category created and assigned
@@ -130,8 +130,7 @@ class ProductJpaServiceTest {
                 .contains("NewCat");
 
         // when: update non-existent product id
-        Product missing = new Product();
-        missing.setId(-999L);
+        Product missing = new Product().setId(-999L);
         // then: throw exception
         assertThatThrownBy(() -> productService.updateProductCreateCategoryIfNecessary(missing))
                 .isInstanceOf(NoSuchElementException.class);

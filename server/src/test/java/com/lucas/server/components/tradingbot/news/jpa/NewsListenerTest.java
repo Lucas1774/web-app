@@ -35,19 +35,19 @@ class NewsListenerTest {
     @Test
     void whenSaveSomeMarketData_thenItIsUpdatedWithPreviousMarketData() throws ClientException {
         // given
-        News previous = new News();
-        previous.setSymbol("AAPL");
-        previous.setExternalId(1L);
-        previous.setDate(LocalDateTime.now());
-        previous.setHeadline("Headline1");
-        previous.setUrl("url");
+        News previous = new News()
+                .setSymbol("AAPL")
+                .setExternalId(1L)
+                .setDate(LocalDateTime.now())
+                .setHeadline("Headline1")
+                .setUrl("url");
 
-        News current = new News();
-        current.setSymbol("MSFT");
-        current.setExternalId(2L);
-        current.setDate(LocalDateTime.now());
-        current.setHeadline("Headline2");
-        current.setUrl("url");
+        News current = new News()
+                .setSymbol("MSFT")
+                .setExternalId(2L)
+                .setDate(LocalDateTime.now())
+                .setHeadline("Headline2")
+                .setUrl("url");
 
         // when
         jpaService.saveAll(List.of(previous, current));

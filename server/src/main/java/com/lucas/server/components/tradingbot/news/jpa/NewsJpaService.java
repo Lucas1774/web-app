@@ -39,7 +39,7 @@ public class NewsJpaService implements JpaService<News> {
     }
 
     @Override
-    public Optional<News> findById(String id) {
-        return this.repository.findById(Long.valueOf(id));
+    public Optional<News> findById(Long id) {
+        return this.repository.findById(id);
     }
 }
