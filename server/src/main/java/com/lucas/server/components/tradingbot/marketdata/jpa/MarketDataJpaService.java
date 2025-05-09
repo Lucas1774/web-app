@@ -44,7 +44,7 @@ public class MarketDataJpaService implements JpaService<MarketData> {
         return this.repository.findById(id);
     }
 
-    public Optional<MarketData> findTopBySymbolAndDateBeforeOrderByDateDesc(String symbol, LocalDate date) {
-        return this.repository.findTopBySymbolAndDateBeforeOrderByDateDesc(symbol, date);
+    public Optional<MarketData> findTopBySymbolIdAndDateBeforeOrderByDateDesc(Long symbolId, LocalDate date) {
+        return this.repository.findTopBySymbol_IdAndDateBeforeOrderByDateDesc(symbolId, date);
     }
 }

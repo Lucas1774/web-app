@@ -1,6 +1,7 @@
 package com.lucas.server.components.tradingbot.news.jpa;
 
 import com.lucas.server.common.jpa.JpaEntity;
+import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,8 +29,9 @@ public class News implements JpaEntity {
     @Column(name = "external_id", nullable = false, unique = true)
     private Long externalId;
 
-    @Column(nullable = false, length = 10)
-    private String symbol;
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(name = "symbol_id", nullable = false)
+    private Symbol symbol;
 
     @Column(name = "publication_date", nullable = false)
     private LocalDateTime date;

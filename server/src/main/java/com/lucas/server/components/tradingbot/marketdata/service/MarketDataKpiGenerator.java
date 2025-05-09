@@ -17,7 +17,7 @@ public class MarketDataKpiGenerator {
     }
 
     public MarketData computeDerivedFields(MarketData md) {
-        this.service.findTopBySymbolAndDateBeforeOrderByDateDesc(md.getSymbol(), md.getDate())
+        this.service.findTopBySymbolIdAndDateBeforeOrderByDateDesc(md.getSymbol().getId(), md.getDate())
                 .ifPresent(previous -> {
                     BigDecimal previousPrice = previous.getPrice();
                     md.setPreviousClose(previousPrice);

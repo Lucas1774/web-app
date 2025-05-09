@@ -9,5 +9,5 @@ import java.util.Optional;
 @Repository
 public interface MarketDataRepository extends JpaRepository<MarketData, Long> {
 
-    Optional<MarketData> findTopBySymbolAndDateBeforeOrderByDateDesc(String symbol, LocalDate date);
+    Optional<MarketData> findTopBySymbol_IdAndDateBeforeOrderByDateDesc(Long symbolId, LocalDate date);
 }

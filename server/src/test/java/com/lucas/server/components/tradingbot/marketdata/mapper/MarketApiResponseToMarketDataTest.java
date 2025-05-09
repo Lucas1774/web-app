@@ -1,10 +1,17 @@
 package com.lucas.server.components.tradingbot.marketdata.mapper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lucas.server.TestcontainersConfiguration;
 import com.lucas.server.common.Constants;
 import com.lucas.server.common.exception.JsonProcessingException;
+import com.lucas.server.components.tradingbot.common.jpa.Symbol;
+import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 
 import java.math.BigDecimal;
 import java.text.MessageFormat;
@@ -14,10 +21,23 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+@SpringBootTest
+@Import(TestcontainersConfiguration.class)
 class AlphavantageMarketResponseMapperTest {
 
-    private final AlphavantageMarketResponseMapper mapper = new AlphavantageMarketResponseMapper();
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    SymbolJpaService symbolService;
+
+    @Autowired
+    AlphavantageMarketResponseMapper mapper;
+
+    @Autowired
+    ObjectMapper objectMapper;
+
+    @AfterEach
+    void tearDown() {
+        symbolService.deleteAll();
+    }
 
     @Test
     void whenMapValidJson_thenReturnMarketData() throws JsonProcessingException, com.fasterxml.jackson.core.JsonProcessingException {
@@ -38,13 +58,15 @@ class AlphavantageMarketResponseMapperTest {
                     }
                 }
                 """;
+        Symbol symbol = new Symbol().setName("IBM");
+        symbolService.save(symbol);
 
         // when
         MarketData result = mapper.map(objectMapper.readTree(json));
 
         // then
         assertThat(result).isNotNull();
-        assertThat(result.getSymbol()).isEqualTo("IBM");
+        assertThat(result.getSymbol()).isEqualTo(symbol);
         assertThat(result.getOpen()).isEqualByComparingTo(BigDecimal.valueOf(140.5000));
         assertThat(result.getHigh()).isEqualByComparingTo(BigDecimal.valueOf(142.0000));
         assertThat(result.getLow()).isEqualByComparingTo(BigDecimal.valueOf(139.5000));
@@ -88,16 +110,17 @@ class AlphavantageMarketResponseMapperTest {
                     }
                 }
                 """;
-        String symbol = "IBM";
+        Symbol symbol = new Symbol().setName("IBM"); // To be created by the mapper
 
         // when
-        List<MarketData> result = mapper.mapAll(objectMapper.readTree(json), symbol);
+        List<MarketData> result = mapper.mapAll(objectMapper.readTree(json), symbol.getName());
 
         // then
         assertThat(result).isNotNull().hasSize(2);
 
         MarketData firstEntry = result.getFirst();
-        assertThat(firstEntry.getSymbol()).isEqualTo(symbol);
+        assertThat(firstEntry.getSymbol().getId()).isNotNull();
+        assertThat(firstEntry.getSymbol().getName()).isEqualTo(symbol.getName());
         assertThat(firstEntry.getOpen()).isEqualByComparingTo(BigDecimal.valueOf(140.5000));
         assertThat(firstEntry.getHigh()).isEqualByComparingTo(BigDecimal.valueOf(142.0000));
         assertThat(firstEntry.getLow()).isEqualByComparingTo(BigDecimal.valueOf(139.5000));
@@ -106,7 +129,8 @@ class AlphavantageMarketResponseMapperTest {
         assertThat(firstEntry.getDate()).isEqualTo(LocalDate.parse("2023-12-15"));
 
         MarketData secondEntry = result.get(1);
-        assertThat(secondEntry.getSymbol()).isEqualTo(symbol);
+        assertThat(firstEntry.getSymbol().getId()).isNotNull();
+        assertThat(firstEntry.getSymbol().getName()).isEqualTo(symbol.getName());
         assertThat(secondEntry.getOpen()).isEqualByComparingTo(BigDecimal.valueOf(139.0000));
         assertThat(secondEntry.getHigh()).isEqualByComparingTo(BigDecimal.valueOf(141.0000));
         assertThat(secondEntry.getLow()).isEqualByComparingTo(BigDecimal.valueOf(138.5000));
@@ -124,10 +148,11 @@ class AlphavantageMarketResponseMapperTest {
                     }
                 }
                 """;
-        String symbol = "IBM";
+        Symbol symbol = new Symbol().setName("IBM");
+        symbolService.save(symbol);
 
         // when
-        List<MarketData> result = mapper.mapAll(objectMapper.readTree(json), symbol);
+        List<MarketData> result = mapper.mapAll(objectMapper.readTree(json), symbol.getName());
 
         // then
         assertThat(result).isNotNull().isEmpty();
