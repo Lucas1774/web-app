@@ -210,7 +210,7 @@
 											"\r",
 											"pm.test(\"Symbol is AAPL\", function () {\r",
 											"    const jsonData = pm.response.json();\r",
-											"    pm.expect(jsonData.symbol).to.eql(\"AAPL\");\r",
+											"    pm.expect(jsonData.symbol.name).to.eql(\"AAPL\");\r",
 											"});\r",
 											"\r",
 											"pm.test(\"Price is not null\", function () {\r",
@@ -295,7 +295,76 @@
 											"    const jsonData = pm.response.json();\r",
 											"\r",
 											"    jsonData.forEach(item => {\r",
-											"        pm.expect(item.symbol).to.eql(\"AAPL\");\r",
+											"        pm.expect(item.symbol.name).to.eql(\"AAPL\");\r",
+											"        pm.expect(item.price).to.not.be.null;\r",
+											"    });\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/market/historic/AAPL",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"market",
+										"historic",
+										"AAPL"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "historic/IBM",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response is an array\", function () {\r",
+											"    const jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData).to.be.an(\"array\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Contains item for yesterday and 8 days ago\", function () {\r",
+											"    const jsonData = pm.response.json();\r",
+											"\r",
+											"    const now = new Date();\r",
+											"    const yesterday = new Date(now);\r",
+											"    const eightDaysAgo = new Date(now);\r",
+											"    yesterday.setDate(now.getDate() - 1);\r",
+											"    eightDaysAgo.setDate(now.getDate() - 8);\r",
+											"\r",
+											"    const toArray = (d) => [d.getFullYear(), d.getMonth() + 1, d.getDate()];\r",
+											"\r",
+											"    const yesterdayArray = toArray(yesterday);\r",
+											"    const eightDaysAgoArray = toArray(eightDaysAgo);\r",
+											"\r",
+											"    const hasYesterday = jsonData.some(item => JSON.stringify(item.date) === JSON.stringify(yesterdayArray));\r",
+											"    const hasEightDaysAgo = jsonData.some(item => JSON.stringify(item.date) === JSON.stringify(eightDaysAgoArray));\r",
+											"\r",
+											"    pm.expect(hasYesterday).to.be.true;\r",
+											"    pm.expect(hasEightDaysAgo).to.be.true;\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Each item has symbol IBM and price not null\", function () {\r",
+											"    const jsonData = pm.response.json();\r",
+											"\r",
+											"    jsonData.forEach(item => {\r",
+											"        pm.expect(item.symbol.name).to.eql(\"IBM\");\r",
 											"        pm.expect(item.price).to.not.be.null;\r",
 											"    });\r",
 											"});\r",
@@ -377,7 +446,7 @@
 											"pm.test(\"Every item has externalId, symbol AAPL, and headline not null\", () => {\r",
 											"  data.forEach(item => {\r",
 											"    pm.expect(item.externalId, \"externalId\").to.not.be.null;\r",
-											"    pm.expect(item.symbol, \"symbol\").to.eql(\"AAPL\");\r",
+											"    pm.expect(item.symbol.name, \"symbol\").to.eql(\"AAPL\");\r",
 											"    pm.expect(item.headline, \"headline\").to.not.be.null;\r",
 											"  });\r",
 											"});\r",
@@ -405,7 +474,7 @@
 							"response": []
 						},
 						{
-							"name": "historic/AAPL/2025-04-20",
+							"name": "historic/IBM/2025-05-07",
 							"event": [
 								{
 									"listen": "test",
@@ -428,7 +497,7 @@
 											"const yestNum = yest.getFullYear()*10000 + (yest.getMonth()+1)*100 + yest.getDate();\r",
 											"\r",
 											"// build required oldest numeric\r",
-											"const reqOldestNum = 2025*10000 + 4*100 + 20;\r",
+											"const reqOldestNum = 2025*10000 + 5*100 + 7;\r",
 											"\r",
 											"// extract numeric dates from items\r",
 											"const nums = data.map(item => {\r",
@@ -436,8 +505,8 @@
 											"  return d[0]*10000 + d[1]*100 + d[2];\r",
 											"});\r",
 											"\r",
-											"// check oldest exactly 2024-04-04\r",
-											"pm.test(\"Oldest is 2024-04-04\", () => {\r",
+											"// check oldest exactly 2025-05-07\r",
+											"pm.test(\"Oldest is 2025-05-07\", () => {\r",
 											"  const min = Math.min(...nums);\r",
 											"  pm.expect(min).to.eql(reqOldestNum);\r",
 											"});\r",
@@ -448,10 +517,10 @@
 											"  pm.expect(max === todayNum || max === yestNum).to.be.true;\r",
 											"});\r",
 											"\r",
-											"pm.test(\"Every item has externalId, symbol AAPL, and headline not null\", () => {\r",
+											"pm.test(\"Every item has externalId, symbol IBM, and headline not null\", () => {\r",
 											"  data.forEach(item => {\r",
 											"    pm.expect(item.externalId, \"externalId\").to.not.be.null;\r",
-											"    pm.expect(item.symbol, \"symbol\").to.eql(\"AAPL\");\r",
+											"    pm.expect(item.symbol.name, \"symbol\").to.eql(\"IBM\");\r",
 											"    pm.expect(item.headline, \"headline\").to.not.be.null;\r",
 											"  });\r",
 											"});\r",
@@ -466,15 +535,15 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{base_url}}/news/historic/AAPL/2025-04-20",
+									"raw": "{{base_url}}/news/historic/IBM/2025-05-07",
 									"host": [
 										"{{base_url}}"
 									],
 									"path": [
 										"news",
 										"historic",
-										"AAPL",
-										"2025-04-20"
+										"IBM",
+										"2025-05-07"
 									]
 								}
 							},
@@ -486,7 +555,7 @@
 					"name": "embeddings/",
 					"item": [
 						{
-							"name": "50",
+							"name": "20",
 							"event": [
 								{
 									"listen": "test",
@@ -506,12 +575,12 @@
 											"});\r",
 											"\r",
 											"pm.test(\"symbol is AAPL\", () => {\r",
-											"    pm.expect(news.symbol).to.eql(\"AAPL\");\r",
+											"    pm.expect(news.symbol.name).to.eql(\"AAPL\");\r",
 											"});\r",
 											"\r",
 											"// id must equal 50\r",
-											"pm.test(\"id is 50\", () => {\r",
-											"    pm.expect(news.id).to.eql(50);\r",
+											"pm.test(\"id is 20\", () => {\r",
+											"    pm.expect(news.id).to.eql(20);\r",
 											"});\r",
 											"\r",
 											"// embeddings must be an array of length 3072\r",
@@ -529,13 +598,81 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{base_url}}/embeddings/50",
+									"raw": "{{base_url}}/embeddings/20",
 									"host": [
 										"{{base_url}}"
 									],
 									"path": [
 										"embeddings",
-										"50"
+										"20"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "recommendations/",
+					"item": [
+						{
+							"name": "AAPL,IBM",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", () => {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const schema = {\r",
+											"    type: \"object\",\r",
+											"    required: [\"recommendations\", \"errors\"],\r",
+											"    additionalProperties: false,\r",
+											"    properties: {\r",
+											"        recommendations: {\r",
+											"            type: \"array\",\r",
+											"            items: {\r",
+											"                type: \"object\",\r",
+											"                required: [\"symbol\", \"action\", \"confidence\", \"rationale\"],\r",
+											"                additionalProperties: false,\r",
+											"                properties: {\r",
+											"                    symbol: { type: \"string\" },\r",
+											"                    action: { type: \"string\", enum: [\"BUY\", \"SELL\", \"HOLD\"] },\r",
+											"                    confidence: { type: \"number\", minimum: 0, maximum: 1 },\r",
+											"                    rationale: { type: \"string\" }\r",
+											"                }\r",
+											"            }\r",
+											"        },\r",
+											"        errors: {\r",
+											"            type: \"array\",\r",
+											"            items: { type: \"string\" }\r",
+											"        }\r",
+											"    }\r",
+											"};\r",
+											"\r",
+											"pm.test(\"Response schema is valid\", () => {\r",
+											"    pm.response.to.have.jsonSchema(schema);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/recommendations/AAPL,IBM",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"recommendations",
+										"AAPL,IBM"
 									]
 								}
 							},

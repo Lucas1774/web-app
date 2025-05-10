@@ -2,6 +2,8 @@ package com.lucas.server.components.tradingbot.marketdata.jpa;
 
 import com.lucas.server.common.jpa.JpaService;
 import com.lucas.server.common.jpa.UniqueConstraintWearyJpaServiceDelegate;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -46,5 +48,9 @@ public class MarketDataJpaService implements JpaService<MarketData> {
 
     public Optional<MarketData> findTopBySymbolIdAndDateBeforeOrderByDateDesc(Long symbolId, LocalDate date) {
         return this.repository.findTopBySymbol_IdAndDateBeforeOrderByDateDesc(symbolId, date);
+    }
+
+    public List<MarketData> getTopForSymbolId(Long symbolId, int limit) {
+        return this.repository.findBySymbol_Id(symbolId, PageRequest.of(0, limit, Sort.by("date").descending())).getContent();
     }
 }

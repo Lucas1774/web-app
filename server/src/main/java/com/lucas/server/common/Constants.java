@@ -15,9 +15,15 @@ public class Constants {
     public static final String COMPANY_NEWS = "/company-news";
     public static final String QUOTE_PATH = "GLOBAL_QUOTE";
     public static final String TIME_SERIES_WEEKLY = "TIME_SERIES_WEEKLY";
+    public static final int HISTORY_DAYS_COUNT = 14;
+    public static final int NEWS_COUNT = 5;
+    public static final String CONTENT = "content";
+    public static final String ROLE = "role";
 
     public static final String RECORD_IGNORED_BREAKS_UNIQUENESS_CONSTRAIN_WARN = "Duplicate entry for {}: Ignored";
     public static final String EMBEDDING_GENERATION_FAILED_WARN = "Couldn't fetch embeddings for {}";
     public static final String SUDOKU_IGNORED_MALFORMED_JSON_WARN = "Couldn't deserialize sudoku from raw data {}";
+    public static final String KPI_RETURNED_ZERO_WARN = "{}: Value is zero";
+    public static final String KPI_EMPTY_DATA_ERROR = "{0}: Provided data collection is empty";
     public static final String JSON_MAPPING_ERROR = "Error mapping {0} JSON";
 }
