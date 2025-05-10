@@ -5,6 +5,7 @@ import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataJpaService;
 import com.lucas.server.components.tradingbot.marketdata.service.AlphavantageMarketDataClient;
+import com.lucas.server.components.tradingbot.marketdata.service.FinnhubMarketDataClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -20,12 +21,14 @@ import java.util.List;
 @RequestMapping("/market")
 public class MarketDataController {
 
-    private final AlphavantageMarketDataClient client;
+    private final FinnhubMarketDataClient client;
+    private final AlphavantageMarketDataClient weekClient;
     private final MarketDataJpaService jpaService;
     private static final Logger logger = LoggerFactory.getLogger(MarketDataController.class);
 
-    public MarketDataController(AlphavantageMarketDataClient client, MarketDataJpaService jpaService) {
+    public MarketDataController(FinnhubMarketDataClient client, AlphavantageMarketDataClient weekClient, MarketDataJpaService jpaService) {
         this.client = client;
+        this.weekClient = weekClient;
         this.jpaService = jpaService;
     }
 
@@ -46,7 +49,7 @@ public class MarketDataController {
     public ResponseEntity<List<MarketData>> fetchAndSaveHistoric(@PathVariable String symbol) {
         List<MarketData> entities;
         try {
-            entities = client.retrieveWeeklySeries(symbol);
+            entities = weekClient.retrieveWeeklySeries(symbol);
         } catch (JsonProcessingException | ClientException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

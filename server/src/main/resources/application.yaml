@@ -30,10 +30,10 @@ spring:
     model:
       chat: azure-openai
 
-market-data:
+alphavantage:
   api-key: ${ALPHAVANTAGE_KEY}
   endpoint: ${ALPHAVANTAGE_ENDPOINT}
 
-market-news:
+finnhub:
   api-key: ${FINNHUB_KEY}
   endpoint: ${FINNHUB_ENDPOINT}

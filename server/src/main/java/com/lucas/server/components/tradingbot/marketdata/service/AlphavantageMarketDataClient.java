@@ -22,7 +22,7 @@ public class AlphavantageMarketDataClient {
     private final String apiKey;
 
     public AlphavantageMarketDataClient(AlphavantageMarketResponseMapper mapper, HttpRequestClient httpRequestClient,
-                                        @Value("${market-data.endpoint}") String endpoint, @Value("${market-data.api-key}") String apiKey) {
+                                        @Value("${alphavantage.endpoint}") String endpoint, @Value("${alphavantage.api-key}") String apiKey) {
         this.httpRequestClient = httpRequestClient;
         this.mapper = mapper;
         this.endpoint = endpoint;
@@ -32,7 +32,7 @@ public class AlphavantageMarketDataClient {
     public MarketData retrieveMarketData(String symbol) throws JsonProcessingException, ClientException {
         String url = UriComponentsBuilder
                 .fromUriString(endpoint)
-                .queryParam("function", Constants.QUOTE_PATH)
+                .queryParam("function", Constants.ALPHAVANTAGE_QUOTE_PATH)
                 .queryParam("symbol", symbol)
                 .queryParam("apikey", apiKey)
                 .toUriString();

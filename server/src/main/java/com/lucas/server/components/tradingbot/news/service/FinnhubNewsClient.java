@@ -22,7 +22,7 @@ public class FinnhubNewsClient {
     private final String apiKey;
 
     public FinnhubNewsClient(FinnhubNewsResponseMapper mapper, HttpRequestClient httpRequestClient,
-                             @Value("${market-news.endpoint}") String endpoint, @Value("${market-news.api-key}") String apiKey) {
+                             @Value("${finnhub.endpoint}") String endpoint, @Value("${finnhub.api-key}") String apiKey) {
         this.httpRequestClient = httpRequestClient;
         this.mapper = mapper;
         this.endpoint = endpoint;

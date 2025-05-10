@@ -13,7 +13,8 @@ public class Constants {
     public static final int SUDOKU_NUMBER_OF_CELLS = 81;
     public static final String INVALID_EXPRESSION = "Invalid expression";
     public static final String COMPANY_NEWS = "/company-news";
-    public static final String QUOTE_PATH = "GLOBAL_QUOTE";
+    public static final String QUOTE = "/quote";
+    public static final String ALPHAVANTAGE_QUOTE_PATH = "GLOBAL_QUOTE";
     public static final String TIME_SERIES_WEEKLY = "TIME_SERIES_WEEKLY";
     public static final int HISTORY_DAYS_COUNT = 14;
     public static final int NEWS_COUNT = 5;
