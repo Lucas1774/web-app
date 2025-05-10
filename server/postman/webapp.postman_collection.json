@@ -1,11 +1,11 @@
 {
 	"info": {
-		"_postman_id": "db5d5aad-cdee-4389-9090-7a8e27630baf",
+		"_postman_id": "a310bc8e-a9dd-4852-a328-722e817a8fbd",
 		"name": "webapp",
 		"description": "# 🚀 Get started here\n\nThis template guides you through CRUD operations (GET, POST, PUT, DELETE), variables, and tests.\n\n## 🔖 **How to use this template**\n\n#### **Step 1: Send requests**\n\nRESTful APIs allow you to perform CRUD operations using the POST, GET, PUT, and DELETE HTTP methods.\n\nThis collection contains each of these [request](https://learning.postman.com/docs/sending-requests/requests/) types. Open each request and click \"Send\" to see what happens.\n\n#### **Step 2: View responses**\n\nObserve the response tab for status code (200 OK), response time, and size.\n\n#### **Step 3: Send new Body data**\n\nUpdate or add new data in \"Body\" in the POST request. Typically, Body data is also used in PUT request.\n\n```\n{\n    \"name\": \"Add your name in the body\"\n}\n\n ```\n\n#### **Step 4: Update the variable**\n\nVariables enable you to store and reuse values in Postman. We have created a [variable](https://learning.postman.com/docs/sending-requests/variables/) called `base_url` with the sample request [https://postman-api-learner.glitch.me](https://postman-api-learner.glitch.me). Replace it with your API endpoint to customize this collection.\n\n#### **Step 5: Add tests in the \"Scripts\" tab**\n\nAdding tests to your requests can help you confirm that your API is working as expected. You can write test scripts in JavaScript and view the output in the \"Test Results\" tab.\n\n<img src=\"https://content.pstmn.io/fa30ea0a-373d-4545-a668-e7b283cca343/aW1hZ2UucG5n\" alt=\"\" height=\"1530\" width=\"2162\">\n\n## 💪 Pro tips\n\n- Use folders to group related requests and organize the collection.\n    \n- Add more [scripts](https://learning.postman.com/docs/writing-scripts/intro-to-scripts/) to verify if the API works as expected and execute workflows.\n    \n\n## 💡Related templates\n\n[API testing basics](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=e9a37a28-055b-49cd-8c7e-97494a21eb54&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)  \n[API documentation](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=e9c28f47-1253-44af-a2f3-20dce4da1f18&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)  \n[Authorization methods](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=31a9a6ed-4cdf-4ced-984c-d12c9aec1c27&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "44440825",
-		"_collection_link": "https://johndoe-483049.postman.co/workspace/John-Doe's-Workspace~66114b17-ce92-4db7-8551-7be733093137/collection/44440825-db5d5aad-cdee-4389-9090-7a8e27630baf?action=share&source=collection_link&creator=44440825"
+		"_collection_link": "https://johndoe-483049.postman.co/workspace/John-Doe's-Workspace~66114b17-ce92-4db7-8551-7be733093137/collection/44440825-a310bc8e-a9dd-4852-a328-722e817a8fbd?action=share&source=collection_link&creator=44440825"
 	},
 	"item": [
 		{
@@ -387,6 +387,149 @@
 										"market",
 										"historic",
 										"IBM"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "batch/AAPL,IBM",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const schema = {\r",
+											"    type: \"array\",\r",
+											"    minItems: 2,\r",
+											"    maxItems: 2,\r",
+											"    items: {\r",
+											"        type: \"object\",\r",
+											"        required: [\r",
+											"            \"id\", \"symbol\", \"open\", \"high\", \"low\", \"price\", \"volume\",\r",
+											"            \"date\", \"previousClose\", \"change\", \"changePercent\"\r",
+											"        ],\r",
+											"        properties: {\r",
+											"            id: { type: [\"integer\", \"null\"] },\r",
+											"            symbol: {\r",
+											"                type: \"object\",\r",
+											"                required: [\"id\", \"name\"],\r",
+											"                properties: {\r",
+											"                    id: { type: \"integer\" },\r",
+											"                    name: { type: \"string\", minLength: 1 }\r",
+											"                }\r",
+											"            },\r",
+											"            open: { type: \"number\" },\r",
+											"            high: { type: \"number\" },\r",
+											"            low: { type: \"number\" },\r",
+											"            price: { type: \"number\" },\r",
+											"            volume: { type: [\"integer\", \"null\"] },\r",
+											"            date: { type: \"string\", pattern: \"^\\\\d{4}-\\\\d{2}-\\\\d{2}$\" },\r",
+											"            previousClose: { type: \"number\" },\r",
+											"            change: { type: \"number\" },\r",
+											"            changePercent: { type: \"string\", pattern: \"^-?\\\\d+(?:\\\\.\\\\d+)?%$\" }\r",
+											"        },\r",
+											"        additionalProperties: false\r",
+											"    }\r",
+											"};\r",
+											"\r",
+											"pm.test(\"Matches expected JSON schema\", () => {\r",
+											"    pm.response.to.have.jsonSchema(schema);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/market/batch/AAPL,IBM",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"market",
+										"batch",
+										"AAPL,IBM"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "batch",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const schema = {\r",
+											"    type: \"array\",\r",
+											"    minItems: 450,\r",
+											"    maxItems: 550,\r",
+											"    items: {\r",
+											"        type: \"object\",\r",
+											"        required: [\r",
+											"            \"id\", \"symbol\", \"open\", \"high\", \"low\", \"price\", \"volume\",\r",
+											"            \"date\", \"previousClose\", \"change\", \"changePercent\"\r",
+											"        ],\r",
+											"        properties: {\r",
+											"            id: { type: [\"integer\", \"null\"] },\r",
+											"            symbol: {\r",
+											"                type: \"object\",\r",
+											"                required: [\"id\", \"name\"],\r",
+											"                properties: {\r",
+											"                    id: { type: \"integer\" },\r",
+											"                    name: { type: \"string\", minLength: 1 }\r",
+											"                }\r",
+											"            },\r",
+											"            open: { type: \"number\" },\r",
+											"            high: { type: \"number\" },\r",
+											"            low: { type: \"number\" },\r",
+											"            price: { type: \"number\" },\r",
+											"            volume: { type: [\"integer\", \"null\"] },\r",
+											"            date: { type: \"string\", pattern: \"^\\\\d{4}-\\\\d{2}-\\\\d{2}$\" },\r",
+											"            previousClose: { type: \"number\" },\r",
+											"            change: { type: \"number\" },\r",
+											"            changePercent: { type: \"string\", pattern: \"^-?\\\\d+(?:\\\\.\\\\d+)?%$\" }\r",
+											"        },\r",
+											"        additionalProperties: false\r",
+											"    }\r",
+											"};\r",
+											"\r",
+											"pm.test(\"Matches expected JSON schema\", () => {\r",
+											"    pm.response.to.have.jsonSchema(schema);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/market/batch",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"market",
+										"batch"
 									]
 								}
 							},

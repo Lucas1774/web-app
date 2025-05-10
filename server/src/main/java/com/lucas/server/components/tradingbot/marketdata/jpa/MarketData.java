@@ -51,7 +51,7 @@ public class MarketData implements JpaEntity {
     @Column(precision = 15, scale = 4)
     private BigDecimal change;
 
-    @Column(name = "change_percent", length = 8)
+    @Column(name = "change_percent", length = 10)
     private String changePercent;
 
     @Override

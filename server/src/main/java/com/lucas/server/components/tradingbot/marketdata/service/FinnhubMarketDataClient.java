@@ -6,9 +6,13 @@ import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.marketdata.mapper.FinnhubMarketResponseMapper;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class FinnhubMarketDataClient {
@@ -35,5 +39,21 @@ public class FinnhubMarketDataClient {
                 .toUriString();
 
         return mapper.map(this.httpRequestClient.fetch(url), symbol);
+    }
+
+    @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})
+    public List<MarketData> retrieveMarketData(List<String> symbols) throws ClientException, JsonProcessingException {
+        List<MarketData> res = new ArrayList<>();
+        for (String symbol : symbols) {
+            MarketData updated = this.retrieveMarketData(symbol);
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            res.add(updated);
+        }
+
+        return res;
     }
 }

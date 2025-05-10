@@ -1,5 +1,6 @@
 package com.lucas.server.components.tradingbot.marketdata.controller;
 
+import com.lucas.server.common.Constants;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
@@ -51,6 +52,32 @@ public class MarketDataController {
         try {
             entities = weekClient.retrieveWeeklySeries(symbol);
         } catch (JsonProcessingException | ClientException e) {
+            logger.error(e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+        jpaService.saveAll(entities);
+        return ResponseEntity.ok(entities);
+    }
+
+    @GetMapping("/batch")
+    public ResponseEntity<List<MarketData>> fetchAndSaveAll() {
+        List<MarketData> entities;
+        try {
+            entities = client.retrieveMarketData(Constants.SP500_SYMBOLS);
+        } catch (ClientException | JsonProcessingException e) {
+            logger.error(e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+        jpaService.saveAll(entities);
+        return ResponseEntity.ok(entities);
+    }
+
+    @GetMapping("/batch/{symbols}")
+    public ResponseEntity<List<MarketData>> fetchAndSaveSome(@PathVariable List<String> symbols) {
+        List<MarketData> entities;
+        try {
+            entities = client.retrieveMarketData(symbols);
+        } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }

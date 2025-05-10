@@ -1,6 +1,9 @@
 security:
   ip-address: ${SOME_IP_ADDRESS}
 
+scheduler:
+  daily-cron: "0 0 3 * * *" # Every day at 03:00
+
 spring:
   application:
     name: server
