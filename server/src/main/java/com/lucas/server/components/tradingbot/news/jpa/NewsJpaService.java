@@ -2,6 +2,8 @@ package com.lucas.server.components.tradingbot.news.jpa;
 
 import com.lucas.server.common.jpa.JpaService;
 import com.lucas.server.common.jpa.UniqueConstraintWearyJpaServiceDelegate;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -41,5 +43,9 @@ public class NewsJpaService implements JpaService<News> {
     @Override
     public Optional<News> findById(Long id) {
         return this.repository.findById(id);
+    }
+
+    public List<News> getTopForSymbolId(Long symbolId, int limit) {
+        return this.repository.findBySymbol_Id(symbolId, PageRequest.of(0, limit, Sort.by("date").descending())).getContent();
     }
 }

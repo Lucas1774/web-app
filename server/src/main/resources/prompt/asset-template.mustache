@@ -1,0 +1,4 @@
+{
+"role": "user",
+"content": "--- Market Data & Features ---\n{{#assets}}\n[ASSET: {{symbol}}]\n• Current Position: {{position}} shares ({{positionValue}} EUR)\n  – Avg Entry Price: {{entryPrice}} EUR\n• Price History (last {{historyDays}} days):\n{{#priceHistory}}  • {{date}}: O{{open}} H{{high}} L{{low}} C{{close}} V{{volume}}\n{{/priceHistory}}\n• Technical Indicators: 5-day MA: {{ma5}}, RSI14: {{rsi14}}, ATR14: {{atr14}}\n• Asset KPIs: Unrealized PnL including trading costs: {{unrealizedPnL}} EUR, Volatility (14d): {{volatility}}%\n\n--- News Summaries (Top {{newsCount}}) ---\n{{#news}}  • \"{{headline}}\" (Sentiment: {{sentiment}}) Summary:{{summary}}\n{{/news}}\n\n{{/assets}}"
+}

@@ -104,9 +104,20 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>io.github.hakky54</groupId>
+            <artifactId>logcaptor</artifactId>
+            <version>2.11.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>com.auth0</groupId>
             <artifactId>java-jwt</artifactId>
             <version>4.4.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.mjeanroy</groupId>
+            <artifactId>springmvc-mustache-mustachejava</artifactId>
+            <version>2.0.0</version>
         </dependency>
         <dependency>
             <groupId>net.objecthunter</groupId>
