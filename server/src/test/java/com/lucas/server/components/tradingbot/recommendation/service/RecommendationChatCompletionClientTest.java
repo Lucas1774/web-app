@@ -28,6 +28,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -73,12 +74,11 @@ class RecommendationChatCompletionClientTest {
     void testProvide() throws IllegalStateException {
         // given: insert 15 days of market data. Needs to be greater than the history days
         Symbol symbol = new Symbol().setName("AAPL");
-        symbolJpaService.save(symbol);
         LocalDate today = LocalDate.now();
         List<MarketData> mds = new ArrayList<>();
         for (int i = 15; i >= 0; i--) {
             MarketData md = new MarketData()
-                    .setSymbol(symbol)
+                    .setSymbol(symbolJpaService.save(symbol).orElseThrow())
                     .setDate(today.minusDays(i))
                     .setOpen(BigDecimal.valueOf(10 + i))
                     .setHigh(BigDecimal.valueOf(11 + i))
@@ -104,8 +104,10 @@ class RecommendationChatCompletionClientTest {
         newsService.saveAll(articles);
 
         // when
-        AssetReportRaw report = provider.provide(symbol.getName());
-        assertThatThrownBy(() -> chatCompletionClient.getRecommendations(List.of(symbol.getName(), symbol.getName())))
+        List<MarketData> filteredMds = this.marketDataJpaService.getTopForSymbolId(symbol.getId(), Constants.HISTORY_DAYS_COUNT);
+        List<News> filteredNews = this.newsService.getTopForSymbolId(symbol.getId(), Constants.NEWS_COUNT);
+        AssetReportRaw report = provider.provide(symbol, filteredMds, filteredNews);
+        assertThatThrownBy(() -> chatCompletionClient.getRecommendations(Map.of(symbol, filteredMds), Map.of(symbol, filteredNews)))
                 .isInstanceOf(ClientException.class);
 
         // then: symbol & history size & news count

@@ -4,9 +4,9 @@ import com.lucas.server.common.Constants;
 import com.lucas.server.common.HttpRequestClient;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.common.exception.JsonProcessingException;
+import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.marketdata.mapper.FinnhubMarketResponseMapper;
-import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -31,9 +31,9 @@ public class FinnhubMarketDataClient {
         this.apiKey = apiKey;
     }
 
-    public MarketData retrieveMarketData(String symbol) throws JsonProcessingException, ClientException {
+    public MarketData retrieveMarketData(Symbol symbol) throws JsonProcessingException, ClientException {
         String url = UriComponentsBuilder.fromUriString(endpoint + Constants.QUOTE)
-                .queryParam("symbol", symbol)
+                .queryParam("symbol", symbol.getName())
                 .queryParam("token", apiKey)
                 .build()
                 .toUriString();
@@ -41,10 +41,9 @@ public class FinnhubMarketDataClient {
         return mapper.map(this.httpRequestClient.fetch(url), symbol);
     }
 
-    @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})
-    public List<MarketData> retrieveMarketData(List<String> symbols) throws ClientException, JsonProcessingException {
+    public List<MarketData> retrieveMarketData(List<Symbol> symbols) throws ClientException, JsonProcessingException {
         List<MarketData> res = new ArrayList<>();
-        for (String symbol : symbols) {
+        for (Symbol symbol : symbols) {
             MarketData updated = this.retrieveMarketData(symbol);
             try {
                 Thread.sleep(1000);

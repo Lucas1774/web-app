@@ -5,9 +5,7 @@ import com.lucas.server.TestcontainersConfiguration;
 import com.lucas.server.common.Constants;
 import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
-import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -25,18 +23,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class FinnhubMarketResponseMapperTest {
 
     @Autowired
-    SymbolJpaService symbolService;
-
-    @Autowired
     FinnhubMarketResponseMapper mapper;
 
     @Autowired
     ObjectMapper objectMapper;
-
-    @AfterEach
-    void tearDown() {
-        symbolService.deleteAll();
-    }
 
     @Test
     void whenMapValidJson_thenReturnMarketData() throws JsonProcessingException, com.fasterxml.jackson.core.JsonProcessingException {
@@ -54,10 +44,9 @@ class FinnhubMarketResponseMapperTest {
                 }
                 """;
         Symbol symbol = new Symbol().setName("IBM");
-        symbolService.save(symbol);
 
         // when
-        MarketData result = mapper.map(objectMapper.readTree(json), symbol.getName());
+        MarketData result = mapper.map(objectMapper.readTree(json), symbol);
 
         // then
         assertThat(result).isNotNull();
@@ -88,14 +77,13 @@ class FinnhubMarketResponseMapperTest {
                   "t" : 1746820800
                 }
                 """;
-        Symbol symbol = new Symbol().setName("IBM"); // To be created by the mapper
+        Symbol symbol = new Symbol().setName("IBM");
 
         // when
-        MarketData result = mapper.map(objectMapper.readTree(json), symbol.getName());
+        MarketData result = mapper.map(objectMapper.readTree(json), symbol);
 
         // then
         assertThat(result).isNotNull();
-        assertThat(result.getSymbol().getId()).isNotNull();
         assertThat(result.getSymbol().getName()).isEqualTo(symbol.getName());
         assertThat(result.getOpen()).isEqualByComparingTo(BigDecimal.valueOf(199));
         assertThat(result.getHigh()).isEqualByComparingTo(BigDecimal.valueOf(200.5399));
@@ -114,7 +102,7 @@ class FinnhubMarketResponseMapperTest {
         String invalidJson = "{}";
 
         // when & then
-        assertThatThrownBy(() -> mapper.map(objectMapper.readTree(invalidJson), "AAPL")).isInstanceOf(JsonProcessingException.class);
+        assertThatThrownBy(() -> mapper.map(objectMapper.readTree(invalidJson), new Symbol().setName("AAPL"))).isInstanceOf(JsonProcessingException.class);
     }
 
     @Test
@@ -133,7 +121,7 @@ class FinnhubMarketResponseMapperTest {
                 """;
 
         // when & then
-        assertThatThrownBy(() -> mapper.map(objectMapper.readTree(json), "AAPL"))
+        assertThatThrownBy(() -> mapper.map(objectMapper.readTree(json), new Symbol().setName("AAPL")))
                 .isInstanceOf(JsonProcessingException.class)
                 .hasMessageContaining(MessageFormat.format(Constants.JSON_MAPPING_ERROR, "market"));
     }

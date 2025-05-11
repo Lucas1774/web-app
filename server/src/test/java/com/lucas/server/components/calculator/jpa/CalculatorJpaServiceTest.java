@@ -2,7 +2,6 @@ package com.lucas.server.components.calculator.jpa;
 
 import com.lucas.server.TestcontainersConfiguration;
 import com.lucas.server.common.Constants;
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,7 +17,6 @@ class CalculatorJpaServiceTest {
     CalculatorJpaService calculatorService;
 
     @Test
-    @Transactional
     void testComputeAndSaveNumber() {
         // given
         String number = "1+2";
@@ -35,7 +33,6 @@ class CalculatorJpaServiceTest {
     }
 
     @Test
-    @Transactional
     void testComputeAndSaveText() {
         // given
         String text = "Hello World";

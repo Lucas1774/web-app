@@ -23,7 +23,7 @@ public class NewsEmbeddingsClient {
         try {
             float[] embeddings = client.embed(contentToEmbed);
             if (embeddings.length > 0) {
-                Thread.sleep(3000);
+                Thread.sleep(4000);
             }
 
             return news.setEmbeddings(embeddings);

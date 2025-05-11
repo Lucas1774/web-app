@@ -2,7 +2,7 @@ package com.lucas.server.components.tradingbot.recommendation.controller;
 
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.common.exception.IllegalStateException;
-import com.lucas.server.components.tradingbot.recommendation.service.RecommendationChatCompletionClient;
+import com.lucas.server.components.tradingbot.common.jpa.DataManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -19,17 +19,17 @@ import java.util.List;
 @RequestMapping("/recommendations")
 public class RecommendationsController {
 
-    private final RecommendationChatCompletionClient client;
+    private final DataManager jpaService;
     private final Logger logger = LoggerFactory.getLogger(RecommendationsController.class);
 
-    public RecommendationsController(RecommendationChatCompletionClient client) {
-        this.client = client;
+    public RecommendationsController(DataManager jpaService) {
+        this.jpaService = jpaService;
     }
 
     @GetMapping("/{symbols}")
     public ResponseEntity<String> generateRecommendations(@PathVariable List<String> symbols) {
         try {
-            return ResponseEntity.ok(client.getRecommendations(symbols));
+            return ResponseEntity.ok(this.jpaService.getRecommendations(symbols));
         } catch (ClientException | IllegalStateException | IOException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

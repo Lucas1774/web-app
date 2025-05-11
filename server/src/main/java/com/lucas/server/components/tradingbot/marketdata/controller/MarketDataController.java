@@ -3,10 +3,8 @@ package com.lucas.server.components.tradingbot.marketdata.controller;
 import com.lucas.server.common.Constants;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.common.exception.JsonProcessingException;
+import com.lucas.server.components.tradingbot.common.jpa.DataManager;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
-import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataJpaService;
-import com.lucas.server.components.tradingbot.marketdata.service.AlphavantageMarketDataClient;
-import com.lucas.server.components.tradingbot.marketdata.service.FinnhubMarketDataClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -22,66 +20,50 @@ import java.util.List;
 @RequestMapping("/market")
 public class MarketDataController {
 
-    private final FinnhubMarketDataClient client;
-    private final AlphavantageMarketDataClient weekClient;
-    private final MarketDataJpaService jpaService;
+    private final DataManager jpaService;
     private static final Logger logger = LoggerFactory.getLogger(MarketDataController.class);
 
-    public MarketDataController(FinnhubMarketDataClient client, AlphavantageMarketDataClient weekClient, MarketDataJpaService jpaService) {
-        this.client = client;
-        this.weekClient = weekClient;
+    public MarketDataController(DataManager jpaService) {
         this.jpaService = jpaService;
     }
 
     @GetMapping("/{symbol}")
     public ResponseEntity<MarketData> fetchAndSave(@PathVariable String symbol) {
-        MarketData entity;
         try {
-            entity = client.retrieveMarketData(symbol);
+            return ResponseEntity.ok(this.jpaService.retrieveMarketData(symbol));
         } catch (JsonProcessingException | ClientException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-        jpaService.save(entity);
-        return ResponseEntity.ok(entity);
     }
 
     @GetMapping("/historic/{symbol}")
     public ResponseEntity<List<MarketData>> fetchAndSaveHistoric(@PathVariable String symbol) {
-        List<MarketData> entities;
         try {
-            entities = weekClient.retrieveWeeklySeries(symbol);
+            return ResponseEntity.ok(this.jpaService.retrieveWeeklySeries(symbol));
         } catch (JsonProcessingException | ClientException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-        jpaService.saveAll(entities);
-        return ResponseEntity.ok(entities);
     }
 
     @GetMapping("/batch")
     public ResponseEntity<List<MarketData>> fetchAndSaveAll() {
-        List<MarketData> entities;
         try {
-            entities = client.retrieveMarketData(Constants.SP500_SYMBOLS);
+            return ResponseEntity.ok(this.jpaService.retrieveMarketData(Constants.SP500_SYMBOLS));
         } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-        jpaService.saveAll(entities);
-        return ResponseEntity.ok(entities);
     }
 
     @GetMapping("/batch/{symbols}")
     public ResponseEntity<List<MarketData>> fetchAndSaveSome(@PathVariable List<String> symbols) {
-        List<MarketData> entities;
         try {
-            entities = client.retrieveMarketData(symbols);
+            return ResponseEntity.ok(this.jpaService.retrieveMarketData(symbols));
         } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-        jpaService.saveAll(entities);
-        return ResponseEntity.ok(entities);
     }
 }

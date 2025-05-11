@@ -3,8 +3,8 @@ package com.lucas.server.components.tradingbot.common;
 import com.lucas.server.common.Constants;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.common.exception.JsonProcessingException;
+import com.lucas.server.components.tradingbot.common.jpa.DataManager;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
-import com.lucas.server.components.tradingbot.marketdata.service.FinnhubMarketDataClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -15,18 +15,18 @@ import java.util.List;
 @Component
 public class DailyScheduler {
 
-    private final FinnhubMarketDataClient finnhubMarketDataClient;
+    private final DataManager dataManager;
     private static final Logger logger = LoggerFactory.getLogger(DailyScheduler.class);
 
-    public DailyScheduler(FinnhubMarketDataClient finnhubMarketDataClient) {
-        this.finnhubMarketDataClient = finnhubMarketDataClient;
+    public DailyScheduler(DataManager dataManager) {
+        this.dataManager = dataManager;
     }
 
     @Scheduled(cron = "${scheduler.daily-cron}")
     public void dailyTask() {
         List<MarketData> updated;
         try {
-            updated = finnhubMarketDataClient.retrieveMarketData(Constants.SP500_SYMBOLS);
+            updated = this.dataManager.retrieveMarketData(Constants.SP500_SYMBOLS);
             logger.info(Constants.SCHEDULED_TASK_SUCCESS_INFO, updated);
         } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);

@@ -1,11 +1,16 @@
 package com.lucas.server.components.tradingbot.news.jpa;
 
+import com.lucas.server.common.Constants;
+import com.lucas.server.common.exception.ClientException;
+import com.lucas.server.common.exception.IllegalStateException;
 import com.lucas.server.common.jpa.JpaService;
 import com.lucas.server.common.jpa.UniqueConstraintWearyJpaServiceDelegate;
+import com.lucas.server.components.tradingbot.news.service.NewsEmbeddingsClient;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,10 +19,12 @@ public class NewsJpaService implements JpaService<News> {
 
     private final NewsRepository repository;
     private final UniqueConstraintWearyJpaServiceDelegate<News> delegate;
+    private final NewsEmbeddingsClient embeddingsClient;
 
-    public NewsJpaService(NewsRepository repository, UniqueConstraintWearyJpaServiceDelegate<News> delegate) {
+    public NewsJpaService(NewsRepository repository, UniqueConstraintWearyJpaServiceDelegate<News> delegate, NewsEmbeddingsClient embeddingsClient) {
         this.repository = repository;
         this.delegate = delegate;
+        this.embeddingsClient = embeddingsClient;
     }
 
     @Override
@@ -47,5 +54,13 @@ public class NewsJpaService implements JpaService<News> {
 
     public List<News> getTopForSymbolId(Long symbolId, int limit) {
         return this.repository.findBySymbol_Id(symbolId, PageRequest.of(0, limit, Sort.by("date").descending())).getContent();
+    }
+
+    public News generateEmbeddingsByNewsId(Long id) throws IllegalStateException, ClientException {
+        Optional<News> news = this.findById(id);
+        if (news.isEmpty()) {
+            throw new IllegalStateException(MessageFormat.format(Constants.ENTITY_NOT_FOUND_ERROR, "news"));
+        }
+        return this.save(this.embeddingsClient.embed(news.get())).orElseThrow();
     }
 }

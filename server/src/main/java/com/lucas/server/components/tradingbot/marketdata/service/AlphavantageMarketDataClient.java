@@ -4,6 +4,7 @@ import com.lucas.server.common.Constants;
 import com.lucas.server.common.HttpRequestClient;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.common.exception.JsonProcessingException;
+import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.marketdata.mapper.AlphavantageMarketResponseMapper;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,22 +30,22 @@ public class AlphavantageMarketDataClient {
         this.apiKey = apiKey;
     }
 
-    public MarketData retrieveMarketData(String symbol) throws JsonProcessingException, ClientException {
+    public MarketData retrieveMarketData(Symbol symbol) throws JsonProcessingException, ClientException {
         String url = UriComponentsBuilder
                 .fromUriString(endpoint)
                 .queryParam("function", Constants.ALPHAVANTAGE_QUOTE_PATH)
-                .queryParam("symbol", symbol)
+                .queryParam("symbol", symbol.getName())
                 .queryParam("apikey", apiKey)
                 .toUriString();
 
-        return mapper.map(this.httpRequestClient.fetch(url));
+        return mapper.map(this.httpRequestClient.fetch(url)).setSymbol(symbol);
     }
 
-    public List<MarketData> retrieveWeeklySeries(String symbol) throws JsonProcessingException, ClientException {
+    public List<MarketData> retrieveWeeklySeries(Symbol symbol) throws JsonProcessingException, ClientException {
         String url = UriComponentsBuilder
                 .fromUriString(endpoint)
                 .queryParam("function", Constants.TIME_SERIES_WEEKLY)
-                .queryParam("symbol", symbol)
+                .queryParam("symbol", symbol.getName())
                 .queryParam("apikey", apiKey)
                 .toUriString();
 

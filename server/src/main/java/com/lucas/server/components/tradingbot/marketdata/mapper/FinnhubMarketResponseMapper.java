@@ -5,9 +5,7 @@ import com.lucas.server.common.Constants;
 import com.lucas.server.common.Mapper;
 import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
-import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
-import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -17,12 +15,6 @@ import java.time.ZoneOffset;
 
 @Component
 public class FinnhubMarketResponseMapper implements Mapper<JsonNode, MarketData> {
-
-    private final SymbolJpaService symbolService;
-
-    public FinnhubMarketResponseMapper(SymbolJpaService symbolService) {
-        this.symbolService = symbolService;
-    }
 
     @Override
     public MarketData map(JsonNode json) throws JsonProcessingException {
@@ -43,10 +35,7 @@ public class FinnhubMarketResponseMapper implements Mapper<JsonNode, MarketData>
         }
     }
 
-    @Transactional(rollbackOn = JsonProcessingException.class)
-    public MarketData map(JsonNode json, String symbol) throws JsonProcessingException {
-        return this.map(json).setSymbol(this.symbolService.findByName(symbol).orElseGet(
-                () -> this.symbolService.save(new Symbol().setName(symbol))
-                        .orElseThrow()));
+    public MarketData map(JsonNode json, Symbol symbol) throws JsonProcessingException {
+        return this.map(json).setSymbol(symbol);
     }
 }

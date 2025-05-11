@@ -6,6 +6,9 @@ import com.lucas.server.common.Constants;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.common.exception.IllegalStateException;
 import com.lucas.server.common.exception.JsonProcessingException;
+import com.lucas.server.components.tradingbot.common.jpa.Symbol;
+import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
+import com.lucas.server.components.tradingbot.news.jpa.News;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper;
 import com.lucas.server.components.tradingbot.recommendation.prompt.PromptRepository;
 import org.springframework.ai.azure.openai.AzureOpenAiChatModel;
@@ -51,10 +54,10 @@ public class RecommendationChatCompletionClient {
         this.client = client;
     }
 
-    public String getRecommendations(List<String> symbols) throws ClientException, IllegalStateException, IOException {
+    public String getRecommendations(Map<Symbol, List<MarketData>> marketData, Map<Symbol, List<News>> newsData) throws ClientException, IllegalStateException, IOException {
         List<AssetReportToMustacheMapper.AssetReportRaw> reports = new ArrayList<>();
-        for (String symbol : symbols) {
-            reports.add(this.assertReportDataProvider.provide(symbol));
+        for (Map.Entry<Symbol, List<MarketData>> mdHistory : marketData.entrySet()) {
+            reports.add(this.assertReportDataProvider.provide(mdHistory.getKey(), mdHistory.getValue(), newsData.get(mdHistory.getKey())));
         }
         Prompt prompt = new Prompt(List.of(this.systemMessage, this.promptMessage, this.fewShotMessage,
                 generateMessageFromNode(this.objectMapper.readValue(this.assetReportToMustacheMapper.map(reports), ObjectNode.class)))

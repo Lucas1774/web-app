@@ -6,7 +6,6 @@ import com.lucas.server.components.shopping.jpa.category.Category;
 import com.lucas.server.components.shopping.jpa.category.CategoryJpaService;
 import com.lucas.server.components.shopping.jpa.product.Product;
 import com.lucas.server.components.shopping.jpa.product.ProductJpaService;
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,7 +83,6 @@ class ShoppingItemJpaServiceTest {
     }
 
     @Test
-    @Transactional
     void testUpdateAllShoppingItemQuantities() {
         // given: multiple items for admin
         Product p1 = productService.createProductAndOrLinkToUser("P1", "admin").orElseThrow();
@@ -107,7 +105,6 @@ class ShoppingItemJpaServiceTest {
     }
 
     @Test
-    @Transactional
     void testUpdateShoppingItemQuantity() {
         // given: admin item auto-created and an item for default user
         Product prod = productService.createProductAndOrLinkToUser("P", "admin").orElseThrow();
@@ -130,7 +127,6 @@ class ShoppingItemJpaServiceTest {
     }
 
     @Test
-    @Transactional
     void deleteByProductAndUsernameRemoveOrphanedProductIfNecessary() {
         // given: one item per user
         Product p = productService.createProductAndOrLinkToUser("ToDel", "admin").orElseThrow();

@@ -1,8 +1,11 @@
 package com.lucas.server.components.tradingbot.common;
 
 import com.lucas.server.TestcontainersConfiguration;
+import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.marketdata.service.FinnhubMarketDataClient;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -20,6 +23,14 @@ class DailySchedulerTest {
 
     @MockitoBean
     FinnhubMarketDataClient marketDataClient;
+
+    @Autowired
+    SymbolJpaService symbolService;
+
+    @AfterEach
+    void tearDown() {
+        symbolService.deleteAll();
+    }
 
     @Test
     void schedulerShouldInvokeClientRepeatedly() {

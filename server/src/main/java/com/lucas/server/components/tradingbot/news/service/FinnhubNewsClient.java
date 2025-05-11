@@ -4,6 +4,7 @@ import com.lucas.server.common.Constants;
 import com.lucas.server.common.HttpRequestClient;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.common.exception.JsonProcessingException;
+import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.news.jpa.News;
 import com.lucas.server.components.tradingbot.news.mapper.FinnhubNewsResponseMapper;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,14 +30,14 @@ public class FinnhubNewsClient {
         this.apiKey = apiKey;
     }
 
-    public List<News> retrieveLatestNews(String symbol) throws JsonProcessingException, ClientException {
+    public List<News> retrieveLatestNews(Symbol symbol) throws JsonProcessingException, ClientException {
         LocalDate to = LocalDate.now();
         return this.retrieveNewsByDateRange(symbol, to.minusDays(1), to);
     }
 
-    public List<News> retrieveNewsByDateRange(String symbol, LocalDate from, LocalDate to) throws JsonProcessingException, ClientException {
+    public List<News> retrieveNewsByDateRange(Symbol symbol, LocalDate from, LocalDate to) throws JsonProcessingException, ClientException {
         String url = UriComponentsBuilder.fromUriString(endpoint + Constants.COMPANY_NEWS)
-                .queryParam("symbol", symbol)
+                .queryParam("symbol", symbol.getName())
                 .queryParam("from", from)
                 .queryParam("to", to)
                 .queryParam("token", apiKey)
