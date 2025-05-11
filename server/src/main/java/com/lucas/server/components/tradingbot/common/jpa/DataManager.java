@@ -7,7 +7,7 @@ import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataJpaService;
 import com.lucas.server.components.tradingbot.marketdata.service.AlphavantageMarketDataClient;
-import com.lucas.server.components.tradingbot.marketdata.service.FinnhubMarketDataClient;
+import com.lucas.server.components.tradingbot.marketdata.service.TwelveDataMarketDataClient;
 import com.lucas.server.components.tradingbot.news.jpa.News;
 import com.lucas.server.components.tradingbot.news.jpa.NewsJpaService;
 import com.lucas.server.components.tradingbot.news.jpa.NewsListener;
@@ -29,18 +29,18 @@ public class DataManager {
     private final NewsJpaService newsService;
     private final RecommendationChatCompletionClient recommendationsClient;
     private final FinnhubNewsClient newsClient;
-    private final FinnhubMarketDataClient finnhubMarketDataClient;
+    private final TwelveDataMarketDataClient twelveDataMarketDataClient;
     private final AlphavantageMarketDataClient alphavantageMarketDataClient;
 
     public DataManager(SymbolJpaService symbolService, MarketDataJpaService marketDataService, NewsJpaService newsService,
                        RecommendationChatCompletionClient recommendationsClient, FinnhubNewsClient newsClient,
-                       FinnhubMarketDataClient finnhubMarketDataClient, AlphavantageMarketDataClient alphavantageMarketDataClient) {
+                       TwelveDataMarketDataClient twelveDataMarketDataClient, AlphavantageMarketDataClient alphavantageMarketDataClient) {
         this.symbolService = symbolService;
         this.marketDataService = marketDataService;
         this.newsService = newsService;
         this.recommendationsClient = recommendationsClient;
         this.newsClient = newsClient;
-        this.finnhubMarketDataClient = finnhubMarketDataClient;
+        this.twelveDataMarketDataClient = twelveDataMarketDataClient;
         this.alphavantageMarketDataClient = alphavantageMarketDataClient;
     }
 
@@ -75,7 +75,7 @@ public class DataManager {
     }
 
     public MarketData retrieveMarketData(String symbolName) throws ClientException, JsonProcessingException {
-        MarketData md = this.finnhubMarketDataClient.retrieveMarketData(this.symbolService.getOrCreateByName(symbolName));
+        MarketData md = this.twelveDataMarketDataClient.retrieveMarketData(this.symbolService.getOrCreateByName(symbolName));
         this.marketDataService.save(md);
         return md;
     }
@@ -88,7 +88,7 @@ public class DataManager {
 
     public List<MarketData> retrieveMarketData(List<String> symbolNames) throws ClientException, JsonProcessingException {
         List<Symbol> symbols = symbolNames.stream().map(this.symbolService::getOrCreateByName).toList();
-        List<MarketData> md = this.finnhubMarketDataClient.retrieveMarketData(symbols);
+        List<MarketData> md = this.twelveDataMarketDataClient.retrieveMarketData(symbols);
         this.marketDataService.saveAll(md);
         return md;
     }

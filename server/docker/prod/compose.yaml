@@ -46,6 +46,9 @@ services:
       FINNHUB_KEY: ${FINNHUB_KEY}
       FINNHUB_ENDPOINT: ${FINNHUB_ENDPOINT}
 
+      TWELVE_DATA_KEY: ${TWELVE_DATA_KEY}
+      TWELVE_DATA_ENDPOINT: ${TWELVE_DATA_ENDPOINT}
+
     restart: on-failure
 
 volumes:

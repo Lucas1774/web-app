@@ -3,7 +3,7 @@ package com.lucas.server.components.tradingbot.common;
 import com.lucas.server.TestcontainersConfiguration;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataJpaService;
-import com.lucas.server.components.tradingbot.marketdata.service.FinnhubMarketDataClient;
+import com.lucas.server.components.tradingbot.marketdata.service.TwelveDataMarketDataClient;
 import com.lucas.server.components.tradingbot.news.jpa.NewsJpaService;
 import com.lucas.server.components.tradingbot.news.service.FinnhubNewsClient;
 import org.junit.jupiter.api.AfterEach;
@@ -27,7 +27,7 @@ import static org.mockito.Mockito.verify;
 class DailySchedulerTest {
 
     @MockitoBean
-    FinnhubMarketDataClient marketDataClient;
+    TwelveDataMarketDataClient marketDataClient;
 
     @MockitoBean
     FinnhubNewsClient newsClient;

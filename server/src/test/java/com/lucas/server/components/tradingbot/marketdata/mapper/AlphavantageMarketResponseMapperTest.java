@@ -64,7 +64,7 @@ class AlphavantageMarketResponseMapperTest {
         assertThat(result.getDate()).isEqualTo(LocalDate.parse("2023-12-15"));
         assertThat(result.getPreviousClose()).isEqualByComparingTo(BigDecimal.valueOf(140.0000));
         assertThat(result.getChange()).isEqualByComparingTo(BigDecimal.valueOf(1.2500));
-        assertThat(result.getChangePercent()).isEqualTo("0.8928%");
+        assertThat(result.getChangePercent()).isEqualByComparingTo(BigDecimal.valueOf(0.8928));
     }
 
     @Test

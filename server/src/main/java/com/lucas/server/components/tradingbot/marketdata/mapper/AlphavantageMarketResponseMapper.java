@@ -29,10 +29,10 @@ public class AlphavantageMarketResponseMapper implements Mapper<JsonNode, Market
                     .setLow(new BigDecimal(quote.get("04. low").asText()))
                     .setPrice(new BigDecimal(quote.get("05. price").asText()))
                     .setVolume(quote.get("06. volume").asLong())
-                    .setDate(LocalDate.parse(quote.get("07. latest trading day").asText(), Constants.DATE_FMT))
+                    .setDate(LocalDate.parse(quote.get("07. latest trading day").asText()))
                     .setPreviousClose(new BigDecimal(quote.get("08. previous close").asText()))
                     .setChange(new BigDecimal(quote.get("09. change").asText()))
-                    .setChangePercent(quote.get("10. change percent").asText());
+                    .setChangePercent(new BigDecimal(quote.get("10. change percent").asText().replace("%", "")));
         } catch (Exception e) {
             throw new JsonProcessingException(MessageFormat.format(Constants.JSON_MAPPING_ERROR, "market"), e);
         }
@@ -46,7 +46,7 @@ public class AlphavantageMarketResponseMapper implements Mapper<JsonNode, Market
             Iterator<Map.Entry<String, JsonNode>> fields = series.fields();
             while (fields.hasNext()) {
                 Map.Entry<String, JsonNode> entry = fields.next();
-                LocalDate date = LocalDate.parse(entry.getKey(), Constants.DATE_FMT);
+                LocalDate date = LocalDate.parse(entry.getKey());
                 JsonNode data = entry.getValue();
                 MarketData md = new MarketData()
                         .setSymbol(symbol)

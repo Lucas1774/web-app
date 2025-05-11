@@ -1,6 +1,5 @@
 package com.lucas.server.common;
 
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class Constants {
@@ -8,7 +7,6 @@ public class Constants {
     private Constants() {
     }
 
-    public static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     public static final int SUDOKU_SIZE = 9;
     public static final int[] DIGITS = {1, 2, 3, 4, 5, 6, 7, 8, 9};
     public static final int SUDOKU_NUMBER_OF_CELLS = 81;

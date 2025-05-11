@@ -33,9 +33,9 @@ public class MarketDataKpiGenerator {
                     BigDecimal change = md.getPrice().subtract(previousPrice);
                     md.setChange(change);
                     if (0 != previousPrice.compareTo(BigDecimal.ZERO)) {
-                        String percentage = change.divide(previousPrice, 4, RoundingMode.HALF_UP)
+                        BigDecimal percentage = change.divide(previousPrice, 6, RoundingMode.HALF_UP)
                                 .multiply(BigDecimal.valueOf(100))
-                                .setScale(2, RoundingMode.HALF_UP) + "%";
+                                .setScale(4, RoundingMode.HALF_UP);
                         md.setChangePercent(percentage);
                     }
                 });

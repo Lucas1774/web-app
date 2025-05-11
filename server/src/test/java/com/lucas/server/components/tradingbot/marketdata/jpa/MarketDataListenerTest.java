@@ -65,7 +65,7 @@ class MarketDataListenerTest {
         // then
         assertThat(current.getPreviousClose()).isEqualByComparingTo(new BigDecimal("150"));
         assertThat(current.getChange()).isEqualByComparingTo(new BigDecimal("5"));
-        assertThat(current.getChangePercent()).isEqualTo("3.33%");
+        assertThat(current.getChangePercent()).isEqualByComparingTo(new BigDecimal("3.3333"));
         verify(kpiGenerator, times(1)).computeDerivedFields(previous);
         verify(kpiGenerator, times(1)).computeDerivedFields(current);
         verify(kpiGenerator, times(2)).computeDerivedFields(any());

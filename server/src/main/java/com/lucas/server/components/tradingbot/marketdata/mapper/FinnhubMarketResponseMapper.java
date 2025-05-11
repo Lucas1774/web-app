@@ -29,7 +29,7 @@ public class FinnhubMarketResponseMapper implements Mapper<JsonNode, MarketData>
                             .toLocalDate())
                     .setPreviousClose(new BigDecimal(json.get("pc").asText()))
                     .setChange(new BigDecimal(json.get("d").asText()))
-                    .setChangePercent(json.get("dp").asText() + "%");
+                    .setChangePercent(new BigDecimal(json.get("dp").asText()));
         } catch (Exception e) {
             throw new JsonProcessingException(MessageFormat.format(Constants.JSON_MAPPING_ERROR, "market"), e);
         }

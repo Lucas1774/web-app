@@ -113,7 +113,7 @@ public class AssetReportToMustacheMapper implements Mapper<List<AssetReportToMus
         ) {
             private static PricePoint from(PricePointRaw point) {
                 return new PricePoint(
-                        point.date.format(Constants.DATE_FMT),
+                        point.date.toString(),
                         point.open.stripTrailingZeros().toPlainString(),
                         point.high.stripTrailingZeros().toPlainString(),
                         point.low.stripTrailingZeros().toPlainString(),

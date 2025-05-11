@@ -52,7 +52,7 @@ public class MarketData implements JpaEntity {
     private BigDecimal change;
 
     @Column(name = "change_percent", length = 10)
-    private String changePercent;
+    private BigDecimal changePercent;
 
     @Override
     public String toString() {

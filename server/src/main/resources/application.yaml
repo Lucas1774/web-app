@@ -40,3 +40,7 @@ alphavantage:
 finnhub:
   api-key: ${FINNHUB_KEY}
   endpoint: ${FINNHUB_ENDPOINT}
+
+twelve-data:
+  api-key: ${TWELVE_DATA_KEY}
+  endpoint: ${TWELVE_DATA_ENDPOINT}

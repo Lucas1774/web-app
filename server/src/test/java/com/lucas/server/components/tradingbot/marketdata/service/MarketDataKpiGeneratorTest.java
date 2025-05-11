@@ -91,7 +91,7 @@ class MarketDataKpiGeneratorTest {
         // then
         assertThat(currentData.getChange()).isEqualByComparingTo(BigDecimal.valueOf(10.00));
         assertThat(currentData.getPreviousClose()).isEqualByComparingTo(BigDecimal.valueOf(140.00));
-        assertThat(currentData.getChangePercent()).isEqualTo("7.14%");
+        assertThat(currentData.getChangePercent()).isEqualByComparingTo(BigDecimal.valueOf(7.1429));
         verify(marketDataJpaService, atLeastOnce()).findTopBySymbolIdAndDateBeforeOrderByDateDesc(symbol.getId(), currentDate);
     }
 
