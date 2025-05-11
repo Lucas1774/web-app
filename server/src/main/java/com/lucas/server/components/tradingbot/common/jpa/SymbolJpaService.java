@@ -46,4 +46,10 @@ public class SymbolJpaService implements JpaService<Symbol> {
     public Optional<Symbol> findByName(String name) {
         return this.repository.findByName(name);
     }
+
+    public Symbol getOrCreateByName(String name) {
+        return this.findByName(name).orElseGet(
+                () -> this.save(new Symbol().setName(name))
+                        .orElseThrow());
+    }
 }

@@ -45,12 +45,7 @@ public class DataManager {
     }
 
     public String getRecommendations(List<String> symbolNames) throws IllegalStateException, ClientException, IOException {
-        List<Symbol> symbols = symbolNames.stream()
-                .map(name ->
-                        this.symbolService.findByName(name)
-                                .orElseGet(() ->
-                                        this.symbolService.save(new Symbol().setName(name))
-                                                .orElseThrow())).toList();
+        List<Symbol> symbols = symbolNames.stream().map(this.symbolService::getOrCreateByName).toList();
         Map<Symbol, List<MarketData>> marketData = symbols.stream()
                 .collect(Collectors.toMap(
                         symbol -> symbol,
@@ -66,56 +61,40 @@ public class DataManager {
     }
 
     public List<News> retrieveLatestNews(String symbolName) throws ClientException, JsonProcessingException {
-        Symbol symbol = this.symbolService.findByName(symbolName).orElseGet(
-                () -> this.symbolService.save(new Symbol().setName(symbolName))
-                        .orElseThrow());
-        List<News> news = this.newsClient.retrieveLatestNews(symbol);
+        List<News> news = this.newsClient.retrieveLatestNews(this.symbolService.getOrCreateByName(symbolName));
         NewsListener.setActive(true);
         this.newsService.saveAll(news);
         return news;
     }
 
     public List<News> retrieveNewsByDateRange(String symbolName, LocalDate from, LocalDate now) throws ClientException, JsonProcessingException {
-        Symbol symbol = this.symbolService.findByName(symbolName).orElseGet(
-                () -> this.symbolService.save(new Symbol().setName(symbolName))
-                        .orElseThrow());
-        List<News> news = this.newsClient.retrieveNewsByDateRange(symbol, from, now);
+        List<News> news = this.newsClient.retrieveNewsByDateRange(this.symbolService.getOrCreateByName(symbolName), from, now);
         NewsListener.setActive(true);
         this.newsService.saveAll(news);
         return news;
     }
 
     public MarketData retrieveMarketData(String symbolName) throws ClientException, JsonProcessingException {
-        Symbol symbol = this.symbolService.findByName(symbolName).orElseGet(
-                () -> this.symbolService.save(new Symbol().setName(symbolName))
-                        .orElseThrow());
-        MarketData md = this.finnhubMarketDataClient.retrieveMarketData(symbol);
+        MarketData md = this.finnhubMarketDataClient.retrieveMarketData(this.symbolService.getOrCreateByName(symbolName));
         this.marketDataService.save(md);
         return md;
     }
 
     public List<MarketData> retrieveWeeklySeries(String symbolName) throws ClientException, JsonProcessingException {
-        Symbol symbol = this.symbolService.findByName(symbolName).orElseGet(
-                () -> this.symbolService.save(new Symbol().setName(symbolName))
-                        .orElseThrow());
-        List<MarketData> md = this.alphavantageMarketDataClient.retrieveWeeklySeries(symbol);
+        List<MarketData> md = this.alphavantageMarketDataClient.retrieveWeeklySeries(this.symbolService.getOrCreateByName(symbolName));
         this.marketDataService.saveAll(md);
         return md;
     }
 
     public List<MarketData> retrieveMarketData(List<String> symbolNames) throws ClientException, JsonProcessingException {
-        List<Symbol> symbols = symbolNames.stream().map(name -> this.symbolService.findByName(name).orElseGet(
-                () -> this.symbolService.save(new Symbol().setName(name))
-                        .orElseThrow())).toList();
+        List<Symbol> symbols = symbolNames.stream().map(this.symbolService::getOrCreateByName).toList();
         List<MarketData> md = this.finnhubMarketDataClient.retrieveMarketData(symbols);
         this.marketDataService.saveAll(md);
         return md;
     }
 
     public List<News> retrieveLatestNews(List<String> symbolNames) throws ClientException, JsonProcessingException {
-        List<Symbol> symbols = symbolNames.stream().map(name -> this.symbolService.findByName(name).orElseGet(
-                () -> this.symbolService.save(new Symbol().setName(name))
-                        .orElseThrow())).toList();
+        List<Symbol> symbols = symbolNames.stream().map(this.symbolService::getOrCreateByName).toList();
         List<News> news = this.newsClient.retrieveLatestNews(symbols);
         NewsListener.setActive(false);
         this.newsService.saveAll(news);

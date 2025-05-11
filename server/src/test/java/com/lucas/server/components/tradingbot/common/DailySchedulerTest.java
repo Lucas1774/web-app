@@ -6,11 +6,13 @@ import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataJpaServic
 import com.lucas.server.components.tradingbot.marketdata.service.FinnhubMarketDataClient;
 import com.lucas.server.components.tradingbot.news.jpa.NewsJpaService;
 import com.lucas.server.components.tradingbot.news.service.FinnhubNewsClient;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.Duration;
@@ -39,11 +41,19 @@ class DailySchedulerTest {
     @Autowired
     NewsJpaService newsService;
 
+    @Autowired
+    ThreadPoolTaskScheduler scheduler;
+
     @BeforeEach
     void setup() {
         marketDataService.deleteAll();
         newsService.deleteAll();
         symbolService.deleteAll();
+    }
+
+    @AfterEach
+    void tearDown() {
+        scheduler.shutdown();
     }
 
     @Test
