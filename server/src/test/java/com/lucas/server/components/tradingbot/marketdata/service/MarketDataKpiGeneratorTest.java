@@ -8,7 +8,7 @@ import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataJpaService;
 import nl.altindag.log.LogCaptor;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -59,7 +59,7 @@ class MarketDataKpiGeneratorTest {
                 .setDate(LocalDate.now().minusDays(daysAgo));
     }
 
-    @AfterEach
+    @BeforeEach
     void cleanUp() {
         marketDataJpaService.deleteAll();
         symbolJpaService.deleteAll();

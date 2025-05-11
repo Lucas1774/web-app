@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -44,5 +45,20 @@ public class FinnhubNewsClient {
                 .toUriString();
 
         return mapper.mapAll(this.httpRequestClient.fetch(url), symbol);
+    }
+
+    public List<News> retrieveLatestNews(List<Symbol> symbols) throws ClientException, JsonProcessingException {
+        List<News> res = new ArrayList<>();
+        for (Symbol symbol : symbols) {
+            List<News> updated = this.retrieveLatestNews(symbol);
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            res.addAll(updated);
+        }
+
+        return res;
     }
 }

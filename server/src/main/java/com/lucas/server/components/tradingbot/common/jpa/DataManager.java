@@ -10,6 +10,7 @@ import com.lucas.server.components.tradingbot.marketdata.service.AlphavantageMar
 import com.lucas.server.components.tradingbot.marketdata.service.FinnhubMarketDataClient;
 import com.lucas.server.components.tradingbot.news.jpa.News;
 import com.lucas.server.components.tradingbot.news.jpa.NewsJpaService;
+import com.lucas.server.components.tradingbot.news.jpa.NewsListener;
 import com.lucas.server.components.tradingbot.news.service.FinnhubNewsClient;
 import com.lucas.server.components.tradingbot.recommendation.service.RecommendationChatCompletionClient;
 import org.springframework.stereotype.Service;
@@ -69,6 +70,7 @@ public class DataManager {
                 () -> this.symbolService.save(new Symbol().setName(symbolName))
                         .orElseThrow());
         List<News> news = this.newsClient.retrieveLatestNews(symbol);
+        NewsListener.setActive(true);
         this.newsService.saveAll(news);
         return news;
     }
@@ -78,6 +80,7 @@ public class DataManager {
                 () -> this.symbolService.save(new Symbol().setName(symbolName))
                         .orElseThrow());
         List<News> news = this.newsClient.retrieveNewsByDateRange(symbol, from, now);
+        NewsListener.setActive(true);
         this.newsService.saveAll(news);
         return news;
     }
@@ -107,5 +110,15 @@ public class DataManager {
         List<MarketData> md = this.finnhubMarketDataClient.retrieveMarketData(symbols);
         this.marketDataService.saveAll(md);
         return md;
+    }
+
+    public List<News> retrieveLatestNews(List<String> symbolNames) throws ClientException, JsonProcessingException {
+        List<Symbol> symbols = symbolNames.stream().map(name -> this.symbolService.findByName(name).orElseGet(
+                () -> this.symbolService.save(new Symbol().setName(name))
+                        .orElseThrow())).toList();
+        List<News> news = this.newsClient.retrieveLatestNews(symbols);
+        NewsListener.setActive(false);
+        this.newsService.saveAll(news);
+        return news;
     }
 }

@@ -3,7 +3,8 @@ package com.lucas.server.components.tradingbot.marketdata.jpa;
 import com.lucas.server.TestcontainersConfiguration;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
-import org.junit.jupiter.api.AfterEach;
+import com.lucas.server.components.tradingbot.news.jpa.NewsJpaService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,15 +23,19 @@ import static org.assertj.core.api.Assertions.tuple;
 class MarketDataJpaServiceTest {
 
     @Autowired
-    MarketDataJpaService marketDataJpaService;
+    MarketDataJpaService jpaService;
 
     @Autowired
-    SymbolJpaService  symbolJpaService;
+    SymbolJpaService symbolService;
 
-    @AfterEach
-    void tearDown() {
-        marketDataJpaService.deleteAll();
-        symbolJpaService.deleteAll();
+    @Autowired
+    NewsJpaService mewsService;
+
+    @BeforeEach
+    void setup() {
+        jpaService.deleteAll();
+        mewsService.deleteAll();
+        symbolService.deleteAll();
     }
 
     @Test
@@ -38,7 +43,7 @@ class MarketDataJpaServiceTest {
         // given:
         Symbol symbol = new Symbol().setName("AAPL");
         Symbol symbol2 = new Symbol().setName("IBM");
-        symbolJpaService.saveAll(List.of(symbol, symbol2));
+        symbolService.saveAll(List.of(symbol, symbol2));
         LocalDate date1 = LocalDate.of(2023, 12, 15);
         LocalDate date2 = LocalDate.of(2023, 12, 16);
 
@@ -52,7 +57,7 @@ class MarketDataJpaServiceTest {
                 .setDate(date2)
                 .setPrice(new BigDecimal("150.0000"));
 
-        List<MarketData> initialSave = marketDataJpaService.saveAll(List.of(a1, a2));
+        List<MarketData> initialSave = jpaService.saveAll(List.of(a1, a2));
         assertThat(initialSave)
                 .hasSize(2)
                 .extracting(
@@ -76,7 +81,7 @@ class MarketDataJpaServiceTest {
                 .setDate(date2)
                 .setPrice(new BigDecimal("155.0000"));
 
-        List<MarketData> result = marketDataJpaService.saveAll(List.of(duplicate, valid));
+        List<MarketData> result = jpaService.saveAll(List.of(duplicate, valid));
 
         // then: only the valid new record is returned, compare as double
         assertThat(result)
@@ -89,7 +94,7 @@ class MarketDataJpaServiceTest {
                 .containsExactly(tuple(symbol2, date2, 155.0));
 
         // and: database contains exactly 3 entries, values compared as double
-        List<MarketData> all = marketDataJpaService.findAll();
+        List<MarketData> all = jpaService.findAll();
         assertThat(all)
                 .hasSize(3)
                 .extracting(
@@ -108,7 +113,7 @@ class MarketDataJpaServiceTest {
     void save_shouldReturnOptionalEmptyForDuplicate() {
         // given:
         Symbol symbol = new Symbol().setName("AAPL");
-        symbolJpaService.save(symbol);
+        symbolService.save(symbol);
         MarketData md = new MarketData()
                 .setSymbol(symbol)
                 .setDate(LocalDate.of(2023, 12, 15))
@@ -120,8 +125,8 @@ class MarketDataJpaServiceTest {
                 .setPrice(BigDecimal.valueOf(150.00));
 
         // when:
-        marketDataJpaService.save(md);
-        Optional<MarketData> result = marketDataJpaService.save(dup);
+        jpaService.save(md);
+        Optional<MarketData> result = jpaService.save(dup);
 
         // then:
         assertThat(result).isEmpty();

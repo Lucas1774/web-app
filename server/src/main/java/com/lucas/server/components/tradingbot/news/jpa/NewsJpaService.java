@@ -61,6 +61,7 @@ public class NewsJpaService implements JpaService<News> {
         if (news.isEmpty()) {
             throw new IllegalStateException(MessageFormat.format(Constants.ENTITY_NOT_FOUND_ERROR, "news"));
         }
+        NewsListener.setActive(false);
         return this.save(this.embeddingsClient.embed(news.get())).orElseThrow();
     }
 }

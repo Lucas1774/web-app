@@ -15,7 +15,7 @@ import com.lucas.server.components.tradingbot.news.service.NewsEmbeddingsClient;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.AssetReportRaw;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.NewsItem;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.PricePointRaw;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.azure.openai.AzureOpenAiChatModel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,8 +63,8 @@ class RecommendationChatCompletionClientTest {
     @SuppressWarnings("unused")
     AzureOpenAiChatModel azureOpenAiChatModel;
 
-    @AfterEach
-    void tearDown() {
+    @BeforeEach
+    void setup() {
         marketDataJpaService.deleteAll();
         newsService.deleteAll();
         symbolJpaService.deleteAll();

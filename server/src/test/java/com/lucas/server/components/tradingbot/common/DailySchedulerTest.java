@@ -2,8 +2,11 @@ package com.lucas.server.components.tradingbot.common;
 
 import com.lucas.server.TestcontainersConfiguration;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
+import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataJpaService;
 import com.lucas.server.components.tradingbot.marketdata.service.FinnhubMarketDataClient;
-import org.junit.jupiter.api.AfterEach;
+import com.lucas.server.components.tradingbot.news.jpa.NewsJpaService;
+import com.lucas.server.components.tradingbot.news.service.FinnhubNewsClient;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -24,19 +27,32 @@ class DailySchedulerTest {
     @MockitoBean
     FinnhubMarketDataClient marketDataClient;
 
+    @MockitoBean
+    FinnhubNewsClient newsClient;
+
     @Autowired
     SymbolJpaService symbolService;
 
-    @AfterEach
-    void tearDown() {
+    @Autowired
+    MarketDataJpaService marketDataService;
+
+    @Autowired
+    NewsJpaService newsService;
+
+    @BeforeEach
+    void setup() {
+        marketDataService.deleteAll();
+        newsService.deleteAll();
         symbolService.deleteAll();
     }
 
     @Test
     void schedulerShouldInvokeClientRepeatedly() {
-        await().atMost(Duration.ofSeconds(3))
-                .untilAsserted(() ->
-                        verify(marketDataClient, atLeastOnce()).retrieveMarketData(anyList())
+        await().atMost(Duration.ofSeconds(10))
+                .untilAsserted(() -> {
+                            verify(marketDataClient, atLeastOnce()).retrieveMarketData(anyList());
+                            verify(newsClient, atLeastOnce()).retrieveLatestNews(anyList());
+                        }
                 );
     }
 }

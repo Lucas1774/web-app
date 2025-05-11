@@ -16,6 +16,7 @@ public class NewsListener implements ApplicationContextAware {
 
     private AutowireCapableBeanFactory beanFactory;
     private NewsEmbeddingsClient newsEmbeddingsClient;
+    private static boolean active = true;
     private static final Logger logger = LoggerFactory.getLogger(NewsListener.class);
 
     @Override
@@ -26,6 +27,9 @@ public class NewsListener implements ApplicationContextAware {
     @PrePersist
     @PreUpdate
     public void computeDerivedFields(News news) {
+        if (!active) {
+            return;
+        }
         if (null == newsEmbeddingsClient) {
             newsEmbeddingsClient = beanFactory.getBean(NewsEmbeddingsClient.class);
         }
@@ -34,5 +38,9 @@ public class NewsListener implements ApplicationContextAware {
         } catch (ClientException e) {
             logger.warn(Constants.EMBEDDING_GENERATION_FAILED_WARN, news, e);
         }
+    }
+
+    public static void setActive(boolean active) {
+        NewsListener.active = active;
     }
 }

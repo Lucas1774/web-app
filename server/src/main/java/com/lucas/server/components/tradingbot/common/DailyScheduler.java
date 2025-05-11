@@ -5,6 +5,7 @@ import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
+import com.lucas.server.components.tradingbot.news.jpa.News;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -16,7 +17,7 @@ import java.util.List;
 public class DailyScheduler {
 
     private final DataManager dataManager;
-    private static final Logger logger = LoggerFactory.getLogger(DailyScheduler.class);
+    private final Logger logger = LoggerFactory.getLogger(DailyScheduler.class);
 
     public DailyScheduler(DataManager dataManager) {
         this.dataManager = dataManager;
@@ -24,10 +25,23 @@ public class DailyScheduler {
 
     @Scheduled(cron = "${scheduler.daily-cron}")
     public void dailyTask() {
-        List<MarketData> updated;
+        this.updateMarketData();
+        this.updateNews();
+    }
+
+    private void updateMarketData() {
         try {
-            updated = this.dataManager.retrieveMarketData(Constants.SP500_SYMBOLS);
-            logger.info(Constants.SCHEDULED_TASK_SUCCESS_INFO, updated);
+            List<MarketData> updatedMds = dataManager.retrieveMarketData(Constants.SP500_SYMBOLS);
+            logger.info(Constants.SCHEDULED_TASK_SUCCESS_INFO, updatedMds);
+        } catch (ClientException | JsonProcessingException e) {
+            logger.error(e.getMessage(), e);
+        }
+    }
+
+    private void updateNews() {
+        try {
+            List<News> updatedNews = dataManager.retrieveLatestNews(Constants.SP500_SYMBOLS);
+            logger.info(Constants.SCHEDULED_TASK_SUCCESS_INFO, updatedNews);
         } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);
         }

@@ -691,6 +691,149 @@
 								}
 							},
 							"response": []
+						},
+						{
+							"name": "batch/AAPL,IBM",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const schema = {\r",
+											"    type: \"array\",\r",
+											"    minItems: 2,\r",
+											"    maxItems: 50,\r",
+											"    items: {\r",
+											"        type: \"object\",\r",
+											"        required: [\r",
+											"            \"id\", \"symbol\", \"date\", \"headline\", \"summary\", \"url\", \"source\",\r",
+											"            \"category\", \"image\", \"embeddings\"\r",
+											"        ],\r",
+											"        properties: {\r",
+											"            id: { type: [\"integer\", \"null\"] },\r",
+											"            symbol: {\r",
+											"                type: \"object\",\r",
+											"                required: [\"id\", \"name\"],\r",
+											"                properties: {\r",
+											"                    id: { type: \"integer\" },\r",
+											"                    name: { type: \"string\", minLength: 1 }\r",
+											"                }\r",
+											"            },\r",
+											"            date: { type: \"string\", pattern: \"^\\\\d{4}-\\\\d{2}-\\\\d{2}$\" },\r",
+											"            headline: { type: \"string\" },\r",
+											"            summary: { type: \"string\" },\r",
+											"            url: { type: \"string\", format: \"uri\" },\r",
+											"            source: { type: \"string\" },\r",
+											"            category: { type: \"string\" },\r",
+											"            image: { type: \"string\", format: \"uri\" },\r",
+											"            embeddings: { type: \"null\" }\r",
+											"\r",
+											"\r",
+											"        },\r",
+											"        additionalProperties: false\r",
+											"    }\r",
+											"};\r",
+											"\r",
+											"pm.test(\"Matches expected JSON schema\", () => {\r",
+											"    pm.response.to.have.jsonSchema(schema);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/news/batch/AAPL,IBM",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"news",
+										"batch",
+										"AAPL,IBM"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "batch",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const schema = {\r",
+											"    type: \"array\",\r",
+											"    items: {\r",
+											"        type: \"object\",\r",
+											"        required: [\r",
+											"            \"id\", \"symbol\", \"date\", \"headline\", \"summary\", \"url\", \"source\",\r",
+											"            \"category\", \"image\", \"embeddings\"\r",
+											"        ],\r",
+											"        properties: {\r",
+											"            id: { type: [\"integer\", \"null\"] },\r",
+											"            symbol: {\r",
+											"                type: \"object\",\r",
+											"                required: [\"id\", \"name\"],\r",
+											"                properties: {\r",
+											"                    id: { type: \"integer\" },\r",
+											"                    name: { type: \"string\", minLength: 1 }\r",
+											"                }\r",
+											"            },\r",
+											"            date: { type: \"string\", pattern: \"^\\\\d{4}-\\\\d{2}-\\\\d{2}$\" },\r",
+											"            headline: { type: \"string\" },\r",
+											"            summary: { type: \"string\" },\r",
+											"            url: { type: \"string\", format: \"uri\" },\r",
+											"            source: { type: \"string\" },\r",
+											"            category: { type: \"string\" },\r",
+											"            image: { type: \"string\", format: \"uri\" },\r",
+											"            embeddings: { type: \"null\" }\r",
+											"\r",
+											"\r",
+											"        },\r",
+											"        additionalProperties: false\r",
+											"    }\r",
+											"};\r",
+											"\r",
+											"pm.test(\"Matches expected JSON schema\", () => {\r",
+											"    pm.response.to.have.jsonSchema(schema);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/news/batch",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"news",
+										"batch"
+									]
+								}
+							},
+							"response": []
 						}
 					]
 				},

@@ -1,5 +1,6 @@
 package com.lucas.server.components.tradingbot.news.controller;
 
+import com.lucas.server.common.Constants;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;
@@ -45,6 +46,26 @@ public class NewsController {
         try {
             return ResponseEntity.ok(this.jpaService.retrieveNewsByDateRange(symbol, from, LocalDate.now()));
         } catch (JsonProcessingException | ClientException e) {
+            logger.error(e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/batch")
+    public ResponseEntity<List<News>> fetchAndSaveAll() {
+        try {
+            return ResponseEntity.ok(this.jpaService.retrieveLatestNews(Constants.SP500_SYMBOLS));
+        } catch (ClientException | JsonProcessingException e) {
+            logger.error(e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/batch/{symbols}")
+    public ResponseEntity<List<News>> fetchAndSaveSome(@PathVariable List<String> symbols) {
+        try {
+            return ResponseEntity.ok(this.jpaService.retrieveLatestNews(symbols));
+        } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }

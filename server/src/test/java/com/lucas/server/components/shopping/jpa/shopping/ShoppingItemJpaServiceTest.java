@@ -6,7 +6,7 @@ import com.lucas.server.components.shopping.jpa.category.Category;
 import com.lucas.server.components.shopping.jpa.category.CategoryJpaService;
 import com.lucas.server.components.shopping.jpa.product.Product;
 import com.lucas.server.components.shopping.jpa.product.ProductJpaService;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -33,8 +33,8 @@ class ShoppingItemJpaServiceTest {
     @Autowired
     UserJpaService userService;
 
-    @AfterEach
-    void tearDown() {
+    @BeforeEach
+    void setup() {
         shoppingItemService.deleteAll();
         productService.deleteAll();
         categoryService.deleteAll();

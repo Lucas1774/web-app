@@ -3,8 +3,9 @@ package com.lucas.server.components.tradingbot.news.jpa;
 import com.lucas.server.TestcontainersConfiguration;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
+import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataJpaService;
 import com.lucas.server.components.tradingbot.news.service.NewsEmbeddingsClient;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,19 +23,23 @@ import static org.assertj.core.api.Assertions.tuple;
 class NewsJpaServiceTest {
 
     @Autowired
-    NewsJpaService newsJpaService;
+    NewsJpaService jpaService;
 
     @Autowired
-    SymbolJpaService symbolJpaService;
+    SymbolJpaService symbolService;
+
+    @Autowired
+    MarketDataJpaService marketDataService;
 
     @MockitoBean
     @SuppressWarnings("unused")
     NewsEmbeddingsClient newsEmbeddingsClient;
 
-    @AfterEach
-    void tearDown() {
-        newsJpaService.deleteAll();
-        symbolJpaService.deleteAll();
+    @BeforeEach
+    void setup() {
+        jpaService.deleteAll();
+        marketDataService.deleteAll();
+        symbolService.deleteAll();
     }
 
     @Test
@@ -42,7 +47,7 @@ class NewsJpaServiceTest {
         // given
         Symbol symbol = new Symbol().setName("AAPL");
         Symbol symbol2 = new Symbol().setName("MSFT");
-        symbolJpaService.saveAll(List.of(symbol, symbol2));
+        symbolService.saveAll(List.of(symbol, symbol2));
         News n1 = new News()
                 .setExternalId(1L)
                 .setSymbol(symbol)
@@ -66,7 +71,7 @@ class NewsJpaServiceTest {
                 .setImage("img2");
 
         // when: initial save
-        List<News> initial = newsJpaService.saveAll(List.of(n1, n2));
+        List<News> initial = jpaService.saveAll(List.of(n1, n2));
 
         // then: both persisted
         assertThat(initial)
@@ -100,7 +105,7 @@ class NewsJpaServiceTest {
                 .setCategory("cat3")
                 .setImage("img3");
 
-        List<News> second = newsJpaService.saveAll(List.of(dup, n3));
+        List<News> second = jpaService.saveAll(List.of(dup, n3));
 
         // then: only new record returned
         assertThat(second)
@@ -109,7 +114,7 @@ class NewsJpaServiceTest {
                 .containsExactly(tuple(3L, symbol2, "Headline3"));
 
         // and: repository contains 3 entries total
-        List<News> all = newsJpaService.findAll();
+        List<News> all = jpaService.findAll();
         assertThat(all)
                 .hasSize(3)
                 .extracting(News::getExternalId, News::getSymbol, News::getHeadline)

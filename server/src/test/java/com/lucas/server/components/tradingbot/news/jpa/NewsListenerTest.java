@@ -5,7 +5,7 @@ import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.news.service.NewsEmbeddingsClient;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -32,8 +32,8 @@ class NewsListenerTest {
     @Autowired
     SymbolJpaService symbolJpaService;
 
-    @AfterEach
-    void tearDown() {
+    @BeforeEach
+    void setup() {
         this.jpaService.deleteAll();
         this.symbolJpaService.deleteAll();
     }

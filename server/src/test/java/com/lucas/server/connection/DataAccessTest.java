@@ -9,7 +9,7 @@ import com.lucas.server.components.shopping.jpa.shopping.ShoppingItem;
 import com.lucas.server.components.shopping.jpa.shopping.ShoppingItemJpaService;
 import com.lucas.server.components.sudoku.jpa.Sudoku;
 import com.lucas.server.components.sudoku.jpa.SudokuJpaService;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -39,7 +39,7 @@ class DataAccessTest {
     @Autowired
     NamedParameterJdbcTemplate jdbcTemplate;
 
-    @AfterEach
+    @BeforeEach
     void cleanDatabase() {
         jdbcTemplate.getJdbcOperations().execute(
                 "TRUNCATE TABLE shopping, products, categories, sudokus, users RESTART IDENTITY CASCADE"
