@@ -4,13 +4,11 @@ import com.lucas.server.TestcontainersConfiguration;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataJpaService;
-import com.lucas.server.components.tradingbot.news.service.NewsEmbeddingsClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -31,10 +29,6 @@ class NewsJpaServiceTest {
     @Autowired
     MarketDataJpaService marketDataService;
 
-    @MockitoBean
-    @SuppressWarnings("unused")
-    NewsEmbeddingsClient newsEmbeddingsClient;
-
     @BeforeEach
     void setup() {
         jpaService.deleteAll();
@@ -43,7 +37,7 @@ class NewsJpaServiceTest {
     }
 
     @Test
-    void saveAll_shouldPersistOnlyNewRecords() {
+    void createIgnoringDuplicates_shouldPersistOnlyNewRecords() {
         // given
         Symbol symbol = symbolService.getOrCreateByName("AAPL");
         Symbol symbol2 = symbolService.getOrCreateByName("MSFT");
@@ -70,7 +64,7 @@ class NewsJpaServiceTest {
                 .setImage("img2");
 
         // when: initial save
-        List<News> initial = jpaService.saveAll(List.of(n1, n2), false);
+        List<News> initial = jpaService.createIgnoringDuplicates(List.of(n1, n2), false);
 
         // then: both persisted
         assertThat(initial)
@@ -104,7 +98,7 @@ class NewsJpaServiceTest {
                 .setCategory("cat3")
                 .setImage("img3");
 
-        List<News> second = jpaService.saveAll(List.of(dup, n3), false);
+        List<News> second = jpaService.createIgnoringDuplicates(List.of(dup, n3), false);
 
         // then: only new record returned
         assertThat(second)

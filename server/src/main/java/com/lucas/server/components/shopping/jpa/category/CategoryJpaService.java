@@ -6,7 +6,6 @@ import com.lucas.server.common.jpa.user.OrderColumnServiceDelegate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class CategoryJpaService implements JpaService<Category>, OrderColumnJpaService<Category> {
@@ -20,12 +19,7 @@ public class CategoryJpaService implements JpaService<Category>, OrderColumnJpaS
     }
 
     @Override
-    public Optional<Category> save(Category entity) {
-        return Optional.of(this.repository.save(entity));
-    }
-
-    @Override
-    public List<Category> saveAll(Iterable<Category> entities) {
+    public List<Category> createAll(List<Category> entities) {
         return this.repository.saveAll(entities);
     }
 
@@ -40,16 +34,11 @@ public class CategoryJpaService implements JpaService<Category>, OrderColumnJpaS
     }
 
     @Override
-    public Optional<Category> findById(Long id) {
-        return this.repository.findById(id);
+    public List<Category> updateOrders(List<Category> newlySortedElements) {
+        return this.orderColumnServiceDelegate.sort(this.repository, newlySortedElements);
     }
 
     public List<Category> findAllByOrderByOrderAsc() {
         return this.repository.findAllByOrderByOrderAsc();
-    }
-
-    @Override
-    public List<Category> updateOrders(List<Category> newlySortedElements) {
-        return this.orderColumnServiceDelegate.sort(this.repository, newlySortedElements);
     }
 }

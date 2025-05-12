@@ -11,7 +11,9 @@ public interface ShoppingItemRepository extends JpaRepository<ShoppingItem, Long
 
     List<ShoppingItem> findAllByUser_Username(String username);
 
-    Optional<ShoppingItem> findByUser_UsernameAndProduct_id(String username, Long productId);
+    Optional<ShoppingItem> findByUser_UsernameAndProduct_Id(String username, Long productId);
 
-    long countByProduct_Id(Long prodId);
+    long countByProduct_Id(Long productId);
+
+    Optional<ShoppingItem> findByUser_UsernameAndProduct_Name(String username, String productName);
 }

@@ -34,12 +34,7 @@ public class ProductJpaService implements JpaService<Product>, OrderColumnJpaSer
     }
 
     @Override
-    public Optional<Product> save(Product entity) {
-        return Optional.of(this.repository.save(entity));
-    }
-
-    @Override
-    public List<Product> saveAll(Iterable<Product> entities) {
+    public List<Product> createAll(List<Product> entities) {
         return this.repository.saveAll(entities);
     }
 
@@ -54,12 +49,16 @@ public class ProductJpaService implements JpaService<Product>, OrderColumnJpaSer
     }
 
     @Override
-    public Optional<Product> findById(Long id) {
-        return this.repository.findById(id);
+    public List<Product> updateOrders(List<Product> newlySortedElements) {
+        return this.orderColumnServiceDelegate.sort(this.repository, newlySortedElements);
     }
 
     @Transactional
     public Optional<Product> createProductAndOrLinkToUser(String productName, String username) {
+        if (this.shoppingItemRepository.findByUser_UsernameAndProduct_Name(username, productName).isPresent()) {
+            return Optional.empty();
+        }
+
         Product product = this.repository.findByName(productName)
                 .orElseGet(() -> {
                     int newOrder = this.repository.findTopByOrderByOrderDesc()
@@ -69,9 +68,6 @@ public class ProductJpaService implements JpaService<Product>, OrderColumnJpaSer
                             .setName(productName)
                             .setOrder(newOrder));
                 });
-        if (this.shoppingItemRepository.findByUser_UsernameAndProduct_id(username, product.getId()).isPresent()) {
-            return Optional.empty();
-        }
         this.shoppingItemRepository.save(new ShoppingItem()
                 .setUser(this.userRepository.findByUsername(username).orElse(null))
                 .setProduct(product)
@@ -99,10 +95,5 @@ public class ProductJpaService implements JpaService<Product>, OrderColumnJpaSer
 
         product.setCategory(category);
         return repository.save(product);
-    }
-
-    @Override
-    public List<Product> updateOrders(List<Product> newlySortedElements) {
-        return this.orderColumnServiceDelegate.sort(this.repository, newlySortedElements);
     }
 }

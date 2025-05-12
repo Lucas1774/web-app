@@ -35,7 +35,7 @@ class CategoryJpaServiceTest {
         Category category2 = new Category()
                 .setName("y")
                 .setOrder(20);
-        categoryService.saveAll(List.of(category2, category1));
+        categoryService.createAll(List.of(category2, category1));
 
         // when
         List<Category> result = categoryService.findAllByOrderByOrderAsc();
@@ -59,7 +59,7 @@ class CategoryJpaServiceTest {
         // given: two categories with reversed order values
         Category c1 = new Category().setName("A").setOrder(2);
         Category c2 = new Category().setName("B").setOrder(1);
-        List<Category> saved = categoryService.saveAll(Arrays.asList(c1, c2));
+        List<Category> saved = categoryService.createAll(Arrays.asList(c1, c2));
         assertThat(saved)
                 .extracting(Category::getOrder)
                 .containsExactly(2, 1);

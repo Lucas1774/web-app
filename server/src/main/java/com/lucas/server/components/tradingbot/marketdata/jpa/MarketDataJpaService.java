@@ -22,13 +22,8 @@ public class MarketDataJpaService implements JpaService<MarketData> {
     }
 
     @Override
-    public Optional<MarketData> save(MarketData entity) {
-        return this.delegate.save(repository, entity);
-    }
-
-    @Override
-    public List<MarketData> saveAll(Iterable<MarketData> entities) {
-        return this.delegate.saveAllIgnoringDuplicates(this.repository, entities);
+    public List<MarketData> createAll(List<MarketData> entities) {
+        return this.repository.saveAll(entities);
     }
 
     @Override
@@ -41,9 +36,16 @@ public class MarketDataJpaService implements JpaService<MarketData> {
         return this.repository.findAll();
     }
 
-    @Override
-    public Optional<MarketData> findById(Long id) {
-        return this.repository.findById(id);
+    public MarketData getOrCreate(MarketData entity) {
+        return this.delegate.getOrCreate(repository, this::findUnique, entity);
+    }
+
+    public List<MarketData> createIgnoringDuplicates(Iterable<MarketData> entities) {
+        return this.delegate.createIgnoringDuplicates(this.repository, this::findUnique, entities);
+    }
+
+    public Optional<MarketData> findUnique(MarketData entity) {
+        return this.repository.findBySymbol_IdAndDate(entity.getSymbol().getId(), entity.getDate());
     }
 
     public Optional<MarketData> findTopBySymbolIdAndDateBeforeOrderByDateDesc(Long symbolId, LocalDate date) {

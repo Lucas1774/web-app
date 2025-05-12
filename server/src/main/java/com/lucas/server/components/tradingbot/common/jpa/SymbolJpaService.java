@@ -19,13 +19,8 @@ public class SymbolJpaService implements JpaService<Symbol> {
     }
 
     @Override
-    public Optional<Symbol> save(Symbol entity) {
-        return this.delegate.save(repository, entity);
-    }
-
-    @Override
-    public List<Symbol> saveAll(Iterable<Symbol> entities) {
-        return this.delegate.saveAllIgnoringDuplicates(repository, entities);
+    public List<Symbol> createAll(List<Symbol> entities) {
+        return this.repository.saveAll(entities);
     }
 
     @Override
@@ -38,18 +33,13 @@ public class SymbolJpaService implements JpaService<Symbol> {
         return repository.findAll();
     }
 
-    @Override
-    public Optional<Symbol> findById(Long id) {
-        return this.repository.findById(id);
+    public Symbol getOrCreateByName(String name) {
+        return this.delegate.getOrCreate(repository,
+                entity -> this.findByName(entity.getName()),
+                new Symbol().setName(name));
     }
 
     public Optional<Symbol> findByName(String name) {
         return this.repository.findByName(name);
-    }
-
-    public Symbol getOrCreateByName(String name) {
-        return this.findByName(name).orElseGet(
-                () -> this.save(new Symbol().setName(name))
-                        .orElseThrow());
     }
 }

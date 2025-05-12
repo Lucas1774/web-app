@@ -6,6 +6,7 @@ import com.lucas.server.common.exception.IllegalStateException;
 import com.lucas.server.common.jpa.JpaService;
 import com.lucas.server.common.jpa.UniqueConstraintWearyJpaServiceDelegate;
 import com.lucas.server.components.tradingbot.news.service.NewsEmbeddingsClient;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -28,13 +29,8 @@ public class NewsJpaService implements JpaService<News> {
     }
 
     @Override
-    public Optional<News> save(News entity) {
-        return this.delegate.save(repository, entity);
-    }
-
-    @Override
-    public List<News> saveAll(Iterable<News> entities) {
-        return this.delegate.saveAllIgnoringDuplicates(repository, entities);
+    public List<News> createAll(List<News> entities) {
+        return this.repository.saveAll(entities);
     }
 
     @Override
@@ -47,30 +43,27 @@ public class NewsJpaService implements JpaService<News> {
         return repository.findAll();
     }
 
-    @Override
-    public Optional<News> findById(Long id) {
-        return this.repository.findById(id);
-    }
-
-
-    public Optional<News> save(News entity, boolean triggerEntityCallback) {
+    public List<News> createIgnoringDuplicates(Iterable<News> entities, boolean triggerEntityCallback) {
         NewsListener.setActive(triggerEntityCallback);
-        return this.save(entity);
+        return this.createIgnoringDuplicates(entities);
     }
 
-    public List<News> saveAll(Iterable<News> entities, boolean triggerEntityCallback) {
-        NewsListener.setActive(triggerEntityCallback);
-        return this.saveAll(entities);
+    private List<News> createIgnoringDuplicates(Iterable<News> entities) {
+        return this.delegate.createIgnoringDuplicates(repository,
+                entity -> this.repository.findByExternalId(entity.getExternalId()), entities);
     }
+
     public List<News> getTopForSymbolId(Long symbolId, int limit) {
         return this.repository.findBySymbol_Id(symbolId, PageRequest.of(0, limit, Sort.by("date").descending())).getContent();
     }
 
+    @Transactional(rollbackOn = {IllegalStateException.class, ClientException.class})
     public News generateEmbeddingsByNewsId(Long id) throws IllegalStateException, ClientException {
-        Optional<News> news = this.findById(id);
+        Optional<News> news = this.repository.findById(id);
         if (news.isEmpty()) {
             throw new IllegalStateException(MessageFormat.format(Constants.ENTITY_NOT_FOUND_ERROR, "news"));
         }
-        return this.save(this.embeddingsClient.embed(news.get()), false).orElseThrow();
+        NewsListener.setActive(false);
+        return this.embeddingsClient.embed(news.get());
     }
 }

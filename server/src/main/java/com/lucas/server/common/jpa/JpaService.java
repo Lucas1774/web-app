@@ -1,17 +1,29 @@
 package com.lucas.server.common.jpa;
 
 import java.util.List;
-import java.util.Optional;
 
+/**
+ * Generic CRUD service for JPA entities.
+ *
+ * @param <E> entity type
+ */
 public interface JpaService<E extends JpaEntity> {
 
-    Optional<E> save(E entity);
+    /**
+     * Saves all entities
+     *
+     * @param entities entities
+     * @return the saved entities
+     */
+    List<E> createAll(List<E> entities);
 
-    List<E> saveAll(Iterable<E> entities);
-
+    /**
+     * Deletes all entities
+     */
     void deleteAll();
 
+    /**
+     * @return all entities
+     */
     List<E> findAll();
-
-    Optional<E> findById(Long id);
 }

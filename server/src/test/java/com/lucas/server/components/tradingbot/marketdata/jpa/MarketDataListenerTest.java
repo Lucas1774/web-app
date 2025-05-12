@@ -59,7 +59,7 @@ class MarketDataListenerTest {
                 .setPrice(new BigDecimal("155"));
 
         // when
-        jpaService.saveAll(List.of(previous, current));
+        jpaService.createIgnoringDuplicates(List.of(previous, current));
 
         // then
         assertThat(current.getPreviousClose()).isEqualByComparingTo(new BigDecimal("150"));

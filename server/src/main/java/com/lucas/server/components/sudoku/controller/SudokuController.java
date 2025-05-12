@@ -52,7 +52,7 @@ public class SudokuController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 
-        return ResponseEntity.ok(sudokuService.saveAll(sudoku));
+        return ResponseEntity.ok(sudokuService.createIgnoringDuplicates(sudoku));
     }
 
     @GetMapping("fetch/sudoku")

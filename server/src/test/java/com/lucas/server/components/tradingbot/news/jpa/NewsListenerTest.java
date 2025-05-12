@@ -58,7 +58,7 @@ class NewsListenerTest {
                 .setUrl("url");
 
         // when
-        jpaService.saveAll(List.of(previous, current), true);
+        jpaService.createIgnoringDuplicates(List.of(previous, current), true);
 
         // then
         verify(embeddingsClient, times(1)).embed(previous);
@@ -86,7 +86,7 @@ class NewsListenerTest {
                 .setUrl("url");
 
         // when
-        jpaService.saveAll(List.of(previous, current), false);
+        jpaService.createIgnoringDuplicates(List.of(previous, current), false);
 
         // then
         verify(embeddingsClient, times(0)).embed(previous);

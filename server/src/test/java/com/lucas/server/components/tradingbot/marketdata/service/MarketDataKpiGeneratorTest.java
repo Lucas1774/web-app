@@ -84,7 +84,7 @@ class MarketDataKpiGeneratorTest {
                 .setPrice(BigDecimal.valueOf(140.00));
 
         // when
-        marketDataService.saveAll(List.of(previousData, currentData));
+        marketDataService.createIgnoringDuplicates(List.of(previousData, currentData));
         kpiGenerator.computeDerivedFields(currentData);
 
         // then
@@ -106,7 +106,7 @@ class MarketDataKpiGeneratorTest {
                 .setPrice(BigDecimal.valueOf(150.00));
 
         // when
-        marketDataService.saveAll(List.of(currentData));
+        marketDataService.createIgnoringDuplicates(List.of(currentData));
         kpiGenerator.computeDerivedFields(currentData);
 
         // then
@@ -120,7 +120,7 @@ class MarketDataKpiGeneratorTest {
     void whenComputeDerivedFieldsWithZeroPreviousPrice_thenPercentageIsNull() {
         // given
         Symbol symbol = symbolService.getOrCreateByName("AAPL");
-        symbolService.save(symbol);
+        symbolService.getOrCreateByName(symbol.getName());
         LocalDate currentDate = LocalDate.of(2023, 12, 15);
         LocalDate previousDate = LocalDate.of(2023, 12, 14);
 
@@ -135,7 +135,7 @@ class MarketDataKpiGeneratorTest {
                 .setPrice(BigDecimal.ZERO);
 
         // when
-        marketDataService.saveAll(List.of(previousData, currentData));
+        marketDataService.createIgnoringDuplicates(List.of(previousData, currentData));
         kpiGenerator.computeDerivedFields(currentData);
 
         // then

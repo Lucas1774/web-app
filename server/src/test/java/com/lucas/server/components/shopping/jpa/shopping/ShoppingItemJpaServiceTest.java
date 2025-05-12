@@ -1,6 +1,7 @@
 package com.lucas.server.components.shopping.jpa.shopping;
 
 import com.lucas.server.TestcontainersConfiguration;
+import com.lucas.server.common.jpa.user.User;
 import com.lucas.server.common.jpa.user.UserJpaService;
 import com.lucas.server.components.shopping.jpa.category.Category;
 import com.lucas.server.components.shopping.jpa.category.CategoryJpaService;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,13 +40,18 @@ class ShoppingItemJpaServiceTest {
         shoppingItemService.deleteAll();
         productService.deleteAll();
         categoryService.deleteAll();
+        userService.deleteAll();
+        userService.createAll(List.of(
+                new User().setUsername("admin").setPassword("password"),
+                new User().setUsername("default").setPassword("password")
+        ));
     }
 
     @Test
     void testFindAllByUsername() {
         Category c1 = new Category().setName("C1").setOrder(1);
         Category c2 = new Category().setName("C2").setOrder(2);
-        categoryService.saveAll(List.of(c1, c2));
+        categoryService.createAll(List.of(c1, c2));
 
         Product prodA = new Product()
                 .setName("ProdA")
@@ -56,9 +63,9 @@ class ShoppingItemJpaServiceTest {
                 .setIsRare(false)
                 .setCategory(c2)
                 .setOrder(200);
-        productService.saveAll(List.of(prodA, prodB));
+        productService.createAll(List.of(prodA, prodB));
 
-        shoppingItemService.saveAll(List.of(
+        shoppingItemService.createAll(List.of(
                 new ShoppingItem()
                         .setUser(userService.findByUsername("admin").orElseThrow())
                         .setProduct(prodB)
@@ -108,10 +115,10 @@ class ShoppingItemJpaServiceTest {
     void testUpdateShoppingItemQuantity() {
         // given: admin item auto-created and an item for default user
         Product prod = productService.createProductAndOrLinkToUser("P", "admin").orElseThrow();
-        shoppingItemService.save(
-                new ShoppingItem()
+        shoppingItemService.createAll(
+                Collections.singletonList(new ShoppingItem()
                         .setUser(userService.findByUsername("default").orElseThrow())
-                        .setProduct(prod).setQuantity(2)
+                        .setProduct(prod).setQuantity(2))
         );
 
         // when: update admin quantity to 10
@@ -130,9 +137,9 @@ class ShoppingItemJpaServiceTest {
     void deleteByProductAndUsernameRemoveOrphanedProductIfNecessary() {
         // given: one item per user
         Product p = productService.createProductAndOrLinkToUser("ToDel", "admin").orElseThrow();
-        shoppingItemService.save(
-                new ShoppingItem().setUser(userService.findByUsername("default").orElseThrow())
-                        .setProduct(p).setQuantity(5)
+        shoppingItemService.createAll(
+                Collections.singletonList(new ShoppingItem().setUser(userService.findByUsername("default").orElseThrow())
+                        .setProduct(p).setQuantity(5))
         );
         // admin already has item from insertProduct
         assertThat(shoppingItemService.findAll()).hasSize(2);

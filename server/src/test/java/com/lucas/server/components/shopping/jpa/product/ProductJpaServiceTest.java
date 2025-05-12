@@ -1,6 +1,7 @@
 package com.lucas.server.components.shopping.jpa.product;
 
 import com.lucas.server.TestcontainersConfiguration;
+import com.lucas.server.common.jpa.user.User;
 import com.lucas.server.common.jpa.user.UserJpaService;
 import com.lucas.server.components.shopping.jpa.category.Category;
 import com.lucas.server.components.shopping.jpa.category.CategoryJpaService;
@@ -40,6 +41,11 @@ class ProductJpaServiceTest {
         shoppingItemService.deleteAll();
         productService.deleteAll();
         categoryService.deleteAll();
+        userService.deleteAll();
+        userService.createAll(List.of(
+                new User().setUsername("admin").setPassword("password"),
+                new User().setUsername("default").setPassword("password")
+        ));
     }
 
     @Test
@@ -139,7 +145,7 @@ class ProductJpaServiceTest {
         // given: two categories with reversed order values
         Product p1 = new Product().setName("A").setOrder(2);
         Product p2 = new Product().setName("B").setOrder(1);
-        List<Product> saved = productService.saveAll(Arrays.asList(p1, p2));
+        List<Product> saved = productService.createAll(Arrays.asList(p1, p2));
         assertThat(saved)
                 .extracting(Product::getName, Product::getOrder)
                 .containsExactly(

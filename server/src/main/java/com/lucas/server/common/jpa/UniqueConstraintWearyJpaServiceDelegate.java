@@ -1,42 +1,42 @@
 package com.lucas.server.common.jpa;
 
-import com.lucas.server.common.Constants;
-import org.hibernate.exception.ConstraintViolationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.StreamSupport;
 
+/**
+ * Delegate for JPA services with unique constraints.
+ * Contains find-then-create utility methods.
+ *
+ * @param <T> entity type
+ */
 @Component
 public class UniqueConstraintWearyJpaServiceDelegate<T extends JpaEntity> {
 
-    private static final Logger logger = LoggerFactory.getLogger(UniqueConstraintWearyJpaServiceDelegate.class);
-
-    public Optional<T> save(JpaRepository<T, ?> repository, T entity) {
-        try {
-            return Optional.of(repository.save(entity));
-        } catch (DataIntegrityViolationException e) {
-            Throwable t = e;
-            while (null != t.getCause()) {
-                t = t.getCause();
-                if (t instanceof ConstraintViolationException) {
-                    logger.warn(Constants.RECORD_IGNORED_BREAKS_UNIQUENESS_CONSTRAIN_WARN, entity, t);
-                    return Optional.empty();
-                }
-            }
-            throw e;
-        }
+    /**
+     * @param repository repository
+     * @param finder     unique entity finder function. Usually findByPrimaryKey
+     * @param entity     entity
+     * @return the existing entity or a new one
+     */
+    public T getOrCreate(JpaRepository<T, ?> repository, Function<T, Optional<T>> finder, T entity) {
+        return finder.apply(entity).orElseGet(() -> repository.save(entity));
     }
 
-    public List<T> saveAllIgnoringDuplicates(JpaRepository<T, ?> repository, Iterable<T> entities) {
+    /**
+     * @param repository     repository
+     * @param existingFinder unique entity finder function. Usually findByPrimaryKey
+     * @param entities       entities
+     * @return the newly saved entities
+     */
+    public List<T> createIgnoringDuplicates(JpaRepository<T, ?> repository, Function<T, Optional<T>> existingFinder, Iterable<T> entities) {
         return StreamSupport.stream(entities.spliterator(), false)
-                .map(entity -> this.save(repository, entity))
-                .flatMap(Optional::stream)
+                .filter(entity -> existingFinder.apply(entity).isEmpty())
+                .map(repository::save)
                 .toList();
     }
 }

@@ -16,6 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -78,7 +79,7 @@ class DataAccessTest {
     @Test
     void testInsertAndRetrieveSudoku() {
         Sudoku s1 = Sudoku.withDefaultValues();
-        sudokuService.save(s1);
+        sudokuService.createIgnoringDuplicates(Collections.singleton(s1));
         assertThat(sudokuService.findAll())
                 .hasSize(1)
                 .extracting(Sudoku::getState)

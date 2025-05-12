@@ -13,7 +13,6 @@ import org.springframework.context.annotation.Import;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -39,7 +38,7 @@ class MarketDataJpaServiceTest {
     }
 
     @Test
-    void saveAllIgnoringDuplicates_shouldPersistOnlyNewRecords_andHandleTrailingZeros() {
+    void createIgnoringDuplicates_shouldPersistOnlyNewRecords_andHandleTrailingZeros() {
         // given:
         Symbol symbol = symbolService.getOrCreateByName("AAPL");
         Symbol symbol2 = symbolService.getOrCreateByName("IBM");
@@ -56,7 +55,7 @@ class MarketDataJpaServiceTest {
                 .setDate(date2)
                 .setPrice(new BigDecimal("150.0000"));
 
-        List<MarketData> initialSave = jpaService.saveAll(List.of(a1, a2));
+        List<MarketData> initialSave = jpaService.createIgnoringDuplicates(List.of(a1, a2));
         assertThat(initialSave)
                 .hasSize(2)
                 .extracting(
@@ -80,7 +79,7 @@ class MarketDataJpaServiceTest {
                 .setDate(date2)
                 .setPrice(new BigDecimal("155.0000"));
 
-        List<MarketData> result = jpaService.saveAll(List.of(duplicate, valid));
+        List<MarketData> result = jpaService.createIgnoringDuplicates(List.of(duplicate, valid));
 
         // then: only the valid new record is returned, compare as double
         assertThat(result)
@@ -109,7 +108,7 @@ class MarketDataJpaServiceTest {
     }
 
     @Test
-    void save_shouldReturnOptionalEmptyForDuplicate() {
+    void getOrCreate() {
         // given:
         Symbol symbol = symbolService.getOrCreateByName("AAPL");
         MarketData md = new MarketData()
@@ -120,13 +119,13 @@ class MarketDataJpaServiceTest {
         MarketData dup = new MarketData()
                 .setSymbol(symbol)
                 .setDate(LocalDate.of(2023, 12, 15))
-                .setPrice(BigDecimal.valueOf(150.00));
+                .setPrice(BigDecimal.valueOf(200));
 
         // when:
-        jpaService.save(md);
-        Optional<MarketData> result = jpaService.save(dup);
+        jpaService.getOrCreate(md);
+        MarketData result = jpaService.getOrCreate(dup);
 
         // then:
-        assertThat(result).isEmpty();
+        assertThat(result.getPrice()).isEqualByComparingTo(md.getPrice());
     }
 }

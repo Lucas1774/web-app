@@ -21,12 +21,7 @@ public class CalculatorJpaService implements JpaService<Calculator> {
     }
 
     @Override
-    public Optional<Calculator> save(Calculator entity) {
-        return Optional.of(this.repository.save(entity));
-    }
-
-    @Override
-    public List<Calculator> saveAll(Iterable<Calculator> entities) {
+    public List<Calculator> createAll(List<Calculator> entities) {
         return this.repository.saveAll(entities);
     }
 
@@ -38,11 +33,6 @@ public class CalculatorJpaService implements JpaService<Calculator> {
     @Override
     public List<Calculator> findAll() {
         return this.repository.findAll();
-    }
-
-    @Override
-    public Optional<Calculator> findById(Long id) {
-        return this.repository.findById(id);
     }
 
     public Optional<Calculator> find() {

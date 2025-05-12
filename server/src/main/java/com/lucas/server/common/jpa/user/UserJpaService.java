@@ -16,12 +16,7 @@ public class UserJpaService implements JpaService<User> {
     }
 
     @Override
-    public Optional<User> save(User entity) {
-        return Optional.of(this.repository.save(entity));
-    }
-
-    @Override
-    public List<User> saveAll(Iterable<User> entities) {
+    public List<User> createAll(List<User> entities) {
         return this.repository.saveAll(entities);
     }
 
@@ -33,11 +28,6 @@ public class UserJpaService implements JpaService<User> {
     @Override
     public List<User> findAll() {
         return this.repository.findAll();
-    }
-
-    @Override
-    public Optional<User> findById(Long id) {
-        return this.repository.findById(id);
     }
 
     public Optional<User> findByUsername(String username) {

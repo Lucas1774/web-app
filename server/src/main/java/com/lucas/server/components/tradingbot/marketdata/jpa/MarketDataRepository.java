@@ -13,5 +13,7 @@ public interface MarketDataRepository extends JpaRepository<MarketData, Long> {
 
     Optional<MarketData> findTopBySymbol_IdAndDateBeforeOrderByDateDesc(Long symbolId, LocalDate date);
 
-    Slice<MarketData> findBySymbol_Id(Long symbolId, PageRequest tradeDate);
+    Slice<MarketData> findBySymbol_Id(Long symbolId, PageRequest page);
+
+    Optional<MarketData> findBySymbol_IdAndDate(Long symbolId, LocalDate date);
 }

@@ -12,6 +12,7 @@ import com.lucas.server.components.tradingbot.news.jpa.News;
 import com.lucas.server.components.tradingbot.news.jpa.NewsJpaService;
 import com.lucas.server.components.tradingbot.news.service.FinnhubNewsClient;
 import com.lucas.server.components.tradingbot.recommendation.service.RecommendationChatCompletionClient;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -43,6 +44,7 @@ public class DataManager {
         this.alphavantageMarketDataClient = alphavantageMarketDataClient;
     }
 
+    @Transactional(rollbackOn = {IllegalStateException.class, ClientException.class, IOException.class})
     public String getRecommendations(List<String> symbolNames) throws IllegalStateException, ClientException, IOException {
         List<Symbol> symbols = symbolNames.stream().map(this.symbolService::getOrCreateByName).toList();
         Map<Symbol, List<MarketData>> marketData = symbols.stream()
@@ -59,41 +61,47 @@ public class DataManager {
         return this.recommendationsClient.getRecommendations(marketData, newsData);
     }
 
+    @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})
     public List<News> retrieveLatestNews(String symbolName) throws ClientException, JsonProcessingException {
         List<News> news = this.newsClient.retrieveLatestNews(this.symbolService.getOrCreateByName(symbolName));
-        this.newsService.saveAll(news, true);
+        this.newsService.createIgnoringDuplicates(news, true);
         return news;
     }
 
+    @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})
     public List<News> retrieveNewsByDateRange(String symbolName, LocalDate from, LocalDate now) throws ClientException, JsonProcessingException {
         List<News> news = this.newsClient.retrieveNewsByDateRange(this.symbolService.getOrCreateByName(symbolName), from, now);
-        this.newsService.saveAll(news, true);
+        this.newsService.createIgnoringDuplicates(news, true);
         return news;
     }
 
-    public MarketData retrieveMarketData(String symbolName) throws ClientException, JsonProcessingException {
-        MarketData md = this.twelveDataMarketDataClient.retrieveMarketData(this.symbolService.getOrCreateByName(symbolName));
-        this.marketDataService.save(md);
-        return md;
-    }
-
-    public List<MarketData> retrieveWeeklySeries(String symbolName) throws ClientException, JsonProcessingException {
-        List<MarketData> md = this.alphavantageMarketDataClient.retrieveWeeklySeries(this.symbolService.getOrCreateByName(symbolName));
-        this.marketDataService.saveAll(md);
-        return md;
-    }
-
-    public List<MarketData> retrieveMarketData(List<String> symbolNames) throws ClientException, JsonProcessingException {
-        List<Symbol> symbols = symbolNames.stream().map(this.symbolService::getOrCreateByName).toList();
-        List<MarketData> md = this.twelveDataMarketDataClient.retrieveMarketData(symbols);
-        this.marketDataService.saveAll(md);
-        return md;
-    }
-
+    @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})
     public List<News> retrieveLatestNews(List<String> symbolNames) throws ClientException, JsonProcessingException {
         List<Symbol> symbols = symbolNames.stream().map(this.symbolService::getOrCreateByName).toList();
         List<News> news = this.newsClient.retrieveLatestNews(symbols);
-        this.newsService.saveAll(news, false);
+        this.newsService.createIgnoringDuplicates(news, false);
         return news;
+    }
+
+    @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})
+    public MarketData retrieveMarketData(String symbolName) throws ClientException, JsonProcessingException {
+        MarketData md = this.twelveDataMarketDataClient.retrieveMarketData(this.symbolService.getOrCreateByName(symbolName));
+        this.marketDataService.getOrCreate(md);
+        return md;
+    }
+
+    @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})
+    public List<MarketData> retrieveWeeklySeries(String symbolName) throws ClientException, JsonProcessingException {
+        List<MarketData> mds = this.alphavantageMarketDataClient.retrieveWeeklySeries(this.symbolService.getOrCreateByName(symbolName));
+        this.marketDataService.createIgnoringDuplicates(mds);
+        return mds;
+    }
+
+    @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})
+    public List<MarketData> retrieveMarketData(List<String> symbolNames) throws ClientException, JsonProcessingException {
+        List<Symbol> symbols = symbolNames.stream().map(this.symbolService::getOrCreateByName).toList();
+        List<MarketData> mds = this.twelveDataMarketDataClient.retrieveMarketData(symbols);
+        this.marketDataService.createIgnoringDuplicates(mds);
+        return mds;
     }
 }

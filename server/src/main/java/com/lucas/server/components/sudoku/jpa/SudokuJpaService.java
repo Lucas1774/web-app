@@ -5,7 +5,6 @@ import com.lucas.server.common.jpa.UniqueConstraintWearyJpaServiceDelegate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class SudokuJpaService implements JpaService<Sudoku> {
@@ -20,13 +19,8 @@ public class SudokuJpaService implements JpaService<Sudoku> {
     }
 
     @Override
-    public Optional<Sudoku> save(Sudoku entity) {
-        return delegate.save(this.repository, entity);
-    }
-
-    @Override
-    public List<Sudoku> saveAll(Iterable<Sudoku> entities) {
-        return this.delegate.saveAllIgnoringDuplicates(this.repository, entities);
+    public List<Sudoku> createAll(List<Sudoku> entities) {
+        return this.repository.saveAll(entities);
     }
 
     @Override
@@ -39,8 +33,8 @@ public class SudokuJpaService implements JpaService<Sudoku> {
         return this.repository.findAll();
     }
 
-    @Override
-    public Optional<Sudoku> findById(Long id) {
-        return this.repository.findById(id);
+    public List<Sudoku> createIgnoringDuplicates(Iterable<Sudoku> entities) {
+        return this.delegate.createIgnoringDuplicates(this.repository,
+                entity -> this.repository.findByState(entity.getState()), entities);
     }
 }

@@ -11,7 +11,6 @@ import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataJpaServic
 import com.lucas.server.components.tradingbot.marketdata.service.MarketDataKpiGenerator;
 import com.lucas.server.components.tradingbot.news.jpa.News;
 import com.lucas.server.components.tradingbot.news.jpa.NewsJpaService;
-import com.lucas.server.components.tradingbot.news.service.NewsEmbeddingsClient;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.AssetReportRaw;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.NewsItem;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.PricePointRaw;
@@ -57,10 +56,6 @@ class RecommendationChatCompletionClientTest {
 
     @MockitoBean
     @SuppressWarnings("unused")
-    NewsEmbeddingsClient newsEmbeddingsClient;
-
-    @MockitoBean
-    @SuppressWarnings("unused")
     AzureOpenAiChatModel azureOpenAiChatModel;
 
     @BeforeEach
@@ -87,7 +82,7 @@ class RecommendationChatCompletionClientTest {
                     .setVolume(1_000L * (i + 1));
             mds.add(md);
         }
-        marketDataService.saveAll(mds.stream().sorted(Comparator.comparing(MarketData::getDate)).toList());
+        marketDataService.createIgnoringDuplicates(mds.stream().sorted(Comparator.comparing(MarketData::getDate)).toList());
 
         // given: insert 6 news items. Needs to be greater than the history days
         List<News> articles = new ArrayList<>();
@@ -101,7 +96,7 @@ class RecommendationChatCompletionClientTest {
                     .setDate(today.minusDays(i).atStartOfDay());
             articles.add(news);
         }
-        newsService.saveAll(articles);
+        newsService.createIgnoringDuplicates(articles, false);
 
         // when
         List<MarketData> filteredMds = this.marketDataService.getTopForSymbolId(symbol.getId(), Constants.HISTORY_DAYS_COUNT);
