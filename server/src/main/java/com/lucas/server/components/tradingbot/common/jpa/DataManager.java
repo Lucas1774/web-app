@@ -10,7 +10,6 @@ import com.lucas.server.components.tradingbot.marketdata.service.AlphavantageMar
 import com.lucas.server.components.tradingbot.marketdata.service.TwelveDataMarketDataClient;
 import com.lucas.server.components.tradingbot.news.jpa.News;
 import com.lucas.server.components.tradingbot.news.jpa.NewsJpaService;
-import com.lucas.server.components.tradingbot.news.jpa.NewsListener;
 import com.lucas.server.components.tradingbot.news.service.FinnhubNewsClient;
 import com.lucas.server.components.tradingbot.recommendation.service.RecommendationChatCompletionClient;
 import org.springframework.stereotype.Service;
@@ -62,15 +61,13 @@ public class DataManager {
 
     public List<News> retrieveLatestNews(String symbolName) throws ClientException, JsonProcessingException {
         List<News> news = this.newsClient.retrieveLatestNews(this.symbolService.getOrCreateByName(symbolName));
-        NewsListener.setActive(true);
-        this.newsService.saveAll(news);
+        this.newsService.saveAll(news, true);
         return news;
     }
 
     public List<News> retrieveNewsByDateRange(String symbolName, LocalDate from, LocalDate now) throws ClientException, JsonProcessingException {
         List<News> news = this.newsClient.retrieveNewsByDateRange(this.symbolService.getOrCreateByName(symbolName), from, now);
-        NewsListener.setActive(true);
-        this.newsService.saveAll(news);
+        this.newsService.saveAll(news, true);
         return news;
     }
 
@@ -96,8 +93,7 @@ public class DataManager {
     public List<News> retrieveLatestNews(List<String> symbolNames) throws ClientException, JsonProcessingException {
         List<Symbol> symbols = symbolNames.stream().map(this.symbolService::getOrCreateByName).toList();
         List<News> news = this.newsClient.retrieveLatestNews(symbols);
-        NewsListener.setActive(false);
-        this.newsService.saveAll(news);
+        this.newsService.saveAll(news, false);
         return news;
     }
 }

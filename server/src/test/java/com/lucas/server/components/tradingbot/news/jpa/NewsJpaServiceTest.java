@@ -45,9 +45,8 @@ class NewsJpaServiceTest {
     @Test
     void saveAll_shouldPersistOnlyNewRecords() {
         // given
-        Symbol symbol = new Symbol().setName("AAPL");
-        Symbol symbol2 = new Symbol().setName("MSFT");
-        symbolService.saveAll(List.of(symbol, symbol2));
+        Symbol symbol = symbolService.getOrCreateByName("AAPL");
+        Symbol symbol2 = symbolService.getOrCreateByName("MSFT");
         News n1 = new News()
                 .setExternalId(1L)
                 .setSymbol(symbol)
@@ -71,7 +70,7 @@ class NewsJpaServiceTest {
                 .setImage("img2");
 
         // when: initial save
-        List<News> initial = jpaService.saveAll(List.of(n1, n2));
+        List<News> initial = jpaService.saveAll(List.of(n1, n2), false);
 
         // then: both persisted
         assertThat(initial)
@@ -105,7 +104,7 @@ class NewsJpaServiceTest {
                 .setCategory("cat3")
                 .setImage("img3");
 
-        List<News> second = jpaService.saveAll(List.of(dup, n3));
+        List<News> second = jpaService.saveAll(List.of(dup, n3), false);
 
         // then: only new record returned
         assertThat(second)

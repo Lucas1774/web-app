@@ -52,6 +52,16 @@ public class NewsJpaService implements JpaService<News> {
         return this.repository.findById(id);
     }
 
+
+    public Optional<News> save(News entity, boolean triggerEntityCallback) {
+        NewsListener.setActive(triggerEntityCallback);
+        return this.save(entity);
+    }
+
+    public List<News> saveAll(Iterable<News> entities, boolean triggerEntityCallback) {
+        NewsListener.setActive(triggerEntityCallback);
+        return this.saveAll(entities);
+    }
     public List<News> getTopForSymbolId(Long symbolId, int limit) {
         return this.repository.findBySymbol_Id(symbolId, PageRequest.of(0, limit, Sort.by("date").descending())).getContent();
     }
@@ -61,7 +71,6 @@ public class NewsJpaService implements JpaService<News> {
         if (news.isEmpty()) {
             throw new IllegalStateException(MessageFormat.format(Constants.ENTITY_NOT_FOUND_ERROR, "news"));
         }
-        NewsListener.setActive(false);
-        return this.save(this.embeddingsClient.embed(news.get())).orElseThrow();
+        return this.save(this.embeddingsClient.embed(news.get()), false).orElseThrow();
     }
 }

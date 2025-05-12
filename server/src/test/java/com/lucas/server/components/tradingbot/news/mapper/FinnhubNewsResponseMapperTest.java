@@ -6,7 +6,9 @@ import com.lucas.server.TestcontainersConfiguration;
 import com.lucas.server.common.Constants;
 import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
+import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.news.jpa.News;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -27,10 +29,18 @@ import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 class FinnhubNewsResponseMapperTest {
 
     @Autowired
+    SymbolJpaService symbolService;
+
+    @Autowired
     FinnhubNewsResponseMapper mapper;
 
     @Autowired
     ObjectMapper objectMapper;
+
+    @BeforeEach
+    void setUp() {
+        symbolService.deleteAll();
+    }
 
     @Test
     void whenMapValidJson_thenReturnNewsEntity() throws Exception {
@@ -84,7 +94,7 @@ class FinnhubNewsResponseMapperTest {
                   { "id": %d, "datetime": %d, "headline": "H2", "summary": "S2", "url": "u2", "source": "src2", "category": "cat2", "image": "i2" }
                 ]
                 """, now, now, now + 60, now + 60);
-        Symbol symbol = new Symbol().setName("SYM");
+        Symbol symbol = symbolService.getOrCreateByName("SYM");
 
         JsonNode arrayNode = objectMapper.readTree(jsonArray);
 
@@ -108,7 +118,7 @@ class FinnhubNewsResponseMapperTest {
         // given
         JsonNode emptyArray = objectMapper.createArrayNode();
         JsonNode objNode = objectMapper.createObjectNode();
-        Symbol symbol = new Symbol().setName("SYM");
+        Symbol symbol = symbolService.getOrCreateByName("SYM");
 
         // when & then
         assertThat(mapper.mapAll(emptyArray, symbol)).isEmpty();
@@ -127,7 +137,7 @@ class FinnhubNewsResponseMapperTest {
         JsonNode arrayNode = objectMapper.readTree(jsonArray);
 
         // when & then
-        assertThatThrownBy(() -> mapper.mapAll(arrayNode, new Symbol().setName("SYM")))
+        assertThatThrownBy(() -> mapper.mapAll(arrayNode, symbolService.getOrCreateByName("SYM")))
                 .isInstanceOf(JsonProcessingException.class)
                 .hasMessageContaining(MessageFormat.format(Constants.JSON_MAPPING_ERROR, "news"));
     }

@@ -38,13 +38,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class RecommendationChatCompletionClientTest {
 
     @Autowired
-    MarketDataJpaService marketDataJpaService;
+    MarketDataJpaService marketDataService;
 
     @Autowired
     NewsJpaService newsService;
 
     @Autowired
-    SymbolJpaService symbolJpaService;
+    SymbolJpaService symbolService;
 
     @Autowired
     MarketDataKpiGenerator kpiGenerator;
@@ -65,20 +65,20 @@ class RecommendationChatCompletionClientTest {
 
     @BeforeEach
     void setup() {
-        marketDataJpaService.deleteAll();
+        marketDataService.deleteAll();
         newsService.deleteAll();
-        symbolJpaService.deleteAll();
+        symbolService.deleteAll();
     }
 
     @Test
     void testProvide() throws IllegalStateException {
         // given: insert 15 days of market data. Needs to be greater than the history days
-        Symbol symbol = new Symbol().setName("AAPL");
+        Symbol symbol = symbolService.getOrCreateByName("AAPL");
         LocalDate today = LocalDate.now();
         List<MarketData> mds = new ArrayList<>();
         for (int i = 15; i >= 0; i--) {
             MarketData md = new MarketData()
-                    .setSymbol(symbolJpaService.save(symbol).orElseThrow())
+                    .setSymbol(symbolService.getOrCreateByName(symbol.getName()))
                     .setDate(today.minusDays(i))
                     .setOpen(BigDecimal.valueOf(10 + i))
                     .setHigh(BigDecimal.valueOf(11 + i))
@@ -87,7 +87,7 @@ class RecommendationChatCompletionClientTest {
                     .setVolume(1_000L * (i + 1));
             mds.add(md);
         }
-        marketDataJpaService.saveAll(mds.stream().sorted(Comparator.comparing(MarketData::getDate)).toList());
+        marketDataService.saveAll(mds.stream().sorted(Comparator.comparing(MarketData::getDate)).toList());
 
         // given: insert 6 news items. Needs to be greater than the history days
         List<News> articles = new ArrayList<>();
@@ -104,7 +104,7 @@ class RecommendationChatCompletionClientTest {
         newsService.saveAll(articles);
 
         // when
-        List<MarketData> filteredMds = this.marketDataJpaService.getTopForSymbolId(symbol.getId(), Constants.HISTORY_DAYS_COUNT);
+        List<MarketData> filteredMds = this.marketDataService.getTopForSymbolId(symbol.getId(), Constants.HISTORY_DAYS_COUNT);
         List<News> filteredNews = this.newsService.getTopForSymbolId(symbol.getId(), Constants.NEWS_COUNT);
         AssetReportRaw report = provider.provide(symbol, filteredMds, filteredNews);
         assertThatThrownBy(() -> chatCompletionClient.getRecommendations(Map.of(symbol, filteredMds), Map.of(symbol, filteredNews)))
@@ -128,8 +128,8 @@ class RecommendationChatCompletionClientTest {
                 .containsExactly("Headline 1", "Headline 2", "Headline 3", "Headline 4", "Headline 5");
 
         // then: KPIs match the kpiGenerator calculations
-        List<MarketData> mdHistory = marketDataJpaService.getTopForSymbolId(
-                symbolJpaService.findByName(symbol.getName()).orElseThrow().getId(), Constants.HISTORY_DAYS_COUNT);
+        List<MarketData> mdHistory = marketDataService.getTopForSymbolId(
+                symbolService.findByName(symbol.getName()).orElseThrow().getId(), Constants.HISTORY_DAYS_COUNT);
         BigDecimal expectedMa5 = kpiGenerator.computeMovingAverage(mdHistory);
         BigDecimal expectedRsi14 = kpiGenerator.computeRsi(mdHistory);
         BigDecimal expectedAtr14 = kpiGenerator.computeAtr(mdHistory);

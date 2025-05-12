@@ -30,18 +30,18 @@ class NewsListenerTest {
     NewsJpaService jpaService;
 
     @Autowired
-    SymbolJpaService symbolJpaService;
+    SymbolJpaService symbolService;
 
     @BeforeEach
     void setup() {
         this.jpaService.deleteAll();
-        this.symbolJpaService.deleteAll();
+        this.symbolService.deleteAll();
     }
 
     @Test
-    void whenSaveSomeMarketData_thenItIsUpdatedWithPreviousMarketData() throws ClientException {
+    void whenSaveSomeNewsWithCallback_thenItIsUpdatedWithPreviousNewsData() throws ClientException {
         // given
-        Symbol symbol = new Symbol().setName("AAPL");
+        Symbol symbol = symbolService.getOrCreateByName("AAPL");
         News previous = new News()
                 .setSymbol(symbol)
                 .setExternalId(1L)
@@ -49,7 +49,7 @@ class NewsListenerTest {
                 .setHeadline("Headline1")
                 .setUrl("url");
 
-        Symbol symbol2 = new Symbol().setName("MSFT");
+        Symbol symbol2 = symbolService.getOrCreateByName("MSFT");
         News current = new News()
                 .setSymbol(symbol2)
                 .setExternalId(2L)
@@ -57,14 +57,40 @@ class NewsListenerTest {
                 .setHeadline("Headline2")
                 .setUrl("url");
 
-        symbolJpaService.saveAll(List.of(symbol, symbol2));
-
         // when
-        jpaService.saveAll(List.of(previous, current));
+        jpaService.saveAll(List.of(previous, current), true);
 
         // then
         verify(embeddingsClient, times(1)).embed(previous);
         verify(embeddingsClient, times(1)).embed(current);
         verify(embeddingsClient, times(2)).embed(any());
+    }
+
+    @Test
+    void whenSaveSomeNewsNoCallback_thenItIsNotUpdatedWithPreviousNewsData() throws ClientException {
+        // given
+        Symbol symbol = symbolService.getOrCreateByName("AAPL");
+        News previous = new News()
+                .setSymbol(symbol)
+                .setExternalId(1L)
+                .setDate(LocalDateTime.now())
+                .setHeadline("Headline1")
+                .setUrl("url");
+
+        Symbol symbol2 = symbolService.getOrCreateByName("MSFT");
+        News current = new News()
+                .setSymbol(symbol2)
+                .setExternalId(2L)
+                .setDate(LocalDateTime.now())
+                .setHeadline("Headline2")
+                .setUrl("url");
+
+        // when
+        jpaService.saveAll(List.of(previous, current), false);
+
+        // then
+        verify(embeddingsClient, times(0)).embed(previous);
+        verify(embeddingsClient, times(0)).embed(current);
+        verify(embeddingsClient, times(0)).embed(any());
     }
 }

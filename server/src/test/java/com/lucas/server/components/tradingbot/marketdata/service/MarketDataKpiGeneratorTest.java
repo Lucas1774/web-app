@@ -32,10 +32,10 @@ import static org.mockito.Mockito.verify;
 class MarketDataKpiGeneratorTest {
 
     @MockitoSpyBean
-    MarketDataJpaService marketDataJpaService;
+    MarketDataJpaService marketDataService;
 
     @Autowired
-    SymbolJpaService symbolJpaService;
+    SymbolJpaService symbolService;
 
     @MockitoSpyBean
     MarketDataKpiGenerator kpiGenerator;
@@ -61,16 +61,15 @@ class MarketDataKpiGeneratorTest {
 
     @BeforeEach
     void cleanUp() {
-        marketDataJpaService.deleteAll();
-        symbolJpaService.deleteAll();
+        marketDataService.deleteAll();
+        symbolService.deleteAll();
         logCaptor.clearLogs();
     }
 
     @Test
     void whenComputeDerivedFieldsOnCurrentMarketData_thenCorrectlyReflectsKPIs() {
         // given
-        Symbol symbol = new Symbol().setName("AAPL");
-        symbolJpaService.save(symbol);
+        Symbol symbol = symbolService.getOrCreateByName("AAPL");
         LocalDate currentDate = LocalDate.of(2023, 12, 15);
         LocalDate previousDate = LocalDate.of(2023, 12, 14);
 
@@ -85,22 +84,21 @@ class MarketDataKpiGeneratorTest {
                 .setPrice(BigDecimal.valueOf(140.00));
 
         // when
-        marketDataJpaService.saveAll(List.of(previousData, currentData));
+        marketDataService.saveAll(List.of(previousData, currentData));
         kpiGenerator.computeDerivedFields(currentData);
 
         // then
         assertThat(currentData.getChange()).isEqualByComparingTo(BigDecimal.valueOf(10.00));
         assertThat(currentData.getPreviousClose()).isEqualByComparingTo(BigDecimal.valueOf(140.00));
         assertThat(currentData.getChangePercent()).isEqualByComparingTo(BigDecimal.valueOf(7.1429));
-        verify(marketDataJpaService, atLeastOnce()).findTopBySymbolIdAndDateBeforeOrderByDateDesc(symbol.getId(), currentDate);
+        verify(marketDataService, atLeastOnce()).findTopBySymbolIdAndDateBeforeOrderByDateDesc(symbol.getId(), currentDate);
     }
 
     @Test
     void computeDerivedFieldsWithoutPreviousData_thenNothingHappens() {
         // given
-        Symbol symbol = new Symbol().setName("AAPL");
-        symbolJpaService.save(symbol);
         LocalDate currentDate = LocalDate.of(2023, 12, 15);
+        Symbol symbol = symbolService.getOrCreateByName("AAPL");
 
         MarketData currentData = new MarketData()
                 .setSymbol(symbol)
@@ -108,21 +106,21 @@ class MarketDataKpiGeneratorTest {
                 .setPrice(BigDecimal.valueOf(150.00));
 
         // when
-        marketDataJpaService.saveAll(List.of(currentData));
+        marketDataService.saveAll(List.of(currentData));
         kpiGenerator.computeDerivedFields(currentData);
 
         // then
         assertThat(currentData.getChange()).isNull();
         assertThat(currentData.getPreviousClose()).isNull();
         assertThat(currentData.getChangePercent()).isNull();
-        verify(marketDataJpaService, atLeastOnce()).findTopBySymbolIdAndDateBeforeOrderByDateDesc(symbol.getId(), currentDate);
+        verify(marketDataService, atLeastOnce()).findTopBySymbolIdAndDateBeforeOrderByDateDesc(symbol.getId(), currentDate);
     }
 
     @Test
     void whenComputeDerivedFieldsWithZeroPreviousPrice_thenPercentageIsNull() {
         // given
-        Symbol symbol = new Symbol().setName("AAPL");
-        symbolJpaService.save(symbol);
+        Symbol symbol = symbolService.getOrCreateByName("AAPL");
+        symbolService.save(symbol);
         LocalDate currentDate = LocalDate.of(2023, 12, 15);
         LocalDate previousDate = LocalDate.of(2023, 12, 14);
 
@@ -137,14 +135,14 @@ class MarketDataKpiGeneratorTest {
                 .setPrice(BigDecimal.ZERO);
 
         // when
-        marketDataJpaService.saveAll(List.of(previousData, currentData));
+        marketDataService.saveAll(List.of(previousData, currentData));
         kpiGenerator.computeDerivedFields(currentData);
 
         // then
         assertThat(currentData.getPreviousClose()).isEqualByComparingTo(BigDecimal.ZERO);
         assertThat(currentData.getChange()).isEqualByComparingTo("150.00");
         assertThat(currentData.getChangePercent()).isNull();
-        verify(marketDataJpaService, atLeastOnce()).findTopBySymbolIdAndDateBeforeOrderByDateDesc(symbol.getId(), currentDate);
+        verify(marketDataService, atLeastOnce()).findTopBySymbolIdAndDateBeforeOrderByDateDesc(symbol.getId(), currentDate);
     }
 
     @Test

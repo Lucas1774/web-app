@@ -41,9 +41,8 @@ class MarketDataJpaServiceTest {
     @Test
     void saveAllIgnoringDuplicates_shouldPersistOnlyNewRecords_andHandleTrailingZeros() {
         // given:
-        Symbol symbol = new Symbol().setName("AAPL");
-        Symbol symbol2 = new Symbol().setName("IBM");
-        symbolService.saveAll(List.of(symbol, symbol2));
+        Symbol symbol = symbolService.getOrCreateByName("AAPL");
+        Symbol symbol2 = symbolService.getOrCreateByName("IBM");
         LocalDate date1 = LocalDate.of(2023, 12, 15);
         LocalDate date2 = LocalDate.of(2023, 12, 16);
 
@@ -112,8 +111,7 @@ class MarketDataJpaServiceTest {
     @Test
     void save_shouldReturnOptionalEmptyForDuplicate() {
         // given:
-        Symbol symbol = new Symbol().setName("AAPL");
-        symbolService.save(symbol);
+        Symbol symbol = symbolService.getOrCreateByName("AAPL");
         MarketData md = new MarketData()
                 .setSymbol(symbol)
                 .setDate(LocalDate.of(2023, 12, 15))

@@ -5,7 +5,9 @@ import com.lucas.server.TestcontainersConfiguration;
 import com.lucas.server.common.Constants;
 import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
+import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -24,10 +26,18 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class AlphavantageMarketResponseMapperTest {
 
     @Autowired
+    SymbolJpaService symbolService;
+
+    @Autowired
     AlphavantageMarketResponseMapper mapper;
 
     @Autowired
     ObjectMapper objectMapper;
+
+    @BeforeEach
+    void setUp() {
+        symbolService.deleteAll();
+    }
 
     @Test
     void whenMapValidJson_thenReturnMarketData() throws JsonProcessingException, com.fasterxml.jackson.core.JsonProcessingException {
@@ -48,7 +58,7 @@ class AlphavantageMarketResponseMapperTest {
                     }
                 }
                 """;
-        Symbol symbol = new Symbol().setName("IBM");
+        Symbol symbol = symbolService.getOrCreateByName("IBM");
 
         // when
         MarketData result = mapper.map(objectMapper.readTree(json)).setSymbol(symbol);
@@ -99,7 +109,7 @@ class AlphavantageMarketResponseMapperTest {
                     }
                 }
                 """;
-        Symbol symbol = new Symbol().setName("IBM");
+        Symbol symbol = symbolService.getOrCreateByName("IBM");
 
         // when
         List<MarketData> result = mapper.mapAll(objectMapper.readTree(json), symbol);
@@ -135,7 +145,7 @@ class AlphavantageMarketResponseMapperTest {
                     }
                 }
                 """;
-        Symbol symbol = new Symbol().setName("IBM");
+        Symbol symbol = symbolService.getOrCreateByName("IBM");
 
         // when
         List<MarketData> result = mapper.mapAll(objectMapper.readTree(json), symbol);

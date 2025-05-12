@@ -47,8 +47,7 @@ class MarketDataListenerTest {
     @Test
     void whenSaveSomeMarketData_thenItIsUpdatedWithPreviousMarketData() {
         // given
-        Symbol symbol = new Symbol().setName("AAPL");
-        symbolService.save(symbol);
+        Symbol symbol = symbolService.getOrCreateByName("AAPL");
         MarketData previous = new MarketData()
                 .setSymbol(symbol)
                 .setDate(LocalDate.of(2024, 4, 20))

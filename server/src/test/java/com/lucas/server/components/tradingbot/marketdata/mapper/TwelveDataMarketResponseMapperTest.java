@@ -5,7 +5,11 @@ import com.lucas.server.TestcontainersConfiguration;
 import com.lucas.server.common.Constants;
 import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
+import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
+import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataJpaService;
+import com.lucas.server.components.tradingbot.news.jpa.NewsJpaService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,10 +27,26 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class TwelveDataMarketResponseMapperTest {
 
     @Autowired
+    MarketDataJpaService marketDataService;
+
+    @Autowired
+    NewsJpaService newsService;
+
+    @Autowired
+    SymbolJpaService symbolService;
+
+    @Autowired
     TwelveDataMarketResponseMapper mapper;
 
     @Autowired
     ObjectMapper objectMapper;
+
+    @BeforeEach
+    void setUp() {
+        marketDataService.deleteAll();
+        newsService.deleteAll();
+        symbolService.deleteAll();
+    }
 
     @Test
     void whenMapValidJson_thenReturnMarketData() throws JsonProcessingException, com.fasterxml.jackson.core.JsonProcessingException {
@@ -69,7 +89,7 @@ class TwelveDataMarketResponseMapperTest {
                   "last_quote_at": 1631772000
                 }
                 """;
-        Symbol symbol = new Symbol().setName("IBM");
+        Symbol symbol = symbolService.getOrCreateByName("IBM");
 
         // when
         MarketData result = mapper.map(objectMapper.readTree(json), symbol);
@@ -94,7 +114,7 @@ class TwelveDataMarketResponseMapperTest {
         String invalidJson = "{}";
 
         // when & then
-        assertThatThrownBy(() -> mapper.map(objectMapper.readTree(invalidJson), new Symbol().setName("AAPL"))).isInstanceOf(JsonProcessingException.class);
+        assertThatThrownBy(() -> mapper.map(objectMapper.readTree(invalidJson), symbolService.getOrCreateByName("AAPL"))).isInstanceOf(JsonProcessingException.class);
     }
 
     @Test
@@ -139,7 +159,7 @@ class TwelveDataMarketResponseMapperTest {
                 """;
 
         // when & then
-        assertThatThrownBy(() -> mapper.map(objectMapper.readTree(json), new Symbol().setName("AAPL")))
+        assertThatThrownBy(() -> mapper.map(objectMapper.readTree(json), symbolService.getOrCreateByName("AAPL")))
                 .isInstanceOf(JsonProcessingException.class)
                 .hasMessageContaining(MessageFormat.format(Constants.JSON_MAPPING_ERROR, "market"));
     }
@@ -187,7 +207,7 @@ class TwelveDataMarketResponseMapperTest {
                 """;
 
         // when & then
-        assertThatThrownBy(() -> mapper.map(objectMapper.readTree(json), new Symbol().setName("AAPL")))
+        assertThatThrownBy(() -> mapper.map(objectMapper.readTree(json), symbolService.getOrCreateByName("AAPL")))
                 .isInstanceOf(JsonProcessingException.class)
                 .hasMessageContaining(MessageFormat.format(Constants.JSON_MAPPING_ERROR, "market"));
     }
