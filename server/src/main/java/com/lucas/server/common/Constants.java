@@ -10,6 +10,7 @@ public class Constants {
     public static final int SUDOKU_SIZE = 9;
     public static final int[] DIGITS = {1, 2, 3, 4, 5, 6, 7, 8, 9};
     public static final int SUDOKU_NUMBER_OF_CELLS = 81;
+    public static final String NA = "N/A";
     public static final String INVALID_EXPRESSION = "Invalid expression";
     public static final String COMPANY_NEWS = "/company-news";
     public static final String QUOTE = "/quote";
@@ -20,11 +21,14 @@ public class Constants {
     public static final String CONTENT = "content";
     public static final String ROLE = "role";
 
-    public static final String RECORD_IGNORED_BREAKS_UNIQUENESS_CONSTRAIN_WARN = "Duplicate entry for {}: Ignored";
     public static final String EMBEDDING_GENERATION_FAILED_WARN = "Couldn't fetch embeddings for {}";
     public static final String SUDOKU_IGNORED_MALFORMED_JSON_WARN = "Couldn't deserialize sudoku from raw data {}";
     public static final String KPI_RETURNED_ZERO_WARN = "{}: Value is zero";
     public static final String SCHEDULED_TASK_SUCCESS_INFO = "Successfully fetched market data for {}";
+    public static final String RETRIEVING_MARKET_DATA_INFO = "Retrieving market data for {}";
+    public static final String RETRIEVING_NEWS_INFO = "Retrieving news for {}";
+    public static final String GENERATING_RECOMMENDATIONS_INFO = "Generating recommendations for {}";
+    public static final String GENERATING_EMBEDDINGS_INFO = "Generating embeddings for {}";
     public static final String KPI_EMPTY_DATA_ERROR = "{0}: Provided data collection is empty";
     public static final String JSON_MAPPING_ERROR = "Error mapping {0} JSON";
     public static final String ENTITY_NOT_FOUND_ERROR = "{0}: Entity not found";

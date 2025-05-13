@@ -54,7 +54,8 @@ public class NewsJpaService implements JpaService<News> {
     }
 
     public List<News> getTopForSymbolId(Long symbolId, int limit) {
-        return this.repository.findBySymbol_Id(symbolId, PageRequest.of(0, limit, Sort.by("date").descending())).getContent();
+        return this.repository.findBySymbols_Id(symbolId, PageRequest.of(0, limit, Sort.by("date").descending()))
+                .getContent();
     }
 
     @Transactional(rollbackOn = {IllegalStateException.class, ClientException.class})
@@ -65,5 +66,20 @@ public class NewsJpaService implements JpaService<News> {
         }
         NewsListener.setActive(false);
         return this.embeddingsClient.embed(news.get());
+    }
+
+    public List<News> createOrUpdate(List<News> entities, boolean triggerEntityCallback) {
+        NewsListener.setActive(triggerEntityCallback);
+        return this.createOrUpdate(entities);
+    }
+
+    private List<News> createOrUpdate(List<News> entities) {
+        return this.delegate.createOrUpdate(repository,
+                entity -> this.repository.findByExternalId(entity.getExternalId()),
+                (oldEntity, newEntity) -> {
+                    oldEntity.getSymbols().addAll(newEntity.getSymbols());
+                    return oldEntity;
+                },
+                entities);
     }
 }

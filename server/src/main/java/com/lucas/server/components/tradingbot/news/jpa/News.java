@@ -12,6 +12,9 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -29,9 +32,11 @@ public class News implements JpaEntity {
     @Column(name = "external_id", nullable = false, unique = true)
     private Long externalId;
 
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
-    @JoinColumn(name = "symbol_id", nullable = false)
-    private Symbol symbol;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "news_symbol",
+            joinColumns = @JoinColumn(name = "news_id"),
+            inverseJoinColumns = @JoinColumn(name = "symbol_id"))
+    private Set<Symbol> symbols = new HashSet<>();
 
     @Column(name = "publication_date", nullable = false)
     private LocalDateTime date;
@@ -59,14 +64,31 @@ public class News implements JpaEntity {
     @Array(length = 3072)
     private float[] embeddings;
 
+    public News addSymbol(Symbol symbol) {
+        this.symbols.add(symbol);
+        return this;
+    }
+
     @Override
     public String toString() {
         return "News{" +
                 "id=" + id +
                 ", externalId=" + externalId +
-                ", symbol='" + symbol + '\'' +
+                ", symbols='" + symbols + '\'' +
                 ", date=" + date +
                 ", headline='" + headline + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        News news = (News) o;
+        return Objects.equals(id, news.id) && Objects.equals(externalId, news.externalId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, externalId);
     }
 }

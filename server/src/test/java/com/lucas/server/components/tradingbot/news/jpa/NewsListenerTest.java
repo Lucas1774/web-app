@@ -43,7 +43,7 @@ class NewsListenerTest {
         // given
         Symbol symbol = symbolService.getOrCreateByName("AAPL");
         News previous = new News()
-                .setSymbol(symbol)
+                .addSymbol(symbol)
                 .setExternalId(1L)
                 .setDate(LocalDateTime.now())
                 .setHeadline("Headline1")
@@ -51,7 +51,7 @@ class NewsListenerTest {
 
         Symbol symbol2 = symbolService.getOrCreateByName("MSFT");
         News current = new News()
-                .setSymbol(symbol2)
+                .addSymbol(symbol2)
                 .setExternalId(2L)
                 .setDate(LocalDateTime.now())
                 .setHeadline("Headline2")
@@ -71,7 +71,7 @@ class NewsListenerTest {
         // given
         Symbol symbol = symbolService.getOrCreateByName("AAPL");
         News previous = new News()
-                .setSymbol(symbol)
+                .addSymbol(symbol)
                 .setExternalId(1L)
                 .setDate(LocalDateTime.now())
                 .setHeadline("Headline1")
@@ -79,7 +79,7 @@ class NewsListenerTest {
 
         Symbol symbol2 = symbolService.getOrCreateByName("MSFT");
         News current = new News()
-                .setSymbol(symbol2)
+                .addSymbol(symbol2)
                 .setExternalId(2L)
                 .setDate(LocalDateTime.now())
                 .setHeadline("Headline2")

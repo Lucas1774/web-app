@@ -27,26 +27,31 @@ class AssetReportToMustacheMapperTest {
                 .contains("ATR14: 1.23")
                 .contains("Volatility (14d): 15.67%")
                 // It should render the single price point line:
-                .contains("2025-05-01: O100 H110 L90 C105 Vnull")
+                .contains("2025-05-01: O100 H110 L90 C105 V1234")
                 // It should render the news headline, and leave sentiment blank:
-                .contains("• \\\"Test Headline\\\" (Sentiment: )")
+                .contains("• 2025-05-01: \\\"Headline One\\\" (Sentiment: ) Summary: First summary")
+                .contains("• 2025-05-02: \\\"Headline Two\\\" (Sentiment: ) Summary: Second summary")
                 // And placeholders for nulls (position, PnL, etc.) appear as empty
-                .contains("Current Position: null shares (0 EUR)")
-                .contains("Avg Entry Price: - EUR")
-                .contains("Unrealized PnL including trading costs: - EUR");
+                .contains("Current Position: N/A shares (N/A EUR)")
+                .contains("Avg Entry Price: N/A EUR")
+                .contains("Unrealized PnL including trading costs: N/A EUR");
     }
 
     private static AssetReportToMustacheMapper.AssetReportRaw getAssetReport() {
         AssetReportToMustacheMapper.PricePointRaw pp = new AssetReportToMustacheMapper.PricePointRaw(
                 LocalDate.of(2025, 5, 1), new BigDecimal("100"), new BigDecimal("110"),
-                new BigDecimal("90"), new BigDecimal("105"), null
+                new BigDecimal("90"), new BigDecimal("105"), 1234L
         );
-        AssetReportToMustacheMapper.NewsItem ni = new AssetReportToMustacheMapper.NewsItem("Test Headline",
-                null, "Test summary");
+        List<AssetReportToMustacheMapper.NewsItemRaw> news = List.of(
+                new AssetReportToMustacheMapper.NewsItemRaw("Headline One", null, "First summary",
+                        LocalDate.of(2025, 5, 1).atStartOfDay()),
+                new AssetReportToMustacheMapper.NewsItemRaw("Headline Two", null, "Second summary",
+                        LocalDate.of(2025, 5, 2).atStartOfDay())
+        );
         return new AssetReportToMustacheMapper.AssetReportRaw("FOO",
                 null, null, null, 1,
                 List.of(pp), new BigDecimal("105.00"), new BigDecimal("42.42"), new BigDecimal("1.23"),
-                new BigDecimal("15.67"), null, 1, List.of(ni)
+                new BigDecimal("15.67"), null, 1, news
         );
     }
 }

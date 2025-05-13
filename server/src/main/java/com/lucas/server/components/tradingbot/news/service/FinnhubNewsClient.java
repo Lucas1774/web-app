@@ -7,13 +7,17 @@ import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.news.jpa.News;
 import com.lucas.server.components.tradingbot.news.mapper.FinnhubNewsResponseMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class FinnhubNewsClient {
@@ -22,6 +26,7 @@ public class FinnhubNewsClient {
     private final HttpRequestClient httpRequestClient;
     private final String endpoint;
     private final String apiKey;
+    private static final Logger logger = LoggerFactory.getLogger(FinnhubNewsClient.class);
 
     public FinnhubNewsClient(FinnhubNewsResponseMapper mapper, HttpRequestClient httpRequestClient,
                              @Value("${finnhub.endpoint}") String endpoint, @Value("${finnhub.api-key}") String apiKey) {
@@ -37,6 +42,7 @@ public class FinnhubNewsClient {
     }
 
     public List<News> retrieveNewsByDateRange(Symbol symbol, LocalDate from, LocalDate to) throws JsonProcessingException, ClientException {
+        logger.info(Constants.RETRIEVING_NEWS_INFO, symbol);
         String url = UriComponentsBuilder.fromUriString(endpoint + Constants.COMPANY_NEWS)
                 .queryParam("symbol", symbol.getName())
                 .queryParam("from", from)
@@ -48,17 +54,22 @@ public class FinnhubNewsClient {
     }
 
     public List<News> retrieveLatestNews(List<Symbol> symbols) throws ClientException, JsonProcessingException {
-        List<News> res = new ArrayList<>();
+        Map<Long, News> newsByExternalId = new HashMap<>();
         for (Symbol symbol : symbols) {
             List<News> updated = this.retrieveLatestNews(symbol);
+            for (News news : updated) {
+                newsByExternalId
+                        .computeIfAbsent(news.getExternalId(), id -> news)
+                        .addSymbol(symbol);
+            }
+
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
-            res.addAll(updated);
         }
 
-        return res;
+        return new ArrayList<>(newsByExternalId.values());
     }
 }

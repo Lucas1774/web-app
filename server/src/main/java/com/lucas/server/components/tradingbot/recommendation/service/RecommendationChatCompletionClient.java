@@ -11,6 +11,8 @@ import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.news.jpa.News;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper;
 import com.lucas.server.components.tradingbot.recommendation.prompt.PromptRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ai.azure.openai.AzureOpenAiChatModel;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
@@ -41,6 +43,7 @@ public class RecommendationChatCompletionClient {
             "assistant", AssistantMessage::new,
             "system", SystemMessage::new
     );
+    private static final Logger logger = LoggerFactory.getLogger(RecommendationChatCompletionClient.class);
 
     public RecommendationChatCompletionClient(PromptRepository promptRepository, AssetReportDataProvider assertReportDataProvider,
                                               AssetReportToMustacheMapper assetReportToMustacheMapper,
@@ -62,6 +65,7 @@ public class RecommendationChatCompletionClient {
         Prompt prompt = new Prompt(List.of(this.systemMessage, this.promptMessage, this.fewShotMessage,
                 generateMessageFromNode(this.objectMapper.readValue(this.assetReportToMustacheMapper.map(reports), ObjectNode.class)))
         );
+        logger.info(Constants.GENERATING_RECOMMENDATIONS_INFO, prompt.getContents());
 
         try {
             return client.call(prompt).getResult().getOutput().getText();

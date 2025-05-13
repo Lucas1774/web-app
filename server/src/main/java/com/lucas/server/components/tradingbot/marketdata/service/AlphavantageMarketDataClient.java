@@ -7,6 +7,8 @@ import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.marketdata.mapper.AlphavantageMarketResponseMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -21,6 +23,7 @@ public class AlphavantageMarketDataClient {
     private final HttpRequestClient httpRequestClient;
     private final String endpoint;
     private final String apiKey;
+    private static final Logger logger = LoggerFactory.getLogger(AlphavantageMarketDataClient.class);
 
     public AlphavantageMarketDataClient(AlphavantageMarketResponseMapper mapper, HttpRequestClient httpRequestClient,
                                         @Value("${alphavantage.endpoint}") String endpoint, @Value("${alphavantage.api-key}") String apiKey) {
@@ -31,6 +34,7 @@ public class AlphavantageMarketDataClient {
     }
 
     public MarketData retrieveMarketData(Symbol symbol) throws JsonProcessingException, ClientException {
+        logger.info(Constants.RETRIEVING_MARKET_DATA_INFO, symbol);
         String url = UriComponentsBuilder
                 .fromUriString(endpoint)
                 .queryParam("function", Constants.ALPHAVANTAGE_QUOTE_PATH)
@@ -42,6 +46,7 @@ public class AlphavantageMarketDataClient {
     }
 
     public List<MarketData> retrieveWeeklySeries(Symbol symbol) throws JsonProcessingException, ClientException {
+        logger.info(Constants.RETRIEVING_MARKET_DATA_INFO, symbol);
         String url = UriComponentsBuilder
                 .fromUriString(endpoint)
                 .queryParam("function", Constants.TIME_SERIES_WEEKLY)

@@ -6,7 +6,7 @@ import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.marketdata.service.MarketDataKpiGenerator;
 import com.lucas.server.components.tradingbot.news.jpa.News;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.AssetReportRaw;
-import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.NewsItem;
+import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.NewsItemRaw;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.PricePointRaw;
 import org.springframework.stereotype.Component;
 
@@ -32,12 +32,12 @@ public class AssetReportDataProvider {
         BigDecimal atr14 = kpiGenerator.computeAtr(mdHistory);
         BigDecimal volatility = kpiGenerator.computeVolatility(mdHistory);
 
-        List<NewsItem> newsItems = articles.stream()
-                .map(a -> new NewsItem(a.getHeadline(), null, a.getSummary()))
+        // TODO: generate missing attributes
+        List<NewsItemRaw> news = articles.stream()
+                .map(a -> new NewsItemRaw(a.getHeadline(), null, a.getSummary(), a.getDate()))
                 .toList();
 
-        // TODO: generate missing attributes
         return new AssetReportRaw(symbol.getName(), null, null, null, priceHistory.size(), priceHistory,
-                ma5, rsi14, atr14, volatility, null, newsItems.size(), newsItems);
+                ma5, rsi14, atr14, volatility, null, news.size(), news);
     }
 }

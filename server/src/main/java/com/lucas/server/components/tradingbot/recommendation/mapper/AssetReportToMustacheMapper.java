@@ -17,9 +17,12 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+
+import static com.lucas.server.common.Constants.NA;
 
 @Component
 public class AssetReportToMustacheMapper implements Mapper<List<AssetReportToMustacheMapper.AssetReportRaw>, String> {
@@ -50,7 +53,7 @@ public class AssetReportToMustacheMapper implements Mapper<List<AssetReportToMus
             BigDecimal volatility,
             BigDecimal unrealizedPnL,
             int newsCount,
-            List<NewsItem> news
+            List<NewsItemRaw> news
     ) {
     }
 
@@ -64,10 +67,11 @@ public class AssetReportToMustacheMapper implements Mapper<List<AssetReportToMus
     ) {
     }
 
-    public record NewsItem(
+    public record NewsItemRaw(
             String headline,
             String sentiment,
-            String summary
+            String summary,
+            LocalDateTime date
     ) {
     }
 
@@ -87,21 +91,22 @@ public class AssetReportToMustacheMapper implements Mapper<List<AssetReportToMus
             List<NewsItem> news
     ) {
         private static AssetReport from(AssetReportRaw report) {
-            return new AssetReport(
-                    report.symbol, String.valueOf(report.position),
-                    report.positionValue != null ? report.positionValue.stripTrailingZeros().toPlainString() : "0",
-                    report.entryPrice != null ? report.entryPrice.stripTrailingZeros().toPlainString() : "-",
-                    String.valueOf(report.historyDays),
-                    report.priceHistory.stream().map(PricePoint::from).toList(),
-                    report.ma5.stripTrailingZeros().toPlainString(),
-                    report.rsi14.stripTrailingZeros().toPlainString(),
-                    report.atr14.stripTrailingZeros().toPlainString(),
-                    report.volatility.stripTrailingZeros().toPlainString(),
-                    report.unrealizedPnL != null ? report.unrealizedPnL.stripTrailingZeros().toPlainString() : "-",
-                    String.valueOf(report.newsCount),
-                    report.news
-            );
-        }
+        return new AssetReport(
+                report.symbol,
+                report.position != null ? String.valueOf(report.position) : NA,
+                report.positionValue != null ? report.positionValue.stripTrailingZeros().toPlainString() : NA,
+                report.entryPrice != null ? report.entryPrice.stripTrailingZeros().toPlainString() : NA,
+                String.valueOf(report.historyDays),
+                report.priceHistory.stream().map(PricePoint::from).toList(),
+                report.ma5.stripTrailingZeros().toPlainString(),
+                report.rsi14.stripTrailingZeros().toPlainString(),
+                report.atr14.stripTrailingZeros().toPlainString(),
+                report.volatility.stripTrailingZeros().toPlainString(),
+                report.unrealizedPnL != null ? report.unrealizedPnL.stripTrailingZeros().toPlainString() : NA,
+                String.valueOf(report.newsCount),
+                report.news.stream().map(NewsItem::from).toList()
+        );
+    }
 
         private record PricePoint(
                 String date,
@@ -119,6 +124,22 @@ public class AssetReportToMustacheMapper implements Mapper<List<AssetReportToMus
                         point.low.stripTrailingZeros().toPlainString(),
                         point.close.stripTrailingZeros().toPlainString(),
                         String.valueOf(point.volume)
+                );
+            }
+        }
+
+        private record NewsItem(
+                String headline,
+                String sentiment,
+                String summary,
+                String date
+        ) {
+            private static NewsItem from(NewsItemRaw news) {
+                return new NewsItem(
+                        news.headline,
+                        news.sentiment,
+                        news.summary,
+                        news.date.toLocalDate().toString()
                 );
             }
         }

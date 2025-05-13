@@ -7,6 +7,8 @@ import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.marketdata.mapper.FinnhubMarketResponseMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -21,6 +23,7 @@ public class FinnhubMarketDataClient {
     private final HttpRequestClient httpRequestClient;
     private final String endpoint;
     private final String apiKey;
+    private static final Logger logger = LoggerFactory.getLogger(FinnhubMarketDataClient.class);
 
     public FinnhubMarketDataClient(FinnhubMarketResponseMapper mapper, HttpRequestClient httpRequestClient,
                                    @Value("${finnhub.endpoint}") String endpoint,
@@ -32,6 +35,7 @@ public class FinnhubMarketDataClient {
     }
 
     public MarketData retrieveMarketData(Symbol symbol) throws JsonProcessingException, ClientException {
+        logger.info(Constants.RETRIEVING_MARKET_DATA_INFO, symbol);
         String url = UriComponentsBuilder.fromUriString(endpoint + Constants.QUOTE)
                 .queryParam("symbol", symbol.getName())
                 .queryParam("token", apiKey)

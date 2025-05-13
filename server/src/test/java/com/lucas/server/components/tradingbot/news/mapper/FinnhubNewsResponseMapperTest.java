@@ -80,7 +80,7 @@ class FinnhubNewsResponseMapperTest {
                     assertThat(n.getSource()).isEqualTo("Finnhub");
                     assertThat(n.getCategory()).isEqualTo("company");
                     assertThat(n.getImage()).isEqualTo("https://example.com/image.jpg");
-                    assertThat(n.getSymbol()).isNull();
+                    assertThat(n.getSymbols()).isEmpty();
                 });
     }
 
@@ -105,7 +105,7 @@ class FinnhubNewsResponseMapperTest {
         assertThat(list)
                 .isNotNull()
                 .hasSize(2)
-                .allSatisfy(n -> assertThat(n.getSymbol().getName()).isEqualTo(symbol.getName()))
+                .allSatisfy(n -> assertThat(n.getSymbols().toArray(Symbol[]::new)[0].getName()).isEqualTo(symbol.getName()))
                 .extracting(News::getExternalId, News::getHeadline)
                 .containsExactly(
                         tuple(now, "H1"),

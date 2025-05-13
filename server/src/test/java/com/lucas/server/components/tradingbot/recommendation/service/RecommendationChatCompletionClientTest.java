@@ -11,8 +11,8 @@ import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataJpaServic
 import com.lucas.server.components.tradingbot.marketdata.service.MarketDataKpiGenerator;
 import com.lucas.server.components.tradingbot.news.jpa.News;
 import com.lucas.server.components.tradingbot.news.jpa.NewsJpaService;
+import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.AssetReportRaw;
-import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.NewsItem;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.PricePointRaw;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -88,7 +88,7 @@ class RecommendationChatCompletionClientTest {
         List<News> articles = new ArrayList<>();
         for (int i = 1; i <= 6; i++) {
             News news = new News()
-                    .setSymbol(symbol)
+                    .addSymbol(symbol)
                     .setExternalId((long) i)
                     .setUrl("https://example.com/news/" + i)
                     .setHeadline("Headline " + i)
@@ -119,7 +119,7 @@ class RecommendationChatCompletionClientTest {
         assertThat(report.newsCount()).isEqualTo(Constants.NEWS_COUNT);
         assertThat(report.news())
                 .hasSize(Constants.NEWS_COUNT)
-                .extracting(NewsItem::headline)
+                .extracting(AssetReportToMustacheMapper.NewsItemRaw::headline)
                 .containsExactly("Headline 1", "Headline 2", "Headline 3", "Headline 4", "Headline 5");
 
         // then: KPIs match the kpiGenerator calculations

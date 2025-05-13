@@ -1,13 +1,17 @@
 package com.lucas.server.components.tradingbot.common.jpa;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.lucas.server.common.jpa.JpaEntity;
+import com.lucas.server.components.tradingbot.news.jpa.News;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -23,6 +27,10 @@ public class Symbol implements JpaEntity {
 
     @Column(nullable = false, unique = true, length = 10)
     private String name;
+
+    @ManyToMany(mappedBy = "symbols", fetch = FetchType.EAGER)
+    @JsonIgnore
+    private Set<News> news = new HashSet<>();
 
     @Override
     public String toString() {

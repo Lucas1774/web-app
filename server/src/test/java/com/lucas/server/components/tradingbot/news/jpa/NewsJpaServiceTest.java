@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Import;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -43,7 +44,7 @@ class NewsJpaServiceTest {
         Symbol symbol2 = symbolService.getOrCreateByName("MSFT");
         News n1 = new News()
                 .setExternalId(1L)
-                .setSymbol(symbol)
+                .addSymbol(symbol)
                 .setDate(LocalDateTime.now())
                 .setHeadline("Headline1")
                 .setSummary("Summary1")
@@ -54,7 +55,7 @@ class NewsJpaServiceTest {
 
         News n2 = new News()
                 .setExternalId(2L)
-                .setSymbol(symbol)
+                .addSymbol(symbol)
                 .setDate(LocalDateTime.now())
                 .setHeadline("Headline2")
                 .setSummary("Summary2")
@@ -69,16 +70,27 @@ class NewsJpaServiceTest {
         // then: both persisted
         assertThat(initial)
                 .hasSize(2)
-                .extracting(News::getExternalId, News::getSymbol, News::getHeadline)
+                .extracting(News::getExternalId, News::getSymbols, News::getHeadline)
                 .containsExactlyInAnyOrder(
-                        tuple(1L, symbol, "Headline1"),
-                        tuple(2L, symbol, "Headline2")
+                        tuple(1L, Set.of(symbol), "Headline1"),
+                        tuple(2L, Set.of(symbol), "Headline2")
                 );
+
+        List<Symbol> symbols = symbolService.findAll();
+        assertThat(symbols.getFirst().getNews())
+                .hasSize(2)
+                .extracting(News::getExternalId, News::getSymbols, News::getHeadline)
+                .containsExactlyInAnyOrder(
+                        tuple(1L, Set.of(symbol), "Headline1"),
+                        tuple(2L, Set.of(symbol), "Headline2")
+                );
+        assertThat(symbols.getLast().getNews())
+                .isEmpty();
 
         // when: attempt to save duplicate and a new record
         News dup = new News()
                 .setExternalId(1L)
-                .setSymbol(symbol)
+                .addSymbol(symbol)
                 .setDate(LocalDateTime.now())
                 .setHeadline("Headline1-dup")
                 .setSummary("Summary-dup")
@@ -89,7 +101,7 @@ class NewsJpaServiceTest {
 
         News n3 = new News()
                 .setExternalId(3L)
-                .setSymbol(symbol2)
+                .addSymbol(symbol2)
                 .setDate(LocalDateTime.now())
                 .setHeadline("Headline3")
                 .setSummary("Summary3")
@@ -103,18 +115,18 @@ class NewsJpaServiceTest {
         // then: only new record returned
         assertThat(second)
                 .hasSize(1)
-                .extracting(News::getExternalId, News::getSymbol, News::getHeadline)
-                .containsExactly(tuple(3L, symbol2, "Headline3"));
+                .extracting(News::getExternalId, News::getSymbols, News::getHeadline)
+                .containsExactly(tuple(3L, Set.of(symbol2), "Headline3"));
 
         // and: repository contains 3 entries total
         List<News> all = jpaService.findAll();
         assertThat(all)
                 .hasSize(3)
-                .extracting(News::getExternalId, News::getSymbol, News::getHeadline)
+                .extracting(News::getExternalId, News::getSymbols, News::getHeadline)
                 .containsExactlyInAnyOrder(
-                        tuple(1L, symbol, "Headline1"),
-                        tuple(2L, symbol, "Headline2"),
-                        tuple(3L, symbol2, "Headline3")
+                        tuple(1L, Set.of(symbol), "Headline1"),
+                        tuple(2L, Set.of(symbol), "Headline2"),
+                        tuple(3L, Set.of(symbol2), "Headline3")
                 );
     }
 }

@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.stream.StreamSupport;
 
@@ -37,6 +38,22 @@ public class UniqueConstraintWearyJpaServiceDelegate<T extends JpaEntity> {
         return StreamSupport.stream(entities.spliterator(), false)
                 .filter(entity -> existingFinder.apply(entity).isEmpty())
                 .map(repository::save)
+                .toList();
+    }
+
+    /**
+     * @param repository      repository
+     * @param existingFinder  unique entity finder function. Usually findByPrimaryKey
+     * @param existingUpdater entity updater function
+     * @param entities        entities
+     * @return the updated entities as well as the newly saved ones
+     */
+    public List<T> createOrUpdate(JpaRepository<T, ?> repository, Function<T, Optional<T>> existingFinder,
+                                  BinaryOperator<T> existingUpdater, List<T> entities) {
+        return entities.stream()
+                .map(entity -> existingFinder.apply(entity)
+                        .map(existing -> existingUpdater.apply(existing, entity))
+                        .orElseGet(() -> repository.save(entity)))
                 .toList();
     }
 }

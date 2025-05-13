@@ -79,7 +79,7 @@ public class DataManager {
     public List<News> retrieveLatestNews(List<String> symbolNames) throws ClientException, JsonProcessingException {
         List<Symbol> symbols = symbolNames.stream().map(this.symbolService::getOrCreateByName).toList();
         List<News> news = this.newsClient.retrieveLatestNews(symbols);
-        this.newsService.createIgnoringDuplicates(news, false);
+        this.newsService.createOrUpdate(news, false);
         return news;
     }
 

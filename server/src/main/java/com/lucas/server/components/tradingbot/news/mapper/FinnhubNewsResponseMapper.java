@@ -43,7 +43,7 @@ public class FinnhubNewsResponseMapper implements Mapper<JsonNode, News> {
     }
 
     private News map(JsonNode json, Symbol symbol) throws JsonProcessingException {
-        return this.map(json).setSymbol(symbol);
+        return this.map(json).addSymbol(symbol);
     }
 
     public List<News> mapAll(JsonNode json, Symbol symbol) throws JsonProcessingException {

@@ -10,7 +10,7 @@ import java.util.Optional;
 @Repository
 public interface NewsRepository extends JpaRepository<News, Long> {
 
-    Slice<News> findBySymbol_Id(Long symbolId, PageRequest publicationDate);
+    Slice<News> findBySymbols_Id(Long symbolId, PageRequest pageRequest);
 
     Optional<News> findByExternalId(Long externalId);
 }
