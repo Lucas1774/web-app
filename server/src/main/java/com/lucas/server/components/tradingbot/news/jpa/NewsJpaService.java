@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import java.text.MessageFormat;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class NewsJpaService implements JpaService<News> {
@@ -59,13 +58,13 @@ public class NewsJpaService implements JpaService<News> {
     }
 
     @Transactional(rollbackOn = {IllegalStateException.class, ClientException.class})
-    public News generateEmbeddingsByNewsId(Long id) throws IllegalStateException, ClientException {
-        Optional<News> news = this.repository.findById(id);
+    public List<News> generateEmbeddingsByNewsId(List<Long> ids) throws IllegalStateException, ClientException {
+        List<News> news = this.repository.findAllByIdIn(ids);
         if (news.isEmpty()) {
             throw new IllegalStateException(MessageFormat.format(Constants.ENTITY_NOT_FOUND_ERROR, "news"));
         }
         NewsListener.setActive(false);
-        return this.embeddingsClient.embed(news.get());
+        return this.embeddingsClient.embed(news);
     }
 
     public List<News> createOrUpdate(List<News> entities, boolean triggerEntityCallback) {

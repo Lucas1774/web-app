@@ -27,41 +27,41 @@ public class MarketDataController {
         this.jpaService = jpaService;
     }
 
-    @GetMapping("/{symbol}")
-    public ResponseEntity<MarketData> fetchAndSave(@PathVariable String symbol) {
-        try {
-            return ResponseEntity.ok(this.jpaService.retrieveMarketData(symbol));
-        } catch (JsonProcessingException | ClientException e) {
-            logger.error(e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
-    @GetMapping("/historic/{symbol}")
-    public ResponseEntity<List<MarketData>> fetchAndSaveHistoric(@PathVariable String symbol) {
-        try {
-            return ResponseEntity.ok(this.jpaService.retrieveWeeklySeries(symbol));
-        } catch (JsonProcessingException | ClientException e) {
-            logger.error(e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
-    @GetMapping("/batch")
+    @GetMapping("last")
     public ResponseEntity<List<MarketData>> fetchAndSaveAll() {
         try {
-            return ResponseEntity.ok(this.jpaService.retrieveMarketData(Constants.SP500_SYMBOLS));
+            return ResponseEntity.ok(this.jpaService.retrieveMarketData(Constants.SP500_SYMBOLS, Constants.Granularity.DAILY));
         } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    @GetMapping("/batch/{symbols}")
+    @GetMapping("last/{symbols}")
     public ResponseEntity<List<MarketData>> fetchAndSaveSome(@PathVariable List<String> symbols) {
         try {
-            return ResponseEntity.ok(this.jpaService.retrieveMarketData(symbols));
+            return ResponseEntity.ok(this.jpaService.retrieveMarketData(symbols, Constants.Granularity.DAILY));
         } catch (ClientException | JsonProcessingException e) {
+            logger.error(e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/historic")
+    public ResponseEntity<List<MarketData>> fetchAndSaveHistoricAll() {
+        try {
+            return ResponseEntity.ok(this.jpaService.retrieveMarketData(Constants.SP500_SYMBOLS, Constants.Granularity.WEEKLY));
+        } catch (JsonProcessingException | ClientException e) {
+            logger.error(e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/historic/{symbols}")
+    public ResponseEntity<List<MarketData>> fetchAndSaveHistoricSom(@PathVariable List<String> symbols) {
+        try {
+            return ResponseEntity.ok(this.jpaService.retrieveMarketData(symbols, Constants.Granularity.WEEKLY));
+        } catch (JsonProcessingException | ClientException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }

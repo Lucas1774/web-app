@@ -36,12 +36,7 @@ public class FinnhubNewsClient {
         this.apiKey = apiKey;
     }
 
-    public List<News> retrieveLatestNews(Symbol symbol) throws JsonProcessingException, ClientException {
-        LocalDate to = LocalDate.now();
-        return this.retrieveNewsByDateRange(symbol, to.minusDays(1), to);
-    }
-
-    public List<News> retrieveNewsByDateRange(Symbol symbol, LocalDate from, LocalDate to) throws JsonProcessingException, ClientException {
+    private List<News> retrieveNewsByDateRange(Symbol symbol, LocalDate from, LocalDate to) throws JsonProcessingException, ClientException {
         logger.info(Constants.RETRIEVING_NEWS_INFO, symbol);
         String url = UriComponentsBuilder.fromUriString(endpoint + Constants.COMPANY_NEWS)
                 .queryParam("symbol", symbol.getName())
@@ -53,10 +48,10 @@ public class FinnhubNewsClient {
         return mapper.mapAll(this.httpRequestClient.fetch(url), symbol);
     }
 
-    public List<News> retrieveLatestNews(List<Symbol> symbols) throws ClientException, JsonProcessingException {
+    public List<News> retrieveNewsByDateRange(List<Symbol> symbols, LocalDate from, LocalDate to) throws ClientException, JsonProcessingException {
         Map<Long, News> newsByExternalId = new HashMap<>();
         for (Symbol symbol : symbols) {
-            List<News> updated = this.retrieveLatestNews(symbol);
+            List<News> updated = this.retrieveNewsByDateRange(symbol, from, to);
             for (News news : updated) {
                 newsByExternalId
                         .computeIfAbsent(news.getExternalId(), id -> news)

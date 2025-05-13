@@ -29,43 +29,48 @@ public class NewsController {
         this.jpaService = jpaService;
     }
 
-    @GetMapping("/{symbol}")
-    public ResponseEntity<List<News>> fetchAndSaveLatest(@PathVariable String symbol) {
+    @GetMapping("/last")
+    public ResponseEntity<List<News>> fetchAndSaveAll() {
+        LocalDate to = LocalDate.now();
+        LocalDate from = to.minusDays(1);
         try {
-            return ResponseEntity.ok(this.jpaService.retrieveLatestNews(symbol));
-        } catch (JsonProcessingException | ClientException e) {
+            return ResponseEntity.ok(this.jpaService.retrieveNewsByDateRange(Constants.SP500_SYMBOLS, from, to));
+        } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    @GetMapping("/historic/{symbol}/{from}")
-    public ResponseEntity<List<News>> fetchAndSaveHistoric(
-            @PathVariable String symbol,
+    @GetMapping("/last/{symbols}")
+    public ResponseEntity<List<News>> fetchAndSaveSome(@PathVariable List<String> symbols) {
+        LocalDate to = LocalDate.now();
+        LocalDate from = to.minusDays(1);
+        try {
+            return ResponseEntity.ok(this.jpaService.retrieveNewsByDateRange(symbols, from, to));
+        } catch (ClientException | JsonProcessingException e) {
+            logger.error(e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/historic/{from}")
+    public ResponseEntity<List<News>> fetchAndSaveHistoricAll(
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from) {
         try {
-            return ResponseEntity.ok(this.jpaService.retrieveNewsByDateRange(symbol, from, LocalDate.now()));
+            return ResponseEntity.ok(this.jpaService.retrieveNewsByDateRange(Constants.SP500_SYMBOLS, from, LocalDate.now()));
         } catch (JsonProcessingException | ClientException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    @GetMapping("/batch")
-    public ResponseEntity<List<News>> fetchAndSaveAll() {
+    @GetMapping("/historic/{from}/{symbols}")
+    public ResponseEntity<List<News>> fetchAndSaveHistoricSome(
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @PathVariable List<String> symbols) {
         try {
-            return ResponseEntity.ok(this.jpaService.retrieveLatestNews(Constants.SP500_SYMBOLS));
-        } catch (ClientException | JsonProcessingException e) {
-            logger.error(e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
-    @GetMapping("/batch/{symbols}")
-    public ResponseEntity<List<News>> fetchAndSaveSome(@PathVariable List<String> symbols) {
-        try {
-            return ResponseEntity.ok(this.jpaService.retrieveLatestNews(symbols));
-        } catch (ClientException | JsonProcessingException e) {
+            return ResponseEntity.ok(this.jpaService.retrieveNewsByDateRange(symbols, from, LocalDate.now()));
+        } catch (JsonProcessingException | ClientException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }

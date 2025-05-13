@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/embeddings")
 public class EmbeddingsController {
@@ -24,10 +26,10 @@ public class EmbeddingsController {
         this.service = service;
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<News> generateEmbeddingsByNewsId(@PathVariable Long id) {
+    @GetMapping("/{ids}")
+    public ResponseEntity<List<News>> generateEmbeddingsByNewsId(@PathVariable List<Long> ids) {
         try {
-            return ResponseEntity.ok(this.service.generateEmbeddingsByNewsId(id));
+            return ResponseEntity.ok(this.service.generateEmbeddingsByNewsId(ids));
         } catch (IllegalStateException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();

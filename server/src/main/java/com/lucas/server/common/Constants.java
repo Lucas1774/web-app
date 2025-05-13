@@ -7,6 +7,11 @@ public class Constants {
     private Constants() {
     }
 
+    public enum Granularity {
+        DAILY,
+        WEEKLY
+    }
+
     public static final int SUDOKU_SIZE = 9;
     public static final int[] DIGITS = {1, 2, 3, 4, 5, 6, 7, 8, 9};
     public static final int SUDOKU_NUMBER_OF_CELLS = 81;
@@ -18,6 +23,7 @@ public class Constants {
     public static final String TIME_SERIES_WEEKLY = "TIME_SERIES_WEEKLY";
     public static final int HISTORY_DAYS_COUNT = 14;
     public static final int NEWS_COUNT = 5;
+    public static final int MAX_SYMBOLS_TO_TRIGGER_NEWS_EMBEDDINGS_GENERATION = 2;
     public static final String CONTENT = "content";
     public static final String ROLE = "role";
 

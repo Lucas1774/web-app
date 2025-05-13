@@ -17,9 +17,13 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static com.lucas.server.common.Constants.Granularity;
+import static com.lucas.server.common.Constants.MAX_SYMBOLS_TO_TRIGGER_NEWS_EMBEDDINGS_GENERATION;
 
 @Service
 public class DataManager {
@@ -29,8 +33,12 @@ public class DataManager {
     private final NewsJpaService newsService;
     private final RecommendationChatCompletionClient recommendationsClient;
     private final FinnhubNewsClient newsClient;
-    private final TwelveDataMarketDataClient twelveDataMarketDataClient;
-    private final AlphavantageMarketDataClient alphavantageMarketDataClient;
+    private final Map<Granularity, GranularityToMarketDataFunction> granularityToClientRunner;
+
+    @FunctionalInterface
+    private interface GranularityToMarketDataFunction {
+        List<MarketData> apply(List<Symbol> symbols) throws ClientException, JsonProcessingException;
+    }
 
     public DataManager(SymbolJpaService symbolService, MarketDataJpaService marketDataService, NewsJpaService newsService,
                        RecommendationChatCompletionClient recommendationsClient, FinnhubNewsClient newsClient,
@@ -40,8 +48,11 @@ public class DataManager {
         this.newsService = newsService;
         this.recommendationsClient = recommendationsClient;
         this.newsClient = newsClient;
-        this.twelveDataMarketDataClient = twelveDataMarketDataClient;
-        this.alphavantageMarketDataClient = alphavantageMarketDataClient;
+        this.granularityToClientRunner = new EnumMap<>(Map.of(
+                Granularity.DAILY, twelveDataMarketDataClient::retrieveMarketData,
+                Granularity.WEEKLY, symbols ->
+                        alphavantageMarketDataClient.retrieveMarketData(symbols, Granularity.WEEKLY)
+        ));
     }
 
     @Transactional(rollbackOn = {IllegalStateException.class, ClientException.class, IOException.class})
@@ -62,45 +73,17 @@ public class DataManager {
     }
 
     @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})
-    public List<News> retrieveLatestNews(String symbolName) throws ClientException, JsonProcessingException {
-        List<News> news = this.newsClient.retrieveLatestNews(this.symbolService.getOrCreateByName(symbolName));
-        this.newsService.createIgnoringDuplicates(news, true);
+    public List<News> retrieveNewsByDateRange(List<String> symbolNames, LocalDate from, LocalDate now) throws ClientException, JsonProcessingException {
+        List<Symbol> symbols = symbolNames.stream().distinct().map(this.symbolService::getOrCreateByName).toList();
+        List<News> news = this.newsClient.retrieveNewsByDateRange(symbols, from, now);
+        this.newsService.createOrUpdate(news, MAX_SYMBOLS_TO_TRIGGER_NEWS_EMBEDDINGS_GENERATION >= symbols.size());
         return news;
     }
 
     @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})
-    public List<News> retrieveNewsByDateRange(String symbolName, LocalDate from, LocalDate now) throws ClientException, JsonProcessingException {
-        List<News> news = this.newsClient.retrieveNewsByDateRange(this.symbolService.getOrCreateByName(symbolName), from, now);
-        this.newsService.createIgnoringDuplicates(news, true);
-        return news;
-    }
-
-    @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})
-    public List<News> retrieveLatestNews(List<String> symbolNames) throws ClientException, JsonProcessingException {
-        List<Symbol> symbols = symbolNames.stream().map(this.symbolService::getOrCreateByName).toList();
-        List<News> news = this.newsClient.retrieveLatestNews(symbols);
-        this.newsService.createOrUpdate(news, false);
-        return news;
-    }
-
-    @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})
-    public MarketData retrieveMarketData(String symbolName) throws ClientException, JsonProcessingException {
-        MarketData md = this.twelveDataMarketDataClient.retrieveMarketData(this.symbolService.getOrCreateByName(symbolName));
-        this.marketDataService.getOrCreate(md);
-        return md;
-    }
-
-    @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})
-    public List<MarketData> retrieveWeeklySeries(String symbolName) throws ClientException, JsonProcessingException {
-        List<MarketData> mds = this.alphavantageMarketDataClient.retrieveWeeklySeries(this.symbolService.getOrCreateByName(symbolName));
-        this.marketDataService.createIgnoringDuplicates(mds);
-        return mds;
-    }
-
-    @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})
-    public List<MarketData> retrieveMarketData(List<String> symbolNames) throws ClientException, JsonProcessingException {
-        List<Symbol> symbols = symbolNames.stream().map(this.symbolService::getOrCreateByName).toList();
-        List<MarketData> mds = this.twelveDataMarketDataClient.retrieveMarketData(symbols);
+    public List<MarketData> retrieveMarketData(List<String> symbolNames, Granularity granularity) throws ClientException, JsonProcessingException {
+        List<Symbol> symbols = symbolNames.stream().distinct().map(this.symbolService::getOrCreateByName).toList();
+        List<MarketData> mds = granularityToClientRunner.get(granularity).apply(symbols);
         this.marketDataService.createIgnoringDuplicates(mds);
         return mds;
     }

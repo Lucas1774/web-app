@@ -63,7 +63,7 @@ class NewsListenerTest {
         // then
         verify(embeddingsClient, times(1)).embed(previous);
         verify(embeddingsClient, times(1)).embed(current);
-        verify(embeddingsClient, times(2)).embed(any());
+        verify(embeddingsClient, times(2)).embed((News) any());
     }
 
     @Test
@@ -91,6 +91,6 @@ class NewsListenerTest {
         // then
         verify(embeddingsClient, times(0)).embed(previous);
         verify(embeddingsClient, times(0)).embed(current);
-        verify(embeddingsClient, times(0)).embed(any());
+        verify(embeddingsClient, times(0)).embed((News) any());
     }
 }

@@ -1,5 +1,6 @@
 package com.lucas.server.components.tradingbot.marketdata.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.lucas.server.common.Constants;
 import com.lucas.server.common.HttpRequestClient;
 import com.lucas.server.common.exception.ClientException;
@@ -13,8 +14,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
+
+import static com.lucas.server.common.Constants.Granularity;
 
 @Component
 public class AlphavantageMarketDataClient {
@@ -24,6 +26,21 @@ public class AlphavantageMarketDataClient {
     private final String endpoint;
     private final String apiKey;
     private static final Logger logger = LoggerFactory.getLogger(AlphavantageMarketDataClient.class);
+    private static final EnumMap<Granularity, String> granularityToFunctionPath = new EnumMap<>(Map.of(
+            Granularity.DAILY, Constants.ALPHAVANTAGE_QUOTE_PATH,
+            Granularity.WEEKLY, Constants.TIME_SERIES_WEEKLY
+    ));
+    private static final Map<Granularity, JsonToMarketDataFunction> granularityToMapper = Map.of(
+            Granularity.DAILY, (s, m, j) -> List.of(m.map(j).setSymbol(s)),
+            Granularity.WEEKLY, (s, m, j) -> m.mapAll(j, s).stream()
+                    .sorted(Comparator.comparing(MarketData::getDate))
+                    .toList()
+    );
+
+    @FunctionalInterface
+    private interface JsonToMarketDataFunction {
+        List<MarketData> apply(Symbol symbol, AlphavantageMarketResponseMapper mapper, JsonNode jsonNode) throws JsonProcessingException;
+    }
 
     public AlphavantageMarketDataClient(AlphavantageMarketResponseMapper mapper, HttpRequestClient httpRequestClient,
                                         @Value("${alphavantage.endpoint}") String endpoint, @Value("${alphavantage.api-key}") String apiKey) {
@@ -33,30 +50,28 @@ public class AlphavantageMarketDataClient {
         this.apiKey = apiKey;
     }
 
-    public MarketData retrieveMarketData(Symbol symbol) throws JsonProcessingException, ClientException {
+    private List<MarketData> retrieveMarketData(Symbol symbol, Granularity granularity) throws JsonProcessingException, ClientException {
         logger.info(Constants.RETRIEVING_MARKET_DATA_INFO, symbol);
         String url = UriComponentsBuilder
                 .fromUriString(endpoint)
-                .queryParam("function", Constants.ALPHAVANTAGE_QUOTE_PATH)
+                .queryParam("function", granularityToFunctionPath.get(granularity))
                 .queryParam("symbol", symbol.getName())
                 .queryParam("apikey", apiKey)
                 .toUriString();
 
-        return mapper.map(this.httpRequestClient.fetch(url)).setSymbol(symbol);
+        return granularityToMapper.get(granularity).apply(symbol, mapper, httpRequestClient.fetch(url));
     }
 
-    public List<MarketData> retrieveWeeklySeries(Symbol symbol) throws JsonProcessingException, ClientException {
-        logger.info(Constants.RETRIEVING_MARKET_DATA_INFO, symbol);
-        String url = UriComponentsBuilder
-                .fromUriString(endpoint)
-                .queryParam("function", Constants.TIME_SERIES_WEEKLY)
-                .queryParam("symbol", symbol.getName())
-                .queryParam("apikey", apiKey)
-                .toUriString();
-
-        return mapper.mapAll(this.httpRequestClient.fetch(url), symbol)
-                .stream()
-                .sorted(Comparator.comparing(MarketData::getDate))
-                .toList();
+    public List<MarketData> retrieveMarketData(List<Symbol> symbols, Granularity granularity) throws ClientException, JsonProcessingException {
+        List<MarketData> res = new ArrayList<>();
+        for (Symbol symbol : symbols) {
+            res.addAll(this.retrieveMarketData(symbol, granularity));
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+        return res;
     }
 }
