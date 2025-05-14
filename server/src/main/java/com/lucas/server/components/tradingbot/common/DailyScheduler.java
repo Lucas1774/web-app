@@ -33,7 +33,7 @@ public class DailyScheduler {
     private void updateMarketData() {
         try {
             List<MarketData> updatedMds = dataManager.retrieveMarketData(Constants.SP500_SYMBOLS, Constants.Granularity.DAILY);
-            logger.info(Constants.SCHEDULED_TASK_SUCCESS_INFO, updatedMds);
+            logger.info(Constants.SCHEDULED_TASK_SUCCESS_INFO, "market data", updatedMds);
         } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);
         }
@@ -44,7 +44,7 @@ public class DailyScheduler {
         LocalDate from = to.minusDays(1);
         try {
             List<News> updatedNews = dataManager.retrieveNewsByDateRange(Constants.SP500_SYMBOLS, from, to);
-            logger.info(Constants.SCHEDULED_TASK_SUCCESS_INFO, updatedNews);
+            logger.info(Constants.SCHEDULED_TASK_SUCCESS_INFO, "news", updatedNews);
         } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);
         }

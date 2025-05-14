@@ -6,6 +6,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -20,6 +21,7 @@ public class HttpRequestClient {
         this.restTemplate = restTemplate;
     }
 
+    @Retryable(retryFor = ClientException.class, maxAttempts = Constants.SCHEDULED_TASK_MAX_ATTEMPTS)
     public JsonNode fetch(String url) throws ClientException {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));

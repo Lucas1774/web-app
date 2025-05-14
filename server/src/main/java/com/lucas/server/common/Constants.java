@@ -24,13 +24,14 @@ public class Constants {
     public static final int HISTORY_DAYS_COUNT = 14;
     public static final int NEWS_COUNT = 5;
     public static final int MAX_SYMBOLS_TO_TRIGGER_NEWS_EMBEDDINGS_GENERATION = 2;
+    public static final int SCHEDULED_TASK_MAX_ATTEMPTS = 5;
     public static final String CONTENT = "content";
     public static final String ROLE = "role";
 
     public static final String EMBEDDING_GENERATION_FAILED_WARN = "Couldn't fetch embeddings for {}";
     public static final String SUDOKU_IGNORED_MALFORMED_JSON_WARN = "Couldn't deserialize sudoku from raw data {}";
     public static final String KPI_RETURNED_ZERO_WARN = "{}: Value is zero";
-    public static final String SCHEDULED_TASK_SUCCESS_INFO = "Successfully fetched market data for {}";
+    public static final String SCHEDULED_TASK_SUCCESS_INFO = "Successfully fetched {}: {}";
     public static final String RETRIEVING_MARKET_DATA_INFO = "Retrieving market data for {}";
     public static final String RETRIEVING_NEWS_INFO = "Retrieving news for {}";
     public static final String GENERATING_RECOMMENDATIONS_INFO = "Generating recommendations for {}";
