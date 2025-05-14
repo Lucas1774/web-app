@@ -11,6 +11,7 @@ import org.hibernate.annotations.Array;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Objects;
@@ -58,6 +59,12 @@ public class News implements JpaEntity {
 
     @Column(name = "image_url", length = 512)
     private String image;
+
+    @Column(length = 8)
+    private String sentiment;
+
+    @Column(name = "sentiment_confidence", precision = 15, scale = 4)
+    private BigDecimal sentimentConfidence;
 
     @Column(name = "embedding")
     @JdbcTypeCode(SqlTypes.VECTOR)

@@ -49,6 +49,8 @@ services:
       TWELVE_DATA_KEY: ${TWELVE_DATA_KEY}
       TWELVE_DATA_ENDPOINT: ${TWELVE_DATA_ENDPOINT}
 
+      SENTIMENT_URL: ${SENTIMENT_URL}
+
     restart: on-failure
 
 volumes:

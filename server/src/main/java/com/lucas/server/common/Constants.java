@@ -12,19 +12,20 @@ public class Constants {
         WEEKLY
     }
 
-    public static final int SUDOKU_SIZE = 9;
     public static final int[] DIGITS = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+    public static final int SUDOKU_SIZE = 9;
     public static final int SUDOKU_NUMBER_OF_CELLS = 81;
+    public static final int HISTORY_DAYS_COUNT = 14;
+    public static final int NEWS_COUNT = 10;
+    public static final int MAX_SYMBOLS_TO_TRIGGER_NEWS_EMBEDDINGS_GENERATION = 2;
+    public static final int REQUEST_MAX_ATTEMPTS = 5;
     public static final String NA = "N/A";
     public static final String INVALID_EXPRESSION = "Invalid expression";
     public static final String COMPANY_NEWS = "/company-news";
     public static final String QUOTE = "/quote";
+    public static final String ANALYZE = "/analyze";
     public static final String ALPHAVANTAGE_QUOTE_PATH = "GLOBAL_QUOTE";
     public static final String TIME_SERIES_WEEKLY = "TIME_SERIES_WEEKLY";
-    public static final int HISTORY_DAYS_COUNT = 14;
-    public static final int NEWS_COUNT = 5;
-    public static final int MAX_SYMBOLS_TO_TRIGGER_NEWS_EMBEDDINGS_GENERATION = 2;
-    public static final int SCHEDULED_TASK_MAX_ATTEMPTS = 5;
     public static final String CONTENT = "content";
     public static final String ROLE = "role";
 
@@ -36,6 +37,7 @@ public class Constants {
     public static final String RETRIEVING_NEWS_INFO = "Retrieving news for {}";
     public static final String GENERATING_RECOMMENDATIONS_INFO = "Generating recommendations for {}";
     public static final String GENERATING_EMBEDDINGS_INFO = "Generating embeddings for {}";
+    public static final String GENERATING_SENTIMENT_INFO = "Generating sentiment for {}";
     public static final String KPI_EMPTY_DATA_ERROR = "{0}: Provided data collection is empty";
     public static final String JSON_MAPPING_ERROR = "Error mapping {0} JSON";
     public static final String ENTITY_NOT_FOUND_ERROR = "{0}: Entity not found";

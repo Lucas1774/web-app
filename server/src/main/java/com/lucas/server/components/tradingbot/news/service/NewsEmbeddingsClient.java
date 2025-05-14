@@ -22,7 +22,7 @@ public class NewsEmbeddingsClient {
         this.client = client;
     }
 
-    @Retryable(retryFor = ClientException.class, maxAttempts = Constants.SCHEDULED_TASK_MAX_ATTEMPTS)
+    @Retryable(retryFor = ClientException.class, maxAttempts = Constants.REQUEST_MAX_ATTEMPTS)
     public News embed(News news) throws ClientException {
         logger.info(Constants.GENERATING_EMBEDDINGS_INFO, news);
         String contentToEmbed = news.getHeadline();
@@ -45,7 +45,7 @@ public class NewsEmbeddingsClient {
         }
     }
 
-    @Retryable(retryFor = ClientException.class, maxAttempts = Constants.SCHEDULED_TASK_MAX_ATTEMPTS)
+    @Retryable(retryFor = ClientException.class, maxAttempts = Constants.REQUEST_MAX_ATTEMPTS)
     public List<News> embed(List<News> newsList) throws ClientException {
         List<News> embeddedNews = new ArrayList<>(newsList.size());
         for (News news : newsList) {

@@ -84,16 +84,18 @@ class RecommendationChatCompletionClientTest {
         }
         marketDataService.createIgnoringDuplicates(mds.stream().sorted(Comparator.comparing(MarketData::getDate)).toList());
 
-        // given: insert 6 news items. Needs to be greater than the history days
+        // given: insert 15 news items. Needs to be greater than the news per symbol and day
         List<News> articles = new ArrayList<>();
-        for (int i = 1; i <= 6; i++) {
+        for (int i = 1; i <= 15; i++) {
             News news = new News()
                     .addSymbol(symbol)
                     .setExternalId((long) i)
                     .setUrl("https://example.com/news/" + i)
                     .setHeadline("Headline " + i)
                     .setSummary("Summary " + i)
-                    .setDate(today.minusDays(i).atStartOfDay());
+                    .setDate(today.minusDays(i).atStartOfDay())
+                    .setSentiment(i % 3 == 0 ? "positive" : i % 2 == 0 ? "neutral" : "negative")
+                    .setSentimentConfidence(BigDecimal.valueOf((i * 6) % 100));
             articles.add(news);
         }
         newsService.createIgnoringDuplicates(articles, false);
@@ -120,7 +122,8 @@ class RecommendationChatCompletionClientTest {
         assertThat(report.news())
                 .hasSize(Constants.NEWS_COUNT)
                 .extracting(AssetReportToMustacheMapper.NewsItemRaw::headline)
-                .containsExactly("Headline 1", "Headline 2", "Headline 3", "Headline 4", "Headline 5");
+                .containsExactly("Headline 1", "Headline 3", "Headline 5", "Headline 6", "Headline 7",
+                        "Headline 9", "Headline 11", "Headline 12", "Headline 13", "Headline 15");
 
         // then: KPIs match the kpiGenerator calculations
         List<MarketData> mdHistory = marketDataService.getTopForSymbolId(

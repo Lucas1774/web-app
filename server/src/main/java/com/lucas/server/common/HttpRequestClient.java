@@ -21,13 +21,26 @@ public class HttpRequestClient {
         this.restTemplate = restTemplate;
     }
 
-    @Retryable(retryFor = ClientException.class, maxAttempts = Constants.SCHEDULED_TASK_MAX_ATTEMPTS)
+    @Retryable(retryFor = ClientException.class, maxAttempts = Constants.REQUEST_MAX_ATTEMPTS)
     public JsonNode fetch(String url) throws ClientException {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
         HttpEntity<Void> request = new HttpEntity<>(headers);
         try {
             return this.restTemplate.exchange(url, HttpMethod.GET, request, JsonNode.class).getBody();
+        } catch (Exception e) {
+            throw new ClientException(e);
+        }
+    }
+
+    @Retryable(retryFor = ClientException.class, maxAttempts = Constants.REQUEST_MAX_ATTEMPTS)
+    public JsonNode fetch(String url, String body) throws ClientException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+        headers.setContentType(MediaType.TEXT_PLAIN);
+        HttpEntity<String> request = new HttpEntity<>(body, headers);
+        try {
+            return this.restTemplate.exchange(url, HttpMethod.POST, request, JsonNode.class).getBody();
         } catch (Exception e) {
             throw new ClientException(e);
         }

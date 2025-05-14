@@ -3,15 +3,18 @@ package com.lucas.server.components.tradingbot.news.jpa;
 import com.lucas.server.common.Constants;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.common.exception.IllegalStateException;
+import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.common.jpa.JpaService;
 import com.lucas.server.common.jpa.UniqueConstraintWearyJpaServiceDelegate;
 import com.lucas.server.components.tradingbot.news.service.NewsEmbeddingsClient;
+import com.lucas.server.components.tradingbot.news.service.NewsSentimentClient;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.text.MessageFormat;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -20,11 +23,14 @@ public class NewsJpaService implements JpaService<News> {
     private final NewsRepository repository;
     private final UniqueConstraintWearyJpaServiceDelegate<News> delegate;
     private final NewsEmbeddingsClient embeddingsClient;
+    private final NewsSentimentClient sentimentClient;
 
-    public NewsJpaService(NewsRepository repository, UniqueConstraintWearyJpaServiceDelegate<News> delegate, NewsEmbeddingsClient embeddingsClient) {
+    public NewsJpaService(NewsRepository repository, UniqueConstraintWearyJpaServiceDelegate<News> delegate,
+                          NewsEmbeddingsClient embeddingsClient, NewsSentimentClient sentimentClient) {
         this.repository = repository;
         this.delegate = delegate;
         this.embeddingsClient = embeddingsClient;
+        this.sentimentClient = sentimentClient;
     }
 
     @Override
@@ -53,7 +59,7 @@ public class NewsJpaService implements JpaService<News> {
     }
 
     public List<News> getTopForSymbolId(Long symbolId, int limit) {
-        return this.repository.findBySymbols_Id(symbolId, PageRequest.of(0, limit, Sort.by("date").descending()))
+        return this.repository.findBySymbols_IdAndSentimentNot(symbolId, "neutral", PageRequest.of(0, limit, Sort.by("date").descending()))
                 .getContent();
     }
 
@@ -80,5 +86,15 @@ public class NewsJpaService implements JpaService<News> {
                     return oldEntity;
                 },
                 entities);
+    }
+
+    public List<News> generateSentiment(List<Long> list, LocalDate from, LocalDate to)
+            throws IllegalStateException, ClientException, JsonProcessingException {
+        List<News> news = this.repository.findAllBySymbols_IdInAndDateBetween(list, from.atStartOfDay(), to.plusDays(1).atStartOfDay());
+        if (news.isEmpty()) {
+            throw new IllegalStateException(MessageFormat.format(Constants.ENTITY_NOT_FOUND_ERROR, "news"));
+        }
+        NewsListener.setActive(false);
+        return this.sentimentClient.generateSentiment(news);
     }
 }

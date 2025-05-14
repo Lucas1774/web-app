@@ -29,8 +29,8 @@ class AssetReportToMustacheMapperTest {
                 // It should render the single price point line:
                 .contains("2025-05-01: O100 H110 L90 C105 V1234")
                 // It should render the news headline, and leave sentiment blank:
-                .contains("• 2025-05-01: \\\"Headline One\\\" (Sentiment: ) Summary: First summary")
-                .contains("• 2025-05-02: \\\"Headline Two\\\" (Sentiment: ) Summary: Second summary")
+                .contains("• 2025-05-01: \\\"Headline One\\\" (Sentiment: positive. Confidence: 54.4412%) Summary: First summary")
+                .contains("• 2025-05-02: \\\"Headline Two\\\" (Sentiment: negative. Confidence: 54.4412%) Summary: Second summary")
                 // And placeholders for nulls (position, PnL, etc.) appear as empty
                 .contains("Current Position: N/A shares (N/A EUR)")
                 .contains("Avg Entry Price: N/A EUR")
@@ -43,9 +43,9 @@ class AssetReportToMustacheMapperTest {
                 new BigDecimal("90"), new BigDecimal("105"), 1234L
         );
         List<AssetReportToMustacheMapper.NewsItemRaw> news = List.of(
-                new AssetReportToMustacheMapper.NewsItemRaw("Headline One", null, "First summary",
+                new AssetReportToMustacheMapper.NewsItemRaw("Headline One", "positive", BigDecimal.valueOf(54.4412), "First summary",
                         LocalDate.of(2025, 5, 1).atStartOfDay()),
-                new AssetReportToMustacheMapper.NewsItemRaw("Headline Two", null, "Second summary",
+                new AssetReportToMustacheMapper.NewsItemRaw("Headline Two", "negative", BigDecimal.valueOf(54.4412), "Second summary",
                         LocalDate.of(2025, 5, 2).atStartOfDay())
         );
         return new AssetReportToMustacheMapper.AssetReportRaw("FOO",

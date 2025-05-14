@@ -13,7 +13,6 @@ import com.lucas.server.components.tradingbot.news.jpa.NewsJpaService;
 import com.lucas.server.components.tradingbot.news.service.FinnhubNewsClient;
 import com.lucas.server.components.tradingbot.recommendation.service.RecommendationChatCompletionClient;
 import jakarta.transaction.Transactional;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -71,6 +70,13 @@ public class DataManager {
                 ));
 
         return this.recommendationsClient.getRecommendations(marketData, newsData);
+    }
+
+    @Transactional
+    public List<News> generateSentiment(List<String> symbolNames, LocalDate from, LocalDate to)
+            throws IllegalStateException, ClientException, JsonProcessingException {
+        List<Symbol> symbols = symbolNames.stream().map(this.symbolService::getOrCreateByName).toList();
+        return this.newsService.generateSentiment(symbols.stream().map(Symbol::getId).toList(), from, to);
     }
 
     @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})

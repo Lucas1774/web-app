@@ -58,7 +58,7 @@ public class MarketDataController {
     }
 
     @GetMapping("/historic/{symbols}")
-    public ResponseEntity<List<MarketData>> fetchAndSaveHistoricSom(@PathVariable List<String> symbols) {
+    public ResponseEntity<List<MarketData>> fetchAndSaveHistoricSome(@PathVariable List<String> symbols) {
         try {
             return ResponseEntity.ok(this.jpaService.retrieveMarketData(symbols, Constants.Granularity.WEEKLY));
         } catch (JsonProcessingException | ClientException e) {

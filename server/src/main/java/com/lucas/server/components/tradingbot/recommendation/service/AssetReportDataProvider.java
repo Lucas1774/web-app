@@ -32,11 +32,11 @@ public class AssetReportDataProvider {
         BigDecimal atr14 = kpiGenerator.computeAtr(mdHistory);
         BigDecimal volatility = kpiGenerator.computeVolatility(mdHistory);
 
-        // TODO: generate missing attributes
         List<NewsItemRaw> news = articles.stream()
-                .map(a -> new NewsItemRaw(a.getHeadline(), null, a.getSummary(), a.getDate()))
+                .map(a -> new NewsItemRaw(a.getHeadline(), a.getSentiment(), a.getSentimentConfidence(), a.getSummary(), a.getDate()))
                 .toList();
 
+        // TODO: generate missing attributes
         return new AssetReportRaw(symbol.getName(), null, null, null, priceHistory.size(), priceHistory,
                 ma5, rsi14, atr14, volatility, null, news.size(), news);
     }

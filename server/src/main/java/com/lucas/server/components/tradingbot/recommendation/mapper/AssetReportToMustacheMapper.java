@@ -70,6 +70,7 @@ public class AssetReportToMustacheMapper implements Mapper<List<AssetReportToMus
     public record NewsItemRaw(
             String headline,
             String sentiment,
+            BigDecimal sentimentConfidence,
             String summary,
             LocalDateTime date
     ) {
@@ -131,6 +132,7 @@ public class AssetReportToMustacheMapper implements Mapper<List<AssetReportToMus
         private record NewsItem(
                 String headline,
                 String sentiment,
+                String sentimentConfidence,
                 String summary,
                 String date
         ) {
@@ -138,6 +140,7 @@ public class AssetReportToMustacheMapper implements Mapper<List<AssetReportToMus
                 return new NewsItem(
                         news.headline,
                         news.sentiment,
+                        news.sentimentConfidence.stripTrailingZeros().toPlainString().concat("%"),
                         news.summary,
                         news.date.toLocalDate().toString()
                 );

@@ -58,7 +58,7 @@ public class RecommendationChatCompletionClient {
         this.client = client;
     }
 
-    @Retryable(retryFor = ClientException.class, maxAttempts = Constants.SCHEDULED_TASK_MAX_ATTEMPTS)
+    @Retryable(retryFor = ClientException.class, maxAttempts = Constants.REQUEST_MAX_ATTEMPTS)
     public String getRecommendations(Map<Symbol, List<MarketData>> marketData, Map<Symbol, List<News>> newsData) throws ClientException, IllegalStateException, IOException {
         List<AssetReportToMustacheMapper.AssetReportRaw> reports = new ArrayList<>();
         for (Map.Entry<Symbol, List<MarketData>> mdHistory : marketData.entrySet()) {

@@ -211,23 +211,42 @@
 													"    pm.response.to.have.status(200);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Symbol is AAPL\", function () {\r",
-													"    const jsonData = pm.response.json();\r",
-													"    pm.expect(jsonData.symbol.name).to.eql(\"AAPL\");\r",
-													"});\r",
+													"const schema = {\r",
+													"    type: \"array\",\r",
+													"    minItems: 1,\r",
+													"    maxItems: 1,\r",
+													"    items: {\r",
+													"        type: \"object\",\r",
+													"        required: [\r",
+													"            \"id\", \"symbol\", \"open\", \"high\", \"low\", \"price\", \"volume\",\r",
+													"            \"date\", \"previousClose\", \"change\", \"changePercent\"\r",
+													"        ],\r",
+													"        properties: {\r",
+													"            id: { type: [\"integer\", \"null\"] },\r",
+													"            symbol: {\r",
+													"                type: \"object\",\r",
+													"                required: [\"id\", \"name\"],\r",
+													"                properties: {\r",
+													"                    id: { type: \"integer\" },\r",
+													"                    name: { type: \"string\", value: \"AAPL\" }\r",
+													"                }\r",
+													"            },\r",
+													"            open: { type: \"number\" },\r",
+													"            high: { type: \"number\" },\r",
+													"            low: { type: \"number\" },\r",
+													"            price: { type: \"number\" },\r",
+													"            volume: { type: [\"integer\", \"null\"] },\r",
+													"            date: { type: \"string\", pattern: \"^\\\\d{4}-\\\\d{2}-\\\\d{2}$\" },\r",
+													"            previousClose: { type: \"number\" },\r",
+													"            change: { type: \"number\" },\r",
+													"            changePercent: { type: \"number\" }\r",
+													"        },\r",
+													"        additionalProperties: false\r",
+													"    }\r",
+													"};\r",
 													"\r",
-													"pm.test(\"Price is not null\", function () {\r",
-													"    const jsonData = pm.response.json();\r",
-													"    pm.expect(jsonData.price).to.not.be.null;\r",
-													"});\r",
-													"\r",
-													"pm.test(\"Date is not null and is today\", function () {\r",
-													"    const jsonData = pm.response.json();\r",
-													"    pm.expect(jsonData.date).to.not.be.null;\r",
-													"\r",
-													"    const today = new Date();\r",
-													"\r",
-													"    pm.expect(jsonData.date).to.eql(today.toISOString().slice(0, 10));\r",
+													"pm.test(\"Matches expected JSON schema\", () => {\r",
+													"    pm.response.to.have.jsonSchema(schema);\r",
 													"});\r",
 													""
 												],
@@ -254,7 +273,7 @@
 									"response": []
 								},
 								{
-									"name": "AAPL,IBM",
+									"name": "AAPL,IBM,GOOG",
 									"event": [
 										{
 											"listen": "test",
@@ -266,8 +285,8 @@
 													"\r",
 													"const schema = {\r",
 													"    type: \"array\",\r",
-													"    minItems: 2,\r",
-													"    maxItems: 2,\r",
+													"    minItems: 3,\r",
+													"    maxItems: 3,\r",
 													"    items: {\r",
 													"        type: \"object\",\r",
 													"        required: [\r",
@@ -312,14 +331,14 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "{{base_url}}/market/last/AAPL,IBM",
+											"raw": "{{base_url}}/market/last/AAPL,IBM,GOOG",
 											"host": [
 												"{{base_url}}"
 											],
 											"path": [
 												"market",
 												"last",
-												"AAPL,IBM"
+												"AAPL,IBM,GOOG"
 											]
 										}
 									},
@@ -477,7 +496,7 @@
 									"response": []
 								},
 								{
-									"name": "AAPL,IBM",
+									"name": "AAPL,IBM,GOOG",
 									"event": [
 										{
 											"listen": "test",
@@ -519,11 +538,11 @@
 													"    pm.expect(hasEightDaysAgo).to.be.true;\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Each item has symbol IBM and price not null\", function () {\r",
+													"pm.test(\"Each item has symbol AAPL, IBM or GOOG and price not null\", function () {\r",
 													"    const jsonData = pm.response.json();\r",
 													"\r",
 													"    jsonData.forEach(item => {\r",
-													"        pm.expect(item.symbol.name).to.eql(\"IBM\");\r",
+													"        pm.expect(item.symbol.name).to.be.oneOf([\"AAPL\", \"IBM\", \"GOOG\"]);\r",
 													"        pm.expect(item.price).to.not.be.null;\r",
 													"    });\r",
 													"});\r",
@@ -538,14 +557,14 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "{{base_url}}/market/historic/AAPL,IBM",
+											"raw": "{{base_url}}/market/historic/AAPL,IBM,GOOG",
 											"host": [
 												"{{base_url}}"
 											],
 											"path": [
 												"market",
 												"historic",
-												"AAPL,IBM"
+												"AAPL,IBM,GOOG"
 											]
 										}
 									},
@@ -562,9 +581,10 @@
 													"    pm.response.to.have.status(200);\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Response is an array\", function () {\r",
+													"pm.test(\"Response is an array of size ~5000\", function () {\r",
 													"    const jsonData = pm.response.json();\r",
 													"    pm.expect(jsonData).to.be.an(\"array\");\r",
+													"    pm.expect(jsonData.length).to.be.closeTo(5000, 1000);\r",
 													"});\r",
 													"\r",
 													"pm.test(\"Contains item for yesterday and 8 days ago\", function () {\r",
@@ -594,11 +614,10 @@
 													"    pm.expect(hasEightDaysAgo).to.be.true;\r",
 													"});\r",
 													"\r",
-													"pm.test(\"Each item has symbol IBM and price not null\", function () {\r",
+													"pm.test(\"Each item has price not null\", function () {\r",
 													"    const jsonData = pm.response.json();\r",
 													"\r",
 													"    jsonData.forEach(item => {\r",
-													"        pm.expect(item.symbol.name).to.eql(\"IBM\");\r",
 													"        pm.expect(item.price).to.not.be.null;\r",
 													"    });\r",
 													"});\r",
@@ -642,48 +661,52 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"pm.test(\"Status code is 200\", () => {\r",
+													"pm.test(\"Status code is 200\", function () {\r",
 													"    pm.response.to.have.status(200);\r",
 													"});\r",
 													"\r",
-													"const data = pm.response.json();\r",
+													"const schema = {\r",
+													"    type: \"array\",\r",
+													"    minItems: 2,\r",
+													"    maxItems: 50,\r",
+													"    items: {\r",
+													"        type: \"object\",\r",
+													"        required: [\r",
+													"            \"id\", \"externalId\", \"symbols\", \"date\", \"headline\", \"summary\", \"url\", \"source\",\r",
+													"            \"category\", \"image\", \"embeddings\", \"sentiment\", \"sentimentScore\"\r",
+													"        ],\r",
+													"        properties: {\r",
+													"            id: { type: [\"integer\", \"null\"] },\r",
+													"            externalId: { type: \"integer\" },\r",
+													"            symbols: {\r",
+													"                type: \"array\",\r",
+													"                items: {\r",
+													"                    type: \"object\",\r",
+													"                    required: [\"id\", \"name\"],\r",
+													"                    properties: {\r",
+													"                        id: { type: \"integer\" },\r",
+													"                        name: { type: \"string\", minLength: 1, value: \"AAPL\" }\r",
+													"                    }\r",
+													"                }\r",
+													"            },\r",
+													"            date: { type: \"string\", pattern: \"^\\\\d{4}-\\\\d{2}-\\\\d{2}.*$\" },\r",
+													"            headline: { type: \"string\" },\r",
+													"            summary: { type: \"string\" },\r",
+													"            url: { type: \"string\", format: \"uri\" },\r",
+													"            source: { type: \"string\" },\r",
+													"            category: { type: \"string\" },\r",
+													"            image: { type: \"string\" },\r",
+													"            embeddings: { type: \"null\" },\r",
+													"            sentiment: { type: \"null\" },\r",
+													"            sentimentScore: { type: \"null\" }\r",
+													"        },\r",
+													"        additionalProperties: false\r",
+													"    }\r",
+													"};\r",
 													"\r",
-													"pm.test(\"Response is an array\", () => {\r",
-													"    pm.expect(data).to.be.an(\"array\");\r",
+													"pm.test(\"Matches expected JSON schema\", () => {\r",
+													"    pm.response.to.have.jsonSchema(schema);\r",
 													"});\r",
-													"\r",
-													"pm.test(\"Each item's data contains today or yesterday\", function () {\r",
-													"    const jsonData = pm.response.json();\r",
-													"\r",
-													"    const now = new Date();\r",
-													"    const yesterday = new Date(now);\r",
-													"    yesterday.setDate(now.getDate() - 1);\r",
-													"\r",
-													"    const toIsoDate = d => d.toISOString().slice(0, 10);\r",
-													"\r",
-													"    const todayIso     = toIsoDate(now);\r",
-													"    const yesterdayIso = toIsoDate(yesterday);\r",
-													"\r",
-													"    jsonData.forEach(item => {\r",
-													"        const dataString = item.date;\r",
-													"        const containsTodayOrYesterday = \r",
-													"            dataString.includes(todayIso) || dataString.includes(yesterdayIso);\r",
-													"\r",
-													"        pm.expect(\r",
-													"            containsTodayOrYesterday,\r",
-													"            `Expected item.data (\"${dataString}\") to include \"${todayIso}\" or \"${yesterdayIso}\"`\r",
-													"        ).to.be.true;\r",
-													"    });\r",
-													"});\r",
-													"\r",
-													"    pm.test(\"Every item has externalId, symbol AAPL, and headline not null\", () => {\r",
-													"        data.forEach(item => {\r",
-													"            pm.expect(item.externalId, \"externalId\").to.not.be.null;\r",
-													"            pm.expect(item.symbols).to.be.an(\"array\");\r",
-													"            pm.expect(item.symbols[0].name, \"symbol name\").to.equal(\"AAPL\");\r",
-													"            pm.expect(item.headline, \"headline\").to.not.be.null;\r",
-													"        });\r",
-													"    });\r",
 													""
 												],
 												"type": "text/javascript",
@@ -709,7 +732,7 @@
 									"response": []
 								},
 								{
-									"name": "AAPL,IBM",
+									"name": "AAPL,IBM,GOOG",
 									"event": [
 										{
 											"listen": "test",
@@ -721,13 +744,13 @@
 													"\r",
 													"const schema = {\r",
 													"    type: \"array\",\r",
-													"    minItems: 2,\r",
-													"    maxItems: 50,\r",
+													"    minItems: 6,\r",
+													"    maxItems: 100,\r",
 													"    items: {\r",
 													"        type: \"object\",\r",
 													"        required: [\r",
 													"            \"id\", \"externalId\", \"symbols\", \"date\", \"headline\", \"summary\", \"url\", \"source\",\r",
-													"            \"category\", \"image\", \"embeddings\"\r",
+													"            \"category\", \"image\", \"embeddings\", \"sentiment\", \"sentimentScore\"\r",
 													"        ],\r",
 													"        properties: {\r",
 													"            id: { type: [\"integer\", \"null\"] },\r",
@@ -750,9 +773,9 @@
 													"            source: { type: \"string\" },\r",
 													"            category: { type: \"string\" },\r",
 													"            image: { type: \"string\" },\r",
-													"            embeddings: { type: \"null\" }\r",
-													"\r",
-													"\r",
+													"            embeddings: { type: \"null\" },\r",
+													"            sentiment: { type: \"null\" },\r",
+													"            sentimentScore: { type: \"null\" }\r",
 													"        },\r",
 													"        additionalProperties: false\r",
 													"    }\r",
@@ -772,14 +795,14 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "{{base_url}}/news/last/AAPL,IBM",
+											"raw": "{{base_url}}/news/last/AAPL,IBM, GOOG",
 											"host": [
 												"{{base_url}}"
 											],
 											"path": [
 												"news",
 												"last",
-												"AAPL,IBM"
+												"AAPL,IBM, GOOG"
 											]
 										}
 									},
@@ -798,11 +821,13 @@
 													"\r",
 													"const schema = {\r",
 													"    type: \"array\",\r",
+													"    minItems: 6,\r",
+													"    maxItems: 150,\r",
 													"    items: {\r",
 													"        type: \"object\",\r",
 													"        required: [\r",
 													"            \"id\", \"externalId\", \"symbols\", \"date\", \"headline\", \"summary\", \"url\", \"source\",\r",
-													"            \"category\", \"image\", \"embeddings\"\r",
+													"            \"category\", \"image\", \"embeddings\", \"sentiment\", \"sentimentScore\"\r",
 													"        ],\r",
 													"        properties: {\r",
 													"            id: { type: [\"integer\", \"null\"] },\r",
@@ -825,9 +850,9 @@
 													"            source: { type: \"string\" },\r",
 													"            category: { type: \"string\" },\r",
 													"            image: { type: \"string\" },\r",
-													"            embeddings: { type: \"null\" }\r",
-													"\r",
-													"\r",
+													"            embeddings: { type: \"null\" },\r",
+													"            sentiment: { type: \"null\" },\r",
+													"            sentimentScore: { type: \"null\" }\r",
 													"        },\r",
 													"        additionalProperties: false\r",
 													"    }\r",
@@ -950,7 +975,7 @@
 									"response": []
 								},
 								{
-									"name": "threeDaysAgo/AAPL,IBM",
+									"name": "threeDaysAgo/AAPL,IBM,GOOG",
 									"event": [
 										{
 											"listen": "test",
@@ -984,11 +1009,11 @@
 													"});\r",
 													"\r",
 													"\r",
-													"pm.test(\"Every item has externalId, symbol AAPL, and headline not null\", () => {\r",
+													"pm.test(\"Every item has externalId, symbol AAPL, IBM or GOOG, and headline not null\", () => {\r",
 													"    data.forEach(item => {\r",
 													"        pm.expect(item.externalId, \"externalId\").to.not.be.null;\r",
 													"        pm.expect(item.symbols).to.be.an(\"array\");\r",
-													"        pm.expect(item.symbols[0].name, \"symbol name\").to.equal(\"AAPL\");\r",
+													"        pm.expect(item.symbols.every(symbol => [\"AAPL\", \"IBM\", \"GOOG\"].includes(symbol.name)), \"symbol\").to.be.true;\r",
 													"        pm.expect(item.headline, \"headline\").to.not.be.null;\r",
 													"    });\r",
 													"});\r",
@@ -1020,7 +1045,7 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "{{base_url}}/news/historic/{{specificDate}}/AAPL,IBM",
+											"raw": "{{base_url}}/news/historic/{{specificDate}}/AAPL,IBM,GOOG",
 											"host": [
 												"{{base_url}}"
 											],
@@ -1028,7 +1053,7 @@
 												"news",
 												"historic",
 												"{{specificDate}}",
-												"AAPL,IBM"
+												"AAPL,IBM,GOOG"
 											]
 										}
 									},
@@ -1069,11 +1094,10 @@
 													"});\r",
 													"\r",
 													"\r",
-													"pm.test(\"Every item has externalId, symbol AAPL, and headline not null\", () => {\r",
+													"pm.test(\"Every item has externalId and headline not null\", () => {\r",
 													"    data.forEach(item => {\r",
 													"        pm.expect(item.externalId, \"externalId\").to.not.be.null;\r",
 													"        pm.expect(item.symbols).to.be.an(\"array\");\r",
-													"        pm.expect(item.symbols[0].name, \"symbol name\").to.equal(\"AAPL\");\r",
 													"        pm.expect(item.headline, \"headline\").to.not.be.null;\r",
 													"    });\r",
 													"});\r",
@@ -1132,34 +1156,34 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"// Validate HTTP response\r",
 											"pm.test(\"Status code is 200\", () => {\r",
 											"    pm.response.to.have.status(200);\r",
 											"});\r",
 											"\r",
-											"// Parse body\r",
-											"const news = pm.response.json();\r",
+											"const newsArray = pm.response.json();\r",
 											"\r",
-											"// Validate it’s a single object, not an array\r",
-											"pm.test(\"Response is a single object\", () => {\r",
-											"    pm.expect(news).to.be.an(\"object\");\r",
+											"pm.test(\"Response is an array with one object\", () => {\r",
+											"    pm.expect(newsArray).to.be.an(\"array\");\r",
+											"    pm.expect(newsArray.length, \"array length\").to.eql(1);\r",
 											"});\r",
+											"\r",
+											"const news = newsArray[0];\r",
 											"\r",
 											"pm.test(\"symbol is AAPL\", () => {\r",
 											"    pm.expect(news.symbols).to.be.an(\"array\");\r",
 											"    pm.expect(news.symbols[0].name, \"symbol name\").to.equal(\"AAPL\");\r",
 											"});\r",
 											"\r",
-											"// id must equal 50\r",
 											"pm.test(\"id is 1\", () => {\r",
 											"    pm.expect(news.id).to.eql(1);\r",
 											"});\r",
 											"\r",
-											"// embeddings must be an array of length 3072\r",
 											"pm.test(\"embeddings is an array of length 3072\", () => {\r",
 											"    pm.expect(news.embeddings).to.be.an(\"array\");\r",
 											"    pm.expect(news.embeddings.length).to.eql(3072);\r",
-											"});"
+											"});\r",
+											"\r",
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -1189,34 +1213,41 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"// Validate HTTP response\r",
 											"pm.test(\"Status code is 200\", () => {\r",
 											"    pm.response.to.have.status(200);\r",
 											"});\r",
 											"\r",
-											"// Parse body\r",
-											"const news = pm.response.json();\r",
+											"const newsArray = pm.response.json();\r",
 											"\r",
-											"// Validate it’s a single object, not an array\r",
-											"pm.test(\"Response is a single object\", () => {\r",
-											"    pm.expect(news).to.be.an(\"object\");\r",
+											"pm.test(\"Response is an array with two objects\", () => {\r",
+											"    pm.expect(newsArray).to.be.an(\"array\");\r",
+											"    pm.expect(newsArray.length, \"array length\").to.eql(2);\r",
 											"});\r",
 											"\r",
-											"pm.test(\"symbol is AAPL\", () => {\r",
-											"    pm.expect(news.symbols).to.be.an(\"array\");\r",
-											"    pm.expect(news.symbols[0].name, \"symbol name\").to.equal(\"AAPL\");\r",
+											"const news1 = newsArray[0];\r",
+											"pm.test(\"news[0] id is 2\", () => {\r",
+											"    pm.expect(news1.id).to.eql(2);\r",
+											"});\r",
+											"pm.test(\"news[0] symbol array\", () => {\r",
+											"    pm.expect(news1.symbols).to.be.an(\"array\");\r",
+											"});\r",
+											"pm.test(\"news[0] embeddings is an array of length 3072\", () => {\r",
+											"    pm.expect(news1.embeddings).to.be.an(\"array\");\r",
+											"    pm.expect(news1.embeddings.length).to.eql(3072);\r",
 											"});\r",
 											"\r",
-											"// id must equal 50\r",
-											"pm.test(\"id is 20\", () => {\r",
-											"    pm.expect(news.id).to.eql(20);\r",
+											"const news2 = newsArray[1];\r",
+											"pm.test(\"news[1] id is 2\", () => {\r",
+											"    pm.expect(news2.id).to.eql(1);\r",
 											"});\r",
-											"\r",
-											"// embeddings must be an array of length 3072\r",
-											"pm.test(\"embeddings is an array of length 3072\", () => {\r",
-											"    pm.expect(news.embeddings).to.be.an(\"array\");\r",
-											"    pm.expect(news.embeddings.length).to.eql(3072);\r",
-											"});"
+											"pm.test(\"news[1] symbol array\", () => {\r",
+											"    pm.expect(news2.symbols).to.be.an(\"array\");\r",
+											"});\r",
+											"pm.test(\"news[1] embeddings is an array of length 3072\", () => {\r",
+											"    pm.expect(news2.embeddings).to.be.an(\"array\");\r",
+											"    pm.expect(news2.embeddings.length).to.eql(3072);\r",
+											"});\r",
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -1242,6 +1273,277 @@
 					]
 				},
 				{
+					"name": "sentiment/",
+					"item": [
+						{
+							"name": "historic/",
+							"item": [
+								{
+									"name": "threeDaysAgo/AAPL",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", () => {\r",
+													"    pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"const data = pm.response.json();\r",
+													"pm.test(\"Response is an array\", () => {\r",
+													"    pm.expect(Array.isArray(data)).to.be.true;\r",
+													"});\r",
+													"\r",
+													"pm.test(\"Response contains items from yesterday and from 2025-05-07\", function () {\r",
+													"    const now = new Date();\r",
+													"    const yesterday = new Date(now);\r",
+													"    yesterday.setDate(now.getDate() - 1);\r",
+													"\r",
+													"    // helper to get \"YYYY-MM-DD\"\r",
+													"    const toIsoDate = d => d.toISOString().slice(0, 10);\r",
+													"\r",
+													"    const yesterdayIso = toIsoDate(yesterday);\r",
+													"    const specificDate = pm.environment.get(\"specificDate\")\r",
+													"\r",
+													"    const hasYesterday = data.some(item => item.date.includes(yesterdayIso));\r",
+													"    const hasSpecific = data.some(item => item.date.includes(specificDate));\r",
+													"\r",
+													"    pm.expect(hasYesterday, `Expected at least one item.date to include \"${yesterdayIso}\"`).to.be.true;\r",
+													"    pm.expect(hasSpecific, `Expected at least one item.date to include \"${specificDate}\"`).to.be.true;\r",
+													"});\r",
+													"\r",
+													"\r",
+													"pm.test(\"Every item has externalId, symbol AAPL, and headline not null\", () => {\r",
+													"    data.forEach(item => {\r",
+													"        pm.expect(item.externalId, \"externalId\").to.not.be.null;\r",
+													"        pm.expect(item.symbols).to.be.an(\"array\");\r",
+													"        pm.expect(item.symbols.some(symbol => \"AAPL\" === symbol.name), \"symbol AAPL\").to.be.true;\r",
+													"        pm.expect(item.headline, \"headline\").to.not.be.null;\r",
+													"        pm.expect(item.sentiment).to.be.oneOf([\"positive\", \"negative\", \"neutral\"]);\r",
+													"        pm.expect(item.sentimentScore).to.be.a(\"number\");\r",
+													"    });\r",
+													"});\r",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"const toIsoDate = d => d.toISOString().slice(0, 10);\r",
+													"\r",
+													"const now = new Date();\r",
+													"\r",
+													"const specificDate = new Date(now);\r",
+													"specificDate.setDate(now.getDate() - 3);\r",
+													"pm.environment.set(\"specificDate\", toIsoDate(specificDate));\r",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/sentiment/historic/{{specificDate}}/AAPL",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"sentiment",
+												"historic",
+												"{{specificDate}}",
+												"AAPL"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "threeDaysAgo/AAPL,IBM",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", () => {\r",
+													"    pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"const data = pm.response.json();\r",
+													"pm.test(\"Response is an array\", () => {\r",
+													"    pm.expect(Array.isArray(data)).to.be.true;\r",
+													"    pm.expect(data.length).to.be.greaterThan(50);\r",
+													"});\r",
+													"\r",
+													"pm.test(\"Response contains items from yesterday and from 2025-05-07\", function () {\r",
+													"    const now = new Date();\r",
+													"    const yesterday = new Date(now);\r",
+													"    yesterday.setDate(now.getDate() - 1);\r",
+													"\r",
+													"    // helper to get \"YYYY-MM-DD\"\r",
+													"    const toIsoDate = d => d.toISOString().slice(0, 10);\r",
+													"\r",
+													"    const yesterdayIso = toIsoDate(yesterday);\r",
+													"    const specificDate = pm.environment.get(\"specificDate\")\r",
+													"\r",
+													"    const hasYesterday = data.some(item => item.date.includes(yesterdayIso));\r",
+													"    const hasSpecific = data.some(item => item.date.includes(specificDate));\r",
+													"\r",
+													"    pm.expect(hasYesterday, `Expected at least one item.date to include \"${yesterdayIso}\"`).to.be.true;\r",
+													"    pm.expect(hasSpecific, `Expected at least one item.date to include \"${specificDate}\"`).to.be.true;\r",
+													"});\r",
+													"\r",
+													"\r",
+													"pm.test(\"Every item has externalId, symbol AAPL, IBM or GOOG, and headline not null\", () => {\r",
+													"    data.forEach(item => {\r",
+													"        pm.expect(item.externalId, \"externalId\").to.not.be.null;\r",
+													"        pm.expect(item.symbols).to.be.an(\"array\");\r",
+													"        pm.expect(item.symbols.some(symbol => [\"AAPL\", \"IBM\", \"GOOG\"].includes(symbol.name)), \"symbol AAPL or IBM or GOOG\").to.be.true;\r",
+													"        pm.expect(item.headline, \"headline\").to.not.be.null;\r",
+													"        pm.expect(item.sentiment).to.be.oneOf([\"positive\", \"negative\", \"neutral\"]);\r",
+													"        pm.expect(item.sentimentScore).to.be.a(\"number\");\r",
+													"    });\r",
+													"});\r",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"const toIsoDate = d => d.toISOString().slice(0, 10);\r",
+													"\r",
+													"const now = new Date();\r",
+													"\r",
+													"const specificDate = new Date(now);\r",
+													"specificDate.setDate(now.getDate() - 3);\r",
+													"pm.environment.set(\"specificDate\", toIsoDate(specificDate));\r",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/sentiment/historic/{{specificDate}}/AAPL,IBM",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"sentiment",
+												"historic",
+												"{{specificDate}}",
+												"AAPL,IBM"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "threeDaysAgo",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", () => {\r",
+													"    pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"const data = pm.response.json();\r",
+													"pm.test(\"Response is an array\", () => {\r",
+													"    pm.expect(Array.isArray(data)).to.be.true;\r",
+													"    pm.expect(data.length).to.be.greaterThan(500);\r",
+													"});\r",
+													"\r",
+													"pm.test(\"Response contains items from yesterday and from 2025-05-07\", function () {\r",
+													"    const now = new Date();\r",
+													"    const yesterday = new Date(now);\r",
+													"    yesterday.setDate(now.getDate() - 1);\r",
+													"\r",
+													"    // helper to get \"YYYY-MM-DD\"\r",
+													"    const toIsoDate = d => d.toISOString().slice(0, 10);\r",
+													"\r",
+													"    const yesterdayIso = toIsoDate(yesterday);\r",
+													"    const specificDate = pm.environment.get(\"specificDate\")\r",
+													"\r",
+													"    const hasYesterday = data.some(item => item.date.includes(yesterdayIso));\r",
+													"    const hasSpecific = data.some(item => item.date.includes(specificDate));\r",
+													"\r",
+													"    pm.expect(hasYesterday, `Expected at least one item.date to include \"${yesterdayIso}\"`).to.be.true;\r",
+													"    pm.expect(hasSpecific, `Expected at least one item.date to include \"${specificDate}\"`).to.be.true;\r",
+													"});\r",
+													"\r",
+													"\r",
+													"pm.test(\"Every item has externalId and headline not null\", () => {\r",
+													"    data.forEach(item => {\r",
+													"        pm.expect(item.externalId, \"externalId\").to.not.be.null;\r",
+													"        pm.expect(item.symbols).to.be.an(\"array\");\r",
+													"        pm.expect(item.headline, \"headline\").to.not.be.null;\r",
+													"        pm.expect(item.sentiment).to.be.oneOf([\"positive\", \"negative\", \"neutral\"]);\r",
+													"        pm.expect(item.sentimentScore).to.be.a(\"number\");\r",
+													"    });\r",
+													"});\r",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"const toIsoDate = d => d.toISOString().slice(0, 10);\r",
+													"\r",
+													"const now = new Date();\r",
+													"\r",
+													"const specificDate = new Date(now);\r",
+													"specificDate.setDate(now.getDate() - 3);\r",
+													"pm.environment.set(\"specificDate\", toIsoDate(specificDate));\r",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/sentiment/historic/{{specificDate}}",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"sentiment",
+												"historic",
+												"{{specificDate}}"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						}
+					]
+				},
+				{
 					"name": "recommendations/",
 					"item": [
 						{
@@ -1262,6 +1564,8 @@
 											"    properties: {\r",
 											"        recommendations: {\r",
 											"            type: \"array\",\r",
+											"            minItems: 1,\r",
+											"            maxItems: 1,\r",
 											"            items: {\r",
 											"                type: \"object\",\r",
 											"                required: [\"symbol\", \"action\", \"confidence\", \"rationale\"],\r",
@@ -1308,7 +1612,7 @@
 							"response": []
 						},
 						{
-							"name": "AAPL,IBM",
+							"name": "AAPL,IBM,GOOG",
 							"event": [
 								{
 									"listen": "test",
@@ -1325,6 +1629,8 @@
 											"    properties: {\r",
 											"        recommendations: {\r",
 											"            type: \"array\",\r",
+											"            minItems: 3,\r",
+											"            maxItems: 3,\r",
 											"            items: {\r",
 											"                type: \"object\",\r",
 											"                required: [\"symbol\", \"action\", \"confidence\", \"rationale\"],\r",
@@ -1358,13 +1664,13 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{base_url}}/recommendations/AAPL,IBM",
+									"raw": "{{base_url}}/recommendations/AAPL,IBM,GOOG",
 									"host": [
 										"{{base_url}}"
 									],
 									"path": [
 										"recommendations",
-										"AAPL,IBM"
+										"AAPL,IBM,GOOG"
 									]
 								}
 							},
@@ -2827,6 +3133,36 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "New Request",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "SOme new?",
+					"options": {
+						"raw": {
+							"language": "text"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://79.112.55.185/analyze",
+					"protocol": "http",
+					"host": [
+						"79",
+						"112",
+						"55",
+						"185"
+					],
+					"path": [
+						"analyze"
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"auth": {
