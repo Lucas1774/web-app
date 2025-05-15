@@ -1,6 +1,8 @@
 package com.lucas.server.components.tradingbot.common.jpa;
 
-import com.lucas.server.common.Constants;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.common.exception.IllegalStateException;
 import com.lucas.server.common.exception.JsonProcessingException;
@@ -23,10 +25,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -40,6 +39,7 @@ public class DataManager {
     private final NewsJpaService newsService;
     private final RecommendationChatCompletionClient recommendationsClient;
     private final FinnhubNewsClient newsClient;
+    private final ObjectMapper mapper;
     private final Map<Granularity, GranularityToMarketDataFunction> granularityToClientRunner;
     private final Map<PortfolioType, IPortfolioJpaService<?>> portfolioTypeToService;
     private static final Logger logger = LoggerFactory.getLogger(DataManager.class);
@@ -57,12 +57,13 @@ public class DataManager {
                        PortfolioJpaService portfolioService, PortfolioMockJpaService portfolioMockService,
                        RecommendationChatCompletionClient recommendationsClient, FinnhubNewsClient newsClient,
                        TwelveDataMarketDataClient twelveDataMarketDataClient, AlphavantageMarketDataClient alphavantageMarketDataClient,
-                       FinnhubMarketDataClient finnhubMarketDataClient) {
+                       FinnhubMarketDataClient finnhubMarketDataClient, ObjectMapper mapper) {
         this.symbolService = symbolService;
         this.marketDataService = marketDataService;
         this.newsService = newsService;
         this.recommendationsClient = recommendationsClient;
         this.newsClient = newsClient;
+        this.mapper = mapper;
         this.granularityToClientRunner = new EnumMap<>(Map.of(
                 Granularity.DAILY, symbols -> retrieveMarketDataWithBackupStrategy(symbols, twelveDataMarketDataClient, finnhubMarketDataClient),
                 Granularity.WEEKLY, symbols ->
@@ -75,27 +76,41 @@ public class DataManager {
     }
 
     @Transactional(rollbackOn = {ClientException.class, IOException.class})
-    public String getRecommendations(List<String> symbolNames, PortfolioType type) throws ClientException, IOException {
+    public JsonNode getRecommendations(List<String> symbolNames, PortfolioType type) throws ClientException, IOException {
         List<Symbol> symbols = symbolNames.stream().distinct().map(this.symbolService::getOrCreateByName).toList();
         Map<Symbol, List<MarketData>> marketData = symbols.stream()
-                .collect(Collectors.toMap(
-                        symbol -> symbol,
-                        symbol -> this.marketDataService.getTopForSymbolId(symbol.getId(), Constants.HISTORY_DAYS_COUNT)
-                ));
-        Map<Symbol, List<News>> newsData = symbols.stream()
-                .collect(Collectors.toMap(
-                        symbol -> symbol,
-                        symbol -> this.newsService.getTopForSymbolId(symbol.getId(), Constants.NEWS_COUNT)
-                ));
+                .map(symbol -> Map.entry(symbol, marketDataService.getTopForSymbolId(symbol.getId(), HISTORY_DAYS_COUNT)))
+                .filter(entry -> !entry.getValue().isEmpty())
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        if (marketData.isEmpty()) {
+            return mapper.createArrayNode();
+        }
 
-        Map<Symbol, ? extends PortfolioBase> portfolioData = symbols.stream()
-                .collect(Collectors.toMap(
-                        symbol -> symbol,
-                        symbol -> this.getService(type).findBySymbol(symbol)
+        List<Symbol> symbolsWithData = marketData.keySet().stream().toList();
+
+        ArrayNode res = mapper.createArrayNode();
+        for (int i = 0; i < symbolsWithData.size(); i += RECOMMENDATIONS_CHUNK_SIZE) {
+            List<Symbol> batch = symbolsWithData.subList(i, Math.min(i + RECOMMENDATIONS_CHUNK_SIZE, symbolsWithData.size()));
+            Map<Symbol, List<MarketData>> marketDataBatch = new LinkedHashMap<>();
+            Map<Symbol, List<News>> newsDataBatch = new LinkedHashMap<>();
+            Map<Symbol, PortfolioBase> portfolioDataBatch = new LinkedHashMap<>();
+
+            for (Symbol symbol : batch) {
+                marketDataBatch.put(symbol, marketData.get(symbol));
+                newsDataBatch.put(symbol, newsService.getTopForSymbolId(symbol.getId(), NEWS_COUNT));
+                portfolioDataBatch.put(symbol,
+                        getService(type).findBySymbol(symbol)
                                 .orElseGet(() -> portfolioTypeToNewPortfolio.get(type).get().setSymbol(symbol))
-                ));
+                );
+            }
+            long startMillis = System.currentTimeMillis();
+            res.add(recommendationsClient.getRecommendations(marketDataBatch, newsDataBatch, portfolioDataBatch));
+            if (i + RECOMMENDATIONS_CHUNK_SIZE < symbolsWithData.size()) {
+                backOff(Math.max(0, 60000 - (System.currentTimeMillis() - startMillis)));
+            }
+        }
 
-        return this.recommendationsClient.getRecommendations(marketData, newsData, portfolioData);
+        return res;
     }
 
     @Transactional
@@ -138,13 +153,13 @@ public class DataManager {
         for (Symbol symbol : symbols) {
             try {
                 res.add(twelveDataMarketDataClient.retrieveMarketData(symbol));
-                Constants.backOff(7500);
+                backOff(7500);
             } catch (ClientException | JsonProcessingException e) {
-                logger.warn(Constants.MAIN_CLIENT_FAILED_BACKUP_WARN,
+                logger.warn(MAIN_CLIENT_FAILED_BACKUP_WARN,
                         twelveDataMarketDataClient.getClass().getSimpleName(), symbol,
                         finnhubMarketDataClient.getClass().getSimpleName(), e);
                 res.add(finnhubMarketDataClient.retrieveMarketData(symbol));
-                Constants.backOff(1000);
+                backOff(1000);
             }
         }
         return res;

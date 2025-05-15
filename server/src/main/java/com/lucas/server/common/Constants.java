@@ -30,6 +30,7 @@ public class Constants {
     public static final int NEWS_COUNT = 10;
     public static final int MAX_SYMBOLS_TO_TRIGGER_NEWS_EMBEDDINGS_GENERATION = 2;
     public static final int REQUEST_MAX_ATTEMPTS = 5;
+    public static final int RECOMMENDATIONS_CHUNK_SIZE = 5;
     public static final String NA = "N/A";
     public static final String INVALID_EXPRESSION = "Invalid expression";
     public static final String COMPANY_NEWS = "/company-news";
@@ -39,6 +40,7 @@ public class Constants {
     public static final String TIME_SERIES_WEEKLY = "TIME_SERIES_WEEKLY";
     public static final String CONTENT = "content";
     public static final String ROLE = "role";
+    public static final String PROMPT = "prompt";
 
     public static final String SUDOKU_IGNORED_MALFORMED_JSON_WARN = "Couldn't deserialize sudoku from raw data {}";
     public static final String EMBEDDING_GENERATION_FAILED_WARN = "Couldn't fetch embeddings for {}";

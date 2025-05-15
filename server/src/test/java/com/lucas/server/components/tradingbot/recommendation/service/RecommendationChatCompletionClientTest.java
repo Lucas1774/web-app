@@ -2,7 +2,6 @@ package com.lucas.server.components.tradingbot.recommendation.service;
 
 import com.lucas.server.TestcontainersConfiguration;
 import com.lucas.server.common.Constants;
-import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
@@ -17,11 +16,9 @@ import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportT
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.PricePointRaw;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.ai.azure.openai.AzureOpenAiChatModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -29,10 +26,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 @Import(TestcontainersConfiguration.class)
@@ -55,13 +50,6 @@ class RecommendationChatCompletionClientTest {
 
     @Autowired
     AssetReportDataProvider provider;
-
-    @Autowired
-    RecommendationChatCompletionClient chatCompletionClient;
-
-    @MockitoBean
-    @SuppressWarnings("unused")
-    AzureOpenAiChatModel azureOpenAiChatModel;
 
     @BeforeEach
     void setup() {
@@ -118,12 +106,6 @@ class RecommendationChatCompletionClientTest {
         List<News> filteredNews = this.newsService.getTopForSymbolId(symbol.getId(), Constants.NEWS_COUNT);
         Portfolio portfolioData = this.portfolioService.findBySymbol(symbol).orElseThrow();
         AssetReportRaw report = provider.provide(symbol, filteredMds, filteredNews, portfolioData);
-        assertThatThrownBy(() -> chatCompletionClient.getRecommendations(
-                Map.of(symbol, filteredMds),
-                Map.of(symbol, filteredNews),
-                Map.of(symbol, portfolioData)
-        ))
-                .isInstanceOf(ClientException.class);
 
         // then: symbol & history size & news count
         assertThat(report.symbol()).isEqualTo(symbol.getName());

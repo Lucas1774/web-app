@@ -19,6 +19,7 @@ public class PromptRepository {
     private final ObjectNode context;
     private final ObjectNode system;
     private final ObjectNode fewShot;
+    private final ObjectNode fixMeMessage;
 
     public PromptRepository(ObjectMapper objectMapper) {
         try (Reader contextReader = new InputStreamReader(
@@ -29,10 +30,14 @@ public class PromptRepository {
                      StandardCharsets.UTF_8);
              Reader fewShotReader = new InputStreamReader(
                      Objects.requireNonNull(getClass().getResourceAsStream("/prompt/few-shot.json")),
+                     StandardCharsets.UTF_8);
+             Reader fixMeReader = new InputStreamReader(
+                     Objects.requireNonNull(getClass().getResourceAsStream("/prompt/fix-me.json")),
                      StandardCharsets.UTF_8)) {
             this.context = objectMapper.readValue(contextReader, ObjectNode.class);
             this.system = objectMapper.readValue(systemReader, ObjectNode.class);
             this.fewShot = objectMapper.readValue(fewShotReader, ObjectNode.class);
+            this.fixMeMessage = objectMapper.readValue(fixMeReader, ObjectNode.class);
         } catch (IOException e) {
             throw new ConfigurationException(e);
         }

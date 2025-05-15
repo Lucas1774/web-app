@@ -1,5 +1,6 @@
 package com.lucas.server.components.tradingbot.recommendation.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;
 import org.slf4j.Logger;
@@ -29,7 +30,7 @@ public class RecommendationsController {
     }
 
     @GetMapping("/{symbols}")
-    public ResponseEntity<String> generateRecommendations(@PathVariable List<String> symbols) {
+    public ResponseEntity<JsonNode> generateRecommendations(@PathVariable List<String> symbols) {
         try {
             return ResponseEntity.ok(this.jpaService.getRecommendations(symbols, REAL));
         } catch (ClientException | IOException e) {
@@ -39,7 +40,7 @@ public class RecommendationsController {
     }
 
     @GetMapping("/mock/{symbols}")
-    public ResponseEntity<String> generateRecommendationsMock(@PathVariable List<String> symbols) {
+    public ResponseEntity<JsonNode> generateRecommendationsMock(@PathVariable List<String> symbols) {
         try {
             return ResponseEntity.ok(this.jpaService.getRecommendations(symbols, MOCK));
         } catch (ClientException | IOException e) {

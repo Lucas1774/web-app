@@ -28,8 +28,8 @@ spring:
         chat:
           options:
             deployment-name: ${OPENAI_MODEL}
+            secondary-deployment-name: ${OPENAI_SECONDARY_MODEL}
             temperature: 0.2
-            maxTokens: 1024
     model:
       chat: azure-openai
 

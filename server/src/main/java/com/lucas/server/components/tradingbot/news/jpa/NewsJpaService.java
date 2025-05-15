@@ -56,7 +56,10 @@ public class NewsJpaService implements JpaService<News> {
     }
 
     public List<News> getTopForSymbolId(Long symbolId, int limit) {
-        return this.repository.findBySymbols_IdAndSentimentNot(symbolId, "neutral", PageRequest.of(0, limit, Sort.by("date").descending()))
+        return this.repository.findBySymbols_IdAndSentimentNot(symbolId, "neutral", PageRequest.of(
+                        0, limit, Sort.by("date").descending()
+                                .and(Sort.by("sentimentConfidence").descending())
+                ))
                 .getContent();
     }
 
