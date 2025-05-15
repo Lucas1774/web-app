@@ -13,9 +13,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Component
 public class TwelveDataMarketDataClient {
 
@@ -34,7 +31,7 @@ public class TwelveDataMarketDataClient {
         this.apiKey = apiKey;
     }
 
-    private MarketData retrieveMarketData(Symbol symbol) throws JsonProcessingException, ClientException {
+    public MarketData retrieveMarketData(Symbol symbol) throws JsonProcessingException, ClientException {
         logger.info(Constants.RETRIEVING_MARKET_DATA_INFO, symbol);
         String url = UriComponentsBuilder.fromUriString(endpoint + Constants.QUOTE)
                 .queryParam("symbol", symbol.getName())
@@ -43,20 +40,5 @@ public class TwelveDataMarketDataClient {
                 .toUriString();
 
         return mapper.map(this.httpRequestClient.fetch(url), symbol);
-    }
-
-    public List<MarketData> retrieveMarketData(List<Symbol> symbols) throws ClientException, JsonProcessingException {
-        List<MarketData> res = new ArrayList<>();
-        for (Symbol symbol : symbols) {
-            MarketData updated = this.retrieveMarketData(symbol);
-            try {
-                Thread.sleep(7500);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-            res.add(updated);
-        }
-
-        return res;
     }
 }

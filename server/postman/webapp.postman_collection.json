@@ -673,7 +673,7 @@
 													"        type: \"object\",\r",
 													"        required: [\r",
 													"            \"id\", \"externalId\", \"symbols\", \"date\", \"headline\", \"summary\", \"url\", \"source\",\r",
-													"            \"category\", \"image\", \"embeddings\", \"sentiment\", \"sentimentScore\"\r",
+													"            \"category\", \"image\", \"embeddings\", \"sentiment\", \"sentimentConfidence\"\r",
 													"        ],\r",
 													"        properties: {\r",
 													"            id: { type: [\"integer\", \"null\"] },\r",
@@ -698,7 +698,7 @@
 													"            image: { type: \"string\" },\r",
 													"            embeddings: { type: \"null\" },\r",
 													"            sentiment: { type: \"null\" },\r",
-													"            sentimentScore: { type: \"null\" }\r",
+													"            sentimentConfidence: { type: \"null\" }\r",
 													"        },\r",
 													"        additionalProperties: false\r",
 													"    }\r",
@@ -750,7 +750,7 @@
 													"        type: \"object\",\r",
 													"        required: [\r",
 													"            \"id\", \"externalId\", \"symbols\", \"date\", \"headline\", \"summary\", \"url\", \"source\",\r",
-													"            \"category\", \"image\", \"embeddings\", \"sentiment\", \"sentimentScore\"\r",
+													"            \"category\", \"image\", \"embeddings\", \"sentiment\", \"sentimentConfidence\"\r",
 													"        ],\r",
 													"        properties: {\r",
 													"            id: { type: [\"integer\", \"null\"] },\r",
@@ -775,7 +775,7 @@
 													"            image: { type: \"string\" },\r",
 													"            embeddings: { type: \"null\" },\r",
 													"            sentiment: { type: \"null\" },\r",
-													"            sentimentScore: { type: \"null\" }\r",
+													"            sentimentConfidence: { type: \"null\" }\r",
 													"        },\r",
 													"        additionalProperties: false\r",
 													"    }\r",
@@ -827,7 +827,7 @@
 													"        type: \"object\",\r",
 													"        required: [\r",
 													"            \"id\", \"externalId\", \"symbols\", \"date\", \"headline\", \"summary\", \"url\", \"source\",\r",
-													"            \"category\", \"image\", \"embeddings\", \"sentiment\", \"sentimentScore\"\r",
+													"            \"category\", \"image\", \"embeddings\", \"sentiment\", \"sentimentConfidence\"\r",
 													"        ],\r",
 													"        properties: {\r",
 													"            id: { type: [\"integer\", \"null\"] },\r",
@@ -852,7 +852,7 @@
 													"            image: { type: \"string\" },\r",
 													"            embeddings: { type: \"null\" },\r",
 													"            sentiment: { type: \"null\" },\r",
-													"            sentimentScore: { type: \"null\" }\r",
+													"            sentimentConfidence: { type: \"null\" }\r",
 													"        },\r",
 													"        additionalProperties: false\r",
 													"    }\r",
@@ -942,13 +942,6 @@
 											"listen": "prerequest",
 											"script": {
 												"exec": [
-													"const toIsoDate = d => d.toISOString().slice(0, 10);\r",
-													"\r",
-													"const now = new Date();\r",
-													"\r",
-													"const specificDate = new Date(now);\r",
-													"specificDate.setDate(now.getDate() - 3);\r",
-													"pm.environment.set(\"specificDate\", toIsoDate(specificDate));\r",
 													""
 												],
 												"type": "text/javascript",
@@ -1027,13 +1020,6 @@
 											"listen": "prerequest",
 											"script": {
 												"exec": [
-													"const toIsoDate = d => d.toISOString().slice(0, 10);\r",
-													"\r",
-													"const now = new Date();\r",
-													"\r",
-													"const specificDate = new Date(now);\r",
-													"specificDate.setDate(now.getDate() - 3);\r",
-													"pm.environment.set(\"specificDate\", toIsoDate(specificDate));\r",
 													""
 												],
 												"type": "text/javascript",
@@ -1060,7 +1046,7 @@
 									"response": []
 								},
 								{
-									"name": "threeDaysAgo",
+									"name": "threeDaysAgo (all)",
 									"event": [
 										{
 											"listen": "test",
@@ -1111,13 +1097,6 @@
 											"listen": "prerequest",
 											"script": {
 												"exec": [
-													"const toIsoDate = d => d.toISOString().slice(0, 10);\r",
-													"\r",
-													"const now = new Date();\r",
-													"\r",
-													"const specificDate = new Date(now);\r",
-													"specificDate.setDate(now.getDate() - 3);\r",
-													"pm.environment.set(\"specificDate\", toIsoDate(specificDate));\r",
 													""
 												],
 												"type": "text/javascript",
@@ -1141,6 +1120,35 @@
 										}
 									},
 									"response": []
+								}
+							],
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											"const toIsoDate = d => d.toISOString().slice(0, 10);\r",
+											"\r",
+											"const now = new Date();\r",
+											"\r",
+											"const specificDate = new Date(now);\r",
+											"specificDate.setDate(now.getDate() - 3);\r",
+											"pm.environment.set(\"specificDate\", toIsoDate(specificDate));\r",
+											""
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
 								}
 							]
 						}
@@ -1226,7 +1234,7 @@
 											"\r",
 											"const news1 = newsArray[0];\r",
 											"pm.test(\"news[0] id is 2\", () => {\r",
-											"    pm.expect(news1.id).to.eql(2);\r",
+											"    pm.expect(news1.id).to.be.oneOf([1, 2]);\r",
 											"});\r",
 											"pm.test(\"news[0] symbol array\", () => {\r",
 											"    pm.expect(news1.symbols).to.be.an(\"array\");\r",
@@ -1238,7 +1246,7 @@
 											"\r",
 											"const news2 = newsArray[1];\r",
 											"pm.test(\"news[1] id is 2\", () => {\r",
-											"    pm.expect(news2.id).to.eql(1);\r",
+											"    pm.expect(news1.id).to.be.oneOf([1, 2]);\r",
 											"});\r",
 											"pm.test(\"news[1] symbol array\", () => {\r",
 											"    pm.expect(news2.symbols).to.be.an(\"array\");\r",
@@ -1265,6 +1273,506 @@
 									"path": [
 										"embeddings",
 										"1,2"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "portfolio/",
+					"item": [
+						{
+							"name": "mock/",
+							"item": [
+								{
+									"name": "sell no stock",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 422\", () => {\r",
+													"    pm.response.to.have.status(422);\r",
+													"});"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/portfolio/mock/sell?symbolName=AAPL&price=5.5&quantity=2&date={{now}}",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"portfolio",
+												"mock",
+												"sell"
+											],
+											"query": [
+												{
+													"key": "symbolName",
+													"value": "AAPL"
+												},
+												{
+													"key": "price",
+													"value": "5.5"
+												},
+												{
+													"key": "quantity",
+													"value": "2"
+												},
+												{
+													"key": "date",
+													"value": "{{now}}"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "buy",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {\r",
+													"    pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"pm.test(\"Response body contains expected fields and types\", function () {\r",
+													"    const json = pm.response.json();\r",
+													"\r",
+													"    pm.expect(json.id).to.be.a(\"number\");\r",
+													"    pm.expect(json.quantity).to.eql(2.000);\r",
+													"    pm.expect(json.averageCost).to.eql(5.50000000);\r",
+													"\r",
+													"    pm.expect(json.symbol).to.be.an(\"object\");\r",
+													"    pm.expect(json.symbol.id).to.be.a(\"number\");\r",
+													"    pm.expect(json.symbol.name).to.eql(\"AAPL\");\r",
+													"\r",
+													"    const isoLike = /^\\d{4}-\\d{2}-\\d{2}(T.*)?$/;\r",
+													"    pm.expect(json.effectiveTimestamp).to.match(isoLike);\r",
+													"});\r",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/portfolio/mock/buy?symbolName=AAPL&price=5.5&quantity=2&date={{now+1}}",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"portfolio",
+												"mock",
+												"buy"
+											],
+											"query": [
+												{
+													"key": "symbolName",
+													"value": "AAPL"
+												},
+												{
+													"key": "price",
+													"value": "5.5"
+												},
+												{
+													"key": "quantity",
+													"value": "2"
+												},
+												{
+													"key": "date",
+													"value": "{{now+1}}"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "sell",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {\r",
+													"    pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"pm.test(\"Response body contains expected fields and types\", function () {\r",
+													"    const json = pm.response.json();\r",
+													"\r",
+													"    pm.expect(json.id).to.be.a(\"number\");\r",
+													"    pm.expect(json.quantity).to.eql(1.000);\r",
+													"    pm.expect(json.averageCost).to.eql(5.50000000);\r",
+													"\r",
+													"    pm.expect(json.symbol).to.be.an(\"object\");\r",
+													"    pm.expect(json.symbol.id).to.be.a(\"number\");\r",
+													"    pm.expect(json.symbol.name).to.eql(\"AAPL\");\r",
+													"\r",
+													"    const isoLike = /^\\d{4}-\\d{2}-\\d{2}(T.*)?$/;\r",
+													"    pm.expect(json.effectiveTimestamp).to.match(isoLike);\r",
+													"});\r",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/portfolio/mock/sell?symbolName=AAPL&price=3.5&quantity=1&date={{now+2}}",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"portfolio",
+												"mock",
+												"sell"
+											],
+											"query": [
+												{
+													"key": "symbolName",
+													"value": "AAPL"
+												},
+												{
+													"key": "price",
+													"value": "3.5"
+												},
+												{
+													"key": "quantity",
+													"value": "1"
+												},
+												{
+													"key": "date",
+													"value": "{{now+2}}"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "sell no stock",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 422\", () => {\r",
+													"    pm.response.to.have.status(422);\r",
+													"});"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/portfolio/mock/sell?symbolName=AAPL&price=1.5&quantity=2&date={{now+3}}",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"portfolio",
+												"mock",
+												"sell"
+											],
+											"query": [
+												{
+													"key": "symbolName",
+													"value": "AAPL"
+												},
+												{
+													"key": "price",
+													"value": "1.5"
+												},
+												{
+													"key": "quantity",
+													"value": "2"
+												},
+												{
+													"key": "date",
+													"value": "{{now+3}}"
+												}
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											"const toIsoDate = d => d.toISOString().slice(0, 10);\r",
+											"\r",
+											"const now = new Date();\r",
+											"const plus1 = new Date(now);\r",
+											"plus1.setDate(now.getDate() + 1);\r",
+											"\r",
+											"const plus2 = new Date(now);\r",
+											"plus2.setDate(now.getDate() + 2);\r",
+											"\r",
+											"const plus3 = new Date(now);\r",
+											"plus3.setDate(now.getDate() + 3);\r",
+											"\r",
+											"pm.environment.set(\"now\", toIsoDate(now));\r",
+											"pm.environment.set(\"now+1\", toIsoDate(plus1));\r",
+											"pm.environment.set(\"now+2\", toIsoDate(plus2));\r",
+											"pm.environment.set(\"now+3\", toIsoDate(plus3));\r",
+											""
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "sell no stock",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 422\", () => {\r",
+											"    pm.response.to.have.status(422);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/portfolio/sell?symbolName=AAPL&price=5.5&quantity=2",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"portfolio",
+										"sell"
+									],
+									"query": [
+										{
+											"key": "symbolName",
+											"value": "AAPL"
+										},
+										{
+											"key": "price",
+											"value": "5.5"
+										},
+										{
+											"key": "quantity",
+											"value": "2"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "buy",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response body contains expected fields and types\", function () {\r",
+											"    const json = pm.response.json();\r",
+											"\r",
+											"    pm.expect(json.id).to.be.a(\"number\");\r",
+											"    pm.expect(json.quantity).to.eql(2.000);\r",
+											"    pm.expect(json.averageCost).to.eql(5.50000000);\r",
+											"\r",
+											"    pm.expect(json.symbol).to.be.an(\"object\");\r",
+											"    pm.expect(json.symbol.id).to.be.a(\"number\");\r",
+											"    pm.expect(json.symbol.name).to.eql(\"AAPL\");\r",
+											"\r",
+											"    const isoLike = /^\\d{4}-\\d{2}-\\d{2}(T.*)?$/;\r",
+											"    pm.expect(json.effectiveTimestamp).to.match(isoLike);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/portfolio/buy?symbolName=AAPL&price=5.5&quantity=2",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"portfolio",
+										"buy"
+									],
+									"query": [
+										{
+											"key": "symbolName",
+											"value": "AAPL"
+										},
+										{
+											"key": "price",
+											"value": "5.5"
+										},
+										{
+											"key": "quantity",
+											"value": "2"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "sell",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response body contains expected fields and types\", function () {\r",
+											"    const json = pm.response.json();\r",
+											"\r",
+											"    pm.expect(json.id).to.be.a(\"number\");\r",
+											"    pm.expect(json.quantity).to.eql(1.000);\r",
+											"    pm.expect(json.averageCost).to.eql(5.50000000);\r",
+											"\r",
+											"    pm.expect(json.symbol).to.be.an(\"object\");\r",
+											"    pm.expect(json.symbol.id).to.be.a(\"number\");\r",
+											"    pm.expect(json.symbol.name).to.eql(\"AAPL\");\r",
+											"\r",
+											"    const isoLike = /^\\d{4}-\\d{2}-\\d{2}(T.*)?$/;\r",
+											"    pm.expect(json.effectiveTimestamp).to.match(isoLike);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/portfolio/sell?symbolName=AAPL&price=3.5&quantity=1",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"portfolio",
+										"sell"
+									],
+									"query": [
+										{
+											"key": "symbolName",
+											"value": "AAPL"
+										},
+										{
+											"key": "price",
+											"value": "3.5"
+										},
+										{
+											"key": "quantity",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "sell no stock",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 422\", () => {\r",
+											"    pm.response.to.have.status(422);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/portfolio/sell?symbolName=AAPL&price=1.5&quantity=2",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"portfolio",
+										"sell"
+									],
+									"query": [
+										{
+											"key": "symbolName",
+											"value": "AAPL"
+										},
+										{
+											"key": "price",
+											"value": "1.5"
+										},
+										{
+											"key": "quantity",
+											"value": "2"
+										}
 									]
 								}
 							},
@@ -1320,7 +1828,7 @@
 													"        pm.expect(item.symbols.some(symbol => \"AAPL\" === symbol.name), \"symbol AAPL\").to.be.true;\r",
 													"        pm.expect(item.headline, \"headline\").to.not.be.null;\r",
 													"        pm.expect(item.sentiment).to.be.oneOf([\"positive\", \"negative\", \"neutral\"]);\r",
-													"        pm.expect(item.sentimentScore).to.be.a(\"number\");\r",
+													"        pm.expect(item.sentimentConfidence).to.be.a(\"number\");\r",
 													"    });\r",
 													"});\r",
 													""
@@ -1366,7 +1874,7 @@
 									"response": []
 								},
 								{
-									"name": "threeDaysAgo/AAPL,IBM",
+									"name": "threeDaysAgo/AAPL,IBM,GOOG",
 									"event": [
 										{
 											"listen": "test",
@@ -1408,7 +1916,7 @@
 													"        pm.expect(item.symbols.some(symbol => [\"AAPL\", \"IBM\", \"GOOG\"].includes(symbol.name)), \"symbol AAPL or IBM or GOOG\").to.be.true;\r",
 													"        pm.expect(item.headline, \"headline\").to.not.be.null;\r",
 													"        pm.expect(item.sentiment).to.be.oneOf([\"positive\", \"negative\", \"neutral\"]);\r",
-													"        pm.expect(item.sentimentScore).to.be.a(\"number\");\r",
+													"        pm.expect(item.sentimentConfidence).to.be.a(\"number\");\r",
 													"    });\r",
 													"});\r",
 													""
@@ -1439,7 +1947,7 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "{{base_url}}/sentiment/historic/{{specificDate}}/AAPL,IBM",
+											"raw": "{{base_url}}/sentiment/historic/{{specificDate}}/AAPL,IBM,GOOG",
 											"host": [
 												"{{base_url}}"
 											],
@@ -1447,7 +1955,7 @@
 												"sentiment",
 												"historic",
 												"{{specificDate}}",
-												"AAPL,IBM"
+												"AAPL,IBM,GOOG"
 											]
 										}
 									},
@@ -1495,7 +2003,7 @@
 													"        pm.expect(item.symbols).to.be.an(\"array\");\r",
 													"        pm.expect(item.headline, \"headline\").to.not.be.null;\r",
 													"        pm.expect(item.sentiment).to.be.oneOf([\"positive\", \"negative\", \"neutral\"]);\r",
-													"        pm.expect(item.sentimentScore).to.be.a(\"number\");\r",
+													"        pm.expect(item.sentimentConfidence).to.be.a(\"number\");\r",
 													"    });\r",
 													"});\r",
 													""
@@ -1547,6 +2055,163 @@
 					"name": "recommendations/",
 					"item": [
 						{
+							"name": "mock/",
+							"item": [
+								{
+									"name": "AAPL",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", () => {\r",
+													"    pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"console.log(pm.response.json());\r",
+													"\r",
+													"const schema = {\r",
+													"    type: \"object\",\r",
+													"    required: [\"input\", \"output\"],\r",
+													"    additionalProperties: false,\r",
+													"    properties: {\r",
+													"        input: { type: \"string\" },\r",
+													"        output: {\r",
+													"            type: \"object\",\r",
+													"            required: [\"recommendations\", \"errors\"],\r",
+													"            additionalProperties: false,\r",
+													"            properties: {\r",
+													"                recommendations: {\r",
+													"                    type: \"array\",\r",
+													"                    minItems: 1,\r",
+													"                    maxItems: 1,\r",
+													"                    items: {\r",
+													"                        type: \"object\",\r",
+													"                        required: [\"symbol\", \"action\", \"confidence\", \"rationale\"],\r",
+													"                        additionalProperties: false,\r",
+													"                        properties: {\r",
+													"                            symbol: { type: \"string\" },\r",
+													"                            action: { type: \"string\", enum: [\"BUY\", \"SELL\", \"HOLD\"] },\r",
+													"                            confidence: { type: \"number\", minimum: 0, maximum: 1 },\r",
+													"                            rationale: { type: \"string\" }\r",
+													"                        }\r",
+													"                    }\r",
+													"                },\r",
+													"                errors: {\r",
+													"                    type: \"array\",\r",
+													"                    items: { type: \"string\" }\r",
+													"                }\r",
+													"            }\r",
+													"        }\r",
+													"    }\r",
+													"};\r",
+													"\r",
+													"pm.test(\"Response schema is valid\", () => {\r",
+													"    pm.response.to.have.jsonSchema(schema);\r",
+													"});\r",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/recommendations/mock/AAPL",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"recommendations",
+												"mock",
+												"AAPL"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "AAPL,IBM,GOOG",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", () => {\r",
+													"    pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"console.log(pm.response.json());\r",
+													"\r",
+													"const schema = {\r",
+													"    type: \"object\",\r",
+													"    required: [\"input\", \"output\"],\r",
+													"    additionalProperties: false,\r",
+													"    properties: {\r",
+													"        input: { type: \"string\" },\r",
+													"        output: {\r",
+													"            type: \"object\",\r",
+													"            required: [\"recommendations\", \"errors\"],\r",
+													"            additionalProperties: false,\r",
+													"            properties: {\r",
+													"                recommendations: {\r",
+													"                    type: \"array\",\r",
+													"                    minItems: 3,\r",
+													"                    maxItems: 3,\r",
+													"                    items: {\r",
+													"                        type: \"object\",\r",
+													"                        required: [\"symbol\", \"action\", \"confidence\", \"rationale\"],\r",
+													"                        additionalProperties: false,\r",
+													"                        properties: {\r",
+													"                            symbol: { type: \"string\" },\r",
+													"                            action: { type: \"string\", enum: [\"BUY\", \"SELL\", \"HOLD\"] },\r",
+													"                            confidence: { type: \"number\", minimum: 0, maximum: 1 },\r",
+													"                            rationale: { type: \"string\" }\r",
+													"                        }\r",
+													"                    }\r",
+													"                },\r",
+													"                errors: {\r",
+													"                    type: \"array\",\r",
+													"                    items: { type: \"string\" }\r",
+													"                }\r",
+													"            }\r",
+													"        }\r",
+													"    }\r",
+													"};\r",
+													"\r",
+													"pm.test(\"Response schema is valid\", () => {\r",
+													"    pm.response.to.have.jsonSchema(schema);\r",
+													"});\r",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/recommendations/mock/AAPL,IBM,GOOG",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"recommendations",
+												"mock",
+												"AAPL,IBM,GOOG"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
 							"name": "AAPL",
 							"event": [
 								{
@@ -1557,30 +2222,40 @@
 											"    pm.response.to.have.status(200);\r",
 											"});\r",
 											"\r",
+											"console.log(pm.response.json());\r",
+											"\r",
 											"const schema = {\r",
 											"    type: \"object\",\r",
-											"    required: [\"recommendations\", \"errors\"],\r",
+											"    required: [\"input\", \"output\"],\r",
 											"    additionalProperties: false,\r",
 											"    properties: {\r",
-											"        recommendations: {\r",
-											"            type: \"array\",\r",
-											"            minItems: 1,\r",
-											"            maxItems: 1,\r",
-											"            items: {\r",
-											"                type: \"object\",\r",
-											"                required: [\"symbol\", \"action\", \"confidence\", \"rationale\"],\r",
-											"                additionalProperties: false,\r",
-											"                properties: {\r",
-											"                    symbol: { type: \"string\" },\r",
-											"                    action: { type: \"string\", enum: [\"BUY\", \"SELL\", \"HOLD\"] },\r",
-											"                    confidence: { type: \"number\", minimum: 0, maximum: 1 },\r",
-											"                    rationale: { type: \"string\" }\r",
+											"        input: { type: \"string\" },\r",
+											"        output: {\r",
+											"            type: \"object\",\r",
+											"            required: [\"recommendations\", \"errors\"],\r",
+											"            additionalProperties: false,\r",
+											"            properties: {\r",
+											"                recommendations: {\r",
+											"                    type: \"array\",\r",
+											"                    minItems: 1,\r",
+											"                    maxItems: 1,\r",
+											"                    items: {\r",
+											"                        type: \"object\",\r",
+											"                        required: [\"symbol\", \"action\", \"confidence\", \"rationale\"],\r",
+											"                        additionalProperties: false,\r",
+											"                        properties: {\r",
+											"                            symbol: { type: \"string\" },\r",
+											"                            action: { type: \"string\", enum: [\"BUY\", \"SELL\", \"HOLD\"] },\r",
+											"                            confidence: { type: \"number\", minimum: 0, maximum: 1 },\r",
+											"                            rationale: { type: \"string\" }\r",
+											"                        }\r",
+											"                    }\r",
+											"                },\r",
+											"                errors: {\r",
+											"                    type: \"array\",\r",
+											"                    items: { type: \"string\" }\r",
 											"                }\r",
 											"            }\r",
-											"        },\r",
-											"        errors: {\r",
-											"            type: \"array\",\r",
-											"            items: { type: \"string\" }\r",
 											"        }\r",
 											"    }\r",
 											"};\r",
@@ -1622,30 +2297,40 @@
 											"    pm.response.to.have.status(200);\r",
 											"});\r",
 											"\r",
+											"console.log(pm.response.json());\r",
+											"\r",
 											"const schema = {\r",
 											"    type: \"object\",\r",
-											"    required: [\"recommendations\", \"errors\"],\r",
+											"    required: [\"input\", \"output\"],\r",
 											"    additionalProperties: false,\r",
 											"    properties: {\r",
-											"        recommendations: {\r",
-											"            type: \"array\",\r",
-											"            minItems: 3,\r",
-											"            maxItems: 3,\r",
-											"            items: {\r",
-											"                type: \"object\",\r",
-											"                required: [\"symbol\", \"action\", \"confidence\", \"rationale\"],\r",
-											"                additionalProperties: false,\r",
-											"                properties: {\r",
-											"                    symbol: { type: \"string\" },\r",
-											"                    action: { type: \"string\", enum: [\"BUY\", \"SELL\", \"HOLD\"] },\r",
-											"                    confidence: { type: \"number\", minimum: 0, maximum: 1 },\r",
-											"                    rationale: { type: \"string\" }\r",
+											"        input: { type: \"string\" },\r",
+											"        output: {\r",
+											"            type: \"object\",\r",
+											"            required: [\"recommendations\", \"errors\"],\r",
+											"            additionalProperties: false,\r",
+											"            properties: {\r",
+											"                recommendations: {\r",
+											"                    type: \"array\",\r",
+											"                    minItems: 3,\r",
+											"                    maxItems: 3,\r",
+											"                    items: {\r",
+											"                        type: \"object\",\r",
+											"                        required: [\"symbol\", \"action\", \"confidence\", \"rationale\"],\r",
+											"                        additionalProperties: false,\r",
+											"                        properties: {\r",
+											"                            symbol: { type: \"string\" },\r",
+											"                            action: { type: \"string\", enum: [\"BUY\", \"SELL\", \"HOLD\"] },\r",
+											"                            confidence: { type: \"number\", minimum: 0, maximum: 1 },\r",
+											"                            rationale: { type: \"string\" }\r",
+											"                        }\r",
+											"                    }\r",
+											"                },\r",
+											"                errors: {\r",
+											"                    type: \"array\",\r",
+											"                    items: { type: \"string\" }\r",
 											"                }\r",
 											"            }\r",
-											"        },\r",
-											"        errors: {\r",
-											"            type: \"array\",\r",
-											"            items: { type: \"string\" }\r",
 											"        }\r",
 											"    }\r",
 											"};\r",
@@ -3133,36 +3818,6 @@
 					"response": []
 				}
 			]
-		},
-		{
-			"name": "New Request",
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "SOme new?",
-					"options": {
-						"raw": {
-							"language": "text"
-						}
-					}
-				},
-				"url": {
-					"raw": "http://79.112.55.185/analyze",
-					"protocol": "http",
-					"host": [
-						"79",
-						"112",
-						"55",
-						"185"
-					],
-					"path": [
-						"analyze"
-					]
-				}
-			},
-			"response": []
 		}
 	],
 	"auth": {

@@ -66,11 +66,7 @@ public class AlphavantageMarketDataClient {
         List<MarketData> res = new ArrayList<>();
         for (Symbol symbol : symbols) {
             res.addAll(this.retrieveMarketData(symbol, granularity));
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
+            Constants.backOff(1000);
         }
         return res;
     }

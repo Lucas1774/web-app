@@ -9,6 +9,7 @@ import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataJpaService;
 import com.lucas.server.components.tradingbot.news.jpa.NewsJpaService;
+import com.lucas.server.components.tradingbot.portfolio.jpa.PortfolioJpaService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,9 @@ class TwelveDataMarketResponseMapperTest {
     NewsJpaService newsService;
 
     @Autowired
+    PortfolioJpaService portfolioService;
+
+    @Autowired
     SymbolJpaService symbolService;
 
     @Autowired
@@ -45,6 +49,7 @@ class TwelveDataMarketResponseMapperTest {
     void setUp() {
         marketDataService.deleteAll();
         newsService.deleteAll();
+        portfolioService.deleteAll();
         symbolService.deleteAll();
     }
 

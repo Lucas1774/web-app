@@ -1,7 +1,6 @@
 package com.lucas.server.components.tradingbot.marketdata.service;
 
 import com.lucas.server.common.Constants;
-import com.lucas.server.common.exception.IllegalStateException;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataJpaService;
 import org.slf4j.Logger;
@@ -10,7 +9,6 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.text.MessageFormat;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
@@ -33,7 +31,7 @@ public class MarketDataKpiGenerator {
                     BigDecimal change = md.getPrice().subtract(previousPrice);
                     md.setChange(change);
                     if (0 != previousPrice.compareTo(BigDecimal.ZERO)) {
-                        BigDecimal percentage = change.divide(previousPrice, 6, RoundingMode.HALF_UP)
+                        BigDecimal percentage = change.divide(previousPrice, 8, RoundingMode.HALF_UP)
                                 .multiply(BigDecimal.valueOf(100))
                                 .setScale(4, RoundingMode.HALF_UP);
                         md.setChangePercent(percentage);
@@ -47,11 +45,7 @@ public class MarketDataKpiGenerator {
      * @param history list of n consecutive MarketData entries
      * @return simple moving n-average of closing prices
      */
-    public BigDecimal computeMovingAverage(List<MarketData> history) throws IllegalStateException {
-        if (history.isEmpty()) {
-            throw new IllegalStateException(MessageFormat.format(Constants.KPI_EMPTY_DATA_ERROR, "SMA Calculation"));
-        }
-
+    public BigDecimal computeMovingAverage(List<MarketData> history) {
         BigDecimal sumPrices = history.stream()
                 .map(MarketData::getPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -66,11 +60,7 @@ public class MarketDataKpiGenerator {
      * @param history list of n consecutive MarketData entries. The previousClose param allows for not n + 1 needed.
      * @return average true range over n periods (ATR)
      */
-    public BigDecimal computeAtr(List<MarketData> history) throws IllegalStateException {
-        if (history.isEmpty()) {
-            throw new IllegalStateException(MessageFormat.format(Constants.KPI_EMPTY_DATA_ERROR, "ATR Calculation"));
-        }
-
+    public BigDecimal computeAtr(List<MarketData> history) {
         BigDecimal totalTrueRange = history.stream()
                 .map(md -> {
                     BigDecimal highLow = md.getHigh().subtract(md.getLow());
@@ -92,11 +82,7 @@ public class MarketDataKpiGenerator {
      * @param history list of n consecutive MarketData entries. The previousClose param allows for not n + 1 needed.
      * @return RSI (0–100) using simple average gains/losses over n periods
      */
-    public BigDecimal computeRsi(List<MarketData> history) throws IllegalStateException {
-        if (history.isEmpty()) {
-            throw new IllegalStateException(MessageFormat.format(Constants.KPI_EMPTY_DATA_ERROR, "RSI Calculation"));
-        }
-
+    public BigDecimal computeRsi(List<MarketData> history) {
         BigDecimal totalGains = BigDecimal.ZERO;
         BigDecimal totalLosses = BigDecimal.ZERO;
 
@@ -128,11 +114,7 @@ public class MarketDataKpiGenerator {
      * @param history list of n consecutive MarketData entries. The previousClose param allows for not n + 1 needed.
      * @return annualized volatility in percent (std dev of daily returns)
      */
-    public BigDecimal computeVolatility(List<MarketData> history) throws IllegalStateException {
-        if (history.isEmpty()) {
-            throw new IllegalStateException(MessageFormat.format(Constants.KPI_EMPTY_DATA_ERROR, "Volatility Calculation"));
-        }
-
+    public BigDecimal computeVolatility(List<MarketData> history) {
         List<BigDecimal> dailyReturns = new java.util.ArrayList<>();
         for (MarketData md : history) {
             dailyReturns.add(

@@ -3,7 +3,6 @@ package com.lucas.server.components.tradingbot.recommendation.service;
 import com.lucas.server.TestcontainersConfiguration;
 import com.lucas.server.common.Constants;
 import com.lucas.server.common.exception.ClientException;
-import com.lucas.server.common.exception.IllegalStateException;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
@@ -11,8 +10,10 @@ import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataJpaServic
 import com.lucas.server.components.tradingbot.marketdata.service.MarketDataKpiGenerator;
 import com.lucas.server.components.tradingbot.news.jpa.News;
 import com.lucas.server.components.tradingbot.news.jpa.NewsJpaService;
-import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper;
+import com.lucas.server.components.tradingbot.portfolio.jpa.Portfolio;
+import com.lucas.server.components.tradingbot.portfolio.jpa.PortfolioJpaService;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.AssetReportRaw;
+import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.NewsItemRaw;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.PricePointRaw;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,6 +24,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -41,6 +43,9 @@ class RecommendationChatCompletionClientTest {
 
     @Autowired
     NewsJpaService newsService;
+
+    @Autowired
+    PortfolioJpaService portfolioService;
 
     @Autowired
     SymbolJpaService symbolService;
@@ -66,7 +71,7 @@ class RecommendationChatCompletionClientTest {
     }
 
     @Test
-    void testProvide() throws IllegalStateException {
+    void testProvide() {
         // given: insert 15 days of market data. Needs to be greater than the history days
         Symbol symbol = symbolService.getOrCreateByName("AAPL");
         LocalDate today = LocalDate.now();
@@ -100,11 +105,24 @@ class RecommendationChatCompletionClientTest {
         }
         newsService.createIgnoringDuplicates(articles, false);
 
+        // given: a portfolio for the symbol
+        Portfolio portfolio = new Portfolio();
+        portfolio.setSymbol(symbol);
+        portfolio.setQuantity(BigDecimal.valueOf(1.1111));
+        portfolio.setAverageCost(BigDecimal.valueOf(2.2222));
+        portfolio.setEffectiveTimestamp(today.atStartOfDay());
+        portfolioService.save(portfolio);
+
         // when
         List<MarketData> filteredMds = this.marketDataService.getTopForSymbolId(symbol.getId(), Constants.HISTORY_DAYS_COUNT);
         List<News> filteredNews = this.newsService.getTopForSymbolId(symbol.getId(), Constants.NEWS_COUNT);
-        AssetReportRaw report = provider.provide(symbol, filteredMds, filteredNews);
-        assertThatThrownBy(() -> chatCompletionClient.getRecommendations(Map.of(symbol, filteredMds), Map.of(symbol, filteredNews)))
+        Portfolio portfolioData = this.portfolioService.findBySymbol(symbol).orElseThrow();
+        AssetReportRaw report = provider.provide(symbol, filteredMds, filteredNews, portfolioData);
+        assertThatThrownBy(() -> chatCompletionClient.getRecommendations(
+                Map.of(symbol, filteredMds),
+                Map.of(symbol, filteredNews),
+                Map.of(symbol, portfolioData)
+        ))
                 .isInstanceOf(ClientException.class);
 
         // then: symbol & history size & news count
@@ -121,7 +139,7 @@ class RecommendationChatCompletionClientTest {
         assertThat(report.newsCount()).isEqualTo(Constants.NEWS_COUNT);
         assertThat(report.news())
                 .hasSize(Constants.NEWS_COUNT)
-                .extracting(AssetReportToMustacheMapper.NewsItemRaw::headline)
+                .extracting(NewsItemRaw::headline)
                 .containsExactly("Headline 1", "Headline 3", "Headline 5", "Headline 6", "Headline 7",
                         "Headline 9", "Headline 11", "Headline 12", "Headline 13", "Headline 15");
 
@@ -138,10 +156,18 @@ class RecommendationChatCompletionClientTest {
         assertThat(report.atr14()).isEqualByComparingTo(expectedAtr14);
         assertThat(report.volatility()).isEqualByComparingTo(expectedVolatility);
 
-        // then: unmapped fields are null as per implementation
-        assertThat(report.position()).isNull();
-        assertThat(report.entryPrice()).isNull();
-        assertThat(report.positionValue()).isNull();
-        assertThat(report.unrealizedPnL()).isNull();
+        // then: position fields match
+        assertThat(report.position()).isEqualByComparingTo(BigDecimal.valueOf(1.1111));
+        assertThat(report.entryPrice()).isEqualByComparingTo(BigDecimal.valueOf(2.2222));
+        BigDecimal expectedPositionValue = BigDecimal.valueOf(1.1111)
+                .multiply(BigDecimal.valueOf(2.2222))
+                .setScale(4, RoundingMode.HALF_UP);
+        assertThat(report.positionValue()).isEqualByComparingTo(expectedPositionValue);
+        BigDecimal expectedUnrealizedPnL = mdHistory.getFirst()
+                .getPrice()
+                .subtract(report.entryPrice())
+                .multiply(report.position())
+                .setScale(4, RoundingMode.HALF_UP);
+        assertThat(report.unrealizedPnL()).isEqualByComparingTo(expectedUnrealizedPnL);
     }
 }

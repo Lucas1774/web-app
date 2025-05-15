@@ -4,12 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.lucas.server.common.Constants;
 import com.lucas.server.common.exception.ClientException;
-import com.lucas.server.common.exception.IllegalStateException;
 import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.news.jpa.News;
+import com.lucas.server.components.tradingbot.portfolio.jpa.PortfolioBase;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper;
+import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.AssetReportRaw;
 import com.lucas.server.components.tradingbot.recommendation.prompt.PromptRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,10 +60,17 @@ public class RecommendationChatCompletionClient {
     }
 
     @Retryable(retryFor = ClientException.class, maxAttempts = Constants.REQUEST_MAX_ATTEMPTS)
-    public String getRecommendations(Map<Symbol, List<MarketData>> marketData, Map<Symbol, List<News>> newsData) throws ClientException, IllegalStateException, IOException {
-        List<AssetReportToMustacheMapper.AssetReportRaw> reports = new ArrayList<>();
+    public String getRecommendations(Map<Symbol, List<MarketData>> marketData, Map<Symbol, List<News>> newsData,
+                                     Map<Symbol, ? extends PortfolioBase> portfolioData) throws ClientException, IOException {
+        List<AssetReportRaw> reports = new ArrayList<>();
         for (Map.Entry<Symbol, List<MarketData>> mdHistory : marketData.entrySet()) {
-            reports.add(this.assertReportDataProvider.provide(mdHistory.getKey(), mdHistory.getValue(), newsData.get(mdHistory.getKey())));
+            if (!mdHistory.getValue().isEmpty()) {
+                reports.add(this.assertReportDataProvider.provide(mdHistory.getKey(), mdHistory.getValue(),
+                        newsData.get(mdHistory.getKey()), portfolioData.get(mdHistory.getKey())));
+            }
+        }
+        if (reports.isEmpty()) {
+            return "";
         }
         Prompt prompt = new Prompt(List.of(this.systemMessage, this.promptMessage, this.fewShotMessage,
                 generateMessageFromNode(this.objectMapper.readValue(this.assetReportToMustacheMapper.map(reports), ObjectNode.class)))
@@ -70,7 +78,10 @@ public class RecommendationChatCompletionClient {
         logger.info(Constants.GENERATING_RECOMMENDATIONS_INFO, prompt.getContents());
 
         try {
-            return client.call(prompt).getResult().getOutput().getText();
+            ObjectNode result = objectMapper.createObjectNode();
+            result.put("input", prompt.getInstructions().get(3).getText());
+            result.set("output", objectMapper.readTree(client.call(prompt).getResult().getOutput().getText()));
+            return objectMapper.writeValueAsString(result);
         } catch (Exception e) {
             throw new ClientException(e);
         }

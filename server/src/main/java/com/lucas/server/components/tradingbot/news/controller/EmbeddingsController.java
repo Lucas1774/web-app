@@ -1,7 +1,6 @@
 package com.lucas.server.components.tradingbot.news.controller;
 
 import com.lucas.server.common.exception.ClientException;
-import com.lucas.server.common.exception.IllegalStateException;
 import com.lucas.server.components.tradingbot.news.jpa.News;
 import com.lucas.server.components.tradingbot.news.jpa.NewsJpaService;
 import org.slf4j.Logger;
@@ -30,9 +29,6 @@ public class EmbeddingsController {
     public ResponseEntity<List<News>> generateEmbeddingsByNewsId(@PathVariable List<Long> ids) {
         try {
             return ResponseEntity.ok(this.service.generateEmbeddingsByNewsId(ids));
-        } catch (IllegalStateException e) {
-            logger.error(e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (ClientException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

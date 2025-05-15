@@ -2,7 +2,6 @@ package com.lucas.server.components.tradingbot.news.controller;
 
 import com.lucas.server.common.Constants;
 import com.lucas.server.common.exception.ClientException;
-import com.lucas.server.common.exception.IllegalStateException;
 import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;
 import com.lucas.server.components.tradingbot.news.jpa.News;
@@ -35,9 +34,6 @@ public class SentimentController {
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from) {
         try {
             return ResponseEntity.ok(this.jpaService.generateSentiment(Constants.SP500_SYMBOLS, from, LocalDate.now()));
-        } catch (IllegalStateException e) {
-            logger.error(e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -50,9 +46,6 @@ public class SentimentController {
             @PathVariable List<String> symbols) {
         try {
             return ResponseEntity.ok(this.jpaService.generateSentiment(symbols, from, LocalDate.now()));
-        } catch (IllegalStateException e) {
-            logger.error(e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

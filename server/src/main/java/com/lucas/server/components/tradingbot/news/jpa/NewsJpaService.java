@@ -1,8 +1,6 @@
 package com.lucas.server.components.tradingbot.news.jpa;
 
-import com.lucas.server.common.Constants;
 import com.lucas.server.common.exception.ClientException;
-import com.lucas.server.common.exception.IllegalStateException;
 import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.common.jpa.JpaService;
 import com.lucas.server.common.jpa.UniqueConstraintWearyJpaServiceDelegate;
@@ -13,7 +11,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -63,12 +60,9 @@ public class NewsJpaService implements JpaService<News> {
                 .getContent();
     }
 
-    @Transactional(rollbackOn = {IllegalStateException.class, ClientException.class})
-    public List<News> generateEmbeddingsByNewsId(List<Long> ids) throws IllegalStateException, ClientException {
+    @Transactional(rollbackOn = {ClientException.class})
+    public List<News> generateEmbeddingsByNewsId(List<Long> ids) throws ClientException {
         List<News> news = this.repository.findAllByIdIn(ids);
-        if (news.isEmpty()) {
-            throw new IllegalStateException(MessageFormat.format(Constants.ENTITY_NOT_FOUND_ERROR, "news"));
-        }
         NewsListener.setActive(false);
         return this.embeddingsClient.embed(news);
     }
@@ -89,11 +83,8 @@ public class NewsJpaService implements JpaService<News> {
     }
 
     public List<News> generateSentiment(List<Long> list, LocalDate from, LocalDate to)
-            throws IllegalStateException, ClientException, JsonProcessingException {
+            throws ClientException, JsonProcessingException {
         List<News> news = this.repository.findAllBySymbols_IdInAndDateBetween(list, from.atStartOfDay(), to.plusDays(1).atStartOfDay());
-        if (news.isEmpty()) {
-            throw new IllegalStateException(MessageFormat.format(Constants.ENTITY_NOT_FOUND_ERROR, "news"));
-        }
         NewsListener.setActive(false);
         return this.sentimentClient.generateSentiment(news);
     }

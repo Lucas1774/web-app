@@ -1,11 +1,10 @@
 package com.lucas.server.components.tradingbot.common;
 
 import com.lucas.server.TestcontainersConfiguration;
+import com.lucas.server.components.tradingbot.common.jpa.DataManager;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataJpaService;
-import com.lucas.server.components.tradingbot.marketdata.service.TwelveDataMarketDataClient;
 import com.lucas.server.components.tradingbot.news.jpa.NewsJpaService;
-import com.lucas.server.components.tradingbot.news.service.FinnhubNewsClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,10 +28,7 @@ import static org.mockito.Mockito.verify;
 class DailySchedulerTest {
 
     @MockitoBean
-    TwelveDataMarketDataClient marketDataClient;
-
-    @MockitoBean
-    FinnhubNewsClient newsClient;
+    DataManager dataManager;
 
     @Autowired
     SymbolJpaService symbolService;
@@ -64,8 +60,8 @@ class DailySchedulerTest {
         LocalDate from = to.minusDays(1);
         await().atMost(Duration.ofSeconds(10))
                 .untilAsserted(() -> {
-                            verify(marketDataClient, atLeastOnce()).retrieveMarketData(any());
-                            verify(newsClient, atLeastOnce()).retrieveNewsByDateRange(any(), eq(from), eq(to));
+                            verify(dataManager, atLeastOnce()).retrieveMarketData(any(), any());
+                            verify(dataManager, atLeastOnce()).retrieveNewsByDateRange(any(), eq(from), eq(to));
                         }
                 );
     }

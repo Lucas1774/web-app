@@ -57,12 +57,7 @@ public class FinnhubNewsClient {
                         .computeIfAbsent(news.getExternalId(), id -> news)
                         .addSymbol(symbol);
             }
-
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
+            Constants.backOff(1000);
         }
 
         return new ArrayList<>(newsByExternalId.values());

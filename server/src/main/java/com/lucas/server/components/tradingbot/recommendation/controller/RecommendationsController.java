@@ -1,7 +1,6 @@
 package com.lucas.server.components.tradingbot.recommendation.controller;
 
 import com.lucas.server.common.exception.ClientException;
-import com.lucas.server.common.exception.IllegalStateException;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.util.List;
+
+import static com.lucas.server.common.Constants.PortfolioType.MOCK;
+import static com.lucas.server.common.Constants.PortfolioType.REAL;
 
 @RestController
 @RequestMapping("/recommendations")
@@ -29,8 +31,18 @@ public class RecommendationsController {
     @GetMapping("/{symbols}")
     public ResponseEntity<String> generateRecommendations(@PathVariable List<String> symbols) {
         try {
-            return ResponseEntity.ok(this.jpaService.getRecommendations(symbols));
-        } catch (ClientException | IllegalStateException | IOException e) {
+            return ResponseEntity.ok(this.jpaService.getRecommendations(symbols, REAL));
+        } catch (ClientException | IOException e) {
+            logger.error(e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/mock/{symbols}")
+    public ResponseEntity<String> generateRecommendationsMock(@PathVariable List<String> symbols) {
+        try {
+            return ResponseEntity.ok(this.jpaService.getRecommendations(symbols, MOCK));
+        } catch (ClientException | IOException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }

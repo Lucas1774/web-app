@@ -2,7 +2,6 @@ package com.lucas.server.components.tradingbot.marketdata.service;
 
 import com.lucas.server.TestcontainersConfiguration;
 import com.lucas.server.common.Constants;
-import com.lucas.server.common.exception.IllegalStateException;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
@@ -16,14 +15,11 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import java.math.BigDecimal;
-import java.text.MessageFormat;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 
@@ -146,27 +142,27 @@ class MarketDataKpiGeneratorTest {
     }
 
     @Test
-    void testComputeMovingAverage() throws IllegalStateException {
+    void testComputeMovingAverage() {
         assertThat(kpiGenerator.computeMovingAverage(mds)).isEqualByComparingTo(new BigDecimal("12.0000"));
     }
 
     @Test
-    void testComputeAtr() throws IllegalStateException {
+    void testComputeAtr() {
         assertThat(kpiGenerator.computeAtr(mds)).isEqualByComparingTo(new BigDecimal("2.4000"));
     }
 
     @Test
-    void testComputeRsi() throws IllegalStateException {
+    void testComputeRsi() {
         assertThat(kpiGenerator.computeRsi(mds)).isEqualByComparingTo(new BigDecimal("85.7143"));
     }
 
     @Test
-    void testComputeVolatility() throws IllegalStateException {
+    void testComputeVolatility() {
         assertThat(kpiGenerator.computeVolatility(mds)).isEqualByComparingTo(new BigDecimal("160.2067"));
     }
 
     @Test
-    void testComputeMovingAverage_prizesAreZero() throws IllegalStateException {
+    void testComputeMovingAverage_prizesAreZero() {
         List<MarketData> marketDataList = Arrays.asList(
                 md(0, 5, 1, 1, 4),
                 md(0, 0, 1, 1, 3),
@@ -182,7 +178,7 @@ class MarketDataKpiGeneratorTest {
     }
 
     @Test
-    void testComputeAtr_totalTrueRangeIsZero() throws IllegalStateException {
+    void testComputeAtr_totalTrueRangeIsZero() {
         List<MarketData> marketDataList = Arrays.asList(
                 md(0, 4, 4, 4, 0),
                 md(4, 3, 3, 3, 1),
@@ -198,7 +194,7 @@ class MarketDataKpiGeneratorTest {
     }
 
     @Test
-    void testComputeRsi_noGainsNoLoses() throws IllegalStateException {
+    void testComputeRsi_noGainsNoLoses() {
         List<MarketData> marketDataList = Arrays.asList(
                 md(4, 4, 5, 4, 0),
                 md(4, 4, 4, 3, 1),
@@ -214,7 +210,7 @@ class MarketDataKpiGeneratorTest {
     }
 
     @Test
-    void testComputeVolatility_noGainsNoLoses() throws IllegalStateException {
+    void testComputeVolatility_noGainsNoLoses() {
         List<MarketData> marketDataList = Arrays.asList(
                 md(4, 4, 5, 4, 0),
                 md(4, 4, 4, 3, 1),
@@ -227,33 +223,5 @@ class MarketDataKpiGeneratorTest {
                 .hasSize(1)
                 .allSatisfy(log -> assertThat(log).contains(marketDataList.getFirst().toString())
                         .contains(Constants.KPI_RETURNED_ZERO_WARN.replace("{}", "")));
-    }
-
-    @Test
-    void testComputeMovingAverage_emptyRange() {
-        assertThatThrownBy(() -> kpiGenerator.computeMovingAverage(new ArrayList<>()))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining(MessageFormat.format(Constants.KPI_EMPTY_DATA_ERROR, "SMA Calculation"));
-    }
-
-    @Test
-    void testComputeAtr_emptyRange() {
-        assertThatThrownBy(() -> kpiGenerator.computeAtr(new ArrayList<>()))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining(MessageFormat.format(Constants.KPI_EMPTY_DATA_ERROR, "ATR Calculation"));
-    }
-
-    @Test
-    void testComputeRsi_emptyRange() {
-        assertThatThrownBy(() -> kpiGenerator.computeRsi(new ArrayList<>()))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining(MessageFormat.format(Constants.KPI_EMPTY_DATA_ERROR, "RSI Calculation"));
-    }
-
-    @Test
-    void testComputeVolatility_emptyRange() {
-        assertThatThrownBy(() -> kpiGenerator.computeVolatility(new ArrayList<>()))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining(MessageFormat.format(Constants.KPI_EMPTY_DATA_ERROR, "Volatility Calculation"));
     }
 }

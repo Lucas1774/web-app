@@ -33,13 +33,10 @@ public class NewsEmbeddingsClient {
         try {
             float[] embeddings = client.embed(contentToEmbed);
             if (embeddings.length > 0) {
-                Thread.sleep(4000);
+                Constants.backOff(4000);
             }
 
             return news.setEmbeddings(embeddings);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            return news;
         } catch (Exception e) {
             throw new ClientException(e);
         }

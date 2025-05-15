@@ -7,6 +7,7 @@ import com.lucas.server.common.Constants;
 import com.lucas.server.common.Mapper;
 import com.lucas.server.common.exception.ConfigurationException;
 import com.lucas.server.common.exception.JsonProcessingException;
+import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.AssetReportRaw;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -25,7 +26,7 @@ import java.util.Objects;
 import static com.lucas.server.common.Constants.NA;
 
 @Component
-public class AssetReportToMustacheMapper implements Mapper<List<AssetReportToMustacheMapper.AssetReportRaw>, String> {
+public class AssetReportToMustacheMapper implements Mapper<List<AssetReportRaw>, String> {
 
     private final Mustache mustache;
 
@@ -42,7 +43,7 @@ public class AssetReportToMustacheMapper implements Mapper<List<AssetReportToMus
 
     public record AssetReportRaw(
             String symbol,
-            Integer position,
+            BigDecimal position,
             BigDecimal positionValue,
             BigDecimal entryPrice,
             int historyDays,
@@ -92,22 +93,22 @@ public class AssetReportToMustacheMapper implements Mapper<List<AssetReportToMus
             List<NewsItem> news
     ) {
         private static AssetReport from(AssetReportRaw report) {
-        return new AssetReport(
-                report.symbol,
-                report.position != null ? String.valueOf(report.position) : NA,
-                report.positionValue != null ? report.positionValue.stripTrailingZeros().toPlainString() : NA,
-                report.entryPrice != null ? report.entryPrice.stripTrailingZeros().toPlainString() : NA,
-                String.valueOf(report.historyDays),
-                report.priceHistory.stream().map(PricePoint::from).toList(),
-                report.ma5.stripTrailingZeros().toPlainString(),
-                report.rsi14.stripTrailingZeros().toPlainString(),
-                report.atr14.stripTrailingZeros().toPlainString(),
-                report.volatility.stripTrailingZeros().toPlainString(),
-                report.unrealizedPnL != null ? report.unrealizedPnL.stripTrailingZeros().toPlainString() : NA,
-                String.valueOf(report.newsCount),
-                report.news.stream().map(NewsItem::from).toList()
-        );
-    }
+            return new AssetReport(
+                    report.symbol,
+                    report.position != null ? report.position.stripTrailingZeros().toPlainString() : NA,
+                    report.positionValue != null ? report.positionValue.stripTrailingZeros().toPlainString() : NA,
+                    report.entryPrice != null ? report.entryPrice.stripTrailingZeros().toPlainString() : NA,
+                    String.valueOf(report.historyDays),
+                    report.priceHistory.stream().map(PricePoint::from).toList(),
+                    report.ma5.stripTrailingZeros().toPlainString(),
+                    report.rsi14.stripTrailingZeros().toPlainString(),
+                    report.atr14.stripTrailingZeros().toPlainString(),
+                    report.volatility.stripTrailingZeros().toPlainString(),
+                    report.unrealizedPnL != null ? report.unrealizedPnL.stripTrailingZeros().toPlainString() : NA,
+                    String.valueOf(report.newsCount),
+                    report.news.stream().map(NewsItem::from).toList()
+            );
+        }
 
         private record PricePoint(
                 String date,
@@ -124,7 +125,7 @@ public class AssetReportToMustacheMapper implements Mapper<List<AssetReportToMus
                         point.high.stripTrailingZeros().toPlainString(),
                         point.low.stripTrailingZeros().toPlainString(),
                         point.close.stripTrailingZeros().toPlainString(),
-                        String.valueOf(point.volume)
+                        point.volume != null ? point.volume.toString() : NA
                 );
             }
         }
@@ -139,8 +140,8 @@ public class AssetReportToMustacheMapper implements Mapper<List<AssetReportToMus
             private static NewsItem from(NewsItemRaw news) {
                 return new NewsItem(
                         news.headline,
-                        news.sentiment,
-                        news.sentimentConfidence.stripTrailingZeros().toPlainString().concat("%"),
+                        news.sentiment != null ? news.sentiment : NA,
+                        news.sentimentConfidence != null ? news.sentimentConfidence.stripTrailingZeros().toPlainString().concat("%") : NA,
                         news.summary,
                         news.date.toLocalDate().toString()
                 );
