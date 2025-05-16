@@ -86,7 +86,7 @@ class RecommendationChatCompletionClientTest {
                     .setUrl("https://example.com/news/" + i)
                     .setHeadline("Headline " + i)
                     .setSummary("Summary " + i)
-                    .setDate(today.minusDays(i).atStartOfDay())
+                    .setDate(today.minusDays(i))
                     .setSentiment(i % 3 == 0 ? "positive" : i % 2 == 0 ? "neutral" : "negative")
                     .setSentimentConfidence(BigDecimal.valueOf((i * 6) % 100));
             articles.add(news);

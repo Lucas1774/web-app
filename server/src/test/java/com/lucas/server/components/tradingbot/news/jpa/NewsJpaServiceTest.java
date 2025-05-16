@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
@@ -45,7 +45,7 @@ class NewsJpaServiceTest {
         News n1 = new News()
                 .setExternalId(1L)
                 .addSymbol(symbol)
-                .setDate(LocalDateTime.now())
+                .setDate(LocalDate.now())
                 .setHeadline("Headline1")
                 .setSummary("Summary1")
                 .setUrl("url1")
@@ -56,7 +56,7 @@ class NewsJpaServiceTest {
         News n2 = new News()
                 .setExternalId(2L)
                 .addSymbol(symbol)
-                .setDate(LocalDateTime.now())
+                .setDate(LocalDate.now())
                 .setHeadline("Headline2")
                 .setSummary("Summary2")
                 .setUrl("url2")
@@ -91,7 +91,7 @@ class NewsJpaServiceTest {
         News dup = new News()
                 .setExternalId(1L)
                 .addSymbol(symbol)
-                .setDate(LocalDateTime.now())
+                .setDate(LocalDate.now())
                 .setHeadline("Headline1-dup")
                 .setSummary("Summary-dup")
                 .setUrl("url-dup")
@@ -102,7 +102,7 @@ class NewsJpaServiceTest {
         News n3 = new News()
                 .setExternalId(3L)
                 .addSymbol(symbol2)
-                .setDate(LocalDateTime.now())
+                .setDate(LocalDate.now())
                 .setHeadline("Headline3")
                 .setSummary("Summary3")
                 .setUrl("url3")

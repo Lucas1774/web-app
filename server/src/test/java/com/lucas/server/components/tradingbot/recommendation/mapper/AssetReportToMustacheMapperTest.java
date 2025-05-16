@@ -103,18 +103,18 @@ class AssetReportToMustacheMapperTest {
     private static List<NewsItemRaw> getNewsNullValues() {
         return List.of(
                 new NewsItemRaw("Headline One", null, BigDecimal.valueOf(54.4412),
-                        "First summary", LocalDate.of(2025, 5, 1).atStartOfDay()),
+                        "First summary", LocalDate.of(2025, 5, 1)),
                 new NewsItemRaw("Headline Two", null, BigDecimal.valueOf(54.4412),
-                        "Second summary", LocalDate.of(2025, 5, 2).atStartOfDay())
+                        "Second summary", LocalDate.of(2025, 5, 2))
         );
     }
 
     private static List<NewsItemRaw> getNewsAllValues() {
         return List.of(
                 new NewsItemRaw("Headline One", "positive", BigDecimal.valueOf(54.4412),
-                        "First summary", LocalDate.of(2025, 5, 1).atStartOfDay()),
+                        "First summary", LocalDate.of(2025, 5, 1)),
                 new NewsItemRaw("Headline Two", "negative", BigDecimal.valueOf(54.4412),
-                        "Second summary", LocalDate.of(2025, 5, 2).atStartOfDay())
+                        "Second summary", LocalDate.of(2025, 5, 2))
         );
     }
 }

@@ -16,7 +16,7 @@ import org.springframework.context.annotation.Import;
 
 import java.text.MessageFormat;
 import java.time.Instant;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 
@@ -65,9 +65,9 @@ class FinnhubNewsResponseMapperTest {
         News news = mapper.map(node);
 
         // then
-        LocalDateTime expectedDate = Instant.ofEpochSecond(epoch)
+        LocalDate expectedDate = Instant.ofEpochSecond(epoch)
                 .atZone(ZoneOffset.UTC)
-                .toLocalDateTime();
+                .toLocalDate();
 
         assertThat(news)
                 .isNotNull()

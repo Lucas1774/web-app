@@ -87,7 +87,7 @@ public class NewsJpaService implements JpaService<News> {
 
     public List<News> generateSentiment(List<Long> list, LocalDate from, LocalDate to)
             throws ClientException, JsonProcessingException {
-        List<News> news = this.repository.findAllBySymbols_IdInAndDateBetween(list, from.atStartOfDay(), to.plusDays(1).atStartOfDay());
+        List<News> news = this.repository.findAllBySymbols_IdInAndDateBetween(list, from, to);
         NewsListener.setActive(false);
         return this.sentimentClient.generateSentiment(news);
     }

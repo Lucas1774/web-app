@@ -18,7 +18,6 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -73,7 +72,7 @@ public class AssetReportToMustacheMapper implements Mapper<List<AssetReportRaw>,
             String sentiment,
             BigDecimal sentimentConfidence,
             String summary,
-            LocalDateTime date
+            LocalDate date
     ) {
     }
 
@@ -143,7 +142,7 @@ public class AssetReportToMustacheMapper implements Mapper<List<AssetReportRaw>,
                         news.sentiment != null ? news.sentiment : NA,
                         news.sentimentConfidence != null ? news.sentimentConfidence.stripTrailingZeros().toPlainString().concat("%") : NA,
                         news.summary,
-                        news.date.toLocalDate().toString()
+                        news.date.toString()
                 );
             }
         }

@@ -5,7 +5,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -19,5 +19,5 @@ public interface NewsRepository extends JpaRepository<News, Long> {
 
     List<News> findAllByIdIn(List<Long> ids);
 
-    List<News> findAllBySymbols_IdInAndDateBetween(Collection<Long> symbolIds, LocalDateTime from, LocalDateTime to);
+    List<News> findAllBySymbols_IdInAndDateBetween(Collection<Long> symbolIds, LocalDate from, LocalDate to);
 }

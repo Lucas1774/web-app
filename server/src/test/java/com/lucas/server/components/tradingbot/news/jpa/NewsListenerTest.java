@@ -12,7 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -45,7 +45,7 @@ class NewsListenerTest {
         News previous = new News()
                 .addSymbol(symbol)
                 .setExternalId(1L)
-                .setDate(LocalDateTime.now())
+                .setDate(LocalDate.now())
                 .setHeadline("Headline1")
                 .setUrl("url");
 
@@ -53,7 +53,7 @@ class NewsListenerTest {
         News current = new News()
                 .addSymbol(symbol2)
                 .setExternalId(2L)
-                .setDate(LocalDateTime.now())
+                .setDate(LocalDate.now())
                 .setHeadline("Headline2")
                 .setUrl("url");
 
@@ -73,7 +73,7 @@ class NewsListenerTest {
         News previous = new News()
                 .addSymbol(symbol)
                 .setExternalId(1L)
-                .setDate(LocalDateTime.now())
+                .setDate(LocalDate.now())
                 .setHeadline("Headline1")
                 .setUrl("url");
 
@@ -81,7 +81,7 @@ class NewsListenerTest {
         News current = new News()
                 .addSymbol(symbol2)
                 .setExternalId(2L)
-                .setDate(LocalDateTime.now())
+                .setDate(LocalDate.now())
                 .setHeadline("Headline2")
                 .setUrl("url");
 
