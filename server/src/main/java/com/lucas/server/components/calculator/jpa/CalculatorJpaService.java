@@ -1,42 +1,31 @@
 package com.lucas.server.components.calculator.jpa;
 
 import com.lucas.server.common.Constants;
+import com.lucas.server.common.jpa.GenericJpaServiceDelegate;
 import com.lucas.server.common.jpa.JpaService;
 import com.lucas.server.components.calculator.service.CalculatorSolver;
 import jakarta.transaction.Transactional;
+import lombok.experimental.Delegate;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
 public class CalculatorJpaService implements JpaService<Calculator> {
 
+    @Delegate
+    private final GenericJpaServiceDelegate<Calculator, CalculatorRepository> delegate;
     private final CalculatorRepository repository;
     private final CalculatorSolver solver;
 
     public CalculatorJpaService(CalculatorRepository repository, CalculatorSolver solver) {
+        this.delegate = new GenericJpaServiceDelegate<>(repository);
         this.repository = repository;
         this.solver = solver;
     }
 
-    @Override
-    public List<Calculator> createAll(List<Calculator> entities) {
-        return this.repository.saveAll(entities);
-    }
-
-    @Override
-    public void deleteAll() {
-        this.repository.deleteAll();
-    }
-
-    @Override
-    public List<Calculator> findAll() {
-        return this.repository.findAll();
-    }
-
     public Optional<Calculator> find() {
-        return this.findAll().stream().findFirst();
+        return this.repository.findAll().stream().findFirst();
     }
 
     @Transactional

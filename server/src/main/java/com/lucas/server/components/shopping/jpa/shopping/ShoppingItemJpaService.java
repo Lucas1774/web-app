@@ -1,9 +1,11 @@
 package com.lucas.server.components.shopping.jpa.shopping;
 
+import com.lucas.server.common.jpa.GenericJpaServiceDelegate;
 import com.lucas.server.common.jpa.JpaService;
 import com.lucas.server.components.shopping.jpa.product.Product;
 import com.lucas.server.components.shopping.jpa.product.ProductRepository;
 import jakarta.transaction.Transactional;
+import lombok.experimental.Delegate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,27 +13,15 @@ import java.util.List;
 @Service
 public class ShoppingItemJpaService implements JpaService<ShoppingItem> {
 
+    @Delegate
+    private final GenericJpaServiceDelegate<ShoppingItem, ShoppingItemRepository> delegate;
     private final ShoppingItemRepository repository;
     private final ProductRepository productRepository;
 
     public ShoppingItemJpaService(ShoppingItemRepository repository, ProductRepository productRepository) {
+        this.delegate = new GenericJpaServiceDelegate<>(repository);
         this.repository = repository;
         this.productRepository = productRepository;
-    }
-
-    @Override
-    public List<ShoppingItem> createAll(List<ShoppingItem> entities) {
-        return this.repository.saveAll(entities);
-    }
-
-    @Override
-    public void deleteAll() {
-        this.repository.deleteAll();
-    }
-
-    @Override
-    public List<ShoppingItem> findAll() {
-        return this.repository.findAll();
     }
 
     public List<ShoppingItem> findAllByUsername(String username) {

@@ -1,7 +1,9 @@
 package com.lucas.server.components.tradingbot.marketdata.jpa;
 
+import com.lucas.server.common.jpa.GenericJpaServiceDelegate;
 import com.lucas.server.common.jpa.JpaService;
 import com.lucas.server.common.jpa.UniqueConstraintWearyJpaServiceDelegate;
+import lombok.experimental.Delegate;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -13,35 +15,23 @@ import java.util.Optional;
 @Service
 public class MarketDataJpaService implements JpaService<MarketData> {
 
+    @Delegate
+    private final GenericJpaServiceDelegate<MarketData, MarketDataRepository> delegate;
+    private final UniqueConstraintWearyJpaServiceDelegate<MarketData> uniqueConstraintDelegate;
     private final MarketDataRepository repository;
-    private final UniqueConstraintWearyJpaServiceDelegate<MarketData> delegate;
 
-    public MarketDataJpaService(MarketDataRepository repository, UniqueConstraintWearyJpaServiceDelegate<MarketData> delegate) {
+    public MarketDataJpaService(MarketDataRepository repository) {
+        this.delegate = new GenericJpaServiceDelegate<>(repository);
+        this.uniqueConstraintDelegate = new UniqueConstraintWearyJpaServiceDelegate<>(repository);
         this.repository = repository;
-        this.delegate = delegate;
-    }
-
-    @Override
-    public List<MarketData> createAll(List<MarketData> entities) {
-        return this.repository.saveAll(entities);
-    }
-
-    @Override
-    public void deleteAll() {
-        this.repository.deleteAll();
-    }
-
-    @Override
-    public List<MarketData> findAll() {
-        return this.repository.findAll();
     }
 
     public MarketData getOrCreate(MarketData entity) {
-        return this.delegate.getOrCreate(repository, this::findUnique, entity);
+        return this.uniqueConstraintDelegate.getOrCreate(this::findUnique, entity);
     }
 
     public List<MarketData> createIgnoringDuplicates(Iterable<MarketData> entities) {
-        return this.delegate.createIgnoringDuplicates(this.repository, this::findUnique, entities);
+        return this.uniqueConstraintDelegate.createIgnoringDuplicates(this::findUnique, entities);
     }
 
     public Optional<MarketData> findUnique(MarketData entity) {

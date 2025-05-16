@@ -2,11 +2,13 @@ package com.lucas.server.components.tradingbot.news.jpa;
 
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.common.exception.JsonProcessingException;
+import com.lucas.server.common.jpa.GenericJpaServiceDelegate;
 import com.lucas.server.common.jpa.JpaService;
 import com.lucas.server.common.jpa.UniqueConstraintWearyJpaServiceDelegate;
 import com.lucas.server.components.tradingbot.news.service.NewsEmbeddingsClient;
 import com.lucas.server.components.tradingbot.news.service.NewsSentimentClient;
 import jakarta.transaction.Transactional;
+import lombok.experimental.Delegate;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -17,32 +19,19 @@ import java.util.List;
 @Service
 public class NewsJpaService implements JpaService<News> {
 
+    @Delegate
+    private final GenericJpaServiceDelegate<News, NewsRepository> delegate;
+    private final UniqueConstraintWearyJpaServiceDelegate<News> uniqueConstraintDelegate;
     private final NewsRepository repository;
-    private final UniqueConstraintWearyJpaServiceDelegate<News> delegate;
     private final NewsEmbeddingsClient embeddingsClient;
     private final NewsSentimentClient sentimentClient;
 
-    public NewsJpaService(NewsRepository repository, UniqueConstraintWearyJpaServiceDelegate<News> delegate,
-                          NewsEmbeddingsClient embeddingsClient, NewsSentimentClient sentimentClient) {
+    public NewsJpaService(NewsRepository repository, NewsEmbeddingsClient embeddingsClient, NewsSentimentClient sentimentClient) {
+        this.delegate = new GenericJpaServiceDelegate<>(repository);
+        this.uniqueConstraintDelegate = new UniqueConstraintWearyJpaServiceDelegate<>(repository);
         this.repository = repository;
-        this.delegate = delegate;
         this.embeddingsClient = embeddingsClient;
         this.sentimentClient = sentimentClient;
-    }
-
-    @Override
-    public List<News> createAll(List<News> entities) {
-        return this.repository.saveAll(entities);
-    }
-
-    @Override
-    public void deleteAll() {
-        this.repository.deleteAll();
-    }
-
-    @Override
-    public List<News> findAll() {
-        return repository.findAll();
     }
 
     public List<News> createIgnoringDuplicates(Iterable<News> entities, boolean triggerEntityCallback) {
@@ -51,8 +40,7 @@ public class NewsJpaService implements JpaService<News> {
     }
 
     private List<News> createIgnoringDuplicates(Iterable<News> entities) {
-        return this.delegate.createIgnoringDuplicates(repository,
-                entity -> this.repository.findByExternalId(entity.getExternalId()), entities);
+        return this.uniqueConstraintDelegate.createIgnoringDuplicates(entity -> this.repository.findByExternalId(entity.getExternalId()), entities);
     }
 
     public List<News> getTopForSymbolId(Long symbolId, int limit) {
@@ -76,8 +64,7 @@ public class NewsJpaService implements JpaService<News> {
     }
 
     private List<News> createOrUpdate(List<News> entities) {
-        return this.delegate.createOrUpdate(repository,
-                entity -> this.repository.findByExternalId(entity.getExternalId()),
+        return this.uniqueConstraintDelegate.createOrUpdate(entity -> this.repository.findByExternalId(entity.getExternalId()),
                 (oldEntity, newEntity) -> {
                     oldEntity.getSymbols().addAll(newEntity.getSymbols());
                     return oldEntity;

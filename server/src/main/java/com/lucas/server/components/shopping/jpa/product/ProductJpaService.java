@@ -1,6 +1,7 @@
 package com.lucas.server.components.shopping.jpa.product;
 
 
+import com.lucas.server.common.jpa.GenericJpaServiceDelegate;
 import com.lucas.server.common.jpa.JpaService;
 import com.lucas.server.common.jpa.OrderColumnJpaService;
 import com.lucas.server.common.jpa.user.OrderColumnServiceDelegate;
@@ -10,47 +11,31 @@ import com.lucas.server.components.shopping.jpa.category.CategoryRepository;
 import com.lucas.server.components.shopping.jpa.shopping.ShoppingItem;
 import com.lucas.server.components.shopping.jpa.shopping.ShoppingItemRepository;
 import jakarta.transaction.Transactional;
+import lombok.experimental.Delegate;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
 public class ProductJpaService implements JpaService<Product>, OrderColumnJpaService<Product> {
 
+    @Delegate
+    private final GenericJpaServiceDelegate<Product, ProductRepository> delegate;
+    @Delegate
+    private final OrderColumnServiceDelegate<Product> orderColumnDelegate;
     private final ProductRepository repository;
     private final UserRepository userRepository;
     private final ShoppingItemRepository shoppingItemRepository;
     private final CategoryRepository categoryRepository;
-    private final OrderColumnServiceDelegate<Product> orderColumnServiceDelegate;
 
-    public ProductJpaService(ProductRepository repository, UserRepository userRepository, ShoppingItemRepository shoppingItemRepository,
-                             CategoryRepository categoryRepository, OrderColumnServiceDelegate<Product> orderColumnServiceDelegate) {
+    public ProductJpaService(ProductRepository repository, UserRepository userRepository,
+                             ShoppingItemRepository shoppingItemRepository, CategoryRepository categoryRepository) {
+        this.delegate = new GenericJpaServiceDelegate<>(repository);
+        this.orderColumnDelegate = new OrderColumnServiceDelegate<>(repository);
         this.repository = repository;
         this.userRepository = userRepository;
         this.shoppingItemRepository = shoppingItemRepository;
         this.categoryRepository = categoryRepository;
-        this.orderColumnServiceDelegate = orderColumnServiceDelegate;
-    }
-
-    @Override
-    public List<Product> createAll(List<Product> entities) {
-        return this.repository.saveAll(entities);
-    }
-
-    @Override
-    public void deleteAll() {
-        this.repository.deleteAll();
-    }
-
-    @Override
-    public List<Product> findAll() {
-        return this.repository.findAll();
-    }
-
-    @Override
-    public List<Product> updateOrders(List<Product> newlySortedElements) {
-        return this.orderColumnServiceDelegate.sort(this.repository, newlySortedElements);
     }
 
     @Transactional
@@ -93,7 +78,6 @@ public class ProductJpaService implements JpaService<Product>, OrderColumnJpaSer
                     .setOrder(maxOrder));
         }
 
-        product.setCategory(category);
-        return repository.save(product);
+        return product.setCategory(category);
     }
 }

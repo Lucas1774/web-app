@@ -9,7 +9,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -24,18 +23,6 @@ public class PortfolioJpaServiceDelegate<T extends PortfolioBase, R extends JpaR
         this.repository = repository;
         this.findLatestBySymbol = findLatestBySymbol;
         this.builder = builder;
-    }
-
-    public List<T> createAll(List<T> entities) {
-        return this.repository.saveAll(entities);
-    }
-
-    public void deleteAll() {
-        this.repository.deleteAll();
-    }
-
-    public List<T> findAll() {
-        return this.repository.findAll();
     }
 
     public T save(T entity) {
@@ -56,7 +43,7 @@ public class PortfolioJpaServiceDelegate<T extends PortfolioBase, R extends JpaR
                             .setQuantity(BigDecimal.ZERO)
                             .setAverageCost(BigDecimal.ZERO)
                             .setEffectiveTimestamp(timestamp);
-                    return this.save(res);
+                    return res;
                 });
         BigDecimal oldQuantity = last.getQuantity();
         BigDecimal newQuantity = oldQuantity.add(isBuy ? quantity : quantity.negate());
