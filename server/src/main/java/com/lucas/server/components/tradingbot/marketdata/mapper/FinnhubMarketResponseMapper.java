@@ -31,7 +31,7 @@ public class FinnhubMarketResponseMapper implements Mapper<JsonNode, MarketData>
                     .setChange(new BigDecimal(json.get("d").asText()))
                     .setChangePercent(new BigDecimal(json.get("dp").asText()));
         } catch (Exception e) {
-            throw new JsonProcessingException(MessageFormat.format(Constants.JSON_MAPPING_ERROR, "market"), e);
+            throw new JsonProcessingException(MessageFormat.format(Constants.JSON_MAPPING_ERROR, Constants.MARKET), e);
         }
     }
 

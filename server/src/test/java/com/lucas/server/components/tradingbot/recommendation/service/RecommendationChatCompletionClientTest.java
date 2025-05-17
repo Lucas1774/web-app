@@ -128,10 +128,10 @@ class RecommendationChatCompletionClientTest {
         // then: KPIs match the kpiGenerator calculations
         List<MarketData> mdHistory = marketDataService.getTopForSymbolId(
                 symbolService.findByName(symbol.getName()).orElseThrow().getId(), Constants.HISTORY_DAYS_COUNT);
-        BigDecimal expectedMa5 = kpiGenerator.computeMovingAverage(mdHistory);
-        BigDecimal expectedRsi14 = kpiGenerator.computeRsi(mdHistory);
-        BigDecimal expectedAtr14 = kpiGenerator.computeAtr(mdHistory);
-        BigDecimal expectedVolatility = kpiGenerator.computeVolatility(mdHistory);
+        BigDecimal expectedMa5 = kpiGenerator.computeMovingAverage(mdHistory.subList(0, 5));
+        BigDecimal expectedRsi14 = kpiGenerator.computeRsi(mdHistory.subList(0, 14));
+        BigDecimal expectedAtr14 = kpiGenerator.computeAtr(mdHistory.subList(0, 14));
+        BigDecimal expectedVolatility = kpiGenerator.computeVolatility(mdHistory.subList(0, 14));
 
         assertThat(report.ma5()).isEqualByComparingTo(expectedMa5);
         assertThat(report.rsi14()).isEqualByComparingTo(expectedRsi14);

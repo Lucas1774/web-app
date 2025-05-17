@@ -33,10 +33,6 @@ spring:
     model:
       chat: azure-openai
 
-alphavantage:
-  api-key: ${ALPHAVANTAGE_KEY}
-  endpoint: ${ALPHAVANTAGE_ENDPOINT}
-
 finnhub:
   api-key: ${FINNHUB_KEY}
   endpoint: ${FINNHUB_ENDPOINT}

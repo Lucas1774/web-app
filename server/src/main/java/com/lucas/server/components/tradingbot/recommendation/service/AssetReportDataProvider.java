@@ -28,10 +28,12 @@ public class AssetReportDataProvider {
                 .map(md -> new PricePointRaw(md.getDate(), md.getOpen(), md.getHigh(), md.getLow(), md.getPrice(), md.getVolume()))
                 .toList();
 
-        BigDecimal ma5 = kpiGenerator.computeMovingAverage(mdHistory);
-        BigDecimal rsi14 = kpiGenerator.computeRsi(mdHistory);
-        BigDecimal atr14 = kpiGenerator.computeAtr(mdHistory);
-        BigDecimal volatility = kpiGenerator.computeVolatility(mdHistory);
+        int historySize = mdHistory.size();
+        List<MarketData> newestFourteen = mdHistory.subList(Math.max(0, historySize - 14), historySize);
+        BigDecimal ma5 = kpiGenerator.computeMovingAverage(mdHistory.subList(0, Math.min(historySize, 5)));
+        BigDecimal rsi14 = kpiGenerator.computeRsi(newestFourteen);
+        BigDecimal atr14 = kpiGenerator.computeAtr(newestFourteen);
+        BigDecimal volatility = kpiGenerator.computeVolatility(newestFourteen);
 
         List<NewsItemRaw> news = articles.stream()
                 .map(a -> new NewsItemRaw(a.getHeadline(), a.getSentiment(), a.getSentimentConfidence(), a.getSummary(), a.getDate()))

@@ -42,10 +42,6 @@ public class FinnhubNewsResponseMapper implements Mapper<JsonNode, News> {
         }
     }
 
-    private News map(JsonNode json, Symbol symbol) throws JsonProcessingException {
-        return this.map(json).addSymbol(symbol);
-    }
-
     public List<News> mapAll(JsonNode json, Symbol symbol) throws JsonProcessingException {
         if (!json.isArray()) {
             return Collections.emptyList();
@@ -53,7 +49,7 @@ public class FinnhubNewsResponseMapper implements Mapper<JsonNode, News> {
 
         List<News> newsList = new ArrayList<>();
         for (JsonNode node : json) {
-            newsList.add(this.map(node, symbol));
+            newsList.add(this.map(node).addSymbol(symbol));
         }
 
         return newsList;

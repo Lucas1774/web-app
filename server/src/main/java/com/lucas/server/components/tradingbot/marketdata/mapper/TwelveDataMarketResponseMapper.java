@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class TwelveDataMarketResponseMapper implements Mapper<JsonNode, MarketData> {
@@ -29,16 +31,41 @@ public class TwelveDataMarketResponseMapper implements Mapper<JsonNode, MarketDa
                     .setChange(new BigDecimal(json.get("change").asText()))
                     .setChangePercent(new BigDecimal(json.get("percent_change").asText()));
         } catch (Exception e) {
-            throw new JsonProcessingException(
-                    MessageFormat.format(Constants.JSON_MAPPING_ERROR, "market"), e);
+            throw new JsonProcessingException(MessageFormat.format(Constants.JSON_MAPPING_ERROR, Constants.MARKET), e);
         }
     }
 
     public MarketData map(JsonNode json, Symbol symbol) throws JsonProcessingException {
         if (!symbol.getName().equals(json.path("symbol").asText(null))) {
-            throw new JsonProcessingException(
-                    MessageFormat.format(Constants.JSON_MAPPING_ERROR, "market"));
+            throw new JsonProcessingException(MessageFormat.format(Constants.JSON_MAPPING_ERROR, Constants.MARKET));
         }
         return this.map(json).setSymbol(symbol);
+    }
+
+    public List<MarketData> mapAll(JsonNode json, Symbol symbol) throws JsonProcessingException {
+        try {
+            if (!symbol.getName().equals(json.at("/meta/symbol").asText(null))) {
+                throw new JsonProcessingException(MessageFormat.format(Constants.JSON_MAPPING_ERROR, Constants.MARKET));
+            }
+            JsonNode series = json.get("values");
+
+            List<MarketData> history = new ArrayList<>(series.size());
+            for (JsonNode node : series) {
+                LocalDate date = LocalDate.parse(node.get("datetime").asText().substring(0, 10));
+                MarketData md = new MarketData()
+                        .setSymbol(symbol)
+                        .setDate(date)
+                        .setOpen(new BigDecimal(node.get("open").asText()))
+                        .setHigh(new BigDecimal(node.get("high").asText()))
+                        .setLow(new BigDecimal(node.get("low").asText()))
+                        .setPrice(new BigDecimal(node.get("close").asText()))
+                        .setVolume(node.get("volume").asLong());
+                history.add(md);
+            }
+
+            return history;
+        } catch (Exception e) {
+            throw new JsonProcessingException(MessageFormat.format(Constants.JSON_MAPPING_ERROR, Constants.MARKET), e);
+        }
     }
 }
