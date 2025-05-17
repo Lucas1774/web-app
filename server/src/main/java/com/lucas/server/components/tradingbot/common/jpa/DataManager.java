@@ -8,7 +8,6 @@ import com.lucas.server.common.exception.IllegalStateException;
 import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataJpaService;
-import com.lucas.server.components.tradingbot.marketdata.service.AlphavantageMarketDataClient;
 import com.lucas.server.components.tradingbot.marketdata.service.FinnhubMarketDataClient;
 import com.lucas.server.components.tradingbot.marketdata.service.TwelveDataMarketDataClient;
 import com.lucas.server.components.tradingbot.news.jpa.News;
@@ -37,10 +36,10 @@ public class DataManager {
     private final SymbolJpaService symbolService;
     private final MarketDataJpaService marketDataService;
     private final NewsJpaService newsService;
+    private final ObjectMapper mapper;
     private final RecommendationChatCompletionClient recommendationsClient;
     private final FinnhubNewsClient newsClient;
-    private final ObjectMapper mapper;
-    private final Map<Granularity, GranularityToMarketDataFunction> granularityToClientRunner;
+    private final Map<TwelveDataType, TypeToMarketDataFunction> typeToRunner;
     private final Map<PortfolioType, IPortfolioJpaService<?>> portfolioTypeToService;
     private static final Logger logger = LoggerFactory.getLogger(DataManager.class);
     private static final Map<PortfolioType, Supplier<? extends PortfolioBase>> portfolioTypeToNewPortfolio = Map.of(
@@ -49,25 +48,23 @@ public class DataManager {
     );
 
     @FunctionalInterface
-    private interface GranularityToMarketDataFunction {
+    private interface TypeToMarketDataFunction {
         List<MarketData> apply(List<Symbol> symbols) throws ClientException, JsonProcessingException;
     }
 
     public DataManager(SymbolJpaService symbolService, MarketDataJpaService marketDataService, NewsJpaService newsService,
-                       PortfolioJpaService portfolioService, PortfolioMockJpaService portfolioMockService,
+                       PortfolioJpaService portfolioService, PortfolioMockJpaService portfolioMockService, ObjectMapper mapper,
                        RecommendationChatCompletionClient recommendationsClient, FinnhubNewsClient newsClient,
-                       TwelveDataMarketDataClient twelveDataMarketDataClient, AlphavantageMarketDataClient alphavantageMarketDataClient,
-                       FinnhubMarketDataClient finnhubMarketDataClient, ObjectMapper mapper) {
+                       TwelveDataMarketDataClient twelveDataMarketDataClient, FinnhubMarketDataClient finnhubMarketDataClient) {
         this.symbolService = symbolService;
         this.marketDataService = marketDataService;
         this.newsService = newsService;
+        this.mapper = mapper;
         this.recommendationsClient = recommendationsClient;
         this.newsClient = newsClient;
-        this.mapper = mapper;
-        this.granularityToClientRunner = new EnumMap<>(Map.of(
-                Granularity.DAILY, symbols -> retrieveMarketDataWithBackupStrategy(symbols, twelveDataMarketDataClient, finnhubMarketDataClient),
-                Granularity.WEEKLY, symbols ->
-                        alphavantageMarketDataClient.retrieveMarketData(symbols, Granularity.WEEKLY)
+        this.typeToRunner = new EnumMap<>(Map.of(
+                TwelveDataType.LAST, symbols -> retrieveMarketDataWithBackupStrategy(symbols, twelveDataMarketDataClient, finnhubMarketDataClient),
+                TwelveDataType.HISTORIC, symbols -> twelveDataMarketDataClient.retrieveMarketData(symbols, TwelveDataType.HISTORIC)
         ));
         this.portfolioTypeToService = new EnumMap<>(Map.of(
                 PortfolioType.REAL, portfolioService,
@@ -129,9 +126,9 @@ public class DataManager {
     }
 
     @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})
-    public List<MarketData> retrieveMarketData(List<String> symbolNames, Granularity granularity) throws ClientException, JsonProcessingException {
+    public List<MarketData> retrieveMarketData(List<String> symbolNames, TwelveDataType type) throws ClientException, JsonProcessingException {
         List<Symbol> symbols = symbolNames.stream().distinct().map(this.symbolService::getOrCreateByName).toList();
-        List<MarketData> mds = granularityToClientRunner.get(granularity).apply(symbols);
+        List<MarketData> mds = typeToRunner.get(type).apply(symbols);
         this.marketDataService.createIgnoringDuplicates(mds);
         return mds;
     }
@@ -152,8 +149,7 @@ public class DataManager {
         List<MarketData> res = new ArrayList<>();
         for (Symbol symbol : symbols) {
             try {
-                res.add(twelveDataMarketDataClient.retrieveMarketData(symbol));
-                backOff(7500);
+                res.add(twelveDataMarketDataClient.retrieveMarketData(List.of(symbol), TwelveDataType.LAST).getFirst());
             } catch (ClientException | JsonProcessingException e) {
                 logger.warn(MAIN_CLIENT_FAILED_BACKUP_WARN,
                         twelveDataMarketDataClient.getClass().getSimpleName(), symbol,

@@ -30,7 +30,7 @@ public class MarketDataController {
     @GetMapping("last")
     public ResponseEntity<List<MarketData>> fetchAndSaveAll() {
         try {
-            return ResponseEntity.ok(this.jpaService.retrieveMarketData(Constants.SP500_SYMBOLS, Constants.Granularity.DAILY));
+            return ResponseEntity.ok(this.jpaService.retrieveMarketData(Constants.SP500_SYMBOLS, Constants.TwelveDataType.LAST));
         } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -40,7 +40,7 @@ public class MarketDataController {
     @GetMapping("last/{symbols}")
     public ResponseEntity<List<MarketData>> fetchAndSaveSome(@PathVariable List<String> symbols) {
         try {
-            return ResponseEntity.ok(this.jpaService.retrieveMarketData(symbols, Constants.Granularity.DAILY));
+            return ResponseEntity.ok(this.jpaService.retrieveMarketData(symbols, Constants.TwelveDataType.LAST));
         } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -50,7 +50,7 @@ public class MarketDataController {
     @GetMapping("/historic")
     public ResponseEntity<List<MarketData>> fetchAndSaveHistoricAll() {
         try {
-            return ResponseEntity.ok(this.jpaService.retrieveMarketData(Constants.SP500_SYMBOLS, Constants.Granularity.WEEKLY));
+            return ResponseEntity.ok(this.jpaService.retrieveMarketData(Constants.SP500_SYMBOLS, Constants.TwelveDataType.HISTORIC));
         } catch (JsonProcessingException | ClientException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -60,7 +60,7 @@ public class MarketDataController {
     @GetMapping("/historic/{symbols}")
     public ResponseEntity<List<MarketData>> fetchAndSaveHistoricSome(@PathVariable List<String> symbols) {
         try {
-            return ResponseEntity.ok(this.jpaService.retrieveMarketData(symbols, Constants.Granularity.WEEKLY));
+            return ResponseEntity.ok(this.jpaService.retrieveMarketData(symbols, Constants.TwelveDataType.HISTORIC));
         } catch (JsonProcessingException | ClientException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

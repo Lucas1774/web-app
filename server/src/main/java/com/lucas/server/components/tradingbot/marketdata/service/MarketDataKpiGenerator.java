@@ -11,6 +11,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 @Component
@@ -27,18 +29,26 @@ public class MarketDataKpiGenerator {
         this.service.findTopBySymbolIdAndDateBeforeOrderByDateDesc(md.getSymbol().getId(), md.getDate())
                 .ifPresent(previous -> {
                     BigDecimal previousPrice = previous.getPrice();
-                    md.setPreviousClose(previousPrice);
+                    computeIfAbsent(md::getPreviousClose, md::setPreviousClose, previousPrice);
+
                     BigDecimal change = md.getPrice().subtract(previousPrice);
-                    md.setChange(change);
-                    if (0 != previousPrice.compareTo(BigDecimal.ZERO)) {
-                        BigDecimal percentage = change.divide(previousPrice, 8, RoundingMode.HALF_UP)
+                    computeIfAbsent(md::getChange, md::setChange, change);
+
+                    if (previousPrice.compareTo(BigDecimal.ZERO) != 0) {
+                        BigDecimal percentage = change
+                                .divide(previousPrice, 8, RoundingMode.HALF_UP)
                                 .multiply(BigDecimal.valueOf(100))
                                 .setScale(4, RoundingMode.HALF_UP);
-                        md.setChangePercent(percentage);
+                        computeIfAbsent(md::getChangePercent, md::setChangePercent, percentage);
                     }
                 });
-
         return md;
+    }
+
+    private static <T> void computeIfAbsent(Supplier<T> getter, Consumer<T> setter, T value) {
+        if (getter.get() == null) {
+            setter.accept(value);
+        }
     }
 
     /**

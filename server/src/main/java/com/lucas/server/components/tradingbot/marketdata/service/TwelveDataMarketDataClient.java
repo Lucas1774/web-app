@@ -1,5 +1,6 @@
 package com.lucas.server.components.tradingbot.marketdata.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.lucas.server.common.Constants;
 import com.lucas.server.common.HttpRequestClient;
 import com.lucas.server.common.exception.ClientException;
@@ -13,32 +14,62 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.*;
+import java.util.function.UnaryOperator;
+
 @Component
 public class TwelveDataMarketDataClient {
 
-    private final TwelveDataMarketResponseMapper mapper;
     private final HttpRequestClient httpRequestClient;
     private final String endpoint;
     private final String apiKey;
     private static final Logger logger = LoggerFactory.getLogger(TwelveDataMarketDataClient.class);
+    private final Map<Constants.TwelveDataType, TwelveDataMarketDataClient.JsonToMarketDataFunction> typeToMapper;
+    private static final EnumMap<Constants.TwelveDataType, String> typeToEndpoint = new EnumMap<>(Map.of(
+            Constants.TwelveDataType.LAST, Constants.QUOTE,
+            Constants.TwelveDataType.HISTORIC, Constants.TIME_SERIES
+    ));
+    private static final Map<Constants.TwelveDataType, UnaryOperator<UriComponentsBuilder>> typeToBuilderCustomizer = new EnumMap<>(Map.of(
+            Constants.TwelveDataType.LAST, builder -> builder,
+            Constants.TwelveDataType.HISTORIC, builder -> builder.queryParam("interval", "1day")
+    ));
 
-    public TwelveDataMarketDataClient(TwelveDataMarketResponseMapper mapper, HttpRequestClient httpRequestClient,
+    @FunctionalInterface
+    private interface JsonToMarketDataFunction {
+        List<MarketData> apply(Symbol symbol, JsonNode jsonNode) throws JsonProcessingException;
+    }
+
+    public TwelveDataMarketDataClient(HttpRequestClient httpRequestClient, TwelveDataMarketResponseMapper mapper,
                                       @Value("${twelve-data.endpoint}") String endpoint,
                                       @Value("${twelve-data.api-key}") String apiKey) {
-        this.mapper = mapper;
         this.httpRequestClient = httpRequestClient;
         this.endpoint = endpoint;
         this.apiKey = apiKey;
+        this.typeToMapper = new EnumMap<>(Map.of(
+                Constants.TwelveDataType.LAST, (s, j) -> List.of(mapper.map(j, s)),
+                Constants.TwelveDataType.HISTORIC, (s, j) -> mapper.mapAll(j, s).stream()
+                        .sorted(Comparator.comparing(MarketData::getDate))
+                        .toList()
+        ));
     }
 
-    public MarketData retrieveMarketData(Symbol symbol) throws JsonProcessingException, ClientException {
+    private List<MarketData> retrieveMarketData(Symbol symbol, Constants.TwelveDataType type) throws ClientException, JsonProcessingException {
         logger.info(Constants.RETRIEVING_MARKET_DATA_INFO, symbol);
-        String url = UriComponentsBuilder.fromUriString(endpoint + Constants.QUOTE)
+        String url = typeToBuilderCustomizer.get(type).apply(UriComponentsBuilder.fromUriString(endpoint + typeToEndpoint.get(type)))
                 .queryParam("symbol", symbol.getName())
                 .queryParam("apikey", apiKey)
                 .build()
                 .toUriString();
 
-        return mapper.map(this.httpRequestClient.fetch(url), symbol);
+        return typeToMapper.get(type).apply(symbol, httpRequestClient.fetch(url));
+    }
+
+    public List<MarketData> retrieveMarketData(List<Symbol> symbols, Constants.TwelveDataType type) throws ClientException, JsonProcessingException {
+        List<MarketData> res = new ArrayList<>();
+        for (Symbol symbol : symbols) {
+            res.addAll(this.retrieveMarketData(symbol, type));
+            Constants.backOff(7500);
+        }
+        return res;
     }
 }

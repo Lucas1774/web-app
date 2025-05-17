@@ -19,6 +19,7 @@ import org.springframework.context.annotation.Import;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -215,5 +216,117 @@ class TwelveDataMarketResponseMapperTest {
         assertThatThrownBy(() -> mapper.map(objectMapper.readTree(json), symbolService.getOrCreateByName("AAPL")))
                 .isInstanceOf(JsonProcessingException.class)
                 .hasMessageContaining(MessageFormat.format(Constants.JSON_MAPPING_ERROR, "market"));
+    }
+
+    @Test
+    void whenMapAllValidJson_thenReturnMarketDataList() throws JsonProcessingException, com.fasterxml.jackson.core.JsonProcessingException {
+        // given
+        String json = """
+                {
+                  "meta": {
+                    "symbol": "AAPL",
+                    "interval": "1min",
+                    "currency": "USD",
+                    "exchange_timezone": "America/New_York",
+                    "exchange": "NASDAQ",
+                    "mic_code": "XNAS",
+                    "type": "Common Stock"
+                  },
+                  "values": [
+                    {
+                      "datetime": "2021-09-16 15:59:00",
+                      "open": "148.73500",
+                      "high": "148.86000",
+                      "low": "148.73000",
+                      "close": "148.85001",
+                      "volume": "624277"
+                    },
+                    {
+                      "datetime": "2021-09-16 15:58:00",
+                      "open": "148.72000",
+                      "high": "148.78000",
+                      "low": "148.70000",
+                      "close": "148.74001",
+                      "volume": "274622"
+                    },
+                    {
+                      "datetime": "2021-09-16 15:57:00",
+                      "open": "148.77499",
+                      "high": "148.79500",
+                      "low": "148.71001",
+                      "close": "148.72501",
+                      "volume": "254725"
+                    },
+                    {
+                      "datetime": "2021-09-16 15:56:00",
+                      "open": "148.76500",
+                      "high": "148.78999",
+                      "low": "148.72000",
+                      "close": "148.78000",
+                      "volume": "230758"
+                    },
+                    {
+                      "datetime": "2021-09-16 15:55:00",
+                      "open": "148.80000",
+                      "high": "148.80000",
+                      "low": "148.70000",
+                      "close": "148.76230",
+                      "volume": "348577"
+                    }
+                  ],
+                  "status": "ok"
+                }
+                """;
+        Symbol symbol = symbolService.getOrCreateByName("AAPL");
+
+        // when
+        List<MarketData> result = mapper.mapAll(objectMapper.readTree(json), symbol);
+
+        // then
+        assertThat(result).isNotNull().hasSize(5);
+
+        MarketData firstEntry = result.getFirst();
+        assertThat(firstEntry.getOpen()).isEqualByComparingTo(BigDecimal.valueOf(148.735));
+        assertThat(firstEntry.getHigh()).isEqualByComparingTo(BigDecimal.valueOf(148.86));
+        assertThat(firstEntry.getLow()).isEqualByComparingTo(BigDecimal.valueOf(148.73));
+        assertThat(firstEntry.getPrice()).isEqualByComparingTo(BigDecimal.valueOf(148.85001));
+        assertThat(firstEntry.getVolume()).isEqualByComparingTo(624277L);
+        assertThat(firstEntry.getDate()).isEqualTo(LocalDate.parse("2021-09-16"));
+
+        MarketData secondEntry = result.get(1);
+        assertThat(secondEntry.getOpen()).isEqualByComparingTo(BigDecimal.valueOf(148.72));
+        assertThat(secondEntry.getHigh()).isEqualByComparingTo(BigDecimal.valueOf(148.78));
+        assertThat(secondEntry.getLow()).isEqualByComparingTo(BigDecimal.valueOf(148.7));
+        assertThat(secondEntry.getPrice()).isEqualByComparingTo(BigDecimal.valueOf(148.74001));
+        assertThat(secondEntry.getVolume()).isEqualByComparingTo(274622L);
+        assertThat(secondEntry.getDate()).isEqualTo(LocalDate.parse("2021-09-16"));
+    }
+
+    @Test
+    void whenMapAllEmptyTimeSeries_thenReturnEmptyList() throws JsonProcessingException, com.fasterxml.jackson.core.JsonProcessingException {
+        // given
+        String json = """
+                {
+                  "meta": {
+                    "symbol": "AAPL",
+                    "interval": "1min",
+                    "currency": "USD",
+                    "exchange_timezone": "America/New_York",
+                    "exchange": "NASDAQ",
+                    "mic_code": "XNAS",
+                    "type": "Common Stock"
+                  },
+                  "values": [
+                  ],
+                  "status": "ok"
+                }
+                """;
+        Symbol symbol = symbolService.getOrCreateByName("AAPL");
+
+        // when
+        List<MarketData> result = mapper.mapAll(objectMapper.readTree(json), symbol);
+
+        // then
+        assertThat(result).isNotNull().isEmpty();
     }
 }

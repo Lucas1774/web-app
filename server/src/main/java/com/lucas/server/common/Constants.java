@@ -7,8 +7,8 @@ public class Constants {
     private Constants() {
     }
 
-    public enum Granularity {
-        DAILY, WEEKLY
+    public enum TwelveDataType {
+        LAST, HISTORIC
     }
 
     public enum PortfolioType {
@@ -35,11 +35,11 @@ public class Constants {
     public static final String INVALID_EXPRESSION = "Invalid expression";
     public static final String COMPANY_NEWS = "/company-news";
     public static final String QUOTE = "/quote";
+    public static final String TIME_SERIES = "/time_series";
     public static final String ANALYZE = "/analyze";
-    public static final String ALPHAVANTAGE_QUOTE_PATH = "GLOBAL_QUOTE";
-    public static final String TIME_SERIES_WEEKLY = "TIME_SERIES_WEEKLY";
     public static final String CONTENT = "content";
     public static final String ROLE = "role";
+    public static final String MARKET = "market";
     public static final String PROMPT = "prompt";
 
     public static final String SUDOKU_IGNORED_MALFORMED_JSON_WARN = "Couldn't deserialize sudoku from raw data {}";
