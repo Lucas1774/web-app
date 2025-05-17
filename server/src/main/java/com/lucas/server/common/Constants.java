@@ -28,6 +28,7 @@ public class Constants {
     public static final int SUDOKU_NUMBER_OF_CELLS = 81;
     public static final int HISTORY_DAYS_COUNT = 14;
     public static final int NEWS_COUNT = 10;
+    public static final int DATABASE_NEWS_PER_SYMBOL = 20;
     public static final int MAX_SYMBOLS_TO_TRIGGER_NEWS_EMBEDDINGS_GENERATION = 2;
     public static final int REQUEST_MAX_ATTEMPTS = 5;
     public static final int RECOMMENDATIONS_CHUNK_SIZE = 5;
@@ -46,7 +47,7 @@ public class Constants {
     public static final String EMBEDDING_GENERATION_FAILED_WARN = "Couldn't fetch embeddings for {}";
     public static final String KPI_RETURNED_ZERO_WARN = "{}: Value is zero";
     public static final String MAIN_CLIENT_FAILED_BACKUP_WARN = "{} failed when trying to process {}. Falling back to {}";
-    public static final String SCHEDULED_TASK_SUCCESS_INFO = "Successfully fetched {}: {}";
+    public static final String SCHEDULED_TASK_SUCCESS_INFO = "Successfully {}: {}";
     public static final String RETRIEVING_MARKET_DATA_INFO = "Retrieving market data for {}";
     public static final String RETRIEVING_NEWS_INFO = "Retrieving news for {}";
     public static final String GENERATING_RECOMMENDATIONS_INFO = "Generating recommendations for {}";

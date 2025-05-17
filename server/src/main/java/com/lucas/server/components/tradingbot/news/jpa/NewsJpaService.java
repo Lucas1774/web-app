@@ -78,4 +78,8 @@ public class NewsJpaService implements JpaService<News> {
         NewsListener.setActive(false);
         return this.sentimentClient.generateSentiment(news);
     }
+
+    public void removeOrphanedNews() {
+        this.repository.deleteBySymbolsIsEmpty();
+    }
 }

@@ -143,6 +143,25 @@ public class DataManager {
         return service.executePortfolioAction(symbol, price, quantity, timestamp, isBuy);
     }
 
+    @Transactional
+    public List<News> removeOldNews(int keepCount) {
+        List<News> res = new ArrayList<>();
+        List<Symbol> symbols = this.symbolService.findAll();
+        for (Symbol symbol : symbols) {
+            List<Long> keepIds = this.newsService.getTopForSymbolId(symbol.getId(), keepCount).stream().map(News::getId).toList();
+            List<News> toRemove = symbol.getNews().stream()
+                    .filter(news -> !keepIds.contains(news.getId()))
+                    .toList();
+            res.addAll(toRemove);
+            toRemove.forEach(n -> {
+                symbol.getNews().remove(n);
+                n.getSymbols().remove(symbol);
+            });
+        }
+        newsService.removeOrphanedNews();
+        return res;
+    }
+
     private List<MarketData> retrieveMarketDataWithBackupStrategy(
             List<Symbol> symbols, TwelveDataMarketDataClient twelveDataMarketDataClient, FinnhubMarketDataClient finnhubMarketDataClient
     ) throws ClientException, JsonProcessingException {

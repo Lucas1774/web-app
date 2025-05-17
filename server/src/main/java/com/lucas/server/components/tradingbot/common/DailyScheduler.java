@@ -28,12 +28,13 @@ public class DailyScheduler {
     public void dailyTask() {
         this.updateMarketData();
         this.updateNews();
+        this.removeOldNews();
     }
 
     private void updateMarketData() {
         try {
             List<MarketData> updatedMds = dataManager.retrieveMarketData(Constants.SP500_SYMBOLS, Constants.TwelveDataType.LAST);
-            logger.info(Constants.SCHEDULED_TASK_SUCCESS_INFO, "market data", updatedMds);
+            logger.info(Constants.SCHEDULED_TASK_SUCCESS_INFO, "fetched market data", updatedMds);
         } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);
         }
@@ -44,9 +45,14 @@ public class DailyScheduler {
         LocalDate from = to.minusDays(1);
         try {
             List<News> updatedNews = dataManager.retrieveNewsByDateRange(Constants.SP500_SYMBOLS, from, to);
-            logger.info(Constants.SCHEDULED_TASK_SUCCESS_INFO, "news", updatedNews);
+            logger.info(Constants.SCHEDULED_TASK_SUCCESS_INFO, "fetched news", updatedNews);
         } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);
         }
+    }
+
+    private void removeOldNews() {
+        List<News> removedNews = dataManager.removeOldNews(Constants.DATABASE_NEWS_PER_SYMBOL);
+        logger.info(Constants.SCHEDULED_TASK_SUCCESS_INFO, "removed news", removedNews);
     }
 }

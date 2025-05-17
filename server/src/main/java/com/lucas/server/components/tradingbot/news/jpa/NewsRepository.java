@@ -20,4 +20,6 @@ public interface NewsRepository extends JpaRepository<News, Long> {
     List<News> findAllByIdIn(List<Long> ids);
 
     List<News> findAllBySymbols_IdInAndDateBetween(Collection<Long> symbolIds, LocalDate from, LocalDate to);
+
+    void deleteBySymbolsIsEmpty();
 }
