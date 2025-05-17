@@ -29,6 +29,7 @@ public class DailyScheduler {
         this.updateMarketData();
         this.updateNews();
         this.removeOldNews();
+        this.removeOldMarketData();
     }
 
     private void updateMarketData() {
@@ -54,5 +55,10 @@ public class DailyScheduler {
     private void removeOldNews() {
         List<News> removedNews = dataManager.removeOldNews(Constants.DATABASE_NEWS_PER_SYMBOL);
         logger.info(Constants.SCHEDULED_TASK_SUCCESS_INFO, "removed news", removedNews);
+    }
+
+    private void removeOldMarketData() {
+        List<MarketData> removedMds = dataManager.removeOldMarketData(Constants.DATABASE_MARKET_DATA_PER_SYMBOL);
+        logger.info(Constants.SCHEDULED_TASK_SUCCESS_INFO, "removed market data", removedMds);
     }
 }

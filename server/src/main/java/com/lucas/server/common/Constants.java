@@ -29,6 +29,7 @@ public class Constants {
     public static final int HISTORY_DAYS_COUNT = 14;
     public static final int NEWS_COUNT = 10;
     public static final int DATABASE_NEWS_PER_SYMBOL = 20;
+    public static final int DATABASE_MARKET_DATA_PER_SYMBOL = 100;
     public static final int MAX_SYMBOLS_TO_TRIGGER_NEWS_EMBEDDINGS_GENERATION = 2;
     public static final int REQUEST_MAX_ATTEMPTS = 5;
     public static final int RECOMMENDATIONS_CHUNK_SIZE = 5;

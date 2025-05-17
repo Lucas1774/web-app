@@ -162,6 +162,21 @@ public class DataManager {
         return res;
     }
 
+    @Transactional
+    public List<MarketData> removeOldMarketData(int keepCount) {
+        List<MarketData> res = new ArrayList<>();
+        List<Symbol> symbols = this.symbolService.findAll();
+        for (Symbol symbol : symbols) {
+            List<MarketData> toKeep = marketDataService.getTopForSymbolId(symbol.getId(), keepCount);
+            List<MarketData> toRemove = marketDataService.findBySymbolId(symbol.getId()).stream()
+                    .filter(marketData -> !toKeep.contains(marketData))
+                    .toList();
+            res.addAll(toRemove);
+        }
+        marketDataService.deleteAll(res);
+        return res;
+    }
+
     private List<MarketData> retrieveMarketDataWithBackupStrategy(
             List<Symbol> symbols, TwelveDataMarketDataClient twelveDataMarketDataClient, FinnhubMarketDataClient finnhubMarketDataClient
     ) throws ClientException, JsonProcessingException {

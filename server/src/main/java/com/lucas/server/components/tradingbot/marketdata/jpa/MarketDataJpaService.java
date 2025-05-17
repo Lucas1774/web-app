@@ -45,4 +45,12 @@ public class MarketDataJpaService implements JpaService<MarketData> {
     public List<MarketData> getTopForSymbolId(Long symbolId, int limit) {
         return this.repository.findBySymbol_Id(symbolId, PageRequest.of(0, limit, Sort.by("date").descending())).getContent();
     }
+
+    public List<MarketData> findBySymbolId(Long id) {
+        return this.repository.findBySymbol_Id(id);
+    }
+
+    public void deleteAll(List<MarketData> res) {
+        this.repository.deleteAllInBatch(res);
+    }
 }

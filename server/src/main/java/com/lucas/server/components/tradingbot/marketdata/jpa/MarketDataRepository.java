@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -16,4 +17,6 @@ public interface MarketDataRepository extends JpaRepository<MarketData, Long> {
     Slice<MarketData> findBySymbol_Id(Long symbolId, PageRequest page);
 
     Optional<MarketData> findBySymbol_IdAndDate(Long symbolId, LocalDate date);
+
+    List<MarketData> findBySymbol_Id(Long id);
 }
