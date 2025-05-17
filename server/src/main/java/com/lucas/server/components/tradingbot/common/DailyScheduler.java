@@ -28,6 +28,7 @@ public class DailyScheduler {
     public void dailyTask() {
         this.updateMarketData();
         this.updateNews();
+        this.removeOldNews();
     }
 
     private void updateMarketData() {
@@ -48,5 +49,10 @@ public class DailyScheduler {
         } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);
         }
+    }
+
+    private void removeOldNews() {
+        List<News> removedNews = dataManager.removeOldNews(Constants.DATABASE_NEWS_PER_SYMBOL);
+        logger.info(Constants.SCHEDULED_TASK_SUCCESS_INFO, "removed news", removedNews);
     }
 }
