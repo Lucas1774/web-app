@@ -21,7 +21,7 @@ public class OpenAIConfig {
     @Bean
     public AzureOpenAIClientBuilderCustomizer customizer(RetryPolicy retryPolicy) {
         return builder -> builder.httpClient(new NettyAsyncHttpClientBuilder()
-                .responseTimeout(Duration.ofSeconds(120))
+                .responseTimeout(Duration.ofMinutes(10))
                 .build()).retryPolicy(retryPolicy);
     }
 }

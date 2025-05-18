@@ -52,6 +52,7 @@ public class Constants {
     public static final String RETRIEVING_MARKET_DATA_INFO = "Retrieving market data for {}";
     public static final String RETRIEVING_NEWS_INFO = "Retrieving news for {}";
     public static final String GENERATING_RECOMMENDATIONS_INFO = "Generating recommendations for {}";
+    public static final String GENERATING_PRE_REQUEST_INFO = "Generating pre-request for {}";
     public static final String GENERATING_EMBEDDINGS_INFO = "Generating embeddings for {}";
     public static final String GENERATING_SENTIMENT_INFO = "Generating sentiment for {}";
     public static final String JSON_MAPPING_ERROR = "Error mapping {0} JSON";

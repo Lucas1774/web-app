@@ -48,6 +48,7 @@ public class RecommendationChatCompletionClient {
     private final ObjectMapper objectMapper;
     private final AzureOpenAiChatModel client;
     private final String secondaryModel;
+    private final boolean sendFixMeRequest;
     private static final Map<String, Function<String, Message>> messageFactory = Map.of(
             "user", UserMessage::new,
             "assistant", AssistantMessage::new,
@@ -58,7 +59,8 @@ public class RecommendationChatCompletionClient {
     public RecommendationChatCompletionClient(PromptRepository promptRepository, AssetReportDataProvider assertReportDataProvider,
                                               AssetReportToMustacheMapper assetReportToMustacheMapper,
                                               ObjectMapper objectMapper, AzureOpenAiChatModel client,
-                                              @Value("${spring.ai.azure.openai.chat.options.secondary-deployment-name}") String secondaryModel) throws JsonProcessingException {
+                                              @Value("${spring.ai.azure.openai.chat.options.secondary-deployment-name}") String secondaryModel,
+                                              @Value("${spring.ai.azure.openai.chat.options.fix-me-request}") boolean sendFixMeRequest) throws JsonProcessingException {
         this.fixMeMessage = generateMessageFromNode(promptRepository.getFixMeMessage());
         this.systemMessage = generateMessageFromNode(promptRepository.getSystem());
         this.promptMessage = generateMessageFromNode(promptRepository.getContext());
@@ -68,6 +70,7 @@ public class RecommendationChatCompletionClient {
         this.objectMapper = objectMapper;
         this.client = client;
         this.secondaryModel = secondaryModel;
+        this.sendFixMeRequest = sendFixMeRequest;
     }
 
     public ObjectNode getRecommendations(Map<Symbol, List<MarketData>> marketData, Map<Symbol, List<News>> newsData,
@@ -79,9 +82,14 @@ public class RecommendationChatCompletionClient {
         }
 
         Message reportMessage = generateMessageFromNode(this.objectMapper.readValue(this.assetReportToMustacheMapper.map(reports), ObjectNode.class));
-        long startMillis = System.currentTimeMillis();
-        Message fixedMessage = new UserMessage(this.callWithBackupStrategy(new Prompt(List.of(fixMeMessage, reportMessage), client.getDefaultOptions())));
-        backOff(Math.max(0, 60000 - (System.currentTimeMillis() - startMillis)));
+        Message fixedMessage;
+        if (sendFixMeRequest) {
+            logger.info(Constants.GENERATING_PRE_REQUEST_INFO, PROMPT);
+            fixedMessage = new UserMessage(this.callWithBackupStrategy(new Prompt(List.of(fixMeMessage, reportMessage), client.getDefaultOptions())));
+            backOff(60000);
+        } else {
+            fixedMessage = reportMessage;
+        }
 
         logger.info(Constants.GENERATING_RECOMMENDATIONS_INFO, PROMPT);
         Prompt prompt = new Prompt(List.of(this.systemMessage, this.promptMessage, this.fewShotMessage, fixedMessage), client.getDefaultOptions());

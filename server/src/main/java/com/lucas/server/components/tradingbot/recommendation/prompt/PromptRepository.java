@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.util.Objects;
 
 @Getter
@@ -38,6 +39,8 @@ public class PromptRepository {
             this.system = objectMapper.readValue(systemReader, ObjectNode.class);
             this.fewShot = objectMapper.readValue(fewShotReader, ObjectNode.class);
             this.fixMeMessage = objectMapper.readValue(fixMeReader, ObjectNode.class);
+            context.put("content", context.get("content").asText().replace("{date}",
+                    LocalDate.now().getDayOfWeek() + ", " + LocalDate.now()));
         } catch (IOException e) {
             throw new ConfigurationException(e);
         }

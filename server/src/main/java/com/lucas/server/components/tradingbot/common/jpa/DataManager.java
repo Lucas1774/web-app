@@ -100,10 +100,9 @@ public class DataManager {
                                 .orElseGet(() -> portfolioTypeToNewPortfolio.get(type).get().setSymbol(symbol))
                 );
             }
-            long startMillis = System.currentTimeMillis();
             res.add(recommendationsClient.getRecommendations(marketDataBatch, newsDataBatch, portfolioDataBatch));
             if (i + RECOMMENDATIONS_CHUNK_SIZE < symbolsWithData.size()) {
-                backOff(Math.max(0, 60000 - (System.currentTimeMillis() - startMillis)));
+                backOff(6000);
             }
         }
 
