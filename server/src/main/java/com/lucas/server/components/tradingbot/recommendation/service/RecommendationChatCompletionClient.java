@@ -9,8 +9,10 @@ import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.news.jpa.News;
 import com.lucas.server.components.tradingbot.portfolio.jpa.PortfolioBase;
+import com.lucas.server.components.tradingbot.recommendation.jpa.Recommendation;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.AssetReportRaw;
+import com.lucas.server.components.tradingbot.recommendation.mapper.RecommendationChatCompletionResponseMapper;
 import com.lucas.server.components.tradingbot.recommendation.prompt.PromptRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +47,7 @@ public class RecommendationChatCompletionClient {
     private final Message fixMeMessage;
     private final AssetReportDataProvider assertReportDataProvider;
     private final AssetReportToMustacheMapper assetReportToMustacheMapper;
+    private final RecommendationChatCompletionResponseMapper mapper;
     private final ObjectMapper objectMapper;
     private final AzureOpenAiChatModel client;
     private final String secondaryModel;
@@ -57,7 +60,7 @@ public class RecommendationChatCompletionClient {
     private static final Logger logger = LoggerFactory.getLogger(RecommendationChatCompletionClient.class);
 
     public RecommendationChatCompletionClient(PromptRepository promptRepository, AssetReportDataProvider assertReportDataProvider,
-                                              AssetReportToMustacheMapper assetReportToMustacheMapper,
+                                              AssetReportToMustacheMapper assetReportToMustacheMapper, RecommendationChatCompletionResponseMapper mapper,
                                               ObjectMapper objectMapper, AzureOpenAiChatModel client,
                                               @Value("${spring.ai.azure.openai.chat.options.secondary-deployment-name}") String secondaryModel,
                                               @Value("${spring.ai.azure.openai.chat.options.fix-me-request}") boolean sendFixMeRequest) throws JsonProcessingException {
@@ -67,14 +70,15 @@ public class RecommendationChatCompletionClient {
         this.fewShotMessage = generateMessageFromNode(promptRepository.getFewShot());
         this.assertReportDataProvider = assertReportDataProvider;
         this.assetReportToMustacheMapper = assetReportToMustacheMapper;
+        this.mapper = mapper;
         this.objectMapper = objectMapper;
         this.client = client;
         this.secondaryModel = secondaryModel;
         this.sendFixMeRequest = sendFixMeRequest;
     }
 
-    public ObjectNode getRecommendations(Map<Symbol, List<MarketData>> marketData, Map<Symbol, List<News>> newsData,
-                                         Map<Symbol, ? extends PortfolioBase> portfolioData) throws ClientException, IOException {
+    public List<Recommendation> getRecommendations(Map<Symbol, List<MarketData>> marketData, Map<Symbol, List<News>> newsData,
+                                                   Map<Symbol, ? extends PortfolioBase> portfolioData, Boolean withFixmeRequest) throws ClientException, IOException {
         List<AssetReportRaw> reports = new ArrayList<>();
         for (Map.Entry<Symbol, List<MarketData>> mdHistory : marketData.entrySet()) {
             reports.add(this.assertReportDataProvider.provide(mdHistory.getKey(), mdHistory.getValue(),
@@ -83,7 +87,7 @@ public class RecommendationChatCompletionClient {
 
         Message reportMessage = generateMessageFromNode(this.objectMapper.readValue(this.assetReportToMustacheMapper.map(reports), ObjectNode.class));
         Message fixedMessage;
-        if (sendFixMeRequest) {
+        if ((null != withFixmeRequest) ? withFixmeRequest : sendFixMeRequest) {
             logger.info(Constants.
                     GENERATING_PRE_REQUEST_INFO, marketData.keySet());
             fixedMessage = new UserMessage(this.callWithBackupStrategy(new Prompt(List.of(fixMeMessage, reportMessage), client.getDefaultOptions())));
@@ -94,10 +98,8 @@ public class RecommendationChatCompletionClient {
 
         logger.info(Constants.GENERATING_RECOMMENDATIONS_INFO, marketData.keySet());
         Prompt prompt = new Prompt(List.of(this.systemMessage, this.promptMessage, this.fewShotMessage, fixedMessage), client.getDefaultOptions());
-        ObjectNode result = objectMapper.createObjectNode();
-        result.put("input", fixedMessage.getText());
-        result.set("output", objectMapper.readTree(this.callWithBackupStrategy(prompt)));
-        return result;
+
+        return this.mapper.mapAll(marketData.keySet().stream().toList(), objectMapper.readTree(this.callWithBackupStrategy(prompt)), fixedMessage);
     }
 
     @Retryable(retryFor = ClientException.class, maxAttempts = Constants.REQUEST_MAX_ATTEMPTS)

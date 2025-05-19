@@ -1,8 +1,8 @@
 package com.lucas.server.components.tradingbot.recommendation.controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;
+import com.lucas.server.components.tradingbot.recommendation.jpa.Recommendation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -30,9 +30,9 @@ public class RecommendationsController {
     }
 
     @GetMapping("/{symbols}")
-    public ResponseEntity<JsonNode> generateRecommendations(@PathVariable List<String> symbols) {
+    public ResponseEntity<List<Recommendation>> generateRecommendations(@PathVariable List<String> symbols) {
         try {
-            return ResponseEntity.ok(this.jpaService.getRecommendations(symbols, REAL));
+            return ResponseEntity.ok(this.jpaService.getRecommendations(symbols, REAL, null));
         } catch (ClientException | IOException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -40,9 +40,9 @@ public class RecommendationsController {
     }
 
     @GetMapping("/mock/{symbols}")
-    public ResponseEntity<JsonNode> generateRecommendationsMock(@PathVariable List<String> symbols) {
+    public ResponseEntity<List<Recommendation>> generateRecommendationsMock(@PathVariable List<String> symbols) {
         try {
-            return ResponseEntity.ok(this.jpaService.getRecommendations(symbols, MOCK));
+            return ResponseEntity.ok(this.jpaService.getRecommendations(symbols, MOCK, null));
         } catch (ClientException | IOException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

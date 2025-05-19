@@ -17,4 +17,6 @@ public interface IPortfolioJpaService<T extends PortfolioBase> extends JpaServic
                              boolean isBuy) throws IllegalStateException;
 
     List<T> findLatest();
+
+    List<T> findActivePortfolio();
 }

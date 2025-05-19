@@ -83,4 +83,10 @@ public class PortfolioJpaServiceDelegate<T extends PortfolioBase, R extends JpaR
                 .stream()
                 .toList();
     }
+
+    public List<T> findActivePortfolio() {
+        return this.findLatest().stream()
+                .filter(p -> p.getQuantity().compareTo(BigDecimal.ZERO) > 0)
+                .toList();
+    }
 }

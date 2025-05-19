@@ -1,8 +1,5 @@
 package com.lucas.server.components.tradingbot.common.jpa;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.common.exception.IllegalStateException;
 import com.lucas.server.common.exception.JsonProcessingException;
@@ -15,6 +12,8 @@ import com.lucas.server.components.tradingbot.news.jpa.NewsJpaService;
 import com.lucas.server.components.tradingbot.news.service.FinnhubNewsClient;
 import com.lucas.server.components.tradingbot.portfolio.jpa.*;
 import com.lucas.server.components.tradingbot.portfolio.service.PortfolioManager;
+import com.lucas.server.components.tradingbot.recommendation.jpa.Recommendation;
+import com.lucas.server.components.tradingbot.recommendation.jpa.RecommendationsJpaService;
 import com.lucas.server.components.tradingbot.recommendation.service.RecommendationChatCompletionClient;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
@@ -38,7 +37,7 @@ public class DataManager {
     private final SymbolJpaService symbolService;
     private final MarketDataJpaService marketDataService;
     private final NewsJpaService newsService;
-    private final ObjectMapper mapper;
+    private final RecommendationsJpaService recommendationsService;
     private final RecommendationChatCompletionClient recommendationsClient;
     private final FinnhubNewsClient newsClient;
     private final PortfolioManager portfolioManager;
@@ -56,13 +55,13 @@ public class DataManager {
     }
 
     public DataManager(SymbolJpaService symbolService, MarketDataJpaService marketDataService, NewsJpaService newsService,
-                       PortfolioJpaService portfolioService, PortfolioMockJpaService portfolioMockService, ObjectMapper mapper,
+                       RecommendationsJpaService recommendationsService, PortfolioJpaService portfolioService, PortfolioMockJpaService portfolioMockService,
                        RecommendationChatCompletionClient recommendationsClient, FinnhubNewsClient newsClient, PortfolioManager portfolioManager,
                        TwelveDataMarketDataClient twelveDataMarketDataClient, FinnhubMarketDataClient finnhubMarketDataClient) {
         this.symbolService = symbolService;
         this.marketDataService = marketDataService;
         this.newsService = newsService;
-        this.mapper = mapper;
+        this.recommendationsService = recommendationsService;
         this.recommendationsClient = recommendationsClient;
         this.newsClient = newsClient;
         this.portfolioManager = portfolioManager;
@@ -77,19 +76,19 @@ public class DataManager {
     }
 
     @Transactional(rollbackOn = {ClientException.class, IOException.class})
-    public JsonNode getRecommendations(List<String> symbolNames, PortfolioType type) throws ClientException, IOException {
+    public List<Recommendation> getRecommendations(List<String> symbolNames, PortfolioType type, Boolean sendFixmeRequest) throws ClientException, IOException {
         List<Symbol> symbols = symbolNames.stream().distinct().map(this.symbolService::getOrCreateByName).toList();
         Map<Symbol, List<MarketData>> marketData = symbols.stream()
                 .map(symbol -> Map.entry(symbol, marketDataService.getTopForSymbolId(symbol.getId(), MARKET_DATA_RELEVANT_DAYS_COUNT)))
                 .filter(entry -> !entry.getValue().isEmpty())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         if (marketData.isEmpty()) {
-            return mapper.createArrayNode();
+            return new ArrayList<>();
         }
 
         List<Symbol> symbolsWithData = marketData.keySet().stream().toList();
 
-        ArrayNode res = mapper.createArrayNode();
+        List<Recommendation> res = new ArrayList<>();
         for (int i = 0; i < symbolsWithData.size(); i += RECOMMENDATIONS_CHUNK_SIZE) {
             List<Symbol> batch = symbolsWithData.subList(i, Math.min(i + RECOMMENDATIONS_CHUNK_SIZE, symbolsWithData.size()));
             Map<Symbol, List<MarketData>> marketDataBatch = new LinkedHashMap<>();
@@ -104,13 +103,40 @@ public class DataManager {
                                 .orElseGet(() -> portfolioTypeToNewPortfolio.get(type).get().setSymbol(symbol))
                 );
             }
-            res.add(recommendationsClient.getRecommendations(marketDataBatch, newsDataBatch, portfolioDataBatch));
+            res.addAll(recommendationsClient.getRecommendations(marketDataBatch, newsDataBatch, portfolioDataBatch, sendFixmeRequest));
             if (i + RECOMMENDATIONS_CHUNK_SIZE < symbolsWithData.size()) {
                 backOff(6000);
             }
         }
 
+        this.recommendationsService.createIgnoringDuplicates(res);
         return res;
+    }
+
+    public List<Recommendation> getRandomRecommendations(PortfolioType type, Boolean sendFixmeRequest) throws ClientException, IOException {
+        Set<String> active = portfolioTypeToService.get(type)
+                .findActivePortfolio().stream()
+                .map(p -> p.getSymbol().getName())
+                .collect(Collectors.toSet());
+        Set<String> already = recommendationsService.findByDate(LocalDate.now()).stream()
+                .map(r -> r.getSymbol().getName())
+                .collect(Collectors.toSet());
+
+        Set<String> candidates = new HashSet<>(SP500_SYMBOLS);
+        candidates.removeAll(active);
+        candidates.removeAll(already);
+
+        List<String> finalList = new ArrayList<>(active);
+        finalList.removeAll(already);
+        finalList = finalList.subList(0, Math.min(finalList.size(), RECOMMENDATIONS_CHUNK_SIZE));
+        int needed = RECOMMENDATIONS_CHUNK_SIZE - finalList.size();
+        if (needed > 0 && !candidates.isEmpty()) {
+            List<String> pool = new ArrayList<>(candidates);
+            Collections.shuffle(pool);
+            finalList.addAll(pool.subList(0, Math.min(needed, pool.size())));
+        }
+
+        return this.getRecommendations(finalList, type, sendFixmeRequest);
     }
 
     @Transactional
@@ -190,6 +216,20 @@ public class DataManager {
             res.addAll(toRemove);
         }
         marketDataService.deleteAll(res);
+        return res;
+    }
+
+    public List<Recommendation> removeOldRecommendations(int keepCount) {
+        List<Recommendation> res = new ArrayList<>();
+        List<Symbol> symbols = this.symbolService.findAll();
+        for (Symbol symbol : symbols) {
+            List<Recommendation> toKeep = recommendationsService.getTopForSymbolId(symbol.getId(), keepCount);
+            List<Recommendation> toRemove = recommendationsService.findBySymbolId(symbol.getId()).stream()
+                    .filter(recommendation -> !toKeep.contains(recommendation))
+                    .toList();
+            res.addAll(toRemove);
+        }
+        recommendationsService.deleteAll(res);
         return res;
     }
 
