@@ -84,14 +84,15 @@ public class RecommendationChatCompletionClient {
         Message reportMessage = generateMessageFromNode(this.objectMapper.readValue(this.assetReportToMustacheMapper.map(reports), ObjectNode.class));
         Message fixedMessage;
         if (sendFixMeRequest) {
-            logger.info(Constants.GENERATING_PRE_REQUEST_INFO, PROMPT);
+            logger.info(Constants.
+                    GENERATING_PRE_REQUEST_INFO, marketData.keySet());
             fixedMessage = new UserMessage(this.callWithBackupStrategy(new Prompt(List.of(fixMeMessage, reportMessage), client.getDefaultOptions())));
             backOff(60000);
         } else {
             fixedMessage = reportMessage;
         }
 
-        logger.info(Constants.GENERATING_RECOMMENDATIONS_INFO, PROMPT);
+        logger.info(Constants.GENERATING_RECOMMENDATIONS_INFO, marketData.keySet());
         Prompt prompt = new Prompt(List.of(this.systemMessage, this.promptMessage, this.fewShotMessage, fixedMessage), client.getDefaultOptions());
         ObjectNode result = objectMapper.createObjectNode();
         result.put("input", fixedMessage.getText());
