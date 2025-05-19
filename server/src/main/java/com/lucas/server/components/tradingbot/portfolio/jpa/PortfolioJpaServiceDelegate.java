@@ -9,9 +9,13 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class PortfolioJpaServiceDelegate<T extends PortfolioBase, R extends JpaRepository<T, Long>> {
 
@@ -66,5 +70,17 @@ public class PortfolioJpaServiceDelegate<T extends PortfolioBase, R extends JpaR
                 .setAverageCost(newAverage)
                 .setEffectiveTimestamp(timestamp);
         return this.save(res);
+    }
+
+    public List<T> findLatest() {
+        return this.repository.findAll().stream()
+                .collect(Collectors.toMap(
+                        T::getSymbol,
+                        Function.identity(),
+                        BinaryOperator.maxBy(Comparator.comparing(T::getEffectiveTimestamp))
+                ))
+                .values()
+                .stream()
+                .toList();
     }
 }

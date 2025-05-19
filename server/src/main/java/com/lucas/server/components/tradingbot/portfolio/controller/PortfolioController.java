@@ -4,18 +4,17 @@ import com.lucas.server.common.exception.IllegalStateException;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;
 import com.lucas.server.components.tradingbot.portfolio.jpa.Portfolio;
 import com.lucas.server.components.tradingbot.portfolio.jpa.PortfolioMock;
+import com.lucas.server.components.tradingbot.portfolio.service.PortfolioManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static com.lucas.server.common.Constants.PortfolioType.MOCK;
 import static com.lucas.server.common.Constants.PortfolioType.REAL;
@@ -53,6 +52,11 @@ public class PortfolioController {
         }
     }
 
+    @GetMapping("/stand")
+    public ResponseEntity<List<PortfolioManager.SymbolStand>> getGlobalStand() {
+        return ResponseEntity.ok(jpaService.getPortfolioStand(REAL));
+    }
+
     @PostMapping("/mock/buy")
     public ResponseEntity<PortfolioMock> buyMock(@RequestParam String symbolName, @RequestParam BigDecimal price,
                                                  @RequestParam BigDecimal quantity, @RequestParam LocalDate date) {
@@ -73,5 +77,10 @@ public class PortfolioController {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
         }
+    }
+
+    @GetMapping("/mock/stand")
+    public ResponseEntity<List<PortfolioManager.SymbolStand>> getGlobalStandMock() {
+        return ResponseEntity.ok(jpaService.getPortfolioStand(MOCK));
     }
 }

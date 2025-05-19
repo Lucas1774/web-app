@@ -6,6 +6,7 @@ import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface IPortfolioJpaService<T extends PortfolioBase> extends JpaService<T> {
@@ -14,4 +15,6 @@ public interface IPortfolioJpaService<T extends PortfolioBase> extends JpaServic
 
     T executePortfolioAction(Symbol symbol, BigDecimal price, BigDecimal quantity, LocalDateTime timestamp,
                              boolean isBuy) throws IllegalStateException;
+
+    List<T> findLatest();
 }

@@ -14,6 +14,7 @@ import com.lucas.server.components.tradingbot.news.jpa.News;
 import com.lucas.server.components.tradingbot.news.jpa.NewsJpaService;
 import com.lucas.server.components.tradingbot.news.service.FinnhubNewsClient;
 import com.lucas.server.components.tradingbot.portfolio.jpa.*;
+import com.lucas.server.components.tradingbot.portfolio.service.PortfolioManager;
 import com.lucas.server.components.tradingbot.recommendation.service.RecommendationChatCompletionClient;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -39,6 +41,7 @@ public class DataManager {
     private final ObjectMapper mapper;
     private final RecommendationChatCompletionClient recommendationsClient;
     private final FinnhubNewsClient newsClient;
+    private final PortfolioManager portfolioManager;
     private final Map<TwelveDataType, TypeToMarketDataFunction> typeToRunner;
     private final Map<PortfolioType, IPortfolioJpaService<?>> portfolioTypeToService;
     private static final Logger logger = LoggerFactory.getLogger(DataManager.class);
@@ -54,7 +57,7 @@ public class DataManager {
 
     public DataManager(SymbolJpaService symbolService, MarketDataJpaService marketDataService, NewsJpaService newsService,
                        PortfolioJpaService portfolioService, PortfolioMockJpaService portfolioMockService, ObjectMapper mapper,
-                       RecommendationChatCompletionClient recommendationsClient, FinnhubNewsClient newsClient,
+                       RecommendationChatCompletionClient recommendationsClient, FinnhubNewsClient newsClient, PortfolioManager portfolioManager,
                        TwelveDataMarketDataClient twelveDataMarketDataClient, FinnhubMarketDataClient finnhubMarketDataClient) {
         this.symbolService = symbolService;
         this.marketDataService = marketDataService;
@@ -62,6 +65,7 @@ public class DataManager {
         this.mapper = mapper;
         this.recommendationsClient = recommendationsClient;
         this.newsClient = newsClient;
+        this.portfolioManager = portfolioManager;
         this.typeToRunner = new EnumMap<>(Map.of(
                 TwelveDataType.LAST, symbols -> retrieveMarketDataWithBackupStrategy(symbols, twelveDataMarketDataClient, finnhubMarketDataClient),
                 TwelveDataType.HISTORIC, symbols -> twelveDataMarketDataClient.retrieveMarketData(symbols, TwelveDataType.HISTORIC)
@@ -137,9 +141,22 @@ public class DataManager {
             PortfolioType type, String symbolName, BigDecimal price,
             BigDecimal quantity, LocalDateTime timestamp, boolean isBuy
     ) throws IllegalStateException {
-        Symbol symbol = symbolService.getOrCreateByName(symbolName);
+        Symbol symbol = symbolService.findByName(symbolName).orElseThrow(
+                () -> new IllegalStateException(MessageFormat.format(SYMBOL_NOT_FOUND_ERROR, symbolName))
+        );
         IPortfolioJpaService<T> service = this.getService(type);
         return service.executePortfolioAction(symbol, price, quantity, timestamp, isBuy);
+    }
+
+    public List<PortfolioManager.SymbolStand> getPortfolioStand(PortfolioType type) {
+        return this.getService(type).findLatest()
+                .stream()
+                .flatMap(p -> marketDataService.getTopForSymbolId(p.getSymbol().getId(), 1)
+                        .stream()
+                        .findFirst()
+                        .map(top -> portfolioManager.computeStand(p, top))
+                        .stream()
+                ).toList();
     }
 
     @Transactional
