@@ -1,5 +1,6 @@
 package com.lucas.server.components.tradingbot.recommendation.service;
 
+import com.lucas.server.common.Constants;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.marketdata.service.MarketDataKpiGenerator;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
+import java.util.stream.IntStream;
 
 @Component
 public class AssetReportDataProvider {
@@ -24,16 +26,25 @@ public class AssetReportDataProvider {
     }
 
     public AssetReportRaw provide(Symbol symbol, List<MarketData> mdHistory, List<News> articles, PortfolioBase portfolio) {
-        List<PricePointRaw> priceHistory = mdHistory.stream()
+        List<PricePointRaw> priceHistory = mdHistory.subList(0, Constants.HISTORY_DAYS_COUNT).stream()
                 .map(md -> new PricePointRaw(md.getDate(), md.getOpen(), md.getHigh(), md.getLow(), md.getPrice(), md.getVolume()))
                 .toList();
 
-        int historySize = mdHistory.size();
-        List<MarketData> newestFourteen = mdHistory.subList(Math.max(0, historySize - 14), historySize);
-        BigDecimal ma5 = kpiGenerator.computeMovingAverage(mdHistory.subList(0, Math.min(historySize, 5)));
-        BigDecimal rsi14 = kpiGenerator.computeRsi(newestFourteen);
-        BigDecimal atr14 = kpiGenerator.computeAtr(newestFourteen);
-        BigDecimal volatility = kpiGenerator.computeVolatility(newestFourteen);
+        List<MarketData> newestFourteenAsc = mdHistory.subList(0, 14).reversed();
+        List<MarketData> newestTwentyAsc = mdHistory.subList(0, 20).reversed();
+        List<MarketData> newestTwentySixAsc = mdHistory.subList(0, 26).reversed();
+
+        BigDecimal ema20 = kpiGenerator.computeEma(newestTwentyAsc);
+        // TODO: change param with "newestTwentySixAsc" once there's enough data. Change also 21 with 26
+        BigDecimal macdLine1226 = kpiGenerator.computeMacdLine(mdHistory.subList(0, 21).reversed());
+        List<BigDecimal> macdHistory = IntStream.iterate(8, i -> i - 1)
+                .limit(9)
+                .mapToObj(i -> kpiGenerator.computeMacdLine(mdHistory.subList(i, i + 21).reversed()))
+                .toList();
+        BigDecimal macdSignalLine9 = kpiGenerator.computeSignalLine(macdHistory);
+        BigDecimal rsi14 = kpiGenerator.computeRsi(newestFourteenAsc);
+        BigDecimal atr14 = kpiGenerator.computeAtr(newestFourteenAsc);
+        BigDecimal obv20 = kpiGenerator.computeObv(newestTwentyAsc);
 
         List<NewsItemRaw> news = articles.stream()
                 .map(a -> new NewsItemRaw(a.getHeadline(), a.getSentiment(), a.getSentimentConfidence(), a.getSummary(), a.getDate()))
@@ -50,7 +61,7 @@ public class AssetReportDataProvider {
             positionValue = null;
             pnL = null;
         }
-        return new AssetReportRaw(symbol.getName(), quantity, positionValue, averageCost, priceHistory.size(), priceHistory,
-                ma5, rsi14, atr14, volatility, pnL, news.size(), news);
+        return new AssetReportRaw(symbol.getName(), quantity, positionValue, averageCost, pnL, priceHistory.size(), priceHistory,
+                ema20, macdLine1226, macdSignalLine9, rsi14, atr14, obv20, news.size(), news);
     }
 }

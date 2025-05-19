@@ -30,10 +30,15 @@ class AssetReportToMustacheMapperTest {
                 • Current Position:
                   • N/A shares (N/A EUR)
                   • Avg Entry Price: N/A EUR
+                  • Unrealized PnL: N/A EUR
                 • Price History (last 1 days):
                   • 2025-05-01: O 100 H 110 L 90 C 105 V N/A
-                • Technical Indicators: 5-day MA: 105, RSI14: 42.42, ATR14: 1.23
-                • Asset KPIs: Unrealized PnL including trading costs: N/A EUR, Volatility (14d): 15.67%
+                • Technical Indicators:
+                  • 20-day EMA: 105
+                  • MACD(12,26,9): line=42.42,signal=1.23hist=41.19
+                  • 14-day RSI: 15.67
+                  • 14-day ATR: 15.68
+                  • 20-day OBV: 15.69
                 --- News Summaries (Top 2) ---
                   • 2025-05-01: "Headline One" (Sentiment: N/A. Confidence: 54.4412%) Summary: First summary
                   • 2025-05-02: "Headline Two" (Sentiment: N/A. Confidence: 54.4412%) Summary: Second summary
@@ -55,10 +60,15 @@ class AssetReportToMustacheMapperTest {
                 • Current Position:
                   • 10.2412 shares (101.4887 EUR)
                   • Avg Entry Price: 11.5874 EUR
+                  • Unrealized PnL: 50 EUR
                 • Price History (last 1 days):
                   • 2025-05-01: O 100 H 110 L 90 C 105 V 1234
-                • Technical Indicators: 5-day MA: 105, RSI14: 42.42, ATR14: 1.23
-                • Asset KPIs: Unrealized PnL including trading costs: 50 EUR, Volatility (14d): 15.67%
+                • Technical Indicators:
+                  • 20-day EMA: 105
+                  • MACD(12,26,9): line=42.42,signal=1.23hist=41.19
+                  • 14-day RSI: 15.67
+                  • 14-day ATR: 15.68
+                  • 20-day OBV: 15.69
                 --- News Summaries (Top 2) ---
                   • 2025-05-01: "Headline One" (Sentiment: positive. Confidence: 54.4412%) Summary: First summary
                   • 2025-05-02: "Headline Two" (Sentiment: negative. Confidence: 54.4412%) Summary: Second summary
@@ -72,18 +82,18 @@ class AssetReportToMustacheMapperTest {
     private static AssetReportRaw getAssetReportNullValues() {
         List<PricePointRaw> pp = getPpNullValues();
         List<NewsItemRaw> news = getNewsNullValues();
-        return new AssetReportRaw("FOO", null, null, null, pp.size(),
-                pp, new BigDecimal("105.00"), new BigDecimal("42.42"), new BigDecimal("1.23"),
-                new BigDecimal("15.67"), null, news.size(), news
-        );
+        return new AssetReportRaw("FOO", null, null, null, null,
+                pp.size(), pp, new BigDecimal("105.00"), new BigDecimal("42.42"), new BigDecimal("1.23"),
+                new BigDecimal("15.67"), new BigDecimal("15.68"), new BigDecimal("15.69"), news.size(), news);
     }
 
     private static AssetReportRaw getAssetReportAllValues() {
         List<PricePointRaw> pp = getPpAllValues();
         List<NewsItemRaw> news = getNewsAllValues();
         return new AssetReportRaw("FOO", new BigDecimal("10.2412"), new BigDecimal("101.4887"),
-                new BigDecimal("11.5874"), pp.size(), pp, new BigDecimal("105.00"), new BigDecimal("42.42"),
-                new BigDecimal("1.23"), new BigDecimal("15.67"), new BigDecimal("50"), news.size(), news);
+                new BigDecimal("11.5874"), new BigDecimal("50"), pp.size(), pp, new BigDecimal("105.00"),
+                new BigDecimal("42.42"), new BigDecimal("1.23"), new BigDecimal("15.67"),
+                new BigDecimal("15.68"), new BigDecimal("15.69"), news.size(), news);
     }
 
     private static List<PricePointRaw> getPpNullValues() {

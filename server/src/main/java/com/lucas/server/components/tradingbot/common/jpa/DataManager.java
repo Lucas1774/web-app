@@ -76,7 +76,7 @@ public class DataManager {
     public JsonNode getRecommendations(List<String> symbolNames, PortfolioType type) throws ClientException, IOException {
         List<Symbol> symbols = symbolNames.stream().distinct().map(this.symbolService::getOrCreateByName).toList();
         Map<Symbol, List<MarketData>> marketData = symbols.stream()
-                .map(symbol -> Map.entry(symbol, marketDataService.getTopForSymbolId(symbol.getId(), HISTORY_DAYS_COUNT)))
+                .map(symbol -> Map.entry(symbol, marketDataService.getTopForSymbolId(symbol.getId(), MARKET_DATA_RELEVANT_DAYS_COUNT)))
                 .filter(entry -> !entry.getValue().isEmpty())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         if (marketData.isEmpty()) {

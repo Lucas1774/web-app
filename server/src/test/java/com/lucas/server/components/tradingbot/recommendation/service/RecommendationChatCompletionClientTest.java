@@ -26,6 +26,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -60,11 +61,11 @@ class RecommendationChatCompletionClientTest {
 
     @Test
     void testProvide() {
-        // given: insert 15 days of market data. Needs to be greater than the history days
+        // given: insert 34 days of market data. Needs to be at least 34 and greater than the history days
         Symbol symbol = symbolService.getOrCreateByName("AAPL");
         LocalDate today = LocalDate.now();
         List<MarketData> mds = new ArrayList<>();
-        for (int i = 15; i >= 0; i--) {
+        for (int i = 34; i >= 0; i--) {
             MarketData md = new MarketData()
                     .setSymbol(symbolService.getOrCreateByName(symbol.getName()))
                     .setDate(today.minusDays(i))
@@ -102,7 +103,7 @@ class RecommendationChatCompletionClientTest {
         portfolioService.save(portfolio);
 
         // when
-        List<MarketData> filteredMds = this.marketDataService.getTopForSymbolId(symbol.getId(), Constants.HISTORY_DAYS_COUNT);
+        List<MarketData> filteredMds = this.marketDataService.getTopForSymbolId(symbol.getId(), Constants.MARKET_DATA_RELEVANT_DAYS_COUNT);
         List<News> filteredNews = this.newsService.getTopForSymbolId(symbol.getId(), Constants.NEWS_COUNT);
         Portfolio portfolioData = this.portfolioService.findBySymbol(symbol).orElseThrow();
         AssetReportRaw report = provider.provide(symbol, filteredMds, filteredNews, portfolioData);
@@ -113,9 +114,9 @@ class RecommendationChatCompletionClientTest {
         assertThat(report.priceHistory())
                 .hasSize(Constants.HISTORY_DAYS_COUNT)
                 .extracting(PricePointRaw::date)
-                .containsExactly(today, today.minusDays(1), today.minusDays(2), today.minusDays(3), today.minusDays(4),
-                        today.minusDays(5), today.minusDays(6), today.minusDays(7), today.minusDays(8), today.minusDays(9),
-                        today.minusDays(10), today.minusDays(11), today.minusDays(12), today.minusDays(13)
+                .containsExactly(today, today.minusDays(1), today.minusDays(2), today.minusDays(3),
+                        today.minusDays(4), today.minusDays(5), today.minusDays(6),
+                        today.minusDays(7), today.minusDays(8), today.minusDays(9)
                 );
 
         assertThat(report.newsCount()).isEqualTo(Constants.NEWS_COUNT);
@@ -127,16 +128,26 @@ class RecommendationChatCompletionClientTest {
 
         // then: KPIs match the kpiGenerator calculations
         List<MarketData> mdHistory = marketDataService.getTopForSymbolId(
-                symbolService.findByName(symbol.getName()).orElseThrow().getId(), Constants.HISTORY_DAYS_COUNT);
-        BigDecimal expectedMa5 = kpiGenerator.computeMovingAverage(mdHistory.subList(0, 5));
-        BigDecimal expectedRsi14 = kpiGenerator.computeRsi(mdHistory.subList(0, 14));
-        BigDecimal expectedAtr14 = kpiGenerator.computeAtr(mdHistory.subList(0, 14));
-        BigDecimal expectedVolatility = kpiGenerator.computeVolatility(mdHistory.subList(0, 14));
+                symbolService.findByName(symbol.getName()).orElseThrow().getId(), 100);
 
-        assertThat(report.ma5()).isEqualByComparingTo(expectedMa5);
+        BigDecimal expectedEma20 = kpiGenerator.computeEma(mdHistory.subList(0, 20).reversed());
+        // TODO: replace 21 with 26
+        BigDecimal macdLine1226 = kpiGenerator.computeMacdLine(mdHistory.subList(0, 21).reversed());
+        List<BigDecimal> macdHistory = IntStream.iterate(8, i -> i - 1)
+                .limit(9)
+                .mapToObj(i -> kpiGenerator.computeMacdLine(mdHistory.subList(i, i + 26).reversed()))
+                .toList();
+        BigDecimal expectedMacdSignalLine9 = kpiGenerator.computeSignalLine(macdHistory);
+        BigDecimal expectedRsi14 = kpiGenerator.computeRsi(mdHistory.subList(0, 14).reversed());
+        BigDecimal expectedAtr14 = kpiGenerator.computeAtr(mdHistory.subList(0, 14).reversed());
+        BigDecimal expectedObv20 = kpiGenerator.computeObv(mdHistory.subList(0, 20).reversed());
+
+        assertThat(report.ema20()).isEqualByComparingTo(expectedEma20);
+        assertThat(report.macdLine1226()).isEqualByComparingTo(macdLine1226);
+        assertThat(report.macdSignalLine9()).isEqualByComparingTo(expectedMacdSignalLine9);
         assertThat(report.rsi14()).isEqualByComparingTo(expectedRsi14);
         assertThat(report.atr14()).isEqualByComparingTo(expectedAtr14);
-        assertThat(report.volatility()).isEqualByComparingTo(expectedVolatility);
+        assertThat(report.obv20()).isEqualByComparingTo(expectedObv20);
 
         // then: position fields match
         assertThat(report.position()).isEqualByComparingTo(BigDecimal.valueOf(1.1111));

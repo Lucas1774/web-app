@@ -26,7 +26,8 @@ public class Constants {
     public static final int[] DIGITS = {1, 2, 3, 4, 5, 6, 7, 8, 9};
     public static final int SUDOKU_SIZE = 9;
     public static final int SUDOKU_NUMBER_OF_CELLS = 81;
-    public static final int HISTORY_DAYS_COUNT = 14;
+    public static final int MARKET_DATA_RELEVANT_DAYS_COUNT = 34;
+    public static final int HISTORY_DAYS_COUNT = 10;
     public static final int NEWS_COUNT = 10;
     public static final int DATABASE_NEWS_PER_SYMBOL = 20;
     public static final int DATABASE_MARKET_DATA_PER_SYMBOL = 100;
