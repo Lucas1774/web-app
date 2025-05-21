@@ -25,7 +25,7 @@ public class StringToSudokuMapper implements Mapper<String, Sudoku> {
             if (SUDOKU_NUMBER_OF_CELLS != sudoku.length()) {
                 throw new NumberFormatException();
             }
-            return Sudoku.withValues(this.attributeConverter.convertToEntityAttribute(sudoku));
+            return Sudoku.withValues(attributeConverter.convertToEntityAttribute(sudoku));
         } catch (Exception e) {
             throw new JsonProcessingException(MessageFormat.format(Constants.JSON_MAPPING_ERROR, "sudoku"), e);
         }

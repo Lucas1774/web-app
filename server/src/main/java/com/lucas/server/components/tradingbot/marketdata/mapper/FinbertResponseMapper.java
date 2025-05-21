@@ -25,7 +25,7 @@ public class FinbertResponseMapper implements Mapper<JsonNode, News> {
     }
 
     public News map(JsonNode json, News news) throws JsonProcessingException {
-        News sentiment = this.map(json);
+        News sentiment = map(json);
         return news.setSentiment(sentiment.getSentiment()).setSentimentConfidence(sentiment.getSentimentConfidence());
     }
 }

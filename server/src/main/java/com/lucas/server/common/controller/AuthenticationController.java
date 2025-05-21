@@ -37,9 +37,9 @@ public class AuthenticationController {
         cookie.setHttpOnly(true);
         cookie.setPath("/");
         cookie.setMaxAge(31536000);
-        cookie.setSecure(this.secure);
+        cookie.setSecure(secure);
         cookie.setAttribute("Partitioned", "");
-        if (this.secure) {
+        if (secure) {
             cookie.setAttribute("SameSite", "None");
         }
         response.addCookie(cookie);
@@ -49,7 +49,7 @@ public class AuthenticationController {
 
     @GetMapping("/check-auth")
     public ResponseEntity<Void> checkAuth(HttpServletRequest request) {
-        if (this.controllerUtil.retrieveAuthCookie(request.getCookies()).isPresent()) {
+        if (controllerUtil.retrieveAuthCookie(request.getCookies()).isPresent()) {
             return ResponseEntity.ok().build();
         }
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();

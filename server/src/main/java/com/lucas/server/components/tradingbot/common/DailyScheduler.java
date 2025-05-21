@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -29,16 +28,16 @@ public class DailyScheduler {
 
     @Scheduled(cron = "${scheduler.daily-cron}")
     public void dailyTask() {
-        this.updateMarketData();
-        this.updateNews();
-        this.removeOldNews();
-        this.removeOldMarketData();
-        this.removeOldRecommendations();
+        updateNews();
+        removeOldNews();
+        updateMarketData();
+        removeOldMarketData();
     }
 
     @Scheduled(cron = "${scheduler.midnight-cron}")
     public void midnightTask() {
-        this.getRandomRecommendations();
+        getRandomRecommendations();
+        removeOldRecommendations();
     }
 
     private void updateMarketData() {
@@ -64,11 +63,7 @@ public class DailyScheduler {
 
     private void getRandomRecommendations() {
         try {
-            List<Recommendation> updatedRecommendations = new ArrayList<>();
-            for (int i = 0; i < Constants.SCHEDULED_RECOMMENDATIONS_COUNT / Constants.RECOMMENDATIONS_CHUNK_SIZE; i++) {
-                updatedRecommendations.addAll(dataManager.getRandomRecommendations(Constants.PortfolioType.MOCK, false));
-                Constants.backOff(6000);
-            }
+            List<Recommendation> updatedRecommendations = dataManager.getRandomRecommendations(Constants.PortfolioType.MOCK, Constants.SCHEDULED_RECOMMENDATIONS_COUNT, false, Constants.RecommendationEngineType.RAW);
             logger.info(Constants.SCHEDULED_TASK_SUCCESS_INFO, "generated recommendations", updatedRecommendations.stream()
                     .map(Recommendation::getSymbol).toList());
         } catch (ClientException | IOException e) {

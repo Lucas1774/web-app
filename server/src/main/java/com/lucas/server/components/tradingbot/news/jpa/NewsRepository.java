@@ -13,7 +13,8 @@ import java.util.Optional;
 @Repository
 public interface NewsRepository extends JpaRepository<News, Long> {
 
-    Slice<News> findBySymbols_IdAndSentimentNot(Long symbolId, String sentiment, PageRequest pageRequest);
+    Slice<News> findBySymbols_IdAndSentimentNotOrSymbols_IdAndSentimentIsNull(Long symbolId1, String neutralSentiment,
+                                                                              Long symbolId2, PageRequest pageable);
 
     Optional<News> findByExternalId(Long externalId);
 

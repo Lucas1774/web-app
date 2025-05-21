@@ -24,9 +24,9 @@ class StringToSudokuMapperTest {
             assertThatThrownBy(() -> mapper.map(value)).isInstanceOf(JsonProcessingException.class);
         } else {
             Sudoku sudoku = mapper.map(value);
-            assertEquals(isSolvable, this.solver.isValid(sudoku, -1));
+            assertEquals(isSolvable, solver.isValid(sudoku, -1));
             if (isSolvable) {
-                assertEquals(isActuallySolvable, this.solver.solveWithTimeout(sudoku));
+                assertEquals(isActuallySolvable, solver.solveWithTimeout(sudoku));
             }
         }
     }

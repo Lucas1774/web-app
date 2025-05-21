@@ -39,6 +39,6 @@ public class FinnhubMarketDataClient {
                 .build()
                 .toUriString();
 
-        return mapper.map(this.httpRequestClient.fetch(url), symbol);
+        return mapper.map(httpRequestClient.fetch(url), symbol);
     }
 }

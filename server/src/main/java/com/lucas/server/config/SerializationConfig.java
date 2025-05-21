@@ -16,6 +16,6 @@ public class SerializationConfig {
 
     @PostConstruct
     public void customize() {
-        this.mapper.registerModule(new JavaTimeModule());
+        mapper.registerModule(new JavaTimeModule());
     }
 }

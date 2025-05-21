@@ -45,13 +45,13 @@ public class FinnhubNewsClient {
                 .queryParam("token", apiKey)
                 .toUriString();
 
-        return mapper.mapAll(this.httpRequestClient.fetch(url), symbol);
+        return mapper.mapAll(httpRequestClient.fetch(url), symbol);
     }
 
     public List<News> retrieveNewsByDateRange(List<Symbol> symbols, LocalDate from, LocalDate to) throws ClientException, JsonProcessingException {
         Map<Long, News> newsByExternalId = new HashMap<>();
         for (Symbol symbol : symbols) {
-            List<News> updated = this.retrieveNewsByDateRange(symbol, from, to);
+            List<News> updated = retrieveNewsByDateRange(symbol, from, to);
             for (News news : updated) {
                 newsByExternalId
                         .computeIfAbsent(news.getExternalId(), id -> news)

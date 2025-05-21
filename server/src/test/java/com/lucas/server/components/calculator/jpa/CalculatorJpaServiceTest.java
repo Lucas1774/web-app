@@ -22,11 +22,11 @@ class CalculatorJpaServiceTest {
         String number = "1+2";
 
         // when
-        String result = this.calculatorService.computeAndSave(number);
+        String result = calculatorService.computeAndSave(number);
 
         // then
         assertThat(result).isEqualTo("3");
-        assertThat(this.calculatorService.find()).isPresent()
+        assertThat(calculatorService.find()).isPresent()
                 .get()
                 .extracting(Calculator::getAns, Calculator::isTextMode)
                 .containsExactly("3", false);
@@ -38,11 +38,11 @@ class CalculatorJpaServiceTest {
         String text = "Hello World";
 
         // when
-        String result = this.calculatorService.computeAndSave(text);
+        String result = calculatorService.computeAndSave(text);
 
         // then
         assertThat(result).isEqualTo(Constants.INVALID_EXPRESSION);
-        assertThat(this.calculatorService.find()).isPresent()
+        assertThat(calculatorService.find()).isPresent()
                 .get()
                 .extracting(Calculator::getText, Calculator::isTextMode)
                 .containsExactly("Hello World", true);

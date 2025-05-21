@@ -4,8 +4,7 @@ import com.lucas.server.TestcontainersConfiguration;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.marketdata.service.MarketDataKpiGenerator;
-import com.lucas.server.components.tradingbot.news.jpa.NewsJpaService;
-import org.junit.jupiter.api.BeforeEach;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -34,17 +33,8 @@ class MarketDataListenerTest {
     @Autowired
     SymbolJpaService symbolService;
 
-    @Autowired
-    NewsJpaService newsService;
-
-    @BeforeEach
-    void setup() {
-        this.jpaService.deleteAll();
-        this.newsService.deleteAll();
-        this.symbolService.deleteAll();
-    }
-
     @Test
+    @Transactional
     void whenSaveSomeMarketData_thenItIsUpdatedWithPreviousMarketData() {
         // given
         Symbol symbol = symbolService.getOrCreateByName("AAPL");

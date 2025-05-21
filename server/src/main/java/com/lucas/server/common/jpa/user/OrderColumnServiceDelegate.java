@@ -18,10 +18,10 @@ public class OrderColumnServiceDelegate<T extends Sortable> {
         List<T> toSave = new ArrayList<>();
         for (int i = 0; i < elements.size(); i++) {
             T input = elements.get(i);
-            T managed = this.repository.findById(input.getId()).orElseThrow();
+            T managed = repository.findById(input.getId()).orElseThrow();
             managed.setOrder(i + 1);
             toSave.add(managed);
         }
-        return this.repository.saveAll(toSave);
+        return repository.saveAll(toSave);
     }
 }

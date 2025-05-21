@@ -17,16 +17,16 @@ public class SymbolJpaService implements JpaService<Symbol> {
     private final SymbolRepository repository;
 
     public SymbolJpaService(SymbolRepository repository) {
-        this.delegate = new GenericJpaServiceDelegate<>(repository);
-        this.uniqueConstraintDelegate = new UniqueConstraintWearyJpaServiceDelegate<>(repository);
+        delegate = new GenericJpaServiceDelegate<>(repository);
+        uniqueConstraintDelegate = new UniqueConstraintWearyJpaServiceDelegate<>(repository);
         this.repository = repository;
     }
 
     public Symbol getOrCreateByName(String name) {
-        return this.uniqueConstraintDelegate.getOrCreate(entity -> this.findByName(entity.getName()), new Symbol().setName(name));
+        return uniqueConstraintDelegate.getOrCreate(entity -> findByName(entity.getName()), new Symbol().setName(name));
     }
 
     public Optional<Symbol> findByName(String name) {
-        return this.repository.findByName(name);
+        return repository.findByName(name);
     }
 }

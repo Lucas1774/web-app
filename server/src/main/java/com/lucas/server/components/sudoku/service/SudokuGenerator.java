@@ -24,14 +24,14 @@ public class SudokuGenerator {
 
     public Sudoku generateDefault(int difficulty) {
         Sudoku sudoku = Sudoku.withDefaultValues();
-        this.setDifficulty(sudoku, difficulty);
+        setDifficulty(sudoku, difficulty);
         return sudoku;
     }
 
     public Sudoku generate(int difficulty) {
         Sudoku sudoku = Sudoku.withZeros();
-        this.doGenerate(sudoku);
-        this.setDifficulty(sudoku, difficulty);
+        doGenerate(sudoku);
+        setDifficulty(sudoku, difficulty);
         return sudoku;
     }
 
@@ -44,7 +44,7 @@ public class SudokuGenerator {
             if (0 == sudoku.getState()[place]) {
                 Collections.shuffle(digits, random);
                 for (int digit : digits) {
-                    if (this.solver.acceptsNumberInPlace(sudoku, place, digit)) {
+                    if (solver.acceptsNumberInPlace(sudoku, place, digit)) {
                         sudoku.set(place, digit);
                         if (doGenerate(sudoku)) {
                             return true;

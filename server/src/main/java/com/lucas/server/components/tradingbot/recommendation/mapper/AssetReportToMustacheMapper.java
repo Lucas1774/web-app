@@ -34,7 +34,7 @@ public class AssetReportToMustacheMapper implements Mapper<List<AssetReportRaw>,
         try (Reader reader = new InputStreamReader(
                 Objects.requireNonNull(AssetReportToMustacheMapper.class.getResourceAsStream("/prompt/asset-template.mustache")),
                 StandardCharsets.UTF_8)) {
-            this.mustache = mf.compile(reader, "asset-report");
+            mustache = mf.compile(reader, "asset-report");
         } catch (IOException e) {
             throw new ConfigurationException(e);
         }
@@ -160,7 +160,7 @@ public class AssetReportToMustacheMapper implements Mapper<List<AssetReportRaw>,
     public String map(List<AssetReportRaw> assets) throws JsonProcessingException {
         StringWriter out = new StringWriter();
         try {
-            this.mustache.execute(out, Collections.singletonMap("assets", assets.stream().map(AssetReport::from).toList())).flush();
+            mustache.execute(out, Collections.singletonMap("assets", assets.stream().map(AssetReport::from).toList())).flush();
             return out.toString();
         } catch (Exception e) {
             throw new JsonProcessingException(MessageFormat.format(Constants.JSON_MAPPING_ERROR, "asset report"), e);

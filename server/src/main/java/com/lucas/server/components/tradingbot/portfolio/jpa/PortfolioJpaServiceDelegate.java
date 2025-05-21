@@ -30,19 +30,19 @@ public class PortfolioJpaServiceDelegate<T extends PortfolioBase, R extends JpaR
     }
 
     public T save(T entity) {
-        return this.repository.save(entity);
+        return repository.save(entity);
     }
 
     public Optional<T> findBySymbol(Symbol symbol) {
-        return this.findLatestBySymbol.apply(symbol);
+        return findLatestBySymbol.apply(symbol);
     }
 
     public T executePortfolioAction(Symbol symbol, BigDecimal price, BigDecimal quantity, LocalDateTime timestamp,
                                     boolean isBuy) throws IllegalStateException {
 
-        T last = this.findBySymbol(symbol)
+        T last = findBySymbol(symbol)
                 .orElseGet(() -> {
-                    T res = this.builder.get();
+                    T res = builder.get();
                     res.setSymbol(symbol)
                             .setQuantity(BigDecimal.ZERO)
                             .setAverageCost(BigDecimal.ZERO)
@@ -64,16 +64,16 @@ public class PortfolioJpaServiceDelegate<T extends PortfolioBase, R extends JpaR
                     : BigDecimal.ZERO;
         }
 
-        T res = this.builder.get();
+        T res = builder.get();
         res.setSymbol(symbol)
                 .setQuantity(newQuantity)
                 .setAverageCost(newAverage)
                 .setEffectiveTimestamp(timestamp);
-        return this.save(res);
+        return save(res);
     }
 
     public List<T> findLatest() {
-        return this.repository.findAll().stream()
+        return repository.findAll().stream()
                 .collect(Collectors.toMap(
                         T::getSymbol,
                         Function.identity(),
@@ -85,7 +85,7 @@ public class PortfolioJpaServiceDelegate<T extends PortfolioBase, R extends JpaR
     }
 
     public List<T> findActivePortfolio() {
-        return this.findLatest().stream()
+        return findLatest().stream()
                 .filter(p -> p.getQuantity().compareTo(BigDecimal.ZERO) > 0)
                 .toList();
     }

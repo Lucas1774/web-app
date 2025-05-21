@@ -21,8 +21,8 @@ class SudokuTest {
     void solve() {
         for (int i = 0; i < NUM_RUNS; i++) {
             Sudoku sudoku = generator.generate(random.nextInt(SUDOKU_SIZE) + 1);
-            this.solver.solve(sudoku);
-            assertTrue(this.solver.isSolved(sudoku));
+            solver.solve(sudoku);
+            assertTrue(solver.isSolved(sudoku));
         }
     }
 
@@ -36,7 +36,7 @@ class SudokuTest {
             long generationStartTime = System.nanoTime();
             Sudoku sudoku = generator.generate(difficulty);
             long startTime = System.nanoTime();
-            this.solver.solve(sudoku);
+            solver.solve(sudoku);
             long endTime = System.nanoTime();
             totalGenerationDuration += (startTime - generationStartTime);
             totalDuration += (endTime - startTime);

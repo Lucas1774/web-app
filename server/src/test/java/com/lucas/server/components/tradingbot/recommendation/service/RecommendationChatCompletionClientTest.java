@@ -14,7 +14,7 @@ import com.lucas.server.components.tradingbot.portfolio.jpa.PortfolioJpaService;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.AssetReportRaw;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.NewsItemRaw;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.PricePointRaw;
-import org.junit.jupiter.api.BeforeEach;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -52,14 +52,8 @@ class RecommendationChatCompletionClientTest {
     @Autowired
     AssetReportDataProvider provider;
 
-    @BeforeEach
-    void setup() {
-        marketDataService.deleteAll();
-        newsService.deleteAll();
-        symbolService.deleteAll();
-    }
-
     @Test
+    @Transactional
     void testProvide() {
         // given: insert 34 days of market data. Needs to be at least 34 and greater than the history days
         Symbol symbol = symbolService.getOrCreateByName("AAPL");
@@ -103,9 +97,9 @@ class RecommendationChatCompletionClientTest {
         portfolioService.save(portfolio);
 
         // when
-        List<MarketData> filteredMds = this.marketDataService.getTopForSymbolId(symbol.getId(), Constants.MARKET_DATA_RELEVANT_DAYS_COUNT);
-        List<News> filteredNews = this.newsService.getTopForSymbolId(symbol.getId(), Constants.NEWS_COUNT);
-        Portfolio portfolioData = this.portfolioService.findBySymbol(symbol).orElseThrow();
+        List<MarketData> filteredMds = marketDataService.getTopForSymbolId(symbol.getId(), Constants.MARKET_DATA_RELEVANT_DAYS_COUNT);
+        List<News> filteredNews = newsService.getTopForSymbolId(symbol.getId(), Constants.NEWS_COUNT);
+        Portfolio portfolioData = portfolioService.findBySymbol(symbol).orElseThrow();
         AssetReportRaw report = provider.provide(symbol, filteredMds, filteredNews, portfolioData);
 
         // then: symbol & history size & news count
@@ -115,8 +109,11 @@ class RecommendationChatCompletionClientTest {
                 .hasSize(Constants.HISTORY_DAYS_COUNT)
                 .extracting(PricePointRaw::date)
                 .containsExactly(today, today.minusDays(1), today.minusDays(2), today.minusDays(3),
-                        today.minusDays(4), today.minusDays(5), today.minusDays(6),
-                        today.minusDays(7), today.minusDays(8), today.minusDays(9)
+                        today.minusDays(4), today.minusDays(5), today.minusDays(6), today.minusDays(7),
+                        today.minusDays(8), today.minusDays(9), today.minusDays(10),
+                        today.minusDays(11), today.minusDays(12), today.minusDays(13),
+                        today.minusDays(14), today.minusDays(15), today.minusDays(16),
+                        today.minusDays(17), today.minusDays(18), today.minusDays(19)
                 );
 
         assertThat(report.newsCount()).isEqualTo(Constants.NEWS_COUNT);

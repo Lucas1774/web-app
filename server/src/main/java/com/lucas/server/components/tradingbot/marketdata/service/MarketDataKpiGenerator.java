@@ -27,7 +27,7 @@ public class MarketDataKpiGenerator {
     }
 
     public MarketData computeDerivedFields(MarketData md) {
-        this.service.findTopBySymbolIdAndDateBeforeOrderByDateDesc(md.getSymbol().getId(), md.getDate())
+        service.findTopBySymbolIdAndDateBeforeOrderByDateDesc(md.getSymbol().getId(), md.getDate())
                 .ifPresent(previous -> {
                     BigDecimal previousPrice = previous.getPrice();
                     computeIfAbsent(md::getPreviousClose, md::setPreviousClose, previousPrice);
@@ -95,11 +95,11 @@ public class MarketDataKpiGenerator {
      */
     public BigDecimal computeMacdLine(List<MarketData> history) {
         List<MarketData> fastHist = history.subList(history.size() - 12, history.size());
-        BigDecimal ema12 = this.computeEma(fastHist);
+        BigDecimal ema12 = computeEma(fastHist);
 
         // TODO: replace 21 with 26
         List<MarketData> slowHist = history.subList(history.size() - 21, history.size());
-        BigDecimal ema26 = this.computeEma(slowHist);
+        BigDecimal ema26 = computeEma(slowHist);
 
         return ema12.subtract(ema26).setScale(4, RoundingMode.HALF_UP);
     }

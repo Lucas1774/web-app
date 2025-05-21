@@ -15,11 +15,11 @@ public class UserJpaService implements JpaService<User> {
     private final UserRepository repository;
 
     public UserJpaService(UserRepository repository) {
-        this.delegate = new GenericJpaServiceDelegate<>(repository);
+        delegate = new GenericJpaServiceDelegate<>(repository);
         this.repository = repository;
     }
 
     public Optional<User> findByUsername(String username) {
-        return this.repository.findByUsername(username);
+        return repository.findByUsername(username);
     }
 }

@@ -19,12 +19,12 @@ public class CategoryJpaService implements JpaService<Category>, OrderColumnJpaS
     private final CategoryRepository repository;
 
     public CategoryJpaService(CategoryRepository repository) {
-        this.delegate = new GenericJpaServiceDelegate<>(repository);
-        this.orderColumnDelegate = new OrderColumnServiceDelegate<>(repository);
+        delegate = new GenericJpaServiceDelegate<>(repository);
+        orderColumnDelegate = new OrderColumnServiceDelegate<>(repository);
         this.repository = repository;
     }
 
     public List<Category> findAllByOrderByOrderAsc() {
-        return this.repository.findAllByOrderByOrderAsc();
+        return repository.findAllByOrderByOrderAsc();
     }
 }

@@ -5,6 +5,7 @@ import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.common.jpa.GenericJpaServiceDelegate;
 import com.lucas.server.common.jpa.JpaService;
 import com.lucas.server.common.jpa.UniqueConstraintWearyJpaServiceDelegate;
+import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.news.service.NewsEmbeddingsClient;
 import com.lucas.server.components.tradingbot.news.service.NewsSentimentClient;
 import jakarta.transaction.Transactional;
@@ -27,8 +28,8 @@ public class NewsJpaService implements JpaService<News> {
     private final NewsSentimentClient sentimentClient;
 
     public NewsJpaService(NewsRepository repository, NewsEmbeddingsClient embeddingsClient, NewsSentimentClient sentimentClient) {
-        this.delegate = new GenericJpaServiceDelegate<>(repository);
-        this.uniqueConstraintDelegate = new UniqueConstraintWearyJpaServiceDelegate<>(repository);
+        delegate = new GenericJpaServiceDelegate<>(repository);
+        uniqueConstraintDelegate = new UniqueConstraintWearyJpaServiceDelegate<>(repository);
         this.repository = repository;
         this.embeddingsClient = embeddingsClient;
         this.sentimentClient = sentimentClient;
@@ -36,15 +37,17 @@ public class NewsJpaService implements JpaService<News> {
 
     public List<News> createIgnoringDuplicates(Iterable<News> entities, boolean triggerEntityCallback) {
         NewsListener.setActive(triggerEntityCallback);
-        return this.createIgnoringDuplicates(entities);
+        return createIgnoringDuplicates(entities);
     }
 
     private List<News> createIgnoringDuplicates(Iterable<News> entities) {
-        return this.uniqueConstraintDelegate.createIgnoringDuplicates(entity -> this.repository.findByExternalId(entity.getExternalId()), entities);
+        return uniqueConstraintDelegate.createIgnoringDuplicates(entity -> repository.findByExternalId(entity.getExternalId()), entities);
     }
 
     public List<News> getTopForSymbolId(Long symbolId, int limit) {
-        return this.repository.findBySymbols_IdAndSentimentNot(symbolId, "neutral", PageRequest.of(
+        // This query will prioritize null before high sentiment within a single date.
+        // That shouldn't be an issue as long as sentiment is generated per date.
+        return this.repository.findBySymbols_IdAndSentimentNotOrSymbols_IdAndSentimentIsNull(symbolId, "neutral", symbolId, PageRequest.of(
                         0, limit, Sort.by("date").descending()
                                 .and(Sort.by("sentimentConfidence").descending())
                 ))
@@ -53,20 +56,23 @@ public class NewsJpaService implements JpaService<News> {
 
     @Transactional(rollbackOn = {ClientException.class})
     public List<News> generateEmbeddingsByNewsId(List<Long> ids) throws ClientException {
-        List<News> news = this.repository.findAllByIdIn(ids);
+        List<News> news = repository.findAllByIdIn(ids);
         NewsListener.setActive(false);
-        return this.embeddingsClient.embed(news);
+        return embeddingsClient.embed(news);
     }
 
     public List<News> createOrUpdate(List<News> entities, boolean triggerEntityCallback) {
         NewsListener.setActive(triggerEntityCallback);
-        return this.createOrUpdate(entities);
+        return createOrUpdate(entities);
     }
 
     private List<News> createOrUpdate(List<News> entities) {
-        return this.uniqueConstraintDelegate.createOrUpdate(entity -> this.repository.findByExternalId(entity.getExternalId()),
+        return uniqueConstraintDelegate.createOrUpdate(entity -> repository.findByExternalId(entity.getExternalId()),
                 (oldEntity, newEntity) -> {
-                    oldEntity.getSymbols().addAll(newEntity.getSymbols());
+                    for (Symbol symbol : newEntity.getSymbols()) {
+                        oldEntity.getSymbols().add(symbol);
+                        symbol.getNews().add(oldEntity);
+                    }
                     return oldEntity;
                 },
                 entities);
@@ -74,12 +80,12 @@ public class NewsJpaService implements JpaService<News> {
 
     public List<News> generateSentiment(List<Long> list, LocalDate from, LocalDate to)
             throws ClientException, JsonProcessingException {
-        List<News> news = this.repository.findAllBySymbols_IdInAndDateBetween(list, from, to);
+        List<News> news = repository.findAllBySymbols_IdInAndDateBetween(list, from, to);
         NewsListener.setActive(false);
-        return this.sentimentClient.generateSentiment(news);
+        return sentimentClient.generateSentiment(news);
     }
 
     public void removeOrphanedNews() {
-        this.repository.deleteBySymbolsIsEmpty();
+        repository.deleteBySymbolsIsEmpty();
     }
 }

@@ -18,12 +18,12 @@ public class SudokuJpaService implements JpaService<Sudoku> {
 
 
     public SudokuJpaService(SudokuRepository repository) {
-        this.delegate = new GenericJpaServiceDelegate<>(repository);
-        this.uniqueConstraintDelegate = new UniqueConstraintWearyJpaServiceDelegate<>(repository);
+        delegate = new GenericJpaServiceDelegate<>(repository);
+        uniqueConstraintDelegate = new UniqueConstraintWearyJpaServiceDelegate<>(repository);
         this.repository = repository;
     }
 
     public List<Sudoku> createIgnoringDuplicates(Iterable<Sudoku> entities) {
-        return this.uniqueConstraintDelegate.createIgnoringDuplicates(entity -> this.repository.findByState(entity.getState()), entities);
+        return uniqueConstraintDelegate.createIgnoringDuplicates(entity -> repository.findByState(entity.getState()), entities);
     }
 }

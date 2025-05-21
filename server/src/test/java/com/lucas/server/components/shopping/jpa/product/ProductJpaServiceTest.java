@@ -1,13 +1,12 @@
 package com.lucas.server.components.shopping.jpa.product;
 
 import com.lucas.server.TestcontainersConfiguration;
-import com.lucas.server.common.jpa.user.User;
 import com.lucas.server.common.jpa.user.UserJpaService;
 import com.lucas.server.components.shopping.jpa.category.Category;
 import com.lucas.server.components.shopping.jpa.category.CategoryJpaService;
 import com.lucas.server.components.shopping.jpa.shopping.ShoppingItem;
 import com.lucas.server.components.shopping.jpa.shopping.ShoppingItemJpaService;
-import org.junit.jupiter.api.BeforeEach;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -36,19 +35,8 @@ class ProductJpaServiceTest {
     @Autowired
     CategoryJpaService categoryService;
 
-    @BeforeEach
-    void setup() {
-        shoppingItemService.deleteAll();
-        productService.deleteAll();
-        categoryService.deleteAll();
-        userService.deleteAll();
-        userService.createAll(List.of(
-                new User().setUsername("admin").setPassword("password"),
-                new User().setUsername("default").setPassword("password")
-        ));
-    }
-
     @Test
+    @Transactional
     void testCreateProductAndOrLinkToUser() {
         // given: no products, admin user
         assertThat(productService.findAll()).isEmpty();
@@ -97,6 +85,7 @@ class ProductJpaServiceTest {
 
 
     @Test
+    @Transactional
     void testUpdateProductCreateCategoryIfNecessary() {
         // given: an existing product for admin
         Product original = productService.createProductAndOrLinkToUser("Original", "admin").orElseThrow();
@@ -141,6 +130,7 @@ class ProductJpaServiceTest {
     }
 
     @Test
+    @Transactional
     void testUpdateOrders() {
         // given: two categories with reversed order values
         Product p1 = new Product().setName("A").setOrder(2);

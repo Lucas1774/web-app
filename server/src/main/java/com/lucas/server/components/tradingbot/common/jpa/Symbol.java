@@ -28,7 +28,7 @@ public class Symbol implements JpaEntity {
     @Column(nullable = false, unique = true, length = 10)
     private String name;
 
-    @ManyToMany(mappedBy = "symbols", fetch = FetchType.EAGER)
+    @ManyToMany(mappedBy = "symbols", fetch = FetchType.LAZY)
     @JsonIgnore
     private Set<News> news = new HashSet<>();
 

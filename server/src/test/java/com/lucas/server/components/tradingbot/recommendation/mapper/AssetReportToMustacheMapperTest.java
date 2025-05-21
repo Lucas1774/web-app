@@ -32,17 +32,16 @@ class AssetReportToMustacheMapperTest {
                   • Avg Entry Price: N/A EUR
                   • Unrealized PnL: N/A EUR
                 • Price History (last 1 days):
-                  • 2025-05-01: O 100 H 110 L 90 C 105 V N/A
+                  • 2025-05-01: O100 H110 L90 C105 VN/A
                 • Technical Indicators:
                   • 20-day EMA: 105
                   • MACD(12,26,9): line=42.42,signal=1.23hist=41.19
                   • 14-day RSI: 15.67
                   • 14-day ATR: 15.68
                   • 20-day OBV: 15.69
-                --- News Summaries (Top 2) ---
+                • News Summaries (Top 2):
                   • 2025-05-01: "Headline One" (Sentiment: N/A. Confidence: 54.4412%) Summary: First summary
                   • 2025-05-02: "Headline Two" (Sentiment: N/A. Confidence: 54.4412%) Summary: Second summary
-                
                 
                 """;
         assertThat(objectMapper.readTree(mapper.map(List.of(asset))).get("content").asText()).isEqualTo(expected);
@@ -62,17 +61,16 @@ class AssetReportToMustacheMapperTest {
                   • Avg Entry Price: 11.5874 EUR
                   • Unrealized PnL: 50 EUR
                 • Price History (last 1 days):
-                  • 2025-05-01: O 100 H 110 L 90 C 105 V 1234
+                  • 2025-05-01: O100 H110 L90 C105 V1234
                 • Technical Indicators:
                   • 20-day EMA: 105
                   • MACD(12,26,9): line=42.42,signal=1.23hist=41.19
                   • 14-day RSI: 15.67
                   • 14-day ATR: 15.68
                   • 20-day OBV: 15.69
-                --- News Summaries (Top 2) ---
+                • News Summaries (Top 2):
                   • 2025-05-01: "Headline One" (Sentiment: positive. Confidence: 54.4412%) Summary: First summary
                   • 2025-05-02: "Headline Two" (Sentiment: negative. Confidence: 54.4412%) Summary: Second summary
-                
                 
                 """;
 

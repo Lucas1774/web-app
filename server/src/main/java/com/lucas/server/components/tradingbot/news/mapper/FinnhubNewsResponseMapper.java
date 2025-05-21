@@ -6,6 +6,7 @@ import com.lucas.server.common.Mapper;
 import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.news.jpa.News;
+import org.flywaydb.core.internal.util.StringUtils;
 import org.springframework.stereotype.Component;
 
 import java.text.MessageFormat;
@@ -32,7 +33,7 @@ public class FinnhubNewsResponseMapper implements Mapper<JsonNode, News> {
                     .setExternalId(externalId)
                     .setDate(date)
                     .setHeadline(json.get("headline").asText())
-                    .setSummary(json.get("summary").asText())
+                    .setSummary(StringUtils.left(json.get("summary").asText(), 1024))
                     .setUrl(json.get("url").asText())
                     .setSource(json.get("source").asText())
                     .setCategory(json.get("category").asText())
@@ -49,7 +50,7 @@ public class FinnhubNewsResponseMapper implements Mapper<JsonNode, News> {
 
         List<News> newsList = new ArrayList<>();
         for (JsonNode node : json) {
-            newsList.add(this.map(node).addSymbol(symbol));
+            newsList.add(map(node).addSymbol(symbol));
         }
 
         return newsList;

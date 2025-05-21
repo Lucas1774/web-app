@@ -27,13 +27,13 @@ public class ControllerUtil {
     private static final String DEFAULT = "default";
 
     public boolean isAdmin(String username) {
-        return this.admin.contains(username);
+        return admin.contains(username);
     }
 
     public ControllerUtil(@Value("${spring.security.admin}") List<String> admin, @Value("${spring.security.jwt.secret}") String secretKey) {
         this.admin = admin;
-        this.algorithm = Algorithm.HMAC256(secretKey);
-        this.verifier = JWT.require(this.algorithm).build();
+        algorithm = Algorithm.HMAC256(secretKey);
+        verifier = JWT.require(algorithm).build();
     }
 
     public ResponseEntity<String> handleRequest(Callable<String> action) {
@@ -65,14 +65,14 @@ public class ControllerUtil {
             return Optional.empty();
         }
         return Arrays.stream(cookies)
-                .filter(cookie -> "authToken".equals(cookie.getName()) && this.isTokenValid(cookie.getValue()))
+                .filter(cookie -> "authToken".equals(cookie.getName()) && isTokenValid(cookie.getValue()))
                 .map(Cookie::getValue)
                 .findFirst();
     }
 
     private boolean isTokenValid(String token) {
         try {
-            this.verifier.verify(token);
+            verifier.verify(token);
             return true;
         } catch (Exception e) {
             return false;

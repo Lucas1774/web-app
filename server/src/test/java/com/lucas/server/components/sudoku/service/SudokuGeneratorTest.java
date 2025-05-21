@@ -22,7 +22,7 @@ class SudokuGeneratorTest {
         for (int i = 0; i < NUM_RUNS; i++) {
             int difficulty = random.nextInt(SUDOKU_SIZE) + 1;
             Sudoku sudoku = generator.generate(difficulty);
-            assertTrue(this.solver.isValid(sudoku, difficulty) && this.solver.solveWithTimeout(sudoku));
+            assertTrue(solver.isValid(sudoku, difficulty) && solver.solveWithTimeout(sudoku));
         }
     }
 }

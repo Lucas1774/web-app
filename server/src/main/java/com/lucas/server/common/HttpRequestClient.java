@@ -27,7 +27,7 @@ public class HttpRequestClient {
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
         HttpEntity<Void> request = new HttpEntity<>(headers);
         try {
-            return this.restTemplate.exchange(url, HttpMethod.GET, request, JsonNode.class).getBody();
+            return restTemplate.exchange(url, HttpMethod.GET, request, JsonNode.class).getBody();
         } catch (Exception e) {
             throw new ClientException(e);
         }
@@ -40,7 +40,21 @@ public class HttpRequestClient {
         headers.setContentType(MediaType.TEXT_PLAIN);
         HttpEntity<String> request = new HttpEntity<>(body, headers);
         try {
-            return this.restTemplate.exchange(url, HttpMethod.POST, request, JsonNode.class).getBody();
+            return restTemplate.exchange(url, HttpMethod.POST, request, JsonNode.class).getBody();
+        } catch (Exception e) {
+            throw new ClientException(e);
+        }
+    }
+
+    @Retryable(retryFor = ClientException.class, maxAttempts = Constants.REQUEST_MAX_ATTEMPTS)
+    public JsonNode fetch(String url, String apiKey, JsonNode body) throws ClientException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(apiKey);
+        HttpEntity<JsonNode> request = new HttpEntity<>(body, headers);
+        try {
+            return restTemplate.exchange(url, HttpMethod.POST, request, JsonNode.class).getBody();
         } catch (Exception e) {
             throw new ClientException(e);
         }

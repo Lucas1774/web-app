@@ -12,7 +12,7 @@ import java.util.Optional;
 @Repository
 public interface RecommendationsRepository extends JpaRepository<Recommendation, Long> {
 
-    List<Recommendation> findByDate(LocalDate now);
+    List<Recommendation> findByDateBetween(LocalDate from, LocalDate to);
 
     Optional<Recommendation> findBySymbol_IdAndDate(Long id, LocalDate date);
 

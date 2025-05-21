@@ -13,7 +13,7 @@ public class PortfolioJpaService implements IPortfolioJpaService<Portfolio> {
     private final PortfolioJpaServiceDelegate<Portfolio, PortfolioRepository> portfolioDelegate;
 
     public PortfolioJpaService(PortfolioRepository repository) {
-        this.delegate = new GenericJpaServiceDelegate<>(repository);
-        this.portfolioDelegate = new PortfolioJpaServiceDelegate<>(repository, repository::findTopBySymbolOrderByEffectiveTimestampDesc, Portfolio::new);
+        delegate = new GenericJpaServiceDelegate<>(repository);
+        portfolioDelegate = new PortfolioJpaServiceDelegate<>(repository, repository::findTopBySymbolOrderByEffectiveTimestampDesc, Portfolio::new);
     }
 }

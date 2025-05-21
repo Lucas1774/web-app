@@ -1,7 +1,7 @@
 package com.lucas.server.components.shopping.jpa.category;
 
 import com.lucas.server.TestcontainersConfiguration;
-import org.junit.jupiter.api.BeforeEach;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -21,12 +21,8 @@ class CategoryJpaServiceTest {
     @Autowired
     CategoryJpaService categoryService;
 
-    @BeforeEach
-    void setup() {
-        categoryService.deleteAll();
-    }
-
     @Test
+    @Transactional
     void testFindAllByOrderByOrderAsc() {
         // given
         Category category1 = new Category()
@@ -55,6 +51,7 @@ class CategoryJpaServiceTest {
     }
 
     @Test
+    @Transactional
     void testUpdateOrders() {
         // given: two categories with reversed order values
         Category c1 = new Category().setName("A").setOrder(2);

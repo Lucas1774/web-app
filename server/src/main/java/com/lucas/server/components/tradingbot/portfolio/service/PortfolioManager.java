@@ -1,5 +1,6 @@
 package com.lucas.server.components.tradingbot.portfolio.service;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.portfolio.jpa.PortfolioBase;
@@ -12,6 +13,7 @@ import java.math.RoundingMode;
 public class PortfolioManager {
 
     public record SymbolStand(
+            @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
             Symbol symbol,
             BigDecimal quantity,
             BigDecimal averageCost,

@@ -20,29 +20,29 @@ public class RecommendationsJpaService implements JpaService<Recommendation> {
     private final RecommendationsRepository repository;
 
     public RecommendationsJpaService(RecommendationsRepository repository) {
-        this.delegate = new GenericJpaServiceDelegate<>(repository);
-        this.uniqueConstraintDelegate = new UniqueConstraintWearyJpaServiceDelegate<>(repository);
+        delegate = new GenericJpaServiceDelegate<>(repository);
+        uniqueConstraintDelegate = new UniqueConstraintWearyJpaServiceDelegate<>(repository);
         this.repository = repository;
     }
 
     public List<Recommendation> createIgnoringDuplicates(Iterable<Recommendation> entities) {
-        return this.uniqueConstraintDelegate.createIgnoringDuplicates(
-                entity -> this.repository.findBySymbol_IdAndDate(entity.getSymbol().getId(), entity.getDate()), entities);
+        return uniqueConstraintDelegate.createIgnoringDuplicates(
+                entity -> repository.findBySymbol_IdAndDate(entity.getSymbol().getId(), entity.getDate()), entities);
     }
 
-    public List<Recommendation> findByDate(LocalDate now) {
-        return this.repository.findByDate(now);
+    public List<Recommendation> findByDateBetween(LocalDate from, LocalDate to) {
+        return repository.findByDateBetween(from, to);
     }
 
     public void deleteAll(List<Recommendation> res) {
-        this.repository.deleteAllInBatch(res);
+        repository.deleteAllInBatch(res);
     }
 
     public List<Recommendation> getTopForSymbolId(Long symbolId, int limit) {
-        return this.repository.findBySymbol_Id(symbolId, PageRequest.of(0, limit, Sort.by("date").descending())).getContent();
+        return repository.findBySymbol_Id(symbolId, PageRequest.of(0, limit, Sort.by("date").descending())).getContent();
     }
 
     public List<Recommendation> findBySymbolId(Long id) {
-        return this.repository.findBySymbol_Id(id);
+        return repository.findBySymbol_Id(id);
     }
 }

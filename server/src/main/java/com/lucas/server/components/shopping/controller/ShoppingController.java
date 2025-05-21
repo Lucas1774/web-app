@@ -33,12 +33,12 @@ public class ShoppingController {
         this.shoppingItemService = shoppingItemService;
         this.productService = productService;
         this.categoryJpaService = categoryJpaService;
-        this.classToOrderColumnService = Map.of(Product.class, productService, Category.class, categoryJpaService);
+        classToOrderColumnService = Map.of(Product.class, productService, Category.class, categoryJpaService);
     }
 
     @GetMapping("/shopping")
     public ResponseEntity<List<ShoppingItem>> getShoppingItems(HttpServletRequest request) {
-        return ResponseEntity.ok(this.shoppingItemService.findAllByUsername(this.controllerUtil.retrieveUsername(request.getCookies())));
+        return ResponseEntity.ok(shoppingItemService.findAllByUsername(controllerUtil.retrieveUsername(request.getCookies())));
     }
 
     @GetMapping("/get-possible-categories")
@@ -55,7 +55,7 @@ public class ShoppingController {
 
     @PostMapping("/update-product")
     public ResponseEntity<Product> updateProduct(HttpServletRequest request, @RequestBody Product product) {
-        if (!controllerUtil.isAdmin(this.controllerUtil.retrieveUsername(request.getCookies()))) {
+        if (!controllerUtil.isAdmin(controllerUtil.retrieveUsername(request.getCookies()))) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         return ResponseEntity.ok(productService.updateProductCreateCategoryIfNecessary(product));
@@ -63,32 +63,32 @@ public class ShoppingController {
 
     @PostMapping("/update-product-quantity")
     public ResponseEntity<ShoppingItem> updateProductQuantity(HttpServletRequest request, @RequestBody ShoppingItem shoppingItem) {
-        return ResponseEntity.ok(shoppingItemService.updateShoppingItemQuantity(shoppingItem, this.controllerUtil.retrieveUsername(request.getCookies())));
+        return ResponseEntity.ok(shoppingItemService.updateShoppingItemQuantity(shoppingItem, controllerUtil.retrieveUsername(request.getCookies())));
     }
 
     @PostMapping("/update-all-product-quantity")
     public ResponseEntity<List<ShoppingItem>> updateAllProductQuantity(HttpServletRequest request, @RequestBody Integer quantity) {
-        return ResponseEntity.ok(shoppingItemService.updateAllShoppingItemQuantities(this.controllerUtil.retrieveUsername(request.getCookies()), quantity));
+        return ResponseEntity.ok(shoppingItemService.updateAllShoppingItemQuantities(controllerUtil.retrieveUsername(request.getCookies()), quantity));
     }
 
     @PostMapping("/remove-product")
     public ResponseEntity<ShoppingItem> removeProduct(HttpServletRequest request, @RequestBody Product product) {
-        return ResponseEntity.ok(shoppingItemService.deleteByProductAndUsernameRemoveOrphanedProductIfNecessary(product, this.controllerUtil.retrieveUsername(request.getCookies())));
+        return ResponseEntity.ok(shoppingItemService.deleteByProductAndUsernameRemoveOrphanedProductIfNecessary(product, controllerUtil.retrieveUsername(request.getCookies())));
     }
 
     @PostMapping("update-sortables")
     public <T extends Sortable> ResponseEntity<List<T>> updateSortable(HttpServletRequest request, @RequestBody List<T> elements) {
-        if (!controllerUtil.isAdmin(this.controllerUtil.retrieveUsername(request.getCookies()))) {
+        if (!controllerUtil.isAdmin(controllerUtil.retrieveUsername(request.getCookies()))) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         if (elements.isEmpty()) {
             return ResponseEntity.ok(elements);
         }
-        return ResponseEntity.ok(this.getService(elements).updateOrders(elements));
+        return ResponseEntity.ok(getService(elements).updateOrders(elements));
     }
 
     @SuppressWarnings("unchecked")
     private <T extends Sortable> OrderColumnJpaService<T> getService(List<T> elements) {
-        return (OrderColumnJpaService<T>) this.classToOrderColumnService.get(elements.getFirst().getClass());
+        return (OrderColumnJpaService<T>) classToOrderColumnService.get(elements.getFirst().getClass());
     }
 }

@@ -1,5 +1,6 @@
 package com.lucas.server.components.tradingbot.recommendation.jpa;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.lucas.server.common.jpa.JpaEntity;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import jakarta.persistence.*;
@@ -27,6 +28,7 @@ public class Recommendation implements JpaEntity {
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "symbol_id", nullable = false)
+    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
     private Symbol symbol;
 
     @Column(nullable = false, length = 4)

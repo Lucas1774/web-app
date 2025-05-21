@@ -35,10 +35,10 @@ public class PromptRepository {
              Reader fixMeReader = new InputStreamReader(
                      Objects.requireNonNull(getClass().getResourceAsStream("/prompt/fix-me.json")),
                      StandardCharsets.UTF_8)) {
-            this.context = objectMapper.readValue(contextReader, ObjectNode.class);
-            this.system = objectMapper.readValue(systemReader, ObjectNode.class);
-            this.fewShot = objectMapper.readValue(fewShotReader, ObjectNode.class);
-            this.fixMeMessage = objectMapper.readValue(fixMeReader, ObjectNode.class);
+            context = objectMapper.readValue(contextReader, ObjectNode.class);
+            system = objectMapper.readValue(systemReader, ObjectNode.class);
+            fewShot = objectMapper.readValue(fewShotReader, ObjectNode.class);
+            fixMeMessage = objectMapper.readValue(fixMeReader, ObjectNode.class);
             context.put("content", context.get("content").asText().replace("{date}",
                     LocalDate.now().getDayOfWeek() + ", " + LocalDate.now()));
         } catch (IOException e) {

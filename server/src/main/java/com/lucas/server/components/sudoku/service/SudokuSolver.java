@@ -25,8 +25,8 @@ public class SudokuSolver {
 
     public void solve(Sudoku sudoku) {
         int maxRisk = 3;
-        while (!this.isSolved(sudoku)) {
-            this.doSolve(sudoku, maxRisk);
+        while (!isSolved(sudoku)) {
+            doSolve(sudoku, maxRisk);
             maxRisk++;
         }
     }
@@ -34,11 +34,11 @@ public class SudokuSolver {
     public boolean solveWithTimeout(Sudoku sudoku) {
         int maxRisk = 3;
         long now = System.nanoTime();
-        while (!this.isSolved(sudoku) && System.nanoTime() - now < 100000000) {
-            this.doSolve(sudoku, maxRisk);
+        while (!isSolved(sudoku) && System.nanoTime() - now < 100000000) {
+            doSolve(sudoku, maxRisk);
             maxRisk++;
         }
-        return this.isSolved(sudoku) && this.isSolvable(sudoku);
+        return isSolved(sudoku) && isSolvable(sudoku);
     }
 
     /**
@@ -52,34 +52,34 @@ public class SudokuSolver {
      *                clear others
      */
     private boolean doSolve(Sudoku sudoku, int maxRisk) {
-        if (this.isSolved(sudoku)) {
+        if (isSolved(sudoku)) {
             return true;
         }
-        if (!this.isSolvable(sudoku)) {
+        if (!isSolvable(sudoku)) {
             return false;
         }
-        List<Integer> trivialCells = this.getTrivial(sudoku);
+        List<Integer> trivialCells = getTrivial(sudoku);
         if (!trivialCells.isEmpty()) {
             for (int trivialCell : trivialCells) {
                 for (int digit : DIGITS) {
-                    if (this.acceptsNumberInPlace(sudoku, trivialCell, digit)) {
+                    if (acceptsNumberInPlace(sudoku, trivialCell, digit)) {
                         sudoku.set(trivialCell, digit);
                         break;
                     }
                 }
             }
-            return this.doSolve(sudoku, maxRisk);
+            return doSolve(sudoku, maxRisk);
         }
         for (int i = 2; i <= SUDOKU_SIZE; i++) {
-            int promisingCell = this.getNextPromisingCell(sudoku, i);
+            int promisingCell = getNextPromisingCell(sudoku, i);
             if (-1 != promisingCell) {
                 int count = 0;
                 for (int digit : DIGITS) {
-                    if (this.acceptsNumberInPlace(sudoku, promisingCell, digit)) {
+                    if (acceptsNumberInPlace(sudoku, promisingCell, digit)) {
                         Sudoku copy = withValues(sudoku.getState());
                         copy.set(promisingCell, digit);
                         count++;
-                        if (this.doSolve(copy, maxRisk--)) {
+                        if (doSolve(copy, maxRisk--)) {
                             sudoku.setState(copy.getState());
                             return true;
                         }
@@ -98,7 +98,7 @@ public class SudokuSolver {
             if (0 == sudoku.getState()[place]) {
                 int count = 0;
                 for (int digit : DIGITS) {
-                    if (this.acceptsNumberInPlace(sudoku, place, digit)) {
+                    if (acceptsNumberInPlace(sudoku, place, digit)) {
                         count++;
                         break;
                     }
@@ -117,7 +117,7 @@ public class SudokuSolver {
             if (0 == sudoku.getState()[place]) {
                 int count = 0;
                 for (int digit : DIGITS) {
-                    if (this.acceptsNumberInPlace(sudoku, place, digit)) {
+                    if (acceptsNumberInPlace(sudoku, place, digit)) {
                         count++;
                         if (count > 1) {
                             break;
@@ -137,7 +137,7 @@ public class SudokuSolver {
             if (0 == sudoku.getState()[place]) {
                 int count = 0;
                 for (int digit : DIGITS) {
-                    if (this.acceptsNumberInPlace(sudoku, place, digit)) {
+                    if (acceptsNumberInPlace(sudoku, place, digit)) {
                         count++;
                         if (count > i) {
                             break;

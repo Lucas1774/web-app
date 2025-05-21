@@ -8,7 +8,7 @@ import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.news.jpa.News;
-import org.junit.jupiter.api.BeforeEach;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -37,12 +37,8 @@ class FinnhubNewsResponseMapperTest {
     @Autowired
     ObjectMapper objectMapper;
 
-    @BeforeEach
-    void setUp() {
-        symbolService.deleteAll();
-    }
-
     @Test
+    @Transactional
     void whenMapValidJson_thenReturnNewsEntity() throws Exception {
         // given
         long epoch = 1745463072L;
@@ -85,6 +81,7 @@ class FinnhubNewsResponseMapperTest {
     }
 
     @Test
+    @Transactional
     void whenMapAllValidArray_thenReturnNewsList() throws Exception {
         // given
         long now = 1745463072L;
@@ -114,6 +111,7 @@ class FinnhubNewsResponseMapperTest {
     }
 
     @Test
+    @Transactional
     void whenMapAllEmptyOrNonArray_thenReturnEmptyList() throws Exception {
         // given
         JsonNode emptyArray = objectMapper.createArrayNode();
@@ -126,6 +124,7 @@ class FinnhubNewsResponseMapperTest {
     }
 
     @Test
+    @Transactional
     void whenMapAllMissingFields_thenThrowsException() throws Exception {
         // given
         String jsonArray = """

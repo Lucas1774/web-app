@@ -36,6 +36,6 @@ public class FinnhubMarketResponseMapper implements Mapper<JsonNode, MarketData>
     }
 
     public MarketData map(JsonNode json, Symbol symbol) throws JsonProcessingException {
-        return this.map(json).setSymbol(symbol);
+        return map(json).setSymbol(symbol);
     }
 }

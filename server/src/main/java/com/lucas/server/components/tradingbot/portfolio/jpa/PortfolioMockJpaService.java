@@ -13,7 +13,7 @@ public class PortfolioMockJpaService implements IPortfolioJpaService<PortfolioMo
     private final PortfolioJpaServiceDelegate<PortfolioMock, PortfolioMockRepository> portfolioDelegate;
 
     public PortfolioMockJpaService(PortfolioMockRepository repository) {
-        this.delegate = new GenericJpaServiceDelegate<>(repository);
-        this.portfolioDelegate = new PortfolioJpaServiceDelegate<>(repository, repository::findTopBySymbolOrderByEffectiveTimestampDesc, PortfolioMock::new);
+        delegate = new GenericJpaServiceDelegate<>(repository);
+        portfolioDelegate = new PortfolioJpaServiceDelegate<>(repository, repository::findTopBySymbolOrderByEffectiveTimestampDesc, PortfolioMock::new);
     }
 }

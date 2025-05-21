@@ -2,11 +2,8 @@ package com.lucas.server.components.tradingbot.common;
 
 import com.lucas.server.TestcontainersConfiguration;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;
-import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
-import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataJpaService;
-import com.lucas.server.components.tradingbot.news.jpa.NewsJpaService;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -31,23 +28,7 @@ class DailySchedulerTest {
     DataManager dataManager;
 
     @Autowired
-    SymbolJpaService symbolService;
-
-    @Autowired
-    MarketDataJpaService marketDataService;
-
-    @Autowired
-    NewsJpaService newsService;
-
-    @Autowired
     ThreadPoolTaskScheduler scheduler;
-
-    @BeforeEach
-    void setup() {
-        marketDataService.deleteAll();
-        newsService.deleteAll();
-        symbolService.deleteAll();
-    }
 
     @AfterEach
     void tearDown() {
@@ -55,6 +36,7 @@ class DailySchedulerTest {
     }
 
     @Test
+    @Transactional
     void schedulerShouldInvokeClientRepeatedly() {
         LocalDate to = LocalDate.now();
         LocalDate from = to.minusDays(1);

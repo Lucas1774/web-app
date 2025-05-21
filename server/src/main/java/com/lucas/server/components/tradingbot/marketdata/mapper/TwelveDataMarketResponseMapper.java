@@ -6,6 +6,8 @@ import com.lucas.server.common.Mapper;
 import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -17,9 +19,14 @@ import java.util.List;
 @Component
 public class TwelveDataMarketResponseMapper implements Mapper<JsonNode, MarketData> {
 
+    private static final Logger logger = LoggerFactory.getLogger(TwelveDataMarketResponseMapper.class);
+
     @Override
     public MarketData map(JsonNode json) throws JsonProcessingException {
         try {
+            if (json.path("is_market_open").asBoolean(false)) {
+                logger.warn(Constants.MARKET_STILL_OPEN_WARN);
+            }
             return new MarketData()
                     .setOpen(new BigDecimal(json.get("open").asText()))
                     .setHigh(new BigDecimal(json.get("high").asText()))
@@ -39,7 +46,7 @@ public class TwelveDataMarketResponseMapper implements Mapper<JsonNode, MarketDa
         if (!symbol.getName().equals(json.path("symbol").asText(null))) {
             throw new JsonProcessingException(MessageFormat.format(Constants.JSON_MAPPING_ERROR, Constants.MARKET));
         }
-        return this.map(json).setSymbol(symbol);
+        return map(json).setSymbol(symbol);
     }
 
     public List<MarketData> mapAll(JsonNode json, Symbol symbol) throws JsonProcessingException {

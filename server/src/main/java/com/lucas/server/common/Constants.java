@@ -15,6 +15,10 @@ public class Constants {
         REAL, MOCK
     }
 
+    public enum RecommendationEngineType {
+        RAW, AZURE
+    }
+
     public static void backOff(long millis) {
         try {
             Thread.sleep(millis);
@@ -27,14 +31,14 @@ public class Constants {
     public static final int SUDOKU_SIZE = 9;
     public static final int SUDOKU_NUMBER_OF_CELLS = 81;
     public static final int MARKET_DATA_RELEVANT_DAYS_COUNT = 34;
-    public static final int HISTORY_DAYS_COUNT = 10;
+    public static final int HISTORY_DAYS_COUNT = 20;
     public static final int NEWS_COUNT = 10;
     public static final int DATABASE_NEWS_PER_SYMBOL = 20;
     public static final int DATABASE_MARKET_DATA_PER_SYMBOL = 100;
     public static final int DATABASE_RECOMMENDATIONS_PER_SYMBOL = 10;
-    public static final int SCHEDULED_RECOMMENDATIONS_COUNT = 200;
+    public static final int SCHEDULED_RECOMMENDATIONS_COUNT = 300;
     public static final int MAX_SYMBOLS_TO_TRIGGER_NEWS_EMBEDDINGS_GENERATION = 2;
-    public static final int REQUEST_MAX_ATTEMPTS = 5;
+    public static final int REQUEST_MAX_ATTEMPTS = 2;
     public static final int RECOMMENDATIONS_CHUNK_SIZE = 5;
     public static final String NA = "N/A";
     public static final String INVALID_EXPRESSION = "Invalid expression";
@@ -51,12 +55,13 @@ public class Constants {
     public static final String EMBEDDING_GENERATION_FAILED_WARN = "Couldn't fetch embeddings for {}";
     public static final String KPI_RETURNED_ZERO_WARN = "{}: Value is zero";
     public static final String MAIN_CLIENT_FAILED_BACKUP_WARN = "{} failed when trying to process {}. Falling back to {}";
+    public static final String MARKET_STILL_OPEN_WARN = "market is still open!";
     public static final String SCHEDULED_TASK_SUCCESS_INFO = "Successfully {}: {}";
     public static final String RETRIEVING_MARKET_DATA_INFO = "Retrieving market data for {}";
     public static final String RETRIEVING_NEWS_INFO = "Retrieving news for {}";
     public static final String GENERATING_RECOMMENDATIONS_INFO = "Generating recommendations for {}";
     public static final String GENERATING_PRE_REQUEST_INFO = "Generating pre-request for prompt: {}";
-    public static final String GENERATING_EMBEDDINGS_INFO = "Generating embeddings for prompt: {}";
+    public static final String GENERATING_EMBEDDINGS_INFO = "Generating embeddings for: {}";
     public static final String GENERATING_SENTIMENT_INFO = "Generating sentiment for {}";
     public static final String JSON_MAPPING_ERROR = "Error mapping {0} JSON";
     public static final String INSUFFICIENT_STOCK_ERROR = "{0}: Nothing to sell";

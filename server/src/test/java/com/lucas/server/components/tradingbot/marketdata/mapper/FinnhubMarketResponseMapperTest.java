@@ -7,7 +7,7 @@ import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
-import org.junit.jupiter.api.BeforeEach;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -33,12 +33,8 @@ class FinnhubMarketResponseMapperTest {
     @Autowired
     ObjectMapper objectMapper;
 
-    @BeforeEach
-    void setUp() {
-        symbolService.deleteAll();
-    }
-
     @Test
+    @Transactional
     void whenMapValidJson_thenReturnMarketData() throws JsonProcessingException, com.fasterxml.jackson.core.JsonProcessingException {
         // given
         String json = """
@@ -73,6 +69,7 @@ class FinnhubMarketResponseMapperTest {
     }
 
     @Test
+    @Transactional
     void whenMapInvalidJson_thenThrowException() {
         // given
         String invalidJson = "{}";
@@ -82,6 +79,7 @@ class FinnhubMarketResponseMapperTest {
     }
 
     @Test
+    @Transactional
     void whenMapMissingFields_thenThrowsException() {
         // given
         String json = """

@@ -45,7 +45,7 @@ public class TwelveDataMarketDataClient {
         this.httpRequestClient = httpRequestClient;
         this.endpoint = endpoint;
         this.apiKey = apiKey;
-        this.typeToMapper = new EnumMap<>(Map.of(
+        typeToMapper = new EnumMap<>(Map.of(
                 Constants.TwelveDataType.LAST, (s, j) -> List.of(mapper.map(j, s)),
                 Constants.TwelveDataType.HISTORIC, (s, j) -> mapper.mapAll(j, s).stream()
                         .sorted(Comparator.comparing(MarketData::getDate))
@@ -67,7 +67,7 @@ public class TwelveDataMarketDataClient {
     public List<MarketData> retrieveMarketData(List<Symbol> symbols, Constants.TwelveDataType type) throws ClientException, JsonProcessingException {
         List<MarketData> res = new ArrayList<>();
         for (Symbol symbol : symbols) {
-            res.addAll(this.retrieveMarketData(symbol, type));
+            res.addAll(retrieveMarketData(symbol, type));
             Constants.backOff(7500);
         }
         return res;

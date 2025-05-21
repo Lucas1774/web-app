@@ -5,7 +5,7 @@ import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.news.service.NewsEmbeddingsClient;
-import org.junit.jupiter.api.BeforeEach;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -32,13 +32,8 @@ class NewsListenerTest {
     @Autowired
     SymbolJpaService symbolService;
 
-    @BeforeEach
-    void setup() {
-        this.jpaService.deleteAll();
-        this.symbolService.deleteAll();
-    }
-
     @Test
+    @Transactional
     void whenSaveSomeNewsWithCallback_thenItIsUpdatedWithPreviousNewsData() throws ClientException {
         // given
         Symbol symbol = symbolService.getOrCreateByName("AAPL");
@@ -67,6 +62,7 @@ class NewsListenerTest {
     }
 
     @Test
+    @Transactional
     void whenSaveSomeNewsNoCallback_thenItIsNotUpdatedWithPreviousNewsData() throws ClientException {
         // given
         Symbol symbol = symbolService.getOrCreateByName("AAPL");

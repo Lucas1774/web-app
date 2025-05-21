@@ -7,10 +7,7 @@ import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
-import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataJpaService;
-import com.lucas.server.components.tradingbot.news.jpa.NewsJpaService;
-import com.lucas.server.components.tradingbot.portfolio.jpa.PortfolioJpaService;
-import org.junit.jupiter.api.BeforeEach;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -29,15 +26,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class TwelveDataMarketResponseMapperTest {
 
     @Autowired
-    MarketDataJpaService marketDataService;
-
-    @Autowired
-    NewsJpaService newsService;
-
-    @Autowired
-    PortfolioJpaService portfolioService;
-
-    @Autowired
     SymbolJpaService symbolService;
 
     @Autowired
@@ -46,15 +34,8 @@ class TwelveDataMarketResponseMapperTest {
     @Autowired
     ObjectMapper objectMapper;
 
-    @BeforeEach
-    void setUp() {
-        marketDataService.deleteAll();
-        newsService.deleteAll();
-        portfolioService.deleteAll();
-        symbolService.deleteAll();
-    }
-
     @Test
+    @Transactional
     void whenMapValidJson_thenReturnMarketData() throws JsonProcessingException, com.fasterxml.jackson.core.JsonProcessingException {
         // given
         String json = """
@@ -115,6 +96,7 @@ class TwelveDataMarketResponseMapperTest {
     }
 
     @Test
+    @Transactional
     void whenMapInvalidJson_thenThrowException() {
         // given
         String invalidJson = "{}";
@@ -124,6 +106,7 @@ class TwelveDataMarketResponseMapperTest {
     }
 
     @Test
+    @Transactional
     void whenMapMissingFields_thenThrowsException() {
         // given
         String json = """
@@ -171,6 +154,7 @@ class TwelveDataMarketResponseMapperTest {
     }
 
     @Test
+    @Transactional
     void whenMapMismatchingSymbolField_thenThrowsException() {
         // given
         String json = """
@@ -219,6 +203,7 @@ class TwelveDataMarketResponseMapperTest {
     }
 
     @Test
+    @Transactional
     void whenMapAllValidJson_thenReturnMarketDataList() throws JsonProcessingException, com.fasterxml.jackson.core.JsonProcessingException {
         // given
         String json = """
@@ -303,6 +288,7 @@ class TwelveDataMarketResponseMapperTest {
     }
 
     @Test
+    @Transactional
     void whenMapAllEmptyTimeSeries_thenReturnEmptyList() throws JsonProcessingException, com.fasterxml.jackson.core.JsonProcessingException {
         // given
         String json = """

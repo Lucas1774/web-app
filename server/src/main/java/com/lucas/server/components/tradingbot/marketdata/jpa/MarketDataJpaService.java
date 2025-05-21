@@ -21,36 +21,36 @@ public class MarketDataJpaService implements JpaService<MarketData> {
     private final MarketDataRepository repository;
 
     public MarketDataJpaService(MarketDataRepository repository) {
-        this.delegate = new GenericJpaServiceDelegate<>(repository);
-        this.uniqueConstraintDelegate = new UniqueConstraintWearyJpaServiceDelegate<>(repository);
+        delegate = new GenericJpaServiceDelegate<>(repository);
+        uniqueConstraintDelegate = new UniqueConstraintWearyJpaServiceDelegate<>(repository);
         this.repository = repository;
     }
 
     public MarketData getOrCreate(MarketData entity) {
-        return this.uniqueConstraintDelegate.getOrCreate(this::findUnique, entity);
+        return uniqueConstraintDelegate.getOrCreate(this::findUnique, entity);
     }
 
     public List<MarketData> createIgnoringDuplicates(Iterable<MarketData> entities) {
-        return this.uniqueConstraintDelegate.createIgnoringDuplicates(this::findUnique, entities);
+        return uniqueConstraintDelegate.createIgnoringDuplicates(this::findUnique, entities);
     }
 
     public Optional<MarketData> findUnique(MarketData entity) {
-        return this.repository.findBySymbol_IdAndDate(entity.getSymbol().getId(), entity.getDate());
+        return repository.findBySymbol_IdAndDate(entity.getSymbol().getId(), entity.getDate());
     }
 
     public Optional<MarketData> findTopBySymbolIdAndDateBeforeOrderByDateDesc(Long symbolId, LocalDate date) {
-        return this.repository.findTopBySymbol_IdAndDateBeforeOrderByDateDesc(symbolId, date);
+        return repository.findTopBySymbol_IdAndDateBeforeOrderByDateDesc(symbolId, date);
     }
 
     public List<MarketData> getTopForSymbolId(Long symbolId, int limit) {
-        return this.repository.findBySymbol_Id(symbolId, PageRequest.of(0, limit, Sort.by("date").descending())).getContent();
+        return repository.findBySymbol_Id(symbolId, PageRequest.of(0, limit, Sort.by("date").descending())).getContent();
     }
 
     public List<MarketData> findBySymbolId(Long id) {
-        return this.repository.findBySymbol_Id(id);
+        return repository.findBySymbol_Id(id);
     }
 
     public void deleteAll(List<MarketData> res) {
-        this.repository.deleteAllInBatch(res);
+        repository.deleteAllInBatch(res);
     }
 }

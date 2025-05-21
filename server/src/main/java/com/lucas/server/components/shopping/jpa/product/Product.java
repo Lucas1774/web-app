@@ -1,5 +1,6 @@
 package com.lucas.server.components.shopping.jpa.product;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.lucas.server.common.jpa.JpaEntity;
 import com.lucas.server.components.shopping.dto.Sortable;
 import com.lucas.server.components.shopping.jpa.category.Category;
@@ -27,8 +28,9 @@ public class Product implements JpaEntity, Sortable {
     @Column(name = "is_rare", nullable = false)
     private Boolean isRare = false;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
+    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
     private Category category;
 
     @Column(name = "product_order", nullable = false)

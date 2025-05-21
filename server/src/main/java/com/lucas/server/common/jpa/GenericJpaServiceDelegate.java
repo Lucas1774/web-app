@@ -13,14 +13,14 @@ public class GenericJpaServiceDelegate<T extends JpaEntity, R extends JpaReposit
     }
 
     public List<T> createAll(List<T> entities) {
-        return this.repository.saveAll(entities);
+        return repository.saveAll(entities);
     }
 
     public void deleteAll() {
-        this.repository.deleteAll();
+        repository.deleteAll();
     }
 
     public List<T> findAll() {
-        return this.repository.findAll();
+        return repository.findAll();
     }
 }

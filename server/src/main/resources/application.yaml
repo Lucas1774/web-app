@@ -2,7 +2,7 @@ security:
   ip-address: ${SOME_IP_ADDRESS}
 
 scheduler:
-  daily-cron: "0 0 21 * * *" # Every day at 21:00 UTC
+  daily-cron: "0 0 22 * * *" # Every day at 22:00 UTC
   midnight-cron: "0 0 0 * * *" # Every day at midnight
 
 spring:
@@ -30,9 +30,9 @@ spring:
           options:
             deployment-name: ${OPENAI_MODEL}
             secondary-deployment-name: ${OPENAI_SECONDARY_MODEL}
+            llm-deployment-name: ${LLM}
             temperature: 0.2
             max-tokens: 8000
-            fix-me-request: true
     model:
       chat: azure-openai
 
@@ -43,6 +43,10 @@ finnhub:
 twelve-data:
   api-key: ${TWELVE_DATA_KEY}
   endpoint: ${TWELVE_DATA_ENDPOINT}
+
+language:
+  api-key: ${LANGUAGE_API_KEY}
+  endpoint: ${LANGUAGE_ENDPOINT}
 
 sentiment:
   url: ${SENTIMENT_URL}

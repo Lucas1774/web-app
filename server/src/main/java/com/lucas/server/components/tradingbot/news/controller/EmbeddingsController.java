@@ -28,7 +28,7 @@ public class EmbeddingsController {
     @GetMapping("/{ids}")
     public ResponseEntity<List<News>> generateEmbeddingsByNewsId(@PathVariable List<Long> ids) {
         try {
-            return ResponseEntity.ok(this.service.generateEmbeddingsByNewsId(ids));
+            return ResponseEntity.ok(service.generateEmbeddingsByNewsId(ids));
         } catch (ClientException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

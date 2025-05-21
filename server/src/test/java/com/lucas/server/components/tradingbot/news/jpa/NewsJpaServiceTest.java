@@ -3,8 +3,7 @@ package com.lucas.server.components.tradingbot.news.jpa;
 import com.lucas.server.TestcontainersConfiguration;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
-import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataJpaService;
-import org.junit.jupiter.api.BeforeEach;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -27,17 +26,8 @@ class NewsJpaServiceTest {
     @Autowired
     SymbolJpaService symbolService;
 
-    @Autowired
-    MarketDataJpaService marketDataService;
-
-    @BeforeEach
-    void setup() {
-        jpaService.deleteAll();
-        marketDataService.deleteAll();
-        symbolService.deleteAll();
-    }
-
     @Test
+    @Transactional
     void createIgnoringDuplicates_shouldPersistOnlyNewRecords() {
         // given
         Symbol symbol = symbolService.getOrCreateByName("AAPL");

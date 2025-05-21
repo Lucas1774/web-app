@@ -51,7 +51,7 @@ public class Sudoku implements JpaEntity {
     private int[] state;
 
     public void set(int place, int digit) {
-        this.state[place] = digit;
+        state[place] = digit;
     }
 
     @Override
@@ -63,7 +63,7 @@ public class Sudoku implements JpaEntity {
             for (int j = 0; j < SUDOKU_SIZE; j++) {
                 if (j % 3 == 0)
                     sb.append("| ");
-                sb.append(this.state[i * SUDOKU_SIZE + j]).append(' ');
+                sb.append(state[i * SUDOKU_SIZE + j]).append(' ');
             }
             sb.append("|\n");
         }

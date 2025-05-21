@@ -28,7 +28,7 @@ public class UniqueConstraintWearyJpaServiceDelegate<T extends JpaEntity> {
      * @return the existing entity or a new one
      */
     public T getOrCreate(Function<T, Optional<T>> finder, T entity) {
-        return finder.apply(entity).orElseGet(() -> this.repository.save(entity));
+        return finder.apply(entity).orElseGet(() -> repository.save(entity));
     }
 
     /**
@@ -39,7 +39,7 @@ public class UniqueConstraintWearyJpaServiceDelegate<T extends JpaEntity> {
     public List<T> createIgnoringDuplicates(Function<T, Optional<T>> existingFinder, Iterable<T> entities) {
         return StreamSupport.stream(entities.spliterator(), false)
                 .filter(entity -> existingFinder.apply(entity).isEmpty())
-                .map(this.repository::save)
+                .map(repository::save)
                 .toList();
     }
 
@@ -54,7 +54,7 @@ public class UniqueConstraintWearyJpaServiceDelegate<T extends JpaEntity> {
         return entities.stream()
                 .map(entity -> existingFinder.apply(entity)
                         .map(existing -> existingUpdater.apply(existing, entity))
-                        .orElseGet(() -> this.repository.save(entity)))
+                        .orElseGet(() -> repository.save(entity)))
                 .toList();
     }
 }

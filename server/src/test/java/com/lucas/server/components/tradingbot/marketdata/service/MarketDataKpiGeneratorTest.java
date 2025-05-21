@@ -6,6 +6,7 @@ import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataJpaService;
+import jakarta.transaction.Transactional;
 import nl.altindag.log.LogCaptor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -57,12 +58,11 @@ class MarketDataKpiGeneratorTest {
 
     @BeforeEach
     void cleanUp() {
-        marketDataService.deleteAll();
-        symbolService.deleteAll();
         logCaptor.clearLogs();
     }
 
     @Test
+    @Transactional
     void whenComputeDerivedFieldsOnCurrentMarketData_thenCorrectlyReflectsKPIs() {
         // given
         Symbol symbol = symbolService.getOrCreateByName("AAPL");
@@ -91,6 +91,7 @@ class MarketDataKpiGeneratorTest {
     }
 
     @Test
+    @Transactional
     void computeDerivedFieldsWithoutPreviousData_thenNothingHappens() {
         // given
         LocalDate currentDate = LocalDate.of(2023, 12, 15);
@@ -113,6 +114,7 @@ class MarketDataKpiGeneratorTest {
     }
 
     @Test
+    @Transactional
     void whenComputeDerivedFieldsWithZeroPreviousPrice_thenPercentageIsNull() {
         // given
         Symbol symbol = symbolService.getOrCreateByName("AAPL");

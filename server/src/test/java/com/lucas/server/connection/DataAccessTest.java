@@ -9,6 +9,7 @@ import com.lucas.server.components.shopping.jpa.shopping.ShoppingItem;
 import com.lucas.server.components.shopping.jpa.shopping.ShoppingItemJpaService;
 import com.lucas.server.components.sudoku.jpa.Sudoku;
 import com.lucas.server.components.sudoku.jpa.SudokuJpaService;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
 @SpringBootTest
 @Import(TestcontainersConfiguration.class)
@@ -51,6 +53,7 @@ class DataAccessTest {
     }
 
     @Test
+    @Transactional
     void testShoppingCRUD() {
         // seed user and category
         jdbcTemplate.getJdbcOperations().execute(
@@ -77,6 +80,7 @@ class DataAccessTest {
     }
 
     @Test
+    @Transactional
     void testInsertAndRetrieveSudoku() {
         Sudoku s1 = Sudoku.withDefaultValues();
         sudokuService.createIgnoringDuplicates(Collections.singleton(s1));
@@ -87,6 +91,7 @@ class DataAccessTest {
     }
 
     @Test
+    @Transactional
     void testGetPossibleCategories() {
         jdbcTemplate.getJdbcOperations().execute(
                 "INSERT INTO categories(name, category_order) VALUES('x',10),( 'y',20 )"
@@ -96,6 +101,7 @@ class DataAccessTest {
     }
 
     @Test
+    @Transactional
     void testUpdateOrders() {
         // seed categories
         jdbcTemplate.getJdbcOperations().execute(
@@ -105,15 +111,19 @@ class DataAccessTest {
         // swap order
         Category first = cats.get(0);
         Category second = cats.get(1);
-        first.setOrder(second.getOrder());
-        second.setOrder(first.getOrder() - 1);
 
-        categoryService.updateOrders(List.of(first, second));
+        categoryService.updateOrders(List.of(second, first));
         List<Category> updated = categoryService.findAllByOrderByOrderAsc();
-        assertThat(updated.getFirst().getOrder()).isEqualTo(second.getOrder());
+        assertThat(updated)
+                .extracting(Category::getName, Category::getOrder)
+                .containsExactly(
+                        tuple("b", 1),
+                        tuple("a", 2)
+                );
     }
 
     @Test
+    @Transactional
     void testUpdateProductWithExistingCategory() {
         // seed user, category, and product
         jdbcTemplate.getJdbcOperations().execute(
@@ -128,7 +138,7 @@ class DataAccessTest {
         Product item = items.getFirst().getProduct();
 
         // update product name, rarity and assign existing category
-        this.productService.updateProductCreateCategoryIfNecessary(new Product().setId((item.getId())).setName("prod1Updated").setIsRare(true).setCategory(
+        productService.updateProductCreateCategoryIfNecessary(new Product().setId((item.getId())).setName("prod1Updated").setIsRare(true).setCategory(
                 new Category().setId(1L).setName("existingCat")
         ));
 
@@ -140,6 +150,7 @@ class DataAccessTest {
     }
 
     @Test
+    @Transactional
     void testUpdateProductWithNewCategory() {
         // seed user and initial product
         jdbcTemplate.getJdbcOperations().execute(
@@ -167,6 +178,7 @@ class DataAccessTest {
     }
 
     @Test
+    @Transactional
     void testUpdateAllProductQuantity() {
         // seed user, categories, and two products
         jdbcTemplate.getJdbcOperations().execute(

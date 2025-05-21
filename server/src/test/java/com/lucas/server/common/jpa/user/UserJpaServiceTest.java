@@ -1,7 +1,7 @@
 package com.lucas.server.common.jpa.user;
 
 import com.lucas.server.TestcontainersConfiguration;
-import org.junit.jupiter.api.BeforeEach;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,21 +18,17 @@ class UserJpaServiceTest {
     @Autowired
     UserJpaService userService;
 
-    @BeforeEach
-    void setUp() {
-        this.userService.deleteAll();
-    }
-
     @Test
+    @Transactional
     void testUserPasswordFlow() {
         // given
         User user = new User()
                 .setUsername("alice")
                 .setPassword("secret");
-        this.userService.createAll(Collections.singletonList(user));
+        userService.createAll(Collections.singletonList(user));
 
         // when & then
-        assertThat(this.userService.findByUsername("alice").orElseThrow().getPassword()).isEqualTo("secret");
-        assertThat(this.userService.findByUsername("bob")).isEmpty();
+        assertThat(userService.findByUsername("alice").orElseThrow().getPassword()).isEqualTo("secret");
+        assertThat(userService.findByUsername("bob")).isEmpty();
     }
 }

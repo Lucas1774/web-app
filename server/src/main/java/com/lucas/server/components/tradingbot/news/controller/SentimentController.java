@@ -33,7 +33,7 @@ public class SentimentController {
     public ResponseEntity<List<News>> fetchAndSaveHistoricAll(
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from) {
         try {
-            return ResponseEntity.ok(this.jpaService.generateSentiment(Constants.SP500_SYMBOLS, from, LocalDate.now()));
+            return ResponseEntity.ok(jpaService.generateSentiment(Constants.SP500_SYMBOLS, from, LocalDate.now()));
         } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -45,7 +45,7 @@ public class SentimentController {
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @PathVariable List<String> symbols) {
         try {
-            return ResponseEntity.ok(this.jpaService.generateSentiment(symbols, from, LocalDate.now()));
+            return ResponseEntity.ok(jpaService.generateSentiment(symbols, from, LocalDate.now()));
         } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

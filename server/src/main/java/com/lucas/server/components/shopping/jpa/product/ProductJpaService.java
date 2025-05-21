@@ -30,8 +30,8 @@ public class ProductJpaService implements JpaService<Product>, OrderColumnJpaSer
 
     public ProductJpaService(ProductRepository repository, UserRepository userRepository,
                              ShoppingItemRepository shoppingItemRepository, CategoryRepository categoryRepository) {
-        this.delegate = new GenericJpaServiceDelegate<>(repository);
-        this.orderColumnDelegate = new OrderColumnServiceDelegate<>(repository);
+        delegate = new GenericJpaServiceDelegate<>(repository);
+        orderColumnDelegate = new OrderColumnServiceDelegate<>(repository);
         this.repository = repository;
         this.userRepository = userRepository;
         this.shoppingItemRepository = shoppingItemRepository;
@@ -40,21 +40,21 @@ public class ProductJpaService implements JpaService<Product>, OrderColumnJpaSer
 
     @Transactional
     public Optional<Product> createProductAndOrLinkToUser(String productName, String username) {
-        if (this.shoppingItemRepository.findByUser_UsernameAndProduct_Name(username, productName).isPresent()) {
+        if (shoppingItemRepository.findByUser_UsernameAndProduct_Name(username, productName).isPresent()) {
             return Optional.empty();
         }
 
-        Product product = this.repository.findByName(productName)
+        Product product = repository.findByName(productName)
                 .orElseGet(() -> {
-                    int newOrder = this.repository.findTopByOrderByOrderDesc()
+                    int newOrder = repository.findTopByOrderByOrderDesc()
                             .map(p -> p.getOrder() + 1)
                             .orElse(1);
-                    return this.repository.save(new Product()
+                    return repository.save(new Product()
                             .setName(productName)
                             .setOrder(newOrder));
                 });
-        this.shoppingItemRepository.save(new ShoppingItem()
-                .setUser(this.userRepository.findByUsername(username).orElse(null))
+        shoppingItemRepository.save(new ShoppingItem()
+                .setUser(userRepository.findByUsername(username).orElse(null))
                 .setProduct(product)
                 .setQuantity(0));
 

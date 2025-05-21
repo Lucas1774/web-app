@@ -31,7 +31,7 @@ public class NewsController {
         LocalDate to = LocalDate.now();
         LocalDate from = to.minusDays(1);
         try {
-            return ResponseEntity.ok(this.jpaService.retrieveNewsByDateRange(Constants.SP500_SYMBOLS, from, to));
+            return ResponseEntity.ok(jpaService.retrieveNewsByDateRange(Constants.SP500_SYMBOLS, from, to));
         } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -43,7 +43,7 @@ public class NewsController {
         LocalDate to = LocalDate.now();
         LocalDate from = to.minusDays(1);
         try {
-            return ResponseEntity.ok(this.jpaService.retrieveNewsByDateRange(symbols, from, to));
+            return ResponseEntity.ok(jpaService.retrieveNewsByDateRange(symbols, from, to));
         } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -54,7 +54,7 @@ public class NewsController {
     public ResponseEntity<List<News>> fetchAndSaveHistoricAll(
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from) {
         try {
-            return ResponseEntity.ok(this.jpaService.retrieveNewsByDateRange(Constants.SP500_SYMBOLS, from, LocalDate.now()));
+            return ResponseEntity.ok(jpaService.retrieveNewsByDateRange(Constants.SP500_SYMBOLS, from, LocalDate.now()));
         } catch (JsonProcessingException | ClientException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -66,7 +66,7 @@ public class NewsController {
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @PathVariable List<String> symbols) {
         try {
-            return ResponseEntity.ok(this.jpaService.retrieveNewsByDateRange(symbols, from, LocalDate.now()));
+            return ResponseEntity.ok(jpaService.retrieveNewsByDateRange(symbols, from, LocalDate.now()));
         } catch (JsonProcessingException | ClientException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -75,6 +75,6 @@ public class NewsController {
 
     @DeleteMapping("/purge")
     public ResponseEntity<List<News>> purge(@RequestParam int toKeep) {
-        return ResponseEntity.ok(this.jpaService.removeOldNews(toKeep));
+        return ResponseEntity.ok(jpaService.removeOldNews(toKeep));
     }
 }

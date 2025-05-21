@@ -45,7 +45,7 @@ public class SudokuController {
             sudoku = fromFileMapper.map(file.replace("\"", "")).stream()
                     .filter(s -> {
                         Sudoku copy = Sudoku.withValues(s.getState());
-                        return this.solver.isValid(s, -1) && this.solver.solveWithTimeout(copy);
+                        return solver.isValid(s, -1) && solver.solveWithTimeout(copy);
                     })
                     .toList();
         } catch (JsonProcessingException e) {
@@ -57,7 +57,7 @@ public class SudokuController {
 
     @GetMapping("fetch/sudoku")
     public ResponseEntity<Sudoku> getRandom() {
-        List<Sudoku> sudoku = this.sudokuService.findAll();
+        List<Sudoku> sudoku = sudokuService.findAll();
         if (sudoku.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         } else {
@@ -67,13 +67,13 @@ public class SudokuController {
 
     @GetMapping("generate/sudoku")
     public ResponseEntity<Sudoku> generateRandom(@RequestParam("difficulty") int difficulty) {
-        return ResponseEntity.ok(this.generator.generate(difficulty));
+        return ResponseEntity.ok(generator.generate(difficulty));
     }
 
     @PostMapping("/solve/sudoku")
     public ResponseEntity<Sudoku> solveSudoku(@RequestBody Sudoku sudoku) {
         Sudoku s = Sudoku.withValues(sudoku.getState());
-        if (!this.solver.isValid(s, -1) || !this.solver.solveWithTimeout(s)) {
+        if (!solver.isValid(s, -1) || !solver.solveWithTimeout(s)) {
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
         }
 
@@ -88,7 +88,7 @@ public class SudokuController {
 
         int[] initialValues = sudoku.getFirst().getState();
         Sudoku s = Sudoku.withValues(initialValues);
-        if (!this.solver.isValid(s, -1) || !this.solver.solveWithTimeout(s)) {
+        if (!solver.isValid(s, -1) || !solver.solveWithTimeout(s)) {
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
         }
 

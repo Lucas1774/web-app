@@ -19,22 +19,22 @@ public class CalculatorJpaService implements JpaService<Calculator> {
     private final CalculatorSolver solver;
 
     public CalculatorJpaService(CalculatorRepository repository, CalculatorSolver solver) {
-        this.delegate = new GenericJpaServiceDelegate<>(repository);
+        delegate = new GenericJpaServiceDelegate<>(repository);
         this.repository = repository;
         this.solver = solver;
     }
 
     public Optional<Calculator> find() {
-        return this.repository.findAll().stream().findFirst();
+        return repository.findAll().stream().findFirst();
     }
 
     @Transactional
     public String computeAndSave(String number) {
         String result = solver.solveExpression(number);
         if (!Constants.INVALID_EXPRESSION.equals(result)) {
-            this.find().orElseThrow().setAns(result).setTextMode(false);
+            find().orElseThrow().setAns(result).setTextMode(false);
         } else {
-            this.find().orElseThrow().setText(number).setTextMode(true);
+            find().orElseThrow().setText(number).setTextMode(true);
         }
         return result;
     }

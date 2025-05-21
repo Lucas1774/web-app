@@ -15,6 +15,8 @@ import com.lucas.server.components.tradingbot.portfolio.service.PortfolioManager
 import com.lucas.server.components.tradingbot.recommendation.jpa.Recommendation;
 import com.lucas.server.components.tradingbot.recommendation.jpa.RecommendationsJpaService;
 import com.lucas.server.components.tradingbot.recommendation.service.RecommendationChatCompletionClient;
+import com.lucas.server.components.tradingbot.recommendation.service.RecommendationClient;
+import com.lucas.server.components.tradingbot.recommendation.service.RecommendationLlmClient;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,11 +40,12 @@ public class DataManager {
     private final MarketDataJpaService marketDataService;
     private final NewsJpaService newsService;
     private final RecommendationsJpaService recommendationsService;
-    private final RecommendationChatCompletionClient recommendationsClient;
     private final FinnhubNewsClient newsClient;
     private final PortfolioManager portfolioManager;
     private final Map<TwelveDataType, TypeToMarketDataFunction> typeToRunner;
     private final Map<PortfolioType, IPortfolioJpaService<?>> portfolioTypeToService;
+    private final Map<RecommendationEngineType, RecommendationClient> recommendationsClientTypeToClient;
+    private final Map<RecommendationEngineType, Integer> recommendationsClientTypeToBackoff;
     private static final Logger logger = LoggerFactory.getLogger(DataManager.class);
     private static final Map<PortfolioType, Supplier<? extends PortfolioBase>> portfolioTypeToNewPortfolio = Map.of(
             PortfolioType.REAL, Portfolio::new,
@@ -55,29 +58,38 @@ public class DataManager {
     }
 
     public DataManager(SymbolJpaService symbolService, MarketDataJpaService marketDataService, NewsJpaService newsService,
-                       RecommendationsJpaService recommendationsService, PortfolioJpaService portfolioService, PortfolioMockJpaService portfolioMockService,
-                       RecommendationChatCompletionClient recommendationsClient, FinnhubNewsClient newsClient, PortfolioManager portfolioManager,
+                       RecommendationsJpaService recommendationsService, PortfolioJpaService portfolioService,
+                       PortfolioMockJpaService portfolioMockService, RecommendationChatCompletionClient azureRecommendationClient,
+                       RecommendationLlmClient llmRecommendationClient, FinnhubNewsClient newsClient, PortfolioManager portfolioManager,
                        TwelveDataMarketDataClient twelveDataMarketDataClient, FinnhubMarketDataClient finnhubMarketDataClient) {
         this.symbolService = symbolService;
         this.marketDataService = marketDataService;
         this.newsService = newsService;
         this.recommendationsService = recommendationsService;
-        this.recommendationsClient = recommendationsClient;
         this.newsClient = newsClient;
         this.portfolioManager = portfolioManager;
-        this.typeToRunner = new EnumMap<>(Map.of(
+        typeToRunner = new EnumMap<>(Map.of(
                 TwelveDataType.LAST, symbols -> retrieveMarketDataWithBackupStrategy(symbols, twelveDataMarketDataClient, finnhubMarketDataClient),
                 TwelveDataType.HISTORIC, symbols -> twelveDataMarketDataClient.retrieveMarketData(symbols, TwelveDataType.HISTORIC)
         ));
-        this.portfolioTypeToService = new EnumMap<>(Map.of(
+        portfolioTypeToService = new EnumMap<>(Map.of(
                 PortfolioType.REAL, portfolioService,
                 PortfolioType.MOCK, portfolioMockService
+        ));
+        recommendationsClientTypeToClient = new EnumMap<>(Map.of(
+                RecommendationEngineType.RAW, llmRecommendationClient,
+                RecommendationEngineType.AZURE, azureRecommendationClient
+        ));
+        recommendationsClientTypeToBackoff = new EnumMap<>(Map.of(
+                RecommendationEngineType.RAW, 12000,
+                RecommendationEngineType.AZURE, 60000
         ));
     }
 
     @Transactional(rollbackOn = {ClientException.class, IOException.class})
-    public List<Recommendation> getRecommendations(List<String> symbolNames, PortfolioType type, Boolean sendFixmeRequest) throws ClientException, IOException {
-        List<Symbol> symbols = symbolNames.stream().distinct().map(this.symbolService::getOrCreateByName).toList();
+    public List<Recommendation> getRecommendations(List<String> symbolNames, PortfolioType type, Boolean sendFixmeRequest,
+                                                   RecommendationEngineType engineType) throws ClientException, IOException {
+        List<Symbol> symbols = symbolNames.stream().distinct().map(symbolService::getOrCreateByName).toList();
         Map<Symbol, List<MarketData>> marketData = symbols.stream()
                 .map(symbol -> Map.entry(symbol, marketDataService.getTopForSymbolId(symbol.getId(), MARKET_DATA_RELEVANT_DAYS_COUNT)))
                 .filter(entry -> !entry.getValue().isEmpty())
@@ -89,6 +101,7 @@ public class DataManager {
         List<Symbol> symbolsWithData = marketData.keySet().stream().toList();
 
         List<Recommendation> res = new ArrayList<>();
+        logger.info(GENERATING_RECOMMENDATIONS_INFO, marketData.size());
         for (int i = 0; i < symbolsWithData.size(); i += RECOMMENDATIONS_CHUNK_SIZE) {
             List<Symbol> batch = symbolsWithData.subList(i, Math.min(i + RECOMMENDATIONS_CHUNK_SIZE, symbolsWithData.size()));
             Map<Symbol, List<MarketData>> marketDataBatch = new LinkedHashMap<>();
@@ -103,22 +116,24 @@ public class DataManager {
                                 .orElseGet(() -> portfolioTypeToNewPortfolio.get(type).get().setSymbol(symbol))
                 );
             }
-            res.addAll(recommendationsClient.getRecommendations(marketDataBatch, newsDataBatch, portfolioDataBatch, sendFixmeRequest));
+            res.addAll(recommendationsClientTypeToClient.get(engineType)
+                    .getRecommendations(marketDataBatch, newsDataBatch, portfolioDataBatch, sendFixmeRequest));
             if (i + RECOMMENDATIONS_CHUNK_SIZE < symbolsWithData.size()) {
-                backOff(6000);
+                backOff(recommendationsClientTypeToBackoff.get(engineType));
             }
         }
 
-        this.recommendationsService.createIgnoringDuplicates(res);
+        recommendationsService.createIgnoringDuplicates(res);
         return res;
     }
 
-    public List<Recommendation> getRandomRecommendations(PortfolioType type, Boolean sendFixmeRequest) throws ClientException, IOException {
+    public List<Recommendation> getRandomRecommendations(PortfolioType type, int count, Boolean sendFixmeRequest,
+                                                         RecommendationEngineType engineType) throws ClientException, IOException {
         Set<String> active = portfolioTypeToService.get(type)
                 .findActivePortfolio().stream()
                 .map(p -> p.getSymbol().getName())
                 .collect(Collectors.toSet());
-        Set<String> already = recommendationsService.findByDate(LocalDate.now()).stream()
+        Set<String> already = recommendationsService.findByDateBetween(LocalDate.now().minusDays(1), LocalDate.now()).stream()
                 .map(r -> r.getSymbol().getName())
                 .collect(Collectors.toSet());
 
@@ -128,37 +143,37 @@ public class DataManager {
 
         List<String> finalList = new ArrayList<>(active);
         finalList.removeAll(already);
-        finalList = finalList.subList(0, Math.min(finalList.size(), RECOMMENDATIONS_CHUNK_SIZE));
-        int needed = RECOMMENDATIONS_CHUNK_SIZE - finalList.size();
+        finalList = finalList.subList(0, Math.min(finalList.size(), count));
+        int needed = count - finalList.size();
         if (needed > 0 && !candidates.isEmpty()) {
             List<String> pool = new ArrayList<>(candidates);
             Collections.shuffle(pool);
             finalList.addAll(pool.subList(0, Math.min(needed, pool.size())));
         }
 
-        return this.getRecommendations(finalList, type, sendFixmeRequest);
+        return getRecommendations(finalList, type, sendFixmeRequest, engineType);
     }
 
     @Transactional
     public List<News> generateSentiment(List<String> symbolNames, LocalDate from, LocalDate to)
             throws ClientException, JsonProcessingException {
-        List<Symbol> symbols = symbolNames.stream().distinct().map(this.symbolService::getOrCreateByName).toList();
-        return this.newsService.generateSentiment(symbols.stream().map(Symbol::getId).toList(), from, to);
+        List<Symbol> symbols = symbolNames.stream().distinct().map(symbolService::getOrCreateByName).toList();
+        return newsService.generateSentiment(symbols.stream().map(Symbol::getId).toList(), from, to);
     }
 
     @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})
     public List<News> retrieveNewsByDateRange(List<String> symbolNames, LocalDate from, LocalDate now) throws ClientException, JsonProcessingException {
-        List<Symbol> symbols = symbolNames.stream().distinct().map(this.symbolService::getOrCreateByName).toList();
-        List<News> news = this.newsClient.retrieveNewsByDateRange(symbols, from, now);
-        this.newsService.createOrUpdate(news, MAX_SYMBOLS_TO_TRIGGER_NEWS_EMBEDDINGS_GENERATION >= symbols.size());
+        List<Symbol> symbols = symbolNames.stream().distinct().map(symbolService::getOrCreateByName).toList();
+        List<News> news = newsClient.retrieveNewsByDateRange(symbols, from, now);
+        newsService.createOrUpdate(news, MAX_SYMBOLS_TO_TRIGGER_NEWS_EMBEDDINGS_GENERATION >= symbols.size());
         return news;
     }
 
     @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})
     public List<MarketData> retrieveMarketData(List<String> symbolNames, TwelveDataType type) throws ClientException, JsonProcessingException {
-        List<Symbol> symbols = symbolNames.stream().distinct().map(this.symbolService::getOrCreateByName).toList();
+        List<Symbol> symbols = symbolNames.stream().distinct().map(symbolService::getOrCreateByName).toList();
         List<MarketData> mds = typeToRunner.get(type).apply(symbols);
-        this.marketDataService.createIgnoringDuplicates(mds);
+        marketDataService.createIgnoringDuplicates(mds);
         return mds;
     }
 
@@ -170,12 +185,12 @@ public class DataManager {
         Symbol symbol = symbolService.findByName(symbolName).orElseThrow(
                 () -> new IllegalStateException(MessageFormat.format(SYMBOL_NOT_FOUND_ERROR, symbolName))
         );
-        IPortfolioJpaService<T> service = this.getService(type);
+        IPortfolioJpaService<T> service = getService(type);
         return service.executePortfolioAction(symbol, price, quantity, timestamp, isBuy);
     }
 
     public List<PortfolioManager.SymbolStand> getPortfolioStand(PortfolioType type) {
-        return this.getService(type).findLatest()
+        return getService(type).findLatest()
                 .stream()
                 .flatMap(p -> marketDataService.getTopForSymbolId(p.getSymbol().getId(), 1)
                         .stream()
@@ -188,9 +203,9 @@ public class DataManager {
     @Transactional
     public List<News> removeOldNews(int keepCount) {
         List<News> res = new ArrayList<>();
-        List<Symbol> symbols = this.symbolService.findAll();
+        List<Symbol> symbols = symbolService.findAll();
         for (Symbol symbol : symbols) {
-            List<Long> keepIds = this.newsService.getTopForSymbolId(symbol.getId(), keepCount).stream().map(News::getId).toList();
+            List<Long> keepIds = newsService.getTopForSymbolId(symbol.getId(), keepCount).stream().map(News::getId).toList();
             List<News> toRemove = symbol.getNews().stream()
                     .filter(news -> !keepIds.contains(news.getId()))
                     .toList();
@@ -207,7 +222,7 @@ public class DataManager {
     @Transactional
     public List<MarketData> removeOldMarketData(int keepCount) {
         List<MarketData> res = new ArrayList<>();
-        List<Symbol> symbols = this.symbolService.findAll();
+        List<Symbol> symbols = symbolService.findAll();
         for (Symbol symbol : symbols) {
             List<MarketData> toKeep = marketDataService.getTopForSymbolId(symbol.getId(), keepCount);
             List<MarketData> toRemove = marketDataService.findBySymbolId(symbol.getId()).stream()
@@ -221,7 +236,7 @@ public class DataManager {
 
     public List<Recommendation> removeOldRecommendations(int keepCount) {
         List<Recommendation> res = new ArrayList<>();
-        List<Symbol> symbols = this.symbolService.findAll();
+        List<Symbol> symbols = symbolService.findAll();
         for (Symbol symbol : symbols) {
             List<Recommendation> toKeep = recommendationsService.getTopForSymbolId(symbol.getId(), keepCount);
             List<Recommendation> toRemove = recommendationsService.findBySymbolId(symbol.getId()).stream()
@@ -253,6 +268,6 @@ public class DataManager {
 
     @SuppressWarnings("unchecked")
     private <T extends PortfolioBase> IPortfolioJpaService<T> getService(PortfolioType type) {
-        return (IPortfolioJpaService<T>) this.portfolioTypeToService.get(type);
+        return (IPortfolioJpaService<T>) portfolioTypeToService.get(type);
     }
 }
