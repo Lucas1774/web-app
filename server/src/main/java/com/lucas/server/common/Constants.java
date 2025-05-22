@@ -7,8 +7,8 @@ public class Constants {
     private Constants() {
     }
 
-    public enum TwelveDataType {
-        LAST, HISTORIC
+    public enum MarketDataType {
+        LAST, HISTORIC, REAL_TIME
     }
 
     public enum PortfolioType {

@@ -72,7 +72,7 @@ public class PortfolioJpaServiceDelegate<T extends PortfolioBase, R extends JpaR
         return save(res);
     }
 
-    public List<T> findLatest() {
+    public List<T> findActivePortfolio() {
         return repository.findAll().stream()
                 .collect(Collectors.toMap(
                         T::getSymbol,
@@ -81,11 +81,6 @@ public class PortfolioJpaServiceDelegate<T extends PortfolioBase, R extends JpaR
                 ))
                 .values()
                 .stream()
-                .toList();
-    }
-
-    public List<T> findActivePortfolio() {
-        return findLatest().stream()
                 .filter(p -> p.getQuantity().compareTo(BigDecimal.ZERO) > 0)
                 .toList();
     }

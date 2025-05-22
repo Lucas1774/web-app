@@ -1,6 +1,9 @@
 package com.lucas.server.components.tradingbot.portfolio.controller;
 
+import com.lucas.server.common.Constants;
+import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.common.exception.IllegalStateException;
+import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;
 import com.lucas.server.components.tradingbot.portfolio.jpa.Portfolio;
 import com.lucas.server.components.tradingbot.portfolio.jpa.PortfolioMock;
@@ -53,8 +56,23 @@ public class PortfolioController {
     }
 
     @GetMapping("/stand")
-    public ResponseEntity<List<PortfolioManager.SymbolStand>> getGlobalStand() {
-        return ResponseEntity.ok(jpaService.getPortfolioStand(REAL));
+    public ResponseEntity<List<PortfolioManager.SymbolStand>> getGlobalStandAll() {
+        try {
+            return ResponseEntity.ok(jpaService.getPortfolioStand(REAL, Constants.SP500_SYMBOLS));
+        } catch (ClientException | JsonProcessingException e) {
+            logger.error(e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/stand/{symbols}")
+    public ResponseEntity<List<PortfolioManager.SymbolStand>> getGlobalStandSome(@PathVariable List<String> symbols) {
+        try {
+            return ResponseEntity.ok(jpaService.getPortfolioStand(REAL, symbols));
+        } catch (ClientException | JsonProcessingException e) {
+            logger.error(e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @PostMapping("/mock/buy")
@@ -80,7 +98,22 @@ public class PortfolioController {
     }
 
     @GetMapping("/mock/stand")
-    public ResponseEntity<List<PortfolioManager.SymbolStand>> getGlobalStandMock() {
-        return ResponseEntity.ok(jpaService.getPortfolioStand(MOCK));
+    public ResponseEntity<List<PortfolioManager.SymbolStand>> getGlobalStandMockAll() {
+        try {
+            return ResponseEntity.ok(jpaService.getPortfolioStand(MOCK, Constants.SP500_SYMBOLS));
+        } catch (ClientException | JsonProcessingException e) {
+            logger.error(e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/mock/stand/{symbols}")
+    public ResponseEntity<List<PortfolioManager.SymbolStand>> getGlobalStandMockSome(@PathVariable List<String> symbols) {
+        try {
+            return ResponseEntity.ok(jpaService.getPortfolioStand(MOCK, symbols));
+        } catch (ClientException | JsonProcessingException e) {
+            logger.error(e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }

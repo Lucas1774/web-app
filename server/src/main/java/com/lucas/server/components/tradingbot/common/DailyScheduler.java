@@ -42,7 +42,7 @@ public class DailyScheduler {
 
     private void updateMarketData() {
         try {
-            List<MarketData> updatedMds = dataManager.retrieveMarketData(Constants.SP500_SYMBOLS, Constants.TwelveDataType.LAST);
+            List<MarketData> updatedMds = dataManager.retrieveMarketData(Constants.SP500_SYMBOLS, Constants.MarketDataType.LAST);
             logger.info(Constants.SCHEDULED_TASK_SUCCESS_INFO, "fetched market data", updatedMds);
         } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);

@@ -13,6 +13,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Component
 public class FinnhubMarketDataClient {
 
@@ -40,5 +43,14 @@ public class FinnhubMarketDataClient {
                 .toUriString();
 
         return mapper.map(httpRequestClient.fetch(url), symbol);
+    }
+
+    public List<MarketData> retrieveMarketData(List<Symbol> symbols) throws JsonProcessingException, ClientException {
+        List<MarketData> res = new ArrayList<>();
+        for (Symbol symbol : symbols) {
+            res.add(retrieveMarketData(symbol));
+            Constants.backOff(1000);
+        }
+        return res;
     }
 }

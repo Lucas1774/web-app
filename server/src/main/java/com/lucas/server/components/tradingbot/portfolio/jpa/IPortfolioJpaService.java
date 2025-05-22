@@ -16,7 +16,5 @@ public interface IPortfolioJpaService<T extends PortfolioBase> extends JpaServic
     T executePortfolioAction(Symbol symbol, BigDecimal price, BigDecimal quantity, LocalDateTime timestamp,
                              boolean isBuy) throws IllegalStateException;
 
-    List<T> findLatest();
-
     List<T> findActivePortfolio();
 }

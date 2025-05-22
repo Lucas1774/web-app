@@ -24,14 +24,14 @@ public class TwelveDataMarketDataClient {
     private final String endpoint;
     private final String apiKey;
     private static final Logger logger = LoggerFactory.getLogger(TwelveDataMarketDataClient.class);
-    private final Map<Constants.TwelveDataType, TwelveDataMarketDataClient.JsonToMarketDataFunction> typeToMapper;
-    private static final EnumMap<Constants.TwelveDataType, String> typeToEndpoint = new EnumMap<>(Map.of(
-            Constants.TwelveDataType.LAST, Constants.QUOTE,
-            Constants.TwelveDataType.HISTORIC, Constants.TIME_SERIES
+    private final Map<Constants.MarketDataType, TwelveDataMarketDataClient.JsonToMarketDataFunction> typeToMapper;
+    private static final EnumMap<Constants.MarketDataType, String> typeToEndpoint = new EnumMap<>(Map.of(
+            Constants.MarketDataType.LAST, Constants.QUOTE,
+            Constants.MarketDataType.HISTORIC, Constants.TIME_SERIES
     ));
-    private static final Map<Constants.TwelveDataType, UnaryOperator<UriComponentsBuilder>> typeToBuilderCustomizer = new EnumMap<>(Map.of(
-            Constants.TwelveDataType.LAST, builder -> builder,
-            Constants.TwelveDataType.HISTORIC, builder -> builder.queryParam("interval", "1day")
+    private static final Map<Constants.MarketDataType, UnaryOperator<UriComponentsBuilder>> typeToBuilderCustomizer = new EnumMap<>(Map.of(
+            Constants.MarketDataType.LAST, builder -> builder,
+            Constants.MarketDataType.HISTORIC, builder -> builder.queryParam("interval", "1day")
     ));
 
     @FunctionalInterface
@@ -46,14 +46,14 @@ public class TwelveDataMarketDataClient {
         this.endpoint = endpoint;
         this.apiKey = apiKey;
         typeToMapper = new EnumMap<>(Map.of(
-                Constants.TwelveDataType.LAST, (s, j) -> List.of(mapper.map(j, s)),
-                Constants.TwelveDataType.HISTORIC, (s, j) -> mapper.mapAll(j, s).stream()
+                Constants.MarketDataType.LAST, (s, j) -> List.of(mapper.map(j, s)),
+                Constants.MarketDataType.HISTORIC, (s, j) -> mapper.mapAll(j, s).stream()
                         .sorted(Comparator.comparing(MarketData::getDate))
                         .toList()
         ));
     }
 
-    private List<MarketData> retrieveMarketData(Symbol symbol, Constants.TwelveDataType type) throws ClientException, JsonProcessingException {
+    private List<MarketData> retrieveMarketData(Symbol symbol, Constants.MarketDataType type) throws ClientException, JsonProcessingException {
         logger.info(Constants.RETRIEVING_MARKET_DATA_INFO, symbol);
         String url = typeToBuilderCustomizer.get(type).apply(UriComponentsBuilder.fromUriString(endpoint + typeToEndpoint.get(type)))
                 .queryParam("symbol", symbol.getName())
@@ -64,7 +64,7 @@ public class TwelveDataMarketDataClient {
         return typeToMapper.get(type).apply(symbol, httpRequestClient.fetch(url));
     }
 
-    public List<MarketData> retrieveMarketData(List<Symbol> symbols, Constants.TwelveDataType type) throws ClientException, JsonProcessingException {
+    public List<MarketData> retrieveMarketData(List<Symbol> symbols, Constants.MarketDataType type) throws ClientException, JsonProcessingException {
         List<MarketData> res = new ArrayList<>();
         for (Symbol symbol : symbols) {
             res.addAll(retrieveMarketData(symbol, type));

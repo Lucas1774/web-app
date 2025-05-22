@@ -28,6 +28,7 @@ import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -42,7 +43,7 @@ public class DataManager {
     private final RecommendationsJpaService recommendationsService;
     private final FinnhubNewsClient newsClient;
     private final PortfolioManager portfolioManager;
-    private final Map<TwelveDataType, TypeToMarketDataFunction> typeToRunner;
+    private final Map<MarketDataType, TypeToMarketDataFunction> typeToRunner;
     private final Map<PortfolioType, IPortfolioJpaService<?>> portfolioTypeToService;
     private final Map<RecommendationEngineType, RecommendationClient> recommendationsClientTypeToClient;
     private final Map<RecommendationEngineType, Integer> recommendationsClientTypeToBackoff;
@@ -69,8 +70,9 @@ public class DataManager {
         this.newsClient = newsClient;
         this.portfolioManager = portfolioManager;
         typeToRunner = new EnumMap<>(Map.of(
-                TwelveDataType.LAST, symbols -> retrieveMarketDataWithBackupStrategy(symbols, twelveDataMarketDataClient, finnhubMarketDataClient),
-                TwelveDataType.HISTORIC, symbols -> twelveDataMarketDataClient.retrieveMarketData(symbols, TwelveDataType.HISTORIC)
+                MarketDataType.LAST, symbols -> retrieveMarketDataWithBackupStrategy(symbols, twelveDataMarketDataClient, finnhubMarketDataClient),
+                MarketDataType.HISTORIC, symbols -> twelveDataMarketDataClient.retrieveMarketData(symbols, MarketDataType.HISTORIC),
+                MarketDataType.REAL_TIME, finnhubMarketDataClient::retrieveMarketData
         ));
         portfolioTypeToService = new EnumMap<>(Map.of(
                 PortfolioType.REAL, portfolioService,
@@ -170,7 +172,7 @@ public class DataManager {
     }
 
     @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})
-    public List<MarketData> retrieveMarketData(List<String> symbolNames, TwelveDataType type) throws ClientException, JsonProcessingException {
+    public List<MarketData> retrieveMarketData(List<String> symbolNames, MarketDataType type) throws ClientException, JsonProcessingException {
         List<Symbol> symbols = symbolNames.stream().distinct().map(symbolService::getOrCreateByName).toList();
         List<MarketData> mds = typeToRunner.get(type).apply(symbols);
         marketDataService.createIgnoringDuplicates(mds);
@@ -189,15 +191,20 @@ public class DataManager {
         return service.executePortfolioAction(symbol, price, quantity, timestamp, isBuy);
     }
 
-    public List<PortfolioManager.SymbolStand> getPortfolioStand(PortfolioType type) {
-        return getService(type).findLatest()
+    public List<PortfolioManager.SymbolStand> getPortfolioStand(PortfolioType type, List<String> symbols) throws ClientException, JsonProcessingException {
+        List<PortfolioBase> portfolio = getService(type).findActivePortfolio()
                 .stream()
-                .flatMap(p -> marketDataService.getTopForSymbolId(p.getSymbol().getId(), 1)
-                        .stream()
-                        .findFirst()
-                        .map(top -> portfolioManager.computeStand(p, top))
-                        .stream()
-                ).toList();
+                .filter(p -> symbols.contains(p.getSymbol().getName()))
+                .toList();
+        Map<Symbol, MarketData> symbolsWithData = typeToRunner.get(MarketDataType.REAL_TIME)
+                .apply(portfolio.stream().map(PortfolioBase::getSymbol).toList())
+                .stream()
+                .collect(Collectors.toMap(MarketData::getSymbol, Function.identity()));
+        return portfolio.stream()
+                .flatMap(p -> Optional.ofNullable(symbolsWithData.get(p.getSymbol()))
+                        .map(md -> portfolioManager.computeStand(p, md))
+                        .stream())
+                .toList();
     }
 
     @Transactional
@@ -254,7 +261,7 @@ public class DataManager {
         List<MarketData> res = new ArrayList<>();
         for (Symbol symbol : symbols) {
             try {
-                res.add(twelveDataMarketDataClient.retrieveMarketData(List.of(symbol), TwelveDataType.LAST).getFirst());
+                res.add(twelveDataMarketDataClient.retrieveMarketData(List.of(symbol), MarketDataType.LAST).getFirst());
             } catch (ClientException | JsonProcessingException e) {
                 logger.warn(MAIN_CLIENT_FAILED_BACKUP_WARN,
                         twelveDataMarketDataClient.getClass().getSimpleName(), symbol,
