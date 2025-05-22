@@ -156,6 +156,17 @@ public class DataManager {
         return getRecommendations(finalList, type, sendFixmeRequest, engineType);
     }
 
+    public List<Recommendation> getRecommendationsForStand(PortfolioType type, Boolean sendFixmeRequest) throws ClientException, IOException {
+        List<String> symbols = getService(type).findActivePortfolio()
+                .stream()
+                .map(p -> p.getSymbol().getName())
+                .toList();
+        RecommendationEngineType engineType = symbols.size() > RECOMMENDATIONS_CHUNK_SIZE
+                ? RecommendationEngineType.RAW : RecommendationEngineType.AZURE;
+
+        return getRecommendations(symbols, type, sendFixmeRequest, engineType);
+    }
+
     @Transactional
     public List<News> generateSentiment(List<String> symbolNames, LocalDate from, LocalDate to)
             throws ClientException, JsonProcessingException {

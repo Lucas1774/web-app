@@ -52,6 +52,26 @@ public class RecommendationsController {
         }
     }
 
+    @GetMapping("/stand")
+    public ResponseEntity<List<Recommendation>> generateStandRecommendations() {
+        try {
+            return ResponseEntity.ok(jpaService.getRecommendationsForStand(PortfolioType.REAL, true));
+        } catch (ClientException | IOException e) {
+            logger.error(e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/stand/mock")
+    public ResponseEntity<List<Recommendation>> generateStandRecommendationsMock() {
+        try {
+            return ResponseEntity.ok(jpaService.getRecommendationsForStand(PortfolioType.MOCK, true));
+        } catch (ClientException | IOException e) {
+            logger.error(e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     @GetMapping("/random/{count}")
     public ResponseEntity<List<Recommendation>> generateRandomRecommendations(@PathVariable int count) {
         RecommendationEngineType type = count > RECOMMENDATIONS_CHUNK_SIZE
