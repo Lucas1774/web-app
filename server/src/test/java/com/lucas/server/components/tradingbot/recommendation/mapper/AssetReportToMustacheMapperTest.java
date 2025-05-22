@@ -30,7 +30,7 @@ class AssetReportToMustacheMapperTest {
                 • Current Position:
                   • N/A shares (N/A EUR)
                   • Avg Entry Price: N/A EUR
-                  • Unrealized PnL: N/A EUR
+                  • Unrealized PnL: 0 EUR (0%)
                 • Price History (last 1 days):
                   • 2025-05-01: O100 H110 L90 C105 VN/A
                 • Technical Indicators:
@@ -59,7 +59,7 @@ class AssetReportToMustacheMapperTest {
                 • Current Position:
                   • 10.2412 shares (101.4887 EUR)
                   • Avg Entry Price: 11.5874 EUR
-                  • Unrealized PnL: 50 EUR
+                  • Unrealized PnL: 50 EUR (80%)
                 • Price History (last 1 days):
                   • 2025-05-01: O100 H110 L90 C105 V1234
                 • Technical Indicators:
@@ -80,7 +80,7 @@ class AssetReportToMustacheMapperTest {
     private static AssetReportRaw getAssetReportNullValues() {
         List<PricePointRaw> pp = getPpNullValues();
         List<NewsItemRaw> news = getNewsNullValues();
-        return new AssetReportRaw("FOO", null, null, null, null,
+        return new AssetReportRaw("FOO", null, null, null, null, null,
                 pp.size(), pp, new BigDecimal("105.00"), new BigDecimal("42.42"), new BigDecimal("1.23"),
                 new BigDecimal("15.67"), new BigDecimal("15.68"), new BigDecimal("15.69"), news.size(), news);
     }
@@ -89,9 +89,9 @@ class AssetReportToMustacheMapperTest {
         List<PricePointRaw> pp = getPpAllValues();
         List<NewsItemRaw> news = getNewsAllValues();
         return new AssetReportRaw("FOO", new BigDecimal("10.2412"), new BigDecimal("101.4887"),
-                new BigDecimal("11.5874"), new BigDecimal("50"), pp.size(), pp, new BigDecimal("105.00"),
-                new BigDecimal("42.42"), new BigDecimal("1.23"), new BigDecimal("15.67"),
-                new BigDecimal("15.68"), new BigDecimal("15.69"), news.size(), news);
+                new BigDecimal("11.5874"), new BigDecimal("50"), new BigDecimal("80.00"), pp.size(), pp,
+                new BigDecimal("105.00"), new BigDecimal("42.42"), new BigDecimal("1.23"),
+                new BigDecimal("15.67"), new BigDecimal("15.68"), new BigDecimal("15.69"), news.size(), news);
     }
 
     private static List<PricePointRaw> getPpNullValues() {

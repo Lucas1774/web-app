@@ -18,7 +18,8 @@ public class PortfolioManager {
             BigDecimal quantity,
             BigDecimal averageCost,
             BigDecimal positionValue,
-            BigDecimal pnL
+            BigDecimal pnL,
+            BigDecimal percentPnl
     ) {
     }
 
@@ -32,14 +33,18 @@ public class PortfolioManager {
         BigDecimal averageCost = portfolio.getAverageCost();
         BigDecimal positionValue;
         BigDecimal pnL;
+        BigDecimal percentPnL;
         if (null != quantity && null != averageCost) {
             positionValue = quantity.multiply(averageCost).setScale(4, RoundingMode.HALF_UP);
             pnL = last.getPrice().subtract(averageCost).multiply(quantity).setScale(4, RoundingMode.HALF_UP);
+            percentPnL = (last.getPrice().subtract(averageCost)).divide(averageCost, 8, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP);
         } else {
             positionValue = null;
             pnL = null;
+            percentPnL = null;
         }
 
-        return new SymbolStand(portfolio.getSymbol(), quantity, averageCost, positionValue, pnL);
+        return new SymbolStand(portfolio.getSymbol(), quantity, averageCost, positionValue, pnL, percentPnL);
     }
 }

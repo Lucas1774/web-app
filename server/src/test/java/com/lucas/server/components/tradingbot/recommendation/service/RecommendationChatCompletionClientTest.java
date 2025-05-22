@@ -159,5 +159,6 @@ class RecommendationChatCompletionClientTest {
                 .multiply(report.position())
                 .setScale(4, RoundingMode.HALF_UP);
         assertThat(report.unrealizedPnL()).isEqualByComparingTo(expectedUnrealizedPnL);
+        assertThat(report.unrealizedPercentPnL()).isEqualByComparingTo(BigDecimal.valueOf(350.00)); // roughly (10 / 2.2) - 2.2
     }
 }
