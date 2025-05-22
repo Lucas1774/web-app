@@ -1,6 +1,5 @@
 package com.lucas.server.components.tradingbot.news.controller;
 
-import com.lucas.server.common.Constants;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;
@@ -14,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+
+import static com.lucas.server.common.Constants.SP500_SYMBOLS;
 
 @RestController
 @RequestMapping("/news")
@@ -31,7 +32,7 @@ public class NewsController {
         LocalDate to = LocalDate.now();
         LocalDate from = to.minusDays(1);
         try {
-            return ResponseEntity.ok(jpaService.retrieveNewsByDateRange(Constants.SP500_SYMBOLS, from, to));
+            return ResponseEntity.ok(jpaService.retrieveNewsByDateRange(SP500_SYMBOLS, from, to));
         } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -54,7 +55,7 @@ public class NewsController {
     public ResponseEntity<List<News>> fetchAndSaveHistoricAll(
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from) {
         try {
-            return ResponseEntity.ok(jpaService.retrieveNewsByDateRange(Constants.SP500_SYMBOLS, from, LocalDate.now()));
+            return ResponseEntity.ok(jpaService.retrieveNewsByDateRange(SP500_SYMBOLS, from, LocalDate.now()));
         } catch (JsonProcessingException | ClientException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

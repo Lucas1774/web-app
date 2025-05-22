@@ -1,7 +1,6 @@
 package com.lucas.server.components.tradingbot.marketdata.mapper;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.lucas.server.common.Constants;
 import com.lucas.server.common.Mapper;
 import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
@@ -16,6 +15,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.lucas.server.common.Constants.*;
+
 @Component
 public class TwelveDataMarketResponseMapper implements Mapper<JsonNode, MarketData> {
 
@@ -25,7 +26,7 @@ public class TwelveDataMarketResponseMapper implements Mapper<JsonNode, MarketDa
     public MarketData map(JsonNode json) throws JsonProcessingException {
         try {
             if (json.path("is_market_open").asBoolean(false)) {
-                logger.warn(Constants.MARKET_STILL_OPEN_WARN);
+                logger.warn(MARKET_STILL_OPEN_WARN);
             }
             return new MarketData()
                     .setOpen(new BigDecimal(json.get("open").asText()))
@@ -38,13 +39,13 @@ public class TwelveDataMarketResponseMapper implements Mapper<JsonNode, MarketDa
                     .setChange(new BigDecimal(json.get("change").asText()))
                     .setChangePercent(new BigDecimal(json.get("percent_change").asText()));
         } catch (Exception e) {
-            throw new JsonProcessingException(MessageFormat.format(Constants.JSON_MAPPING_ERROR, Constants.MARKET), e);
+            throw new JsonProcessingException(MessageFormat.format(JSON_MAPPING_ERROR, MARKET), e);
         }
     }
 
     public MarketData map(JsonNode json, Symbol symbol) throws JsonProcessingException {
         if (!symbol.getName().equals(json.path("symbol").asText(null))) {
-            throw new JsonProcessingException(MessageFormat.format(Constants.JSON_MAPPING_ERROR, Constants.MARKET));
+            throw new JsonProcessingException(MessageFormat.format(JSON_MAPPING_ERROR, MARKET));
         }
         return map(json).setSymbol(symbol);
     }
@@ -52,7 +53,7 @@ public class TwelveDataMarketResponseMapper implements Mapper<JsonNode, MarketDa
     public List<MarketData> mapAll(JsonNode json, Symbol symbol) throws JsonProcessingException {
         try {
             if (!symbol.getName().equals(json.at("/meta/symbol").asText(null))) {
-                throw new JsonProcessingException(MessageFormat.format(Constants.JSON_MAPPING_ERROR, Constants.MARKET));
+                throw new JsonProcessingException(MessageFormat.format(JSON_MAPPING_ERROR, MARKET));
             }
             JsonNode series = json.get("values");
 
@@ -72,7 +73,7 @@ public class TwelveDataMarketResponseMapper implements Mapper<JsonNode, MarketDa
 
             return history;
         } catch (Exception e) {
-            throw new JsonProcessingException(MessageFormat.format(Constants.JSON_MAPPING_ERROR, Constants.MARKET), e);
+            throw new JsonProcessingException(MessageFormat.format(JSON_MAPPING_ERROR, MARKET), e);
         }
     }
 }

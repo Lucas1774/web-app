@@ -1,7 +1,6 @@
 package com.lucas.server.components.tradingbot.news.mapper;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.lucas.server.common.Constants;
 import com.lucas.server.common.Mapper;
 import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
@@ -16,6 +15,8 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static com.lucas.server.common.Constants.JSON_MAPPING_ERROR;
 
 @Component
 public class FinnhubNewsResponseMapper implements Mapper<JsonNode, News> {
@@ -39,7 +40,7 @@ public class FinnhubNewsResponseMapper implements Mapper<JsonNode, News> {
                     .setCategory(json.get("category").asText())
                     .setImage(json.get("image").asText());
         } catch (Exception e) {
-            throw new JsonProcessingException(MessageFormat.format(Constants.JSON_MAPPING_ERROR, "news"), e);
+            throw new JsonProcessingException(MessageFormat.format(JSON_MAPPING_ERROR, "news"), e);
         }
     }
 

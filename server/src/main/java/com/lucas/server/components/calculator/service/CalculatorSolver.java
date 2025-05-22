@@ -1,10 +1,11 @@
 package com.lucas.server.components.calculator.service;
 
-import com.lucas.server.common.Constants;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+
+import static com.lucas.server.common.Constants.INVALID_EXPRESSION;
 
 @Component
 public class CalculatorSolver {
@@ -20,7 +21,7 @@ public class CalculatorSolver {
                         .stripTrailingZeros()
                         .toPlainString();
             } catch (IllegalArgumentException e2) {
-                return Constants.INVALID_EXPRESSION;
+                return INVALID_EXPRESSION;
             }
         }
     }

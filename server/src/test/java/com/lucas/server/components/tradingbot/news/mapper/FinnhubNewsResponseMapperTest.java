@@ -3,7 +3,6 @@ package com.lucas.server.components.tradingbot.news.mapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lucas.server.TestcontainersConfiguration;
-import com.lucas.server.common.Constants;
 import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
@@ -20,6 +19,7 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 
+import static com.lucas.server.common.Constants.JSON_MAPPING_ERROR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
@@ -138,6 +138,6 @@ class FinnhubNewsResponseMapperTest {
         // when & then
         assertThatThrownBy(() -> mapper.mapAll(arrayNode, symbolService.getOrCreateByName("SYM")))
                 .isInstanceOf(JsonProcessingException.class)
-                .hasMessageContaining(MessageFormat.format(Constants.JSON_MAPPING_ERROR, "news"));
+                .hasMessageContaining(MessageFormat.format(JSON_MAPPING_ERROR, "news"));
     }
 }

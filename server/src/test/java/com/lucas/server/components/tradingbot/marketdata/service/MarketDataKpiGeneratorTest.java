@@ -1,7 +1,6 @@
 package com.lucas.server.components.tradingbot.marketdata.service;
 
 import com.lucas.server.TestcontainersConfiguration;
-import com.lucas.server.common.Constants;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
@@ -20,6 +19,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.lucas.server.common.Constants.KPI_RETURNED_ZERO_WARN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
@@ -176,7 +176,7 @@ class MarketDataKpiGeneratorTest {
         assertThat(logCaptor.getLogs())
                 .hasSize(1)
                 .allSatisfy(log -> assertThat(log).contains(marketDataList.getLast().toString())
-                        .contains(Constants.KPI_RETURNED_ZERO_WARN.replace("{}", "")));
+                        .contains(KPI_RETURNED_ZERO_WARN.replace("{}", "")));
     }
 
     @Test
@@ -192,7 +192,7 @@ class MarketDataKpiGeneratorTest {
         assertThat(logCaptor.getLogs())
                 .hasSize(1)
                 .allSatisfy(log -> assertThat(log).contains(marketDataList.getFirst().toString())
-                        .contains(Constants.KPI_RETURNED_ZERO_WARN.replace("{}", "")));
+                        .contains(KPI_RETURNED_ZERO_WARN.replace("{}", "")));
     }
 
     @Test
@@ -208,7 +208,7 @@ class MarketDataKpiGeneratorTest {
         assertThat(logCaptor.getLogs())
                 .hasSize(1)
                 .allSatisfy(log -> assertThat(log).contains(marketDataList.getFirst().toString())
-                        .contains(Constants.KPI_RETURNED_ZERO_WARN.replace("{}", "")));
+                        .contains(KPI_RETURNED_ZERO_WARN.replace("{}", "")));
     }
 
     @Test
@@ -224,6 +224,6 @@ class MarketDataKpiGeneratorTest {
         assertThat(logCaptor.getLogs())
                 .hasSize(1)
                 .allSatisfy(log -> assertThat(log).contains(marketDataList.getFirst().toString())
-                        .contains(Constants.KPI_RETURNED_ZERO_WARN.replace("{}", "")));
+                        .contains(KPI_RETURNED_ZERO_WARN.replace("{}", "")));
     }
 }

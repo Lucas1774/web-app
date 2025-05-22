@@ -3,7 +3,6 @@ package com.lucas.server.components.tradingbot.recommendation.mapper;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
-import com.lucas.server.common.Constants;
 import com.lucas.server.common.Mapper;
 import com.lucas.server.common.exception.ConfigurationException;
 import com.lucas.server.common.exception.JsonProcessingException;
@@ -22,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import static com.lucas.server.common.Constants.JSON_MAPPING_ERROR;
 import static com.lucas.server.common.Constants.NA;
 
 @Component
@@ -166,7 +166,7 @@ public class AssetReportToMustacheMapper implements Mapper<List<AssetReportRaw>,
             mustache.execute(out, Collections.singletonMap("assets", assets.stream().map(AssetReport::from).toList())).flush();
             return out.toString();
         } catch (Exception e) {
-            throw new JsonProcessingException(MessageFormat.format(Constants.JSON_MAPPING_ERROR, "asset report"), e);
+            throw new JsonProcessingException(MessageFormat.format(JSON_MAPPING_ERROR, "asset report"), e);
         }
     }
 }

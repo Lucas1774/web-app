@@ -1,6 +1,5 @@
 package com.lucas.server.components.tradingbot.news.service;
 
-import com.lucas.server.common.Constants;
 import com.lucas.server.common.HttpRequestClient;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.common.exception.JsonProcessingException;
@@ -11,6 +10,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
+
+import static com.lucas.server.common.Constants.*;
 
 @Component
 public class RetryableNewsSentimentClientComponent {
@@ -27,9 +28,9 @@ public class RetryableNewsSentimentClientComponent {
         this.url = url;
     }
 
-    @Retryable(retryFor = ClientException.class, maxAttempts = Constants.REQUEST_MAX_ATTEMPTS)
+    @Retryable(retryFor = ClientException.class, maxAttempts = REQUEST_MAX_ATTEMPTS)
     News generateSentiment(News news) throws ClientException, JsonProcessingException {
-        logger.info(Constants.GENERATING_SENTIMENT_INFO, news);
-        return mapper.map(httpRequestClient.fetch(url + Constants.ANALYZE, news.getHeadline() + " [SEP] " + news.getSummary()), news);
+        logger.info(GENERATING_SENTIMENT_INFO, news);
+        return mapper.map(httpRequestClient.fetch(url + ANALYZE, news.getHeadline() + " [SEP] " + news.getSummary()), news);
     }
 }

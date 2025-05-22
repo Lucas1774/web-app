@@ -12,6 +12,8 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 
+import static com.lucas.server.common.Constants.REQUEST_MAX_ATTEMPTS;
+
 @Component
 public class HttpRequestClient {
 
@@ -21,7 +23,7 @@ public class HttpRequestClient {
         this.restTemplate = restTemplate;
     }
 
-    @Retryable(retryFor = ClientException.class, maxAttempts = Constants.REQUEST_MAX_ATTEMPTS)
+    @Retryable(retryFor = ClientException.class, maxAttempts = REQUEST_MAX_ATTEMPTS)
     public JsonNode fetch(String url) throws ClientException {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
@@ -33,7 +35,7 @@ public class HttpRequestClient {
         }
     }
 
-    @Retryable(retryFor = ClientException.class, maxAttempts = Constants.REQUEST_MAX_ATTEMPTS)
+    @Retryable(retryFor = ClientException.class, maxAttempts = REQUEST_MAX_ATTEMPTS)
     public JsonNode fetch(String url, String body) throws ClientException {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
@@ -46,7 +48,7 @@ public class HttpRequestClient {
         }
     }
 
-    @Retryable(retryFor = ClientException.class, maxAttempts = Constants.REQUEST_MAX_ATTEMPTS)
+    @Retryable(retryFor = ClientException.class, maxAttempts = REQUEST_MAX_ATTEMPTS)
     public JsonNode fetch(String url, String apiKey, JsonNode body) throws ClientException {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));

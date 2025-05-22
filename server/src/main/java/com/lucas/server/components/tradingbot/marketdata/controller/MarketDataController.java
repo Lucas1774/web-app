@@ -1,6 +1,5 @@
 package com.lucas.server.components.tradingbot.marketdata.controller;
 
-import com.lucas.server.common.Constants;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;
@@ -12,6 +11,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+import static com.lucas.server.common.Constants.MarketDataType;
+import static com.lucas.server.common.Constants.SP500_SYMBOLS;
 
 @RestController
 @RequestMapping("/market")
@@ -27,7 +29,7 @@ public class MarketDataController {
     @GetMapping("last")
     public ResponseEntity<List<MarketData>> fetchAndSaveAll() {
         try {
-            return ResponseEntity.ok(jpaService.retrieveMarketData(Constants.SP500_SYMBOLS, Constants.MarketDataType.LAST));
+            return ResponseEntity.ok(jpaService.retrieveMarketData(SP500_SYMBOLS, MarketDataType.LAST));
         } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -37,7 +39,7 @@ public class MarketDataController {
     @GetMapping("last/{symbols}")
     public ResponseEntity<List<MarketData>> fetchAndSaveSome(@PathVariable List<String> symbols) {
         try {
-            return ResponseEntity.ok(jpaService.retrieveMarketData(symbols, Constants.MarketDataType.LAST));
+            return ResponseEntity.ok(jpaService.retrieveMarketData(symbols, MarketDataType.LAST));
         } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -47,7 +49,7 @@ public class MarketDataController {
     @GetMapping("/historic")
     public ResponseEntity<List<MarketData>> fetchAndSaveHistoricAll() {
         try {
-            return ResponseEntity.ok(jpaService.retrieveMarketData(Constants.SP500_SYMBOLS, Constants.MarketDataType.HISTORIC));
+            return ResponseEntity.ok(jpaService.retrieveMarketData(SP500_SYMBOLS, MarketDataType.HISTORIC));
         } catch (JsonProcessingException | ClientException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -57,7 +59,7 @@ public class MarketDataController {
     @GetMapping("/historic/{symbols}")
     public ResponseEntity<List<MarketData>> fetchAndSaveHistoricSome(@PathVariable List<String> symbols) {
         try {
-            return ResponseEntity.ok(jpaService.retrieveMarketData(symbols, Constants.MarketDataType.HISTORIC));
+            return ResponseEntity.ok(jpaService.retrieveMarketData(symbols, MarketDataType.HISTORIC));
         } catch (JsonProcessingException | ClientException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

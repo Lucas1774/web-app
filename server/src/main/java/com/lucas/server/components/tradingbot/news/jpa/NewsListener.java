@@ -1,6 +1,5 @@
 package com.lucas.server.components.tradingbot.news.jpa;
 
-import com.lucas.server.common.Constants;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.components.tradingbot.news.service.NewsEmbeddingsClient;
 import jakarta.persistence.PrePersist;
@@ -11,6 +10,8 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+
+import static com.lucas.server.common.Constants.EMBEDDING_GENERATION_FAILED_WARN;
 
 public class NewsListener implements ApplicationContextAware {
 
@@ -36,7 +37,7 @@ public class NewsListener implements ApplicationContextAware {
         try {
             newsEmbeddingsClient.embed(news);
         } catch (ClientException e) {
-            logger.warn(Constants.EMBEDDING_GENERATION_FAILED_WARN, news, e);
+            logger.warn(EMBEDDING_GENERATION_FAILED_WARN, news, e);
         }
     }
 

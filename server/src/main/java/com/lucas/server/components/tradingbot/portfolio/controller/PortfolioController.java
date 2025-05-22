@@ -1,6 +1,5 @@
 package com.lucas.server.components.tradingbot.portfolio.controller;
 
-import com.lucas.server.common.Constants;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.common.exception.IllegalStateException;
 import com.lucas.server.common.exception.JsonProcessingException;
@@ -19,8 +18,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static com.lucas.server.common.Constants.PortfolioType.MOCK;
-import static com.lucas.server.common.Constants.PortfolioType.REAL;
+import static com.lucas.server.common.Constants.PortfolioType;
+import static com.lucas.server.common.Constants.SP500_SYMBOLS;
 
 @RestController
 @RequestMapping("/portfolio")
@@ -37,7 +36,7 @@ public class PortfolioController {
     public ResponseEntity<Portfolio> buy(@RequestParam String symbolName, @RequestParam BigDecimal price,
                                          @RequestParam BigDecimal quantity) {
         try {
-            return ResponseEntity.ok(jpaService.executePortfolioAction(REAL, symbolName, price, quantity, LocalDateTime.now(), true));
+            return ResponseEntity.ok(jpaService.executePortfolioAction(PortfolioType.REAL, symbolName, price, quantity, LocalDateTime.now(), true));
         } catch (IllegalStateException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
@@ -48,7 +47,7 @@ public class PortfolioController {
     public ResponseEntity<Portfolio> sell(@RequestParam String symbolName, @RequestParam BigDecimal price,
                                           @RequestParam BigDecimal quantity) {
         try {
-            return ResponseEntity.ok(jpaService.executePortfolioAction(REAL, symbolName, price, quantity, LocalDateTime.now(), false));
+            return ResponseEntity.ok(jpaService.executePortfolioAction(PortfolioType.REAL, symbolName, price, quantity, LocalDateTime.now(), false));
         } catch (IllegalStateException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
@@ -58,7 +57,7 @@ public class PortfolioController {
     @GetMapping("/stand")
     public ResponseEntity<List<PortfolioManager.SymbolStand>> getGlobalStandAll() {
         try {
-            return ResponseEntity.ok(jpaService.getPortfolioStand(REAL, Constants.SP500_SYMBOLS));
+            return ResponseEntity.ok(jpaService.getPortfolioStand(PortfolioType.REAL, SP500_SYMBOLS));
         } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -68,7 +67,7 @@ public class PortfolioController {
     @GetMapping("/stand/{symbols}")
     public ResponseEntity<List<PortfolioManager.SymbolStand>> getGlobalStandSome(@PathVariable List<String> symbols) {
         try {
-            return ResponseEntity.ok(jpaService.getPortfolioStand(REAL, symbols));
+            return ResponseEntity.ok(jpaService.getPortfolioStand(PortfolioType.REAL, symbols));
         } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -79,7 +78,7 @@ public class PortfolioController {
     public ResponseEntity<PortfolioMock> buyMock(@RequestParam String symbolName, @RequestParam BigDecimal price,
                                                  @RequestParam BigDecimal quantity, @RequestParam LocalDate date) {
         try {
-            return ResponseEntity.ok(jpaService.executePortfolioAction(MOCK, symbolName, price, quantity, date.atStartOfDay(), true));
+            return ResponseEntity.ok(jpaService.executePortfolioAction(PortfolioType.MOCK, symbolName, price, quantity, date.atStartOfDay(), true));
         } catch (IllegalStateException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
@@ -90,7 +89,7 @@ public class PortfolioController {
     public ResponseEntity<PortfolioMock> sellMock(@RequestParam String symbolName, @RequestParam BigDecimal price,
                                                   @RequestParam BigDecimal quantity, @RequestParam LocalDate date) {
         try {
-            return ResponseEntity.ok(jpaService.executePortfolioAction(MOCK, symbolName, price, quantity, date.atStartOfDay(), false));
+            return ResponseEntity.ok(jpaService.executePortfolioAction(PortfolioType.MOCK, symbolName, price, quantity, date.atStartOfDay(), false));
         } catch (IllegalStateException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
@@ -100,7 +99,7 @@ public class PortfolioController {
     @GetMapping("/mock/stand")
     public ResponseEntity<List<PortfolioManager.SymbolStand>> getGlobalStandMockAll() {
         try {
-            return ResponseEntity.ok(jpaService.getPortfolioStand(MOCK, Constants.SP500_SYMBOLS));
+            return ResponseEntity.ok(jpaService.getPortfolioStand(PortfolioType.MOCK, SP500_SYMBOLS));
         } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -110,7 +109,7 @@ public class PortfolioController {
     @GetMapping("/mock/stand/{symbols}")
     public ResponseEntity<List<PortfolioManager.SymbolStand>> getGlobalStandMockSome(@PathVariable List<String> symbols) {
         try {
-            return ResponseEntity.ok(jpaService.getPortfolioStand(MOCK, symbols));
+            return ResponseEntity.ok(jpaService.getPortfolioStand(PortfolioType.MOCK, symbols));
         } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

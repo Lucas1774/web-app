@@ -40,6 +40,12 @@ public class Constants {
     public static final int MAX_SYMBOLS_TO_TRIGGER_NEWS_EMBEDDINGS_GENERATION = 2;
     public static final int REQUEST_MAX_ATTEMPTS = 2;
     public static final int RECOMMENDATIONS_CHUNK_SIZE = 5;
+    public static final int LLM_BACKOFF_MILLIS = 12000;
+    public static final int CHAT_COMPLETIONS_BACKOFF_MILLIS = 60000;
+    public static final int EMBEDDINGS_BACKOFF_MILLIS = 4000;
+    public static final int FINNHUB_BACKOFF_MILLIS = 1000;
+    public static final int TWELVEDATA_BACKOFF_MILLIS = 7500;
+
     public static final String NA = "N/A";
     public static final String INVALID_EXPRESSION = "Invalid expression";
     public static final String COMPANY_NEWS = "/company-news";

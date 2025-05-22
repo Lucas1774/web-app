@@ -1,6 +1,5 @@
 package com.lucas.server.components.tradingbot.marketdata.service;
 
-import com.lucas.server.common.Constants;
 import com.lucas.server.common.HttpRequestClient;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.common.exception.JsonProcessingException;
@@ -15,6 +14,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.lucas.server.common.Constants.*;
 
 @Component
 public class FinnhubMarketDataClient {
@@ -35,8 +36,8 @@ public class FinnhubMarketDataClient {
     }
 
     public MarketData retrieveMarketData(Symbol symbol) throws JsonProcessingException, ClientException {
-        logger.info(Constants.RETRIEVING_MARKET_DATA_INFO, symbol);
-        String url = UriComponentsBuilder.fromUriString(endpoint + Constants.QUOTE)
+        logger.info(RETRIEVING_MARKET_DATA_INFO, symbol);
+        String url = UriComponentsBuilder.fromUriString(endpoint + QUOTE)
                 .queryParam("symbol", symbol.getName())
                 .queryParam("token", apiKey)
                 .build()
@@ -49,7 +50,7 @@ public class FinnhubMarketDataClient {
         List<MarketData> res = new ArrayList<>();
         for (Symbol symbol : symbols) {
             res.add(retrieveMarketData(symbol));
-            Constants.backOff(1000);
+            backOff(FINNHUB_BACKOFF_MILLIS);
         }
         return res;
     }

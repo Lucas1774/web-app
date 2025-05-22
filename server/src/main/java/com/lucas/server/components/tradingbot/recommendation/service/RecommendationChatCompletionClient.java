@@ -2,7 +2,6 @@ package com.lucas.server.components.tradingbot.recommendation.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.lucas.server.common.Constants;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
@@ -31,8 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import static com.lucas.server.common.Constants.PROMPT;
-import static com.lucas.server.common.Constants.backOff;
+import static com.lucas.server.common.Constants.*;
 
 @Component
 public class RecommendationChatCompletionClient implements RecommendationClient {
@@ -81,15 +79,14 @@ public class RecommendationChatCompletionClient implements RecommendationClient 
         Message reportMessage = generateMessageFromNode(objectMapper.readValue(assetReportToMustacheMapper.map(reports), ObjectNode.class));
         Message fixedMessage;
         if (Boolean.TRUE.equals(withFixmeRequest)) {
-            logger.info(Constants.
-                    GENERATING_PRE_REQUEST_INFO, marketData.keySet());
+            logger.info(GENERATING_PRE_REQUEST_INFO, marketData.keySet());
             fixedMessage = new UserMessage(retryableClient.callWithBackupStrategy(new Prompt(List.of(fixMeMessage, reportMessage), client.getDefaultOptions())));
-            backOff(60000);
+            backOff(CHAT_COMPLETIONS_BACKOFF_MILLIS);
         } else {
             fixedMessage = reportMessage;
         }
 
-        logger.info(Constants.GENERATING_RECOMMENDATIONS_INFO, marketData.keySet());
+        logger.info(GENERATING_RECOMMENDATIONS_INFO, marketData.keySet());
         Prompt prompt = new Prompt(List.of(systemMessage, promptMessage, fewShotMessage, fixedMessage), client.getDefaultOptions());
 
         return mapper.mapAll(marketData.keySet().stream().toList(), objectMapper.readTree(retryableClient.callWithBackupStrategy(prompt)), fixedMessage.getText());
@@ -97,9 +94,9 @@ public class RecommendationChatCompletionClient implements RecommendationClient 
 
     private Message generateMessageFromNode(ObjectNode data) throws JsonProcessingException {
         try {
-            return messageFactory.get(data.get(Constants.ROLE).asText()).apply(data.get(Constants.CONTENT).asText());
+            return messageFactory.get(data.get(ROLE).asText()).apply(data.get(CONTENT).asText());
         } catch (Exception e) {
-            throw new JsonProcessingException(MessageFormat.format(Constants.JSON_MAPPING_ERROR, PROMPT), e);
+            throw new JsonProcessingException(MessageFormat.format(JSON_MAPPING_ERROR, PROMPT), e);
         }
     }
 }

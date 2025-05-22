@@ -1,6 +1,5 @@
 package com.lucas.server.components.tradingbot.news.service;
 
-import com.lucas.server.common.Constants;
 import com.lucas.server.common.HttpRequestClient;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.common.exception.JsonProcessingException;
@@ -18,6 +17,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.lucas.server.common.Constants.*;
 
 @Component
 public class FinnhubNewsClient {
@@ -37,8 +38,8 @@ public class FinnhubNewsClient {
     }
 
     private List<News> retrieveNewsByDateRange(Symbol symbol, LocalDate from, LocalDate to) throws JsonProcessingException, ClientException {
-        logger.info(Constants.RETRIEVING_NEWS_INFO, symbol);
-        String url = UriComponentsBuilder.fromUriString(endpoint + Constants.COMPANY_NEWS)
+        logger.info(RETRIEVING_NEWS_INFO, symbol);
+        String url = UriComponentsBuilder.fromUriString(endpoint + COMPANY_NEWS)
                 .queryParam("symbol", symbol.getName())
                 .queryParam("from", from)
                 .queryParam("to", to)
@@ -57,7 +58,7 @@ public class FinnhubNewsClient {
                         .computeIfAbsent(news.getExternalId(), id -> news)
                         .addSymbol(symbol);
             }
-            Constants.backOff(1000);
+            backOff(FINNHUB_BACKOFF_MILLIS);
         }
 
         return new ArrayList<>(newsByExternalId.values());

@@ -1,6 +1,5 @@
 package com.lucas.server.components.tradingbot.recommendation.service;
 
-import com.lucas.server.common.Constants;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.marketdata.service.MarketDataKpiGenerator;
@@ -16,6 +15,8 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.IntStream;
 
+import static com.lucas.server.common.Constants.HISTORY_DAYS_COUNT;
+
 @Component
 public class AssetReportDataProvider {
 
@@ -28,7 +29,7 @@ public class AssetReportDataProvider {
     }
 
     public AssetReportRaw provide(Symbol symbol, List<MarketData> mdHistory, List<News> articles, PortfolioBase portfolio) {
-        List<PricePointRaw> priceHistory = mdHistory.subList(0, Constants.HISTORY_DAYS_COUNT).stream()
+        List<PricePointRaw> priceHistory = mdHistory.subList(0, HISTORY_DAYS_COUNT).stream()
                 .map(md -> new PricePointRaw(md.getDate(), md.getOpen(), md.getHigh(), md.getLow(), md.getPrice(), md.getVolume()))
                 .toList();
 

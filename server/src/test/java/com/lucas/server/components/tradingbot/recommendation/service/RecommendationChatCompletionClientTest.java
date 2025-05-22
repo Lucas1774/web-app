@@ -1,7 +1,6 @@
 package com.lucas.server.components.tradingbot.recommendation.service;
 
 import com.lucas.server.TestcontainersConfiguration;
-import com.lucas.server.common.Constants;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
@@ -28,6 +27,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.IntStream;
 
+import static com.lucas.server.common.Constants.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
@@ -97,16 +97,16 @@ class RecommendationChatCompletionClientTest {
         portfolioService.save(portfolio);
 
         // when
-        List<MarketData> filteredMds = marketDataService.getTopForSymbolId(symbol.getId(), Constants.MARKET_DATA_RELEVANT_DAYS_COUNT);
-        List<News> filteredNews = newsService.getTopForSymbolId(symbol.getId(), Constants.NEWS_COUNT);
+        List<MarketData> filteredMds = marketDataService.getTopForSymbolId(symbol.getId(), MARKET_DATA_RELEVANT_DAYS_COUNT);
+        List<News> filteredNews = newsService.getTopForSymbolId(symbol.getId(), NEWS_COUNT);
         Portfolio portfolioData = portfolioService.findBySymbol(symbol).orElseThrow();
         AssetReportRaw report = provider.provide(symbol, filteredMds, filteredNews, portfolioData);
 
         // then: symbol & history size & news count
         assertThat(report.symbol()).isEqualTo(symbol.getName());
-        assertThat(report.historyDays()).isEqualTo(Constants.HISTORY_DAYS_COUNT);
+        assertThat(report.historyDays()).isEqualTo(HISTORY_DAYS_COUNT);
         assertThat(report.priceHistory())
-                .hasSize(Constants.HISTORY_DAYS_COUNT)
+                .hasSize(HISTORY_DAYS_COUNT)
                 .extracting(PricePointRaw::date)
                 .containsExactly(today, today.minusDays(1), today.minusDays(2), today.minusDays(3),
                         today.minusDays(4), today.minusDays(5), today.minusDays(6), today.minusDays(7),
@@ -116,9 +116,9 @@ class RecommendationChatCompletionClientTest {
                         today.minusDays(17), today.minusDays(18), today.minusDays(19)
                 );
 
-        assertThat(report.newsCount()).isEqualTo(Constants.NEWS_COUNT);
+        assertThat(report.newsCount()).isEqualTo(NEWS_COUNT);
         assertThat(report.news())
-                .hasSize(Constants.NEWS_COUNT)
+                .hasSize(NEWS_COUNT)
                 .extracting(NewsItemRaw::headline)
                 .containsExactly("Headline 1", "Headline 3", "Headline 5", "Headline 6", "Headline 7",
                         "Headline 9", "Headline 11", "Headline 12", "Headline 13", "Headline 15");

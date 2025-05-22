@@ -1,6 +1,5 @@
 package com.lucas.server.components.tradingbot.marketdata.service;
 
-import com.lucas.server.common.Constants;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataJpaService;
 import org.slf4j.Logger;
@@ -15,6 +14,8 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
+
+import static com.lucas.server.common.Constants.KPI_RETURNED_ZERO_WARN;
 
 @Component
 public class MarketDataKpiGenerator {
@@ -62,7 +63,7 @@ public class MarketDataKpiGenerator {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         if (sumPrices.compareTo(BigDecimal.ZERO) == 0) {
-            logger.warn(Constants.KPI_RETURNED_ZERO_WARN, history.stream().max(Comparator.comparing(MarketData::getDate)).orElseThrow());
+            logger.warn(KPI_RETURNED_ZERO_WARN, history.stream().max(Comparator.comparing(MarketData::getDate)).orElseThrow());
         }
         return sumPrices.divide(BigDecimal.valueOf(history.size()), 4, RoundingMode.HALF_UP);
     }
@@ -84,7 +85,7 @@ public class MarketDataKpiGenerator {
         }
 
         if (ema.compareTo(BigDecimal.ZERO) == 0) {
-            logger.warn(Constants.KPI_RETURNED_ZERO_WARN, history.stream().max(Comparator.comparing(MarketData::getDate)).orElseThrow());
+            logger.warn(KPI_RETURNED_ZERO_WARN, history.stream().max(Comparator.comparing(MarketData::getDate)).orElseThrow());
         }
         return ema.setScale(4, RoundingMode.HALF_UP);
     }
@@ -145,7 +146,7 @@ public class MarketDataKpiGenerator {
 
         if (averageLoss.compareTo(BigDecimal.ZERO) == 0) {
             if (averageGain.compareTo(BigDecimal.ZERO) == 0) {
-                logger.warn(Constants.KPI_RETURNED_ZERO_WARN, history.stream().max(Comparator.comparing(MarketData::getDate)).orElseThrow());
+                logger.warn(KPI_RETURNED_ZERO_WARN, history.stream().max(Comparator.comparing(MarketData::getDate)).orElseThrow());
             }
             return BigDecimal.valueOf(100);
         }
@@ -172,7 +173,7 @@ public class MarketDataKpiGenerator {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         if (totalTrueRange.compareTo(BigDecimal.ZERO) == 0) {
-            logger.warn(Constants.KPI_RETURNED_ZERO_WARN, history.stream().max(Comparator.comparing(MarketData::getDate)).orElseThrow());
+            logger.warn(KPI_RETURNED_ZERO_WARN, history.stream().max(Comparator.comparing(MarketData::getDate)).orElseThrow());
         }
         return totalTrueRange.divide(BigDecimal.valueOf(history.size()), 4, RoundingMode.HALF_UP);
     }
@@ -201,7 +202,7 @@ public class MarketDataKpiGenerator {
         BigDecimal standardDeviation = BigDecimal.valueOf(Math.sqrt(variance.doubleValue()));
 
         if (standardDeviation.compareTo(BigDecimal.ZERO) == 0) {
-            logger.warn(Constants.KPI_RETURNED_ZERO_WARN, history.stream().max(Comparator.comparing(MarketData::getDate)).orElseThrow());
+            logger.warn(KPI_RETURNED_ZERO_WARN, history.stream().max(Comparator.comparing(MarketData::getDate)).orElseThrow());
         }
         return standardDeviation.multiply(BigDecimal.valueOf(Math.sqrt(252)))
                 .multiply(BigDecimal.valueOf(100)).setScale(4, RoundingMode.HALF_UP);
@@ -229,7 +230,7 @@ public class MarketDataKpiGenerator {
         }
 
         if (obv.compareTo(BigDecimal.ZERO) == 0) {
-            logger.warn(Constants.KPI_RETURNED_ZERO_WARN, history.stream().max(Comparator.comparing(MarketData::getDate)).orElseThrow());
+            logger.warn(KPI_RETURNED_ZERO_WARN, history.stream().max(Comparator.comparing(MarketData::getDate)).orElseThrow());
         }
         return obv;
     }

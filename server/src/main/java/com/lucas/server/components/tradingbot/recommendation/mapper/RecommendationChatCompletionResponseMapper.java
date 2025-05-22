@@ -3,7 +3,6 @@ package com.lucas.server.components.tradingbot.recommendation.mapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.lucas.server.common.Constants;
 import com.lucas.server.common.Mapper;
 import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
@@ -19,6 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static com.lucas.server.common.Constants.JSON_MAPPING_ERROR;
 
 @Component
 public class RecommendationChatCompletionResponseMapper implements Mapper<JsonNode, Recommendation> {
@@ -37,7 +38,7 @@ public class RecommendationChatCompletionResponseMapper implements Mapper<JsonNo
                     .setConfidence(new BigDecimal(json.get("confidence").asText()))
                     .setRationale(StringUtils.left(json.get("rationale").asText(), 512));
         } catch (Exception e) {
-            throw new JsonProcessingException(MessageFormat.format(Constants.JSON_MAPPING_ERROR, "recommendation"), e);
+            throw new JsonProcessingException(MessageFormat.format(JSON_MAPPING_ERROR, "recommendation"), e);
         }
     }
 
@@ -57,7 +58,7 @@ public class RecommendationChatCompletionResponseMapper implements Mapper<JsonNo
 
             return recommendations;
         } catch (Exception e) {
-            throw new JsonProcessingException(MessageFormat.format(Constants.JSON_MAPPING_ERROR, "recommendations"), e);
+            throw new JsonProcessingException(MessageFormat.format(JSON_MAPPING_ERROR, "recommendations"), e);
         }
     }
 }

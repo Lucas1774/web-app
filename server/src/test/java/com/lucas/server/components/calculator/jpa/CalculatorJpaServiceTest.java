@@ -1,12 +1,12 @@
 package com.lucas.server.components.calculator.jpa;
 
 import com.lucas.server.TestcontainersConfiguration;
-import com.lucas.server.common.Constants;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 
+import static com.lucas.server.common.Constants.INVALID_EXPRESSION;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
@@ -41,7 +41,7 @@ class CalculatorJpaServiceTest {
         String result = calculatorService.computeAndSave(text);
 
         // then
-        assertThat(result).isEqualTo(Constants.INVALID_EXPRESSION);
+        assertThat(result).isEqualTo(INVALID_EXPRESSION);
         assertThat(calculatorService.find()).isPresent()
                 .get()
                 .extracting(Calculator::getText, Calculator::isTextMode)

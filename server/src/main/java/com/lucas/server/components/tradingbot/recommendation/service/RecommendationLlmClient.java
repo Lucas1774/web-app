@@ -3,7 +3,6 @@ package com.lucas.server.components.tradingbot.recommendation.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.lucas.server.common.Constants;
 import com.lucas.server.common.HttpRequestClient;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
@@ -27,6 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import static com.lucas.server.common.Constants.*;
 
 @Component
 public class RecommendationLlmClient implements RecommendationClient {
@@ -77,16 +78,17 @@ public class RecommendationLlmClient implements RecommendationClient {
         ObjectNode reportMessage = objectMapper.readValue(assetReportToMustacheMapper.map(reports), ObjectNode.class);
         ObjectNode fixedMessage;
         if (Boolean.TRUE.equals(withFixmeRequest)) {
-            logger.info(Constants.GENERATING_PRE_REQUEST_INFO, marketData.keySet());
+            logger.info(GENERATING_PRE_REQUEST_INFO, marketData.keySet());
             fixedMessage = ((ObjectNode) httpRequestClient.fetch(endpoint, apiKey, buildRequestPayload(List.of(fixMeMessage, reportMessage)))
                     .get("choices").get(0).get("message")).put("role", "user");
             fixedMessage.remove("tool_calls");
             fixedMessage.remove("refusal");
+            backOff(LLM_BACKOFF_MILLIS);
         } else {
             fixedMessage = reportMessage;
         }
 
-        logger.info(Constants.GENERATING_RECOMMENDATIONS_INFO, marketData.keySet());
+        logger.info(GENERATING_RECOMMENDATIONS_INFO, marketData.keySet());
         ObjectNode prompt = buildRequestPayload(List.of(systemMessage, promptMessage, fewShotMessage, fixedMessage));
 
         return mapper.mapAll(marketData.keySet().stream().toList(),

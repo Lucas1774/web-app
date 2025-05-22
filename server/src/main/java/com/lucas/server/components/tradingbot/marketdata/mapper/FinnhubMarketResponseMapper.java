@@ -1,7 +1,6 @@
 package com.lucas.server.components.tradingbot.marketdata.mapper;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.lucas.server.common.Constants;
 import com.lucas.server.common.Mapper;
 import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
@@ -12,6 +11,9 @@ import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.time.Instant;
 import java.time.ZoneOffset;
+
+import static com.lucas.server.common.Constants.JSON_MAPPING_ERROR;
+import static com.lucas.server.common.Constants.MARKET;
 
 @Component
 public class FinnhubMarketResponseMapper implements Mapper<JsonNode, MarketData> {
@@ -31,7 +33,7 @@ public class FinnhubMarketResponseMapper implements Mapper<JsonNode, MarketData>
                     .setChange(new BigDecimal(json.get("d").asText()))
                     .setChangePercent(new BigDecimal(json.get("dp").asText()));
         } catch (Exception e) {
-            throw new JsonProcessingException(MessageFormat.format(Constants.JSON_MAPPING_ERROR, Constants.MARKET), e);
+            throw new JsonProcessingException(MessageFormat.format(JSON_MAPPING_ERROR, MARKET), e);
         }
     }
 

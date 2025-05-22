@@ -1,7 +1,6 @@
 package com.lucas.server.components.tradingbot.marketdata.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.lucas.server.common.Constants;
 import com.lucas.server.common.HttpRequestClient;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.common.exception.JsonProcessingException;
@@ -17,6 +16,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.util.*;
 import java.util.function.UnaryOperator;
 
+import static com.lucas.server.common.Constants.*;
+
 @Component
 public class TwelveDataMarketDataClient {
 
@@ -24,14 +25,14 @@ public class TwelveDataMarketDataClient {
     private final String endpoint;
     private final String apiKey;
     private static final Logger logger = LoggerFactory.getLogger(TwelveDataMarketDataClient.class);
-    private final Map<Constants.MarketDataType, TwelveDataMarketDataClient.JsonToMarketDataFunction> typeToMapper;
-    private static final EnumMap<Constants.MarketDataType, String> typeToEndpoint = new EnumMap<>(Map.of(
-            Constants.MarketDataType.LAST, Constants.QUOTE,
-            Constants.MarketDataType.HISTORIC, Constants.TIME_SERIES
+    private final Map<MarketDataType, TwelveDataMarketDataClient.JsonToMarketDataFunction> typeToMapper;
+    private static final EnumMap<MarketDataType, String> typeToEndpoint = new EnumMap<>(Map.of(
+            MarketDataType.LAST, QUOTE,
+            MarketDataType.HISTORIC, TIME_SERIES
     ));
-    private static final Map<Constants.MarketDataType, UnaryOperator<UriComponentsBuilder>> typeToBuilderCustomizer = new EnumMap<>(Map.of(
-            Constants.MarketDataType.LAST, builder -> builder,
-            Constants.MarketDataType.HISTORIC, builder -> builder.queryParam("interval", "1day")
+    private static final Map<MarketDataType, UnaryOperator<UriComponentsBuilder>> typeToBuilderCustomizer = new EnumMap<>(Map.of(
+            MarketDataType.LAST, builder -> builder,
+            MarketDataType.HISTORIC, builder -> builder.queryParam("interval", "1day")
     ));
 
     @FunctionalInterface
@@ -46,15 +47,15 @@ public class TwelveDataMarketDataClient {
         this.endpoint = endpoint;
         this.apiKey = apiKey;
         typeToMapper = new EnumMap<>(Map.of(
-                Constants.MarketDataType.LAST, (s, j) -> List.of(mapper.map(j, s)),
-                Constants.MarketDataType.HISTORIC, (s, j) -> mapper.mapAll(j, s).stream()
+                MarketDataType.LAST, (s, j) -> List.of(mapper.map(j, s)),
+                MarketDataType.HISTORIC, (s, j) -> mapper.mapAll(j, s).stream()
                         .sorted(Comparator.comparing(MarketData::getDate))
                         .toList()
         ));
     }
 
-    private List<MarketData> retrieveMarketData(Symbol symbol, Constants.MarketDataType type) throws ClientException, JsonProcessingException {
-        logger.info(Constants.RETRIEVING_MARKET_DATA_INFO, symbol);
+    private List<MarketData> retrieveMarketData(Symbol symbol, MarketDataType type) throws ClientException, JsonProcessingException {
+        logger.info(RETRIEVING_MARKET_DATA_INFO, symbol);
         String url = typeToBuilderCustomizer.get(type).apply(UriComponentsBuilder.fromUriString(endpoint + typeToEndpoint.get(type)))
                 .queryParam("symbol", symbol.getName())
                 .queryParam("apikey", apiKey)
@@ -64,11 +65,11 @@ public class TwelveDataMarketDataClient {
         return typeToMapper.get(type).apply(symbol, httpRequestClient.fetch(url));
     }
 
-    public List<MarketData> retrieveMarketData(List<Symbol> symbols, Constants.MarketDataType type) throws ClientException, JsonProcessingException {
+    public List<MarketData> retrieveMarketData(List<Symbol> symbols, MarketDataType type) throws ClientException, JsonProcessingException {
         List<MarketData> res = new ArrayList<>();
         for (Symbol symbol : symbols) {
             res.addAll(retrieveMarketData(symbol, type));
-            Constants.backOff(7500);
+            backOff(TWELVEDATA_BACKOFF_MILLIS);
         }
         return res;
     }

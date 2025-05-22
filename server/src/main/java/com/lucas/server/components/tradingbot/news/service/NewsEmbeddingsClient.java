@@ -1,6 +1,5 @@
 package com.lucas.server.components.tradingbot.news.service;
 
-import com.lucas.server.common.Constants;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.components.tradingbot.news.jpa.News;
 import org.slf4j.Logger;
@@ -12,6 +11,8 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.lucas.server.common.Constants.*;
+
 @Component
 public class NewsEmbeddingsClient {
 
@@ -22,9 +23,9 @@ public class NewsEmbeddingsClient {
         this.client = client;
     }
 
-    @Retryable(retryFor = ClientException.class, maxAttempts = Constants.REQUEST_MAX_ATTEMPTS)
+    @Retryable(retryFor = ClientException.class, maxAttempts = REQUEST_MAX_ATTEMPTS)
     public News embed(News news) throws ClientException {
-        logger.info(Constants.GENERATING_EMBEDDINGS_INFO, news);
+        logger.info(GENERATING_EMBEDDINGS_INFO, news);
         String contentToEmbed = news.getHeadline();
         if (news.getSummary() != null && !news.getSummary().isEmpty()) {
             contentToEmbed += " " + news.getSummary();
@@ -33,7 +34,7 @@ public class NewsEmbeddingsClient {
         try {
             float[] embeddings = client.embed(contentToEmbed);
             if (embeddings.length > 0) {
-                Constants.backOff(4000);
+                backOff(EMBEDDINGS_BACKOFF_MILLIS);
             }
 
             return news.setEmbeddings(embeddings);
@@ -42,7 +43,7 @@ public class NewsEmbeddingsClient {
         }
     }
 
-    @Retryable(retryFor = ClientException.class, maxAttempts = Constants.REQUEST_MAX_ATTEMPTS)
+    @Retryable(retryFor = ClientException.class, maxAttempts = REQUEST_MAX_ATTEMPTS)
     public List<News> embed(List<News> newsList) throws ClientException {
         List<News> embeddedNews = new ArrayList<>(newsList.size());
         for (News news : newsList) {

@@ -1,6 +1,5 @@
 package com.lucas.server.components.tradingbot.portfolio.jpa;
 
-import com.lucas.server.common.Constants;
 import com.lucas.server.common.exception.IllegalStateException;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,6 +15,8 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+
+import static com.lucas.server.common.Constants.INSUFFICIENT_STOCK_ERROR;
 
 public class PortfolioJpaServiceDelegate<T extends PortfolioBase, R extends JpaRepository<T, Long>> {
 
@@ -52,7 +53,7 @@ public class PortfolioJpaServiceDelegate<T extends PortfolioBase, R extends JpaR
         BigDecimal oldQuantity = last.getQuantity();
         BigDecimal newQuantity = oldQuantity.add(isBuy ? quantity : quantity.negate());
         if (newQuantity.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalStateException(MessageFormat.format(Constants.INSUFFICIENT_STOCK_ERROR, symbol.getName()));
+            throw new IllegalStateException(MessageFormat.format(INSUFFICIENT_STOCK_ERROR, symbol.getName()));
         }
 
         BigDecimal newAverage = last.getAverageCost();

@@ -83,8 +83,8 @@ public class DataManager {
                 RecommendationEngineType.AZURE, azureRecommendationClient
         ));
         recommendationsClientTypeToBackoff = new EnumMap<>(Map.of(
-                RecommendationEngineType.RAW, 12000,
-                RecommendationEngineType.AZURE, 60000
+                RecommendationEngineType.RAW, LLM_BACKOFF_MILLIS,
+                RecommendationEngineType.AZURE, CHAT_COMPLETIONS_BACKOFF_MILLIS
         ));
     }
 
@@ -267,7 +267,7 @@ public class DataManager {
                         twelveDataMarketDataClient.getClass().getSimpleName(), symbol,
                         finnhubMarketDataClient.getClass().getSimpleName(), e);
                 res.add(finnhubMarketDataClient.retrieveMarketData(symbol));
-                backOff(1000);
+                backOff(FINNHUB_BACKOFF_MILLIS);
             }
         }
         return res;
