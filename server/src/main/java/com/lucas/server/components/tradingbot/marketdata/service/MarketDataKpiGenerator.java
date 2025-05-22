@@ -98,8 +98,7 @@ public class MarketDataKpiGenerator {
         List<MarketData> fastHist = history.subList(history.size() - 12, history.size());
         BigDecimal ema12 = computeEma(fastHist);
 
-        // TODO: replace 21 with 26
-        List<MarketData> slowHist = history.subList(history.size() - 21, history.size());
+        List<MarketData> slowHist = history.subList(history.size() - 26, history.size());
         BigDecimal ema26 = computeEma(slowHist);
 
         return ema12.subtract(ema26).setScale(4, RoundingMode.HALF_UP);

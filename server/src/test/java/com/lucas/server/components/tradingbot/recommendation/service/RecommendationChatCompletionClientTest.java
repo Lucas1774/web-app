@@ -128,8 +128,7 @@ class RecommendationChatCompletionClientTest {
                 symbolService.findByName(symbol.getName()).orElseThrow().getId(), 100);
 
         BigDecimal expectedEma20 = kpiGenerator.computeEma(mdHistory.subList(0, 20).reversed());
-        // TODO: replace 21 with 26
-        BigDecimal macdLine1226 = kpiGenerator.computeMacdLine(mdHistory.subList(0, 21).reversed());
+        BigDecimal macdLine1226 = kpiGenerator.computeMacdLine(mdHistory.subList(0, 26).reversed());
         List<BigDecimal> macdHistory = IntStream.iterate(8, i -> i - 1)
                 .limit(9)
                 .mapToObj(i -> kpiGenerator.computeMacdLine(mdHistory.subList(i, i + 26).reversed()))

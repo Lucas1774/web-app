@@ -38,11 +38,10 @@ public class AssetReportDataProvider {
         List<MarketData> newestTwentySixAsc = mdHistory.subList(0, 26).reversed();
 
         BigDecimal ema20 = kpiGenerator.computeEma(newestTwentyAsc);
-        // TODO: change param with "newestTwentySixAsc" once there's enough data. Change also 21 with 26
-        BigDecimal macdLine1226 = kpiGenerator.computeMacdLine(mdHistory.subList(0, 21).reversed());
+        BigDecimal macdLine1226 = kpiGenerator.computeMacdLine(newestTwentySixAsc);
         List<BigDecimal> macdHistory = IntStream.iterate(8, i -> i - 1)
                 .limit(9)
-                .mapToObj(i -> kpiGenerator.computeMacdLine(mdHistory.subList(i, i + 21).reversed()))
+                .mapToObj(i -> kpiGenerator.computeMacdLine(mdHistory.subList(i, i + 26).reversed()))
                 .toList();
         BigDecimal macdSignalLine9 = kpiGenerator.computeSignalLine(macdHistory);
         BigDecimal rsi14 = kpiGenerator.computeRsi(newestFourteenAsc);
