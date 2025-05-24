@@ -21,7 +21,15 @@ public class MarketDataListener implements ApplicationContextAware {
     @PrePersist
     @PreUpdate
     public void computeDerivedFields(MarketData md) {
-        if (null != md.getPreviousClose() && null != md.getChange() && null != md.getChangePercent()) {
+        if (null != md.getPreviousClose()
+                && null != md.getChange()
+                && null != md.getChangePercent()
+                && null != md.getPreviousAtr()
+                && null != md.getPreviousAverageGain()
+                && null != md.getPreviousAverageLoss()
+                && null != md.getAtr()
+                && null != md.getAverageGain()
+                && null != md.getAverageLoss()) {
             return;
         }
         if (null == kpiGenerator) {

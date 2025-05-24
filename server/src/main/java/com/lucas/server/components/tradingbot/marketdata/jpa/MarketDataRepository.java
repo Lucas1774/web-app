@@ -12,7 +12,7 @@ import java.util.Optional;
 @Repository
 public interface MarketDataRepository extends JpaRepository<MarketData, Long> {
 
-    Optional<MarketData> findTopBySymbol_IdAndDateBeforeOrderByDateDesc(Long symbolId, LocalDate date);
+    List<MarketData> findTop14BySymbol_IdAndDateBeforeOrderByDateDesc(Long id, LocalDate date);
 
     Slice<MarketData> findBySymbol_Id(Long symbolId, PageRequest page);
 

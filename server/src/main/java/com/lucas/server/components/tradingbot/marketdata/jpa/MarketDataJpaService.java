@@ -38,8 +38,8 @@ public class MarketDataJpaService implements JpaService<MarketData> {
         return repository.findBySymbol_IdAndDate(entity.getSymbol().getId(), entity.getDate());
     }
 
-    public Optional<MarketData> findTopBySymbolIdAndDateBeforeOrderByDateDesc(Long symbolId, LocalDate date) {
-        return repository.findTopBySymbol_IdAndDateBeforeOrderByDateDesc(symbolId, date);
+    public List<MarketData> findTop14BySymbolIdAndDateBeforeOrderByDateDesc(Long id, LocalDate date) {
+        return repository.findTop14BySymbol_IdAndDateBeforeOrderByDateDesc(id, date);
     }
 
     public List<MarketData> getTopForSymbolId(Long symbolId, int limit) {

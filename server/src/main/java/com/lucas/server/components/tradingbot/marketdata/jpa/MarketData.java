@@ -27,7 +27,7 @@ public class MarketData implements JpaEntity {
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "symbol_id", nullable = false)
-    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Symbol symbol;
 
     @Column(precision = 15, scale = 4)
@@ -55,6 +55,24 @@ public class MarketData implements JpaEntity {
 
     @Column(name = "change_percent", precision = 15, scale = 4)
     private BigDecimal changePercent;
+
+    @Column(precision = 15, scale = 4)
+    private BigDecimal atr;
+
+    @Column(precision = 15, scale = 4)
+    private BigDecimal averageGain;
+
+    @Column(precision = 15, scale = 4)
+    private BigDecimal averageLoss;
+
+    @Column(name = "previous_atr", precision = 15, scale = 4)
+    private BigDecimal previousAtr;
+
+    @Column(name = "previous_average_gain", precision = 15, scale = 4)
+    private BigDecimal previousAverageGain;
+
+    @Column(name = "previous_average_loss", precision = 15, scale = 4)
+    private BigDecimal previousAverageLoss;
 
     @Override
     public String toString() {

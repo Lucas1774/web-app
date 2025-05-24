@@ -108,13 +108,15 @@ public class AssetReportToMustacheMapper implements Mapper<List<AssetReportRaw>,
                     report.unrealizedPercentPnL != null ? report.unrealizedPercentPnL.stripTrailingZeros().toPlainString() : "0",
                     String.valueOf(report.historyDays),
                     report.priceHistory.stream().map(PricePoint::from).toList(),
-                    report.ema20.stripTrailingZeros().toPlainString(),
-                    report.macdLine1226.stripTrailingZeros().toPlainString(),
-                    report.macdSignalLine9.stripTrailingZeros().toPlainString(),
-                    report.macdLine1226.subtract(report.macdSignalLine9).stripTrailingZeros().toPlainString(),
-                    report.rsi14.stripTrailingZeros().toPlainString(),
-                    report.atr14.stripTrailingZeros().toPlainString(),
-                    report.obv20.stripTrailingZeros().toPlainString(),
+                    report.ema20 != null ? report.ema20.stripTrailingZeros().toPlainString() : NA,
+                    report.macdLine1226 != null ? report.macdLine1226.stripTrailingZeros().toPlainString() : NA,
+                    report.macdSignalLine9 != null ? report.macdSignalLine9.stripTrailingZeros().toPlainString() : NA,
+                    report.macdLine1226 != null && report.macdSignalLine9 != null
+                            ? report.macdLine1226.subtract(report.macdSignalLine9).stripTrailingZeros().toPlainString()
+                            : NA,
+                    report.rsi14 != null ? report.rsi14.stripTrailingZeros().toPlainString() : NA,
+                    report.atr14 != null ? report.atr14.stripTrailingZeros().toPlainString() : NA,
+                    report.obv20 != null ? report.obv20.stripTrailingZeros().toPlainString() : NA,
                     String.valueOf(report.newsCount),
                     report.news.stream().map(NewsItem::from).toList()
             );

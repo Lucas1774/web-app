@@ -25,7 +25,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.IntStream;
 
 import static com.lucas.server.common.Constants.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -127,16 +126,12 @@ class RecommendationChatCompletionClientTest {
         List<MarketData> mdHistory = marketDataService.getTopForSymbolId(
                 symbolService.findByName(symbol.getName()).orElseThrow().getId(), 100);
 
-        BigDecimal expectedEma20 = kpiGenerator.computeEma(mdHistory.subList(0, 20).reversed());
-        BigDecimal macdLine1226 = kpiGenerator.computeMacdLine(mdHistory.subList(0, 26).reversed());
-        List<BigDecimal> macdHistory = IntStream.iterate(8, i -> i - 1)
-                .limit(9)
-                .mapToObj(i -> kpiGenerator.computeMacdLine(mdHistory.subList(i, i + 26).reversed()))
-                .toList();
-        BigDecimal expectedMacdSignalLine9 = kpiGenerator.computeSignalLine(macdHistory);
-        BigDecimal expectedRsi14 = kpiGenerator.computeRsi(mdHistory.subList(0, 14).reversed());
-        BigDecimal expectedAtr14 = kpiGenerator.computeAtr(mdHistory.subList(0, 14).reversed());
-        BigDecimal expectedObv20 = kpiGenerator.computeObv(mdHistory.subList(0, 20).reversed());
+        BigDecimal expectedEma20 = kpiGenerator.computeEma(mdHistory, 20).orElseThrow();
+        BigDecimal macdLine1226 = kpiGenerator.computeMacdLine(mdHistory, 12, 26).orElseThrow();
+        BigDecimal expectedMacdSignalLine9 = kpiGenerator.computeSignalLine(mdHistory, 9, 12, 26).orElseThrow();
+        BigDecimal expectedRsi14 = kpiGenerator.computeRsi(mdHistory.getFirst());
+        BigDecimal expectedAtr14 = mdHistory.getFirst().getAtr();
+        BigDecimal expectedObv20 = kpiGenerator.computeObv(mdHistory, 20).orElseThrow();
 
         assertThat(report.ema20()).isEqualByComparingTo(expectedEma20);
         assertThat(report.macdLine1226()).isEqualByComparingTo(macdLine1226);

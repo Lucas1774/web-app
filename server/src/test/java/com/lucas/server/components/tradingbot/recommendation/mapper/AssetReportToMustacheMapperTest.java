@@ -34,11 +34,11 @@ class AssetReportToMustacheMapperTest {
                 • Price History (last 1 days):
                   • 2025-05-01: O100 H110 L90 C105 VN/A
                 • Technical Indicators:
-                  • 20-day EMA: 105
-                  • MACD(12,26,9): line=42.42,signal=1.23hist=41.19
-                  • 14-day RSI: 15.67
-                  • 14-day ATR: 15.68
-                  • 20-day OBV: 15.69
+                  • 20-day EMA: N/A
+                  • MACD(12,26,9): line=N/A,signal=N/A,hist=N/A
+                  • 14-day RSI: N/A
+                  • 14-day ATR: N/A
+                  • 20-day OBV: N/A
                 • News Summaries (Top 2):
                   • 2025-05-01: "Headline One" (Sentiment: N/A. Confidence: 54.4412%) Summary: First summary
                   • 2025-05-02: "Headline Two" (Sentiment: N/A. Confidence: 54.4412%) Summary: Second summary
@@ -64,7 +64,7 @@ class AssetReportToMustacheMapperTest {
                   • 2025-05-01: O100 H110 L90 C105 V1234
                 • Technical Indicators:
                   • 20-day EMA: 105
-                  • MACD(12,26,9): line=42.42,signal=1.23hist=41.19
+                  • MACD(12,26,9): line=42.42,signal=1.23,hist=41.19
                   • 14-day RSI: 15.67
                   • 14-day ATR: 15.68
                   • 20-day OBV: 15.69
@@ -81,8 +81,7 @@ class AssetReportToMustacheMapperTest {
         List<PricePointRaw> pp = getPpNullValues();
         List<NewsItemRaw> news = getNewsNullValues();
         return new AssetReportRaw("FOO", null, null, null, null, null,
-                pp.size(), pp, new BigDecimal("105.00"), new BigDecimal("42.42"), new BigDecimal("1.23"),
-                new BigDecimal("15.67"), new BigDecimal("15.68"), new BigDecimal("15.69"), news.size(), news);
+                pp.size(), pp, null, null, null, null, null, null, news.size(), news);
     }
 
     private static AssetReportRaw getAssetReportAllValues() {

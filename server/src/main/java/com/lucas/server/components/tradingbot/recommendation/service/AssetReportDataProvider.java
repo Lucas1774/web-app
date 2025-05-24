@@ -13,9 +13,9 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.stream.IntStream;
 
 import static com.lucas.server.common.Constants.HISTORY_DAYS_COUNT;
+import static java.lang.Math.min;
 
 @Component
 public class AssetReportDataProvider {
@@ -29,24 +29,17 @@ public class AssetReportDataProvider {
     }
 
     public AssetReportRaw provide(Symbol symbol, List<MarketData> mdHistory, List<News> articles, PortfolioBase portfolio) {
-        List<PricePointRaw> priceHistory = mdHistory.subList(0, HISTORY_DAYS_COUNT).stream()
+        List<PricePointRaw> priceHistory = mdHistory.subList(0, min(mdHistory.size(), HISTORY_DAYS_COUNT)).stream()
                 .map(md -> new PricePointRaw(md.getDate(), md.getOpen(), md.getHigh(), md.getLow(), md.getPrice(), md.getVolume()))
                 .toList();
 
-        List<MarketData> newestFourteenAsc = mdHistory.subList(0, 14).reversed();
-        List<MarketData> newestTwentyAsc = mdHistory.subList(0, 20).reversed();
-        List<MarketData> newestTwentySixAsc = mdHistory.subList(0, 26).reversed();
-
-        BigDecimal ema20 = kpiGenerator.computeEma(newestTwentyAsc);
-        BigDecimal macdLine1226 = kpiGenerator.computeMacdLine(newestTwentySixAsc);
-        List<BigDecimal> macdHistory = IntStream.iterate(8, i -> i - 1)
-                .limit(9)
-                .mapToObj(i -> kpiGenerator.computeMacdLine(mdHistory.subList(i, i + 26).reversed()))
-                .toList();
-        BigDecimal macdSignalLine9 = kpiGenerator.computeSignalLine(macdHistory);
-        BigDecimal rsi14 = kpiGenerator.computeRsi(newestFourteenAsc);
-        BigDecimal atr14 = kpiGenerator.computeAtr(newestFourteenAsc);
-        BigDecimal obv20 = kpiGenerator.computeObv(newestTwentyAsc);
+        BigDecimal ema20 = kpiGenerator.computeEma(mdHistory, 20).orElse(null);
+        BigDecimal macdLine1226 = kpiGenerator.computeMacdLine(mdHistory, 12, 26).orElse(null);
+        BigDecimal macdSignalLine9 = kpiGenerator.computeSignalLine(mdHistory, 9, 12, 26).orElse(null);
+        MarketData current = mdHistory.getFirst();
+        BigDecimal rsi14 = kpiGenerator.computeRsi(current);
+        BigDecimal atr14 = current.getAtr();
+        BigDecimal obv20 = kpiGenerator.computeObv(mdHistory, 20).orElse(null);
 
         List<NewsItemRaw> news = articles.stream()
                 .map(a -> new NewsItemRaw(a.getHeadline(), a.getSentiment(), a.getSentimentConfidence(), a.getSummary(), a.getDate()))

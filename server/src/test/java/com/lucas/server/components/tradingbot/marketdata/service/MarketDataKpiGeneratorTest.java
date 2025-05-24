@@ -18,8 +18,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import static com.lucas.server.common.Constants.KPI_RETURNED_ZERO_WARN;
+import static com.lucas.server.common.Constants.NON_COMPUTABLE_KPI_WARN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
@@ -47,13 +49,13 @@ class MarketDataKpiGeneratorTest {
             md(14, 13, 15, 13, 0)
     );
 
-    private static MarketData md(int price, int prevClose, int high, int low, int daysAgo) {
+    private static MarketData md(Integer price, Integer prevClose, Integer high, Integer low, Integer daysAgo) {
         return new MarketData()
-                .setPrice(BigDecimal.valueOf(price))
-                .setPreviousClose(BigDecimal.valueOf(prevClose))
-                .setHigh(BigDecimal.valueOf(high))
-                .setLow(BigDecimal.valueOf(low))
-                .setDate(LocalDate.now().minusDays(daysAgo));
+                .setPrice(price != null ? BigDecimal.valueOf(price) : null)
+                .setPreviousClose(prevClose != null ? BigDecimal.valueOf(prevClose) : null)
+                .setHigh(high != null ? BigDecimal.valueOf(high) : null)
+                .setLow(low != null ? BigDecimal.valueOf(low) : null)
+                .setDate(LocalDate.now().minusDays(daysAgo != null ? daysAgo : 0));
     }
 
     @BeforeEach
@@ -87,7 +89,7 @@ class MarketDataKpiGeneratorTest {
         assertThat(currentData.getChange()).isEqualByComparingTo(BigDecimal.valueOf(10.00));
         assertThat(currentData.getPreviousClose()).isEqualByComparingTo(BigDecimal.valueOf(140.00));
         assertThat(currentData.getChangePercent()).isEqualByComparingTo(BigDecimal.valueOf(7.1429));
-        verify(marketDataService, atLeastOnce()).findTopBySymbolIdAndDateBeforeOrderByDateDesc(symbol.getId(), currentDate);
+        verify(marketDataService, atLeastOnce()).findTop14BySymbolIdAndDateBeforeOrderByDateDesc(symbol.getId(), currentDate);
     }
 
     @Test
@@ -110,7 +112,7 @@ class MarketDataKpiGeneratorTest {
         assertThat(currentData.getChange()).isNull();
         assertThat(currentData.getPreviousClose()).isNull();
         assertThat(currentData.getChangePercent()).isNull();
-        verify(marketDataService, atLeastOnce()).findTopBySymbolIdAndDateBeforeOrderByDateDesc(symbol.getId(), currentDate);
+        verify(marketDataService, atLeastOnce()).findTop14BySymbolIdAndDateBeforeOrderByDateDesc(symbol.getId(), currentDate);
     }
 
     @Test
@@ -140,27 +142,17 @@ class MarketDataKpiGeneratorTest {
         assertThat(currentData.getPreviousClose()).isEqualByComparingTo(BigDecimal.ZERO);
         assertThat(currentData.getChange()).isEqualByComparingTo("150.00");
         assertThat(currentData.getChangePercent()).isNull();
-        verify(marketDataService, atLeastOnce()).findTopBySymbolIdAndDateBeforeOrderByDateDesc(symbol.getId(), currentDate);
+        verify(marketDataService, atLeastOnce()).findTop14BySymbolIdAndDateBeforeOrderByDateDesc(symbol.getId(), currentDate);
     }
 
     @Test
     void testComputeMovingAverage() {
-        assertThat(kpiGenerator.computeMovingAverage(mds)).isEqualByComparingTo(new BigDecimal("12.0000"));
-    }
-
-    @Test
-    void testComputeAtr() {
-        assertThat(kpiGenerator.computeAtr(mds)).isEqualByComparingTo(new BigDecimal("2.4000"));
-    }
-
-    @Test
-    void testComputeRsi() {
-        assertThat(kpiGenerator.computeRsi(mds)).isEqualByComparingTo(new BigDecimal("85.7143"));
+        assertThat(kpiGenerator.computeMovingAverage(mds, mds.size()).orElseThrow()).isEqualByComparingTo(new BigDecimal("12.0000"));
     }
 
     @Test
     void testComputeVolatility() {
-        assertThat(kpiGenerator.computeVolatility(mds)).isEqualByComparingTo(new BigDecimal("160.2067"));
+        assertThat(kpiGenerator.computeVolatility(mds, mds.size()).orElseThrow()).isEqualByComparingTo(new BigDecimal("160.2067"));
     }
 
     @Test
@@ -172,43 +164,13 @@ class MarketDataKpiGeneratorTest {
                 md(0, 0, 1, 1, 1),
                 md(0, 0, 1, 1, 0)
         );
-        assertThat(kpiGenerator.computeMovingAverage(marketDataList)).isEqualByComparingTo(new BigDecimal("0.0000"));
+        assertThat(kpiGenerator.computeMovingAverage(marketDataList, marketDataList.size()).orElseThrow()).isEqualByComparingTo(new BigDecimal("0.0000"));
         assertThat(logCaptor.getLogs())
                 .hasSize(1)
-                .allSatisfy(log -> assertThat(log).contains(marketDataList.getLast().toString())
-                        .contains(KPI_RETURNED_ZERO_WARN.replace("{}", "")));
-    }
-
-    @Test
-    void testComputeAtr_totalTrueRangeIsZero() {
-        List<MarketData> marketDataList = Arrays.asList(
-                md(0, 4, 4, 4, 0),
-                md(4, 3, 3, 3, 1),
-                md(3, 2, 2, 2, 2),
-                md(2, 1, 1, 1, 3),
-                md(1, 4, 4, 4, 4)
-        );
-        assertThat(kpiGenerator.computeAtr(marketDataList)).isEqualByComparingTo(new BigDecimal("0.0000"));
-        assertThat(logCaptor.getLogs())
-                .hasSize(1)
-                .allSatisfy(log -> assertThat(log).contains(marketDataList.getFirst().toString())
-                        .contains(KPI_RETURNED_ZERO_WARN.replace("{}", "")));
-    }
-
-    @Test
-    void testComputeRsi_noGainsNoLoses() {
-        List<MarketData> marketDataList = Arrays.asList(
-                md(4, 4, 5, 4, 0),
-                md(4, 4, 4, 3, 1),
-                md(4, 4, 7, 2, 2),
-                md(4, 4, 4, 1, 3),
-                md(4, 4, 9, 4, 4)
-        );
-        assertThat(kpiGenerator.computeRsi(marketDataList)).isEqualByComparingTo(new BigDecimal("100.0000"));
-        assertThat(logCaptor.getLogs())
-                .hasSize(1)
-                .allSatisfy(log -> assertThat(log).contains(marketDataList.getFirst().toString())
-                        .contains(KPI_RETURNED_ZERO_WARN.replace("{}", "")));
+                .allSatisfy(log -> assertThat(log)
+                        .contains(marketDataList.toString())
+                        .contains(KPI_RETURNED_ZERO_WARN.replaceFirst(Pattern.quote("{}"), "moving average")
+                                .replaceFirst(Pattern.quote("{}"), marketDataList.toString())));
     }
 
     @Test
@@ -220,10 +182,30 @@ class MarketDataKpiGeneratorTest {
                 md(4, 4, 4, 1, 3),
                 md(4, 4, 9, 4, 4)
         );
-        assertThat(kpiGenerator.computeVolatility(marketDataList)).isEqualByComparingTo(new BigDecimal("0.0000"));
+        assertThat(kpiGenerator.computeVolatility(marketDataList, marketDataList.size()).orElseThrow()).isEqualByComparingTo(new BigDecimal("0.0000"));
         assertThat(logCaptor.getLogs())
                 .hasSize(1)
-                .allSatisfy(log -> assertThat(log).contains(marketDataList.getFirst().toString())
-                        .contains(KPI_RETURNED_ZERO_WARN.replace("{}", "")));
+                .allSatisfy(log -> assertThat(log)
+                        .contains(marketDataList.getFirst().toString())
+                        .contains(KPI_RETURNED_ZERO_WARN.replaceFirst(Pattern.quote("{}"), "volatility")
+                                .replaceFirst(Pattern.quote("{}"), marketDataList.reversed().toString())));
+    }
+
+    @Test
+    void testComputeVolatility_notEnoughPreviousClose() {
+        List<MarketData> marketDataList = Arrays.asList(
+                md(4, 4, 5, 4, 0),
+                md(4, 4, 4, 3, 1),
+                md(4, 4, 7, 2, 2),
+                md(4, 4, 4, 1, 3),
+                md(4, null, 9, 4, 4)
+        );
+        assertThat(kpiGenerator.computeVolatility(marketDataList, marketDataList.size())).isNotPresent();
+        assertThat(logCaptor.getLogs())
+                .hasSize(1)
+                .allSatisfy(log -> assertThat(log)
+                        .contains(marketDataList.getFirst().toString())
+                        .contains(NON_COMPUTABLE_KPI_WARN.replaceFirst(Pattern.quote("{}"), "volatility")
+                                .replaceFirst(Pattern.quote("{}"), marketDataList.reversed().toString())));
     }
 }

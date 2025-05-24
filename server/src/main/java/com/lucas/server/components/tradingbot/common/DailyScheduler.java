@@ -29,14 +29,10 @@ public class DailyScheduler {
 
     @Scheduled(cron = "${scheduler.daily-cron}")
     public void dailyTask() {
-        updateNews();
-        removeOldNews();
         updateMarketData();
         removeOldMarketData();
-    }
-
-    @Scheduled(cron = "${scheduler.midnight-cron}")
-    public void midnightTask() {
+        updateNews();
+        removeOldNews();
         getRandomRecommendations();
         removeOldRecommendations();
     }
