@@ -1,6 +1,5 @@
 package com.lucas.server.components.tradingbot.news.jpa;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.lucas.server.common.jpa.JpaEntity;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import jakarta.persistence.*;
@@ -38,7 +37,6 @@ public class News implements JpaEntity {
     @JoinTable(name = "news_symbol",
             joinColumns = @JoinColumn(name = "news_id"),
             inverseJoinColumns = @JoinColumn(name = "symbol_id"))
-    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
     private Set<Symbol> symbols = new HashSet<>();
 
     @Column(name = "publication_date", nullable = false)

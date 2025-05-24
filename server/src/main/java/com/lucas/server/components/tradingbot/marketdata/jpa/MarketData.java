@@ -1,6 +1,5 @@
 package com.lucas.server.components.tradingbot.marketdata.jpa;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.lucas.server.common.jpa.JpaEntity;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import jakarta.persistence.*;
@@ -27,7 +26,6 @@ public class MarketData implements JpaEntity {
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "symbol_id", nullable = false)
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Symbol symbol;
 
     @Column(precision = 15, scale = 4)
