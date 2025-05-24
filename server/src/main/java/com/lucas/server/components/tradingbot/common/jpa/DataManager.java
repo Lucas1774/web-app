@@ -215,6 +215,7 @@ public class DataManager {
                 .flatMap(p -> Optional.ofNullable(symbolsWithData.get(p.getSymbol()))
                         .map(md -> portfolioManager.computeStand(p, md))
                         .stream())
+                .sorted(Comparator.comparing(PortfolioManager.SymbolStand::lastMoveDate).reversed())
                 .toList();
     }
 

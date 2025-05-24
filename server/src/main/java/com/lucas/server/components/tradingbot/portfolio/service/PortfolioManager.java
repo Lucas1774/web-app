@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
 
 @Component
 public class PortfolioManager {
@@ -15,6 +16,7 @@ public class PortfolioManager {
     public record SymbolStand(
             @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
             Symbol symbol,
+            LocalDateTime lastMoveDate,
             BigDecimal quantity,
             BigDecimal averageCost,
             BigDecimal positionValue,
@@ -45,6 +47,6 @@ public class PortfolioManager {
             percentPnL = null;
         }
 
-        return new SymbolStand(portfolio.getSymbol(), quantity, averageCost, positionValue, pnL, percentPnL);
+        return new SymbolStand(portfolio.getSymbol(), portfolio.getEffectiveTimestamp(), quantity, averageCost, positionValue, pnL, percentPnL);
     }
 }

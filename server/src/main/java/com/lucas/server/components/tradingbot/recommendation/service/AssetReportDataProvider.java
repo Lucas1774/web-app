@@ -45,7 +45,7 @@ public class AssetReportDataProvider {
                 .map(a -> new NewsItemRaw(a.getHeadline(), a.getSentiment(), a.getSentimentConfidence(), a.getSummary(), a.getDate()))
                 .toList();
 
-        PortfolioManager.SymbolStand stand = portfolioManager.computeStand(portfolio, mdHistory.getFirst());
+        PortfolioManager.SymbolStand stand = portfolioManager.computeStand(portfolio, current);
         return new AssetReportRaw(symbol.getName(), stand.quantity(), stand.positionValue(), stand.averageCost(), stand.pnL(), stand.percentPnl(),
                 priceHistory.size(), priceHistory, ema20, macdLine1226, macdSignalLine9, rsi14, atr14, obv20, news.size(), news);
     }
