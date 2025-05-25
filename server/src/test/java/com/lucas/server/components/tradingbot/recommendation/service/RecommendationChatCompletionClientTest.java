@@ -92,6 +92,7 @@ class RecommendationChatCompletionClientTest {
         portfolio.setSymbol(symbol);
         portfolio.setQuantity(BigDecimal.valueOf(1.1111));
         portfolio.setAverageCost(BigDecimal.valueOf(2.2222));
+        portfolio.setAverageCommission(BigDecimal.ZERO);
         portfolio.setEffectiveTimestamp(today.atStartOfDay());
         portfolioService.save(portfolio);
 
@@ -153,6 +154,6 @@ class RecommendationChatCompletionClientTest {
                 .multiply(report.position())
                 .setScale(4, RoundingMode.HALF_UP);
         assertThat(report.unrealizedPnL()).isEqualByComparingTo(expectedUnrealizedPnL);
-        assertThat(report.unrealizedPercentPnL()).isEqualByComparingTo(BigDecimal.valueOf(350.00)); // roughly (10 / 2.2) - 2.2
+        assertThat(report.unrealizedPercentPnL()).isEqualByComparingTo(BigDecimal.valueOf(350.0045)); // roughly (10 / 2.2) - 2.2
     }
 }

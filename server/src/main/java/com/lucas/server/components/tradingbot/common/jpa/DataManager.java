@@ -197,12 +197,12 @@ public class DataManager {
 
     @Transactional(rollbackOn = IllegalStateException.class)
     public <T extends PortfolioBase> T executePortfolioAction(PortfolioType type, String symbolName, BigDecimal price,
-                                                              BigDecimal quantity, LocalDateTime timestamp, boolean isBuy) throws IllegalStateException {
+                                                              BigDecimal quantity, BigDecimal commission, LocalDateTime timestamp, boolean isBuy) throws IllegalStateException {
         Symbol symbol = symbolService.findByName(symbolName).orElseThrow(
                 () -> new IllegalStateException(MessageFormat.format(SYMBOL_NOT_FOUND_ERROR, symbolName))
         );
         IPortfolioJpaService<T> service = getService(type);
-        return service.executePortfolioAction(symbol, price, quantity, timestamp, isBuy);
+        return service.executePortfolioAction(symbol, price, quantity, commission, timestamp, isBuy);
     }
 
     public List<PortfolioManager.SymbolStand> getPortfolioStand(List<String> symbolNames, PortfolioType type, boolean dynamic) throws ClientException, JsonProcessingException {

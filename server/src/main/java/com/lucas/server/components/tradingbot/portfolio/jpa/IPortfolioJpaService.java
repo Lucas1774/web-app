@@ -13,8 +13,8 @@ public interface IPortfolioJpaService<T extends PortfolioBase> extends JpaServic
 
     Optional<T> findBySymbol(Symbol symbol);
 
-    T executePortfolioAction(Symbol symbol, BigDecimal price, BigDecimal quantity, LocalDateTime timestamp,
-                             boolean isBuy) throws IllegalStateException;
+    T executePortfolioAction(Symbol symbol, BigDecimal price, BigDecimal quantity, BigDecimal commission,
+                             LocalDateTime timestamp, boolean isBuy) throws IllegalStateException;
 
     List<T> findActivePortfolio();
 }

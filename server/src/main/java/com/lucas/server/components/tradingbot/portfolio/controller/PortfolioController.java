@@ -33,12 +33,12 @@ public class PortfolioController {
 
     @PostMapping("/buy")
     public ResponseEntity<PortfolioBase> buy(@RequestParam String symbolName, @RequestParam BigDecimal price,
-                                             @RequestParam BigDecimal quantity, @RequestParam boolean mock,
-                                             @RequestParam(required = false) LocalDate date) {
+                                             @RequestParam BigDecimal quantity, @RequestParam BigDecimal commission,
+                                             @RequestParam boolean mock, @RequestParam(required = false) LocalDate date) {
         LocalDateTime effectiveDate = date == null ? LocalDateTime.now() : date.atStartOfDay();
         PortfolioType type = mock ? PortfolioType.MOCK : PortfolioType.REAL;
         try {
-            return ResponseEntity.ok(jpaService.executePortfolioAction(type, symbolName, price, quantity, effectiveDate, true));
+            return ResponseEntity.ok(jpaService.executePortfolioAction(type, symbolName, price, quantity, commission, effectiveDate, true));
         } catch (IllegalStateException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
@@ -52,7 +52,7 @@ public class PortfolioController {
         LocalDateTime effectiveDate = date == null ? LocalDateTime.now() : date.atStartOfDay();
         PortfolioType type = mock ? PortfolioType.MOCK : PortfolioType.REAL;
         try {
-            return ResponseEntity.ok(jpaService.executePortfolioAction(type, symbolName, price, quantity, effectiveDate, false));
+            return ResponseEntity.ok(jpaService.executePortfolioAction(type, symbolName, price, quantity, null, effectiveDate, false));
         } catch (IllegalStateException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();

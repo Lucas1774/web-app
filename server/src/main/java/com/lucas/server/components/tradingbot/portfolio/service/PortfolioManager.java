@@ -22,6 +22,7 @@ public class PortfolioManager {
             BigDecimal positionValue,
             BigDecimal pnL,
             BigDecimal percentPnl,
+            BigDecimal netRelativePosition,
             Set<Recommendation> recommendation
     ) {
     }
@@ -34,21 +35,32 @@ public class PortfolioManager {
     public SymbolStand computeStand(PortfolioBase portfolio, MarketData last) {
         BigDecimal quantity = portfolio.getQuantity();
         BigDecimal averageCost = portfolio.getAverageCost();
+        BigDecimal averageCommission = portfolio.getAverageCommission();
         BigDecimal positionValue;
         BigDecimal pnL;
         BigDecimal percentPnL;
-        if (null != quantity && null != averageCost) {
-            positionValue = quantity.multiply(averageCost).setScale(4, RoundingMode.HALF_UP);
-            pnL = last.getPrice().subtract(averageCost).multiply(quantity).setScale(4, RoundingMode.HALF_UP);
-            percentPnL = (last.getPrice().subtract(averageCost)).divide(averageCost, 8, RoundingMode.HALF_UP)
-                    .multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP);
-        } else {
+        BigDecimal netRelativePosition;
+        if (null == quantity || null == averageCost) {
             positionValue = null;
             pnL = null;
             percentPnL = null;
+            netRelativePosition = null;
+        } else {
+            positionValue = quantity.multiply(averageCost).setScale(4, RoundingMode.HALF_UP);
+            pnL = last.getPrice().subtract(averageCost).multiply(quantity).setScale(4, RoundingMode.HALF_UP);
+            percentPnL = (last.getPrice().subtract(averageCost)).divide(averageCost, 8, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100)).setScale(4, RoundingMode.HALF_UP);
+            if (null == averageCommission) {
+                netRelativePosition = null;
+            } else {
+                BigDecimal averageCostNoCommission = averageCost
+                        .divide(BigDecimal.ONE.add(averageCommission), 8, RoundingMode.HALF_UP);
+                netRelativePosition = last.getPrice().subtract(averageCostNoCommission).divide(averageCostNoCommission, 8, RoundingMode.HALF_UP)
+                        .multiply(BigDecimal.valueOf(100)).setScale(4, RoundingMode.HALF_UP);
+            }
         }
 
         return new SymbolStand(portfolio.getSymbol(), portfolio.getEffectiveTimestamp(),
-                quantity, averageCost, positionValue, pnL, percentPnL, last.getRecommendations());
+                quantity, averageCost, positionValue, pnL, percentPnL, netRelativePosition, last.getRecommendations());
     }
 }

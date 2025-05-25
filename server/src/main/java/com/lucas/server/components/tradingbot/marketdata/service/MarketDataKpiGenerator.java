@@ -206,7 +206,6 @@ public class MarketDataKpiGenerator {
         BigDecimal relativeStrength = averageGain.divide(averageLoss, 8, RoundingMode.HALF_UP);
         return BigDecimal.valueOf(100).subtract(BigDecimal.valueOf(100)
                 .divide(relativeStrength.add(BigDecimal.ONE), 4, RoundingMode.HALF_UP));
-
     }
 
     /**

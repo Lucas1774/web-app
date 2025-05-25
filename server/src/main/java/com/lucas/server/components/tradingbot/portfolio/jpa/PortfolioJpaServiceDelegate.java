@@ -38,15 +38,15 @@ public class PortfolioJpaServiceDelegate<T extends PortfolioBase, R extends JpaR
         return findLatestBySymbol.apply(symbol);
     }
 
-    public T executePortfolioAction(Symbol symbol, BigDecimal price, BigDecimal quantity, LocalDateTime timestamp,
-                                    boolean isBuy) throws IllegalStateException {
-
+    public T executePortfolioAction(Symbol symbol, BigDecimal price, BigDecimal quantity, BigDecimal commission,
+                                    LocalDateTime timestamp, boolean isBuy) throws IllegalStateException {
         T last = findBySymbol(symbol)
                 .orElseGet(() -> {
                     T res = builder.get();
                     res.setSymbol(symbol)
                             .setQuantity(BigDecimal.ZERO)
                             .setAverageCost(BigDecimal.ZERO)
+                            .setAverageCommission(BigDecimal.ZERO)
                             .setEffectiveTimestamp(timestamp);
                     return res;
                 });
@@ -56,19 +56,27 @@ public class PortfolioJpaServiceDelegate<T extends PortfolioBase, R extends JpaR
             throw new IllegalStateException(MessageFormat.format(INSUFFICIENT_STOCK_ERROR, symbol.getName()));
         }
 
-        BigDecimal newAverage = last.getAverageCost();
+        BigDecimal newAverageCost = last.getAverageCost();
+        BigDecimal newAverageCommission = last.getAverageCommission();
         if (isBuy) {
             BigDecimal totalCost = last.getAverageCost().multiply(oldQuantity)
                     .add(price.multiply(quantity));
-            newAverage = newQuantity.compareTo(BigDecimal.ZERO) > 0
-                    ? totalCost.divide(newQuantity, RoundingMode.HALF_UP)
+            newAverageCost = newQuantity.compareTo(BigDecimal.ZERO) > 0
+                    ? totalCost.divide(newQuantity, 4, RoundingMode.HALF_UP)
+                    : BigDecimal.ZERO;
+
+            BigDecimal totalCommissionWeighted = last.getAverageCommission().multiply(oldQuantity)
+                    .add(commission.multiply(quantity));
+            newAverageCommission = newQuantity.compareTo(BigDecimal.ZERO) > 0
+                    ? totalCommissionWeighted.divide(newQuantity, 4, RoundingMode.HALF_UP)
                     : BigDecimal.ZERO;
         }
 
         T res = builder.get();
         res.setSymbol(symbol)
                 .setQuantity(newQuantity)
-                .setAverageCost(newAverage)
+                .setAverageCost(newAverageCost)
+                .setAverageCommission(newAverageCommission)
                 .setEffectiveTimestamp(timestamp);
         return save(res);
     }

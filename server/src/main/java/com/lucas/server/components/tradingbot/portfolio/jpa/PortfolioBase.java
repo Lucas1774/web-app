@@ -32,6 +32,9 @@ public abstract class PortfolioBase implements JpaEntity {
     @Column(name = "average_cost", nullable = false, precision = 15, scale = 4)
     private BigDecimal averageCost;
 
+    @Column(name = "average_commission", nullable = false, precision = 15, scale = 4)
+    private BigDecimal averageCommission;
+
     @Column(name = "effective_timestamp", nullable = false)
     private LocalDateTime effectiveTimestamp;
 }

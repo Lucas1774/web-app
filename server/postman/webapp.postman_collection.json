@@ -1405,7 +1405,7 @@
 										"method": "POST",
 										"header": [],
 										"url": {
-											"raw": "{{base_url}}/portfolio/buy?symbolName=AAPL&price=5.5&quantity=2&mock=true",
+											"raw": "{{base_url}}/portfolio/buy?symbolName=AAPL&price=5.5&quantity=2&commission=0.03&mock=true",
 											"host": [
 												"{{base_url}}"
 											],
@@ -1425,6 +1425,10 @@
 												{
 													"key": "quantity",
 													"value": "2"
+												},
+												{
+													"key": "commission",
+													"value": "0.03"
 												},
 												{
 													"key": "mock",
@@ -1471,7 +1475,7 @@
 										"method": "POST",
 										"header": [],
 										"url": {
-											"raw": "{{base_url}}/portfolio/buy?symbolName=ABT&price=5.5&quantity=2&mock=true",
+											"raw": "{{base_url}}/portfolio/buy?symbolName=ABT&price=5.5&quantity=2&commission=0.03&mock=true",
 											"host": [
 												"{{base_url}}"
 											],
@@ -1491,6 +1495,10 @@
 												{
 													"key": "quantity",
 													"value": "2"
+												},
+												{
+													"key": "commission",
+													"value": "0.03"
 												},
 												{
 													"key": "mock",
@@ -1603,72 +1611,6 @@
 												{
 													"key": "price",
 													"value": "1.5"
-												},
-												{
-													"key": "quantity",
-													"value": "2"
-												},
-												{
-													"key": "mock",
-													"value": "true"
-												}
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "buy ABT",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"pm.test(\"Status code is 200\", function () {\r",
-													"    pm.response.to.have.status(200);\r",
-													"});\r",
-													"\r",
-													"pm.test(\"Response body contains expected fields and types\", function () {\r",
-													"    const json = pm.response.json();\r",
-													"\r",
-													"    pm.expect(json.id).to.be.a(\"number\");\r",
-													"    pm.expect(json.quantity).to.eql(2.000);\r",
-													"    pm.expect(json.averageCost).to.eql(5.50000000);\r",
-													"\r",
-													"    pm.expect(json.symbol).to.be.an(\"object\");\r",
-													"    pm.expect(json.symbol.id).to.be.a(\"number\");\r",
-													"    pm.expect(json.symbol.name).to.eql(\"ABT\");\r",
-													"\r",
-													"    const isoLike = /^\\d{4}-\\d{2}-\\d{2}(T.*)?$/;\r",
-													"    pm.expect(json.effectiveTimestamp).to.match(isoLike);\r",
-													"});\r",
-													""
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"method": "POST",
-										"header": [],
-										"url": {
-											"raw": "{{base_url}}/portfolio/buy?symbolName=ABT&price=5.5&quantity=2&mock=true",
-											"host": [
-												"{{base_url}}"
-											],
-											"path": [
-												"portfolio",
-												"buy"
-											],
-											"query": [
-												{
-													"key": "symbolName",
-													"value": "ABT"
-												},
-												{
-													"key": "price",
-													"value": "5.5"
 												},
 												{
 													"key": "quantity",
