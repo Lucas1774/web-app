@@ -6,7 +6,6 @@ import com.lucas.server.components.tradingbot.common.jpa.DataManager;
 import com.lucas.server.components.tradingbot.news.jpa.News;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,8 +30,7 @@ public class SentimentController {
     }
 
     @GetMapping("/historic/{from}")
-    public ResponseEntity<List<News>> fetchAndSaveHistoricAll(
-            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from) {
+    public ResponseEntity<List<News>> fetchAndSaveHistoricAll(@PathVariable LocalDate from) {
         try {
             return ResponseEntity.ok(jpaService.generateSentiment(SP500_SYMBOLS, from, LocalDate.now()));
         } catch (ClientException | JsonProcessingException e) {
@@ -42,9 +40,8 @@ public class SentimentController {
     }
 
     @GetMapping("/historic/{from}/{symbols}")
-    public ResponseEntity<List<News>> fetchAndSaveHistoricSome(
-            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-            @PathVariable List<String> symbols) {
+    public ResponseEntity<List<News>> fetchAndSaveHistoricSome(@PathVariable LocalDate from,
+                                                               @PathVariable List<String> symbols) {
         try {
             return ResponseEntity.ok(jpaService.generateSentiment(symbols, from, LocalDate.now()));
         } catch (ClientException | JsonProcessingException e) {

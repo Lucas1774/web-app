@@ -3,11 +3,13 @@ package com.lucas.server.components.tradingbot.portfolio.service;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.portfolio.jpa.PortfolioBase;
+import com.lucas.server.components.tradingbot.recommendation.jpa.Recommendation;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Component
 public class PortfolioManager {
@@ -19,7 +21,8 @@ public class PortfolioManager {
             BigDecimal averageCost,
             BigDecimal positionValue,
             BigDecimal pnL,
-            BigDecimal percentPnl
+            BigDecimal percentPnl,
+            Set<Recommendation> recommendation
     ) {
     }
 
@@ -45,6 +48,7 @@ public class PortfolioManager {
             percentPnL = null;
         }
 
-        return new SymbolStand(portfolio.getSymbol(), portfolio.getEffectiveTimestamp(), quantity, averageCost, positionValue, pnL, percentPnL);
+        return new SymbolStand(portfolio.getSymbol(), portfolio.getEffectiveTimestamp(),
+                quantity, averageCost, positionValue, pnL, percentPnL, last.getRecommendations());
     }
 }

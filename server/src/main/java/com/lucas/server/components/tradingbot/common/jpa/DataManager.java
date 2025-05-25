@@ -31,6 +31,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.lucas.server.common.Constants.*;
 
@@ -89,8 +90,9 @@ public class DataManager {
     }
 
     @Transactional(rollbackOn = {ClientException.class, IOException.class})
-    public List<Recommendation> getRecommendations(List<String> symbolNames, PortfolioType type, Boolean sendFixmeRequest,
-                                                   RecommendationEngineType engineType) throws ClientException, IOException {
+    public List<Recommendation>
+    getRecommendations(List<String> symbolNames, PortfolioType type, boolean sendFixmeRequest,
+                       RecommendationEngineType engineType, boolean overwrite) throws ClientException, IOException {
         List<Symbol> symbols = symbolNames.stream().distinct().map(symbolService::getOrCreateByName).toList();
         Map<Symbol, List<MarketData>> marketData = symbols.stream()
                 .map(symbol -> Map.entry(symbol, marketDataService.getTopForSymbolId(symbol.getId(), MARKET_DATA_RELEVANT_DAYS_COUNT)))
@@ -125,12 +127,15 @@ public class DataManager {
             }
         }
 
+        if (overwrite) {
+            return recommendationsService.createOrUpdate(res);
+        }
         recommendationsService.createIgnoringDuplicates(res);
         return res;
     }
 
-    public List<Recommendation> getRandomRecommendations(PortfolioType type, int count, Boolean sendFixmeRequest,
-                                                         RecommendationEngineType engineType) throws ClientException, IOException {
+    public List<Recommendation> getRandomRecommendations(PortfolioType type, int count, boolean sendFixmeRequest,
+                                                         RecommendationEngineType engineType, boolean overwrite) throws ClientException, IOException {
         Set<String> active = portfolioTypeToService.get(type)
                 .findActivePortfolio().stream()
                 .map(p -> p.getSymbol().getName())
@@ -153,18 +158,18 @@ public class DataManager {
             finalList.addAll(pool.subList(0, Math.min(needed, pool.size())));
         }
 
-        return getRecommendations(finalList, type, sendFixmeRequest, engineType);
+        return getRecommendations(finalList, type, sendFixmeRequest, engineType, overwrite);
     }
 
-    public List<Recommendation> getRecommendationsForStand(PortfolioType type, Boolean sendFixmeRequest) throws ClientException, IOException {
+    @Transactional(rollbackOn = {ClientException.class, IOException.class})
+    public List<Recommendation> getRecommendationsForStand(PortfolioType type, boolean sendFixmeRequest,
+                                                           RecommendationEngineType engineType, boolean overwrite) throws ClientException, IOException {
         List<String> symbols = getService(type).findActivePortfolio()
                 .stream()
                 .map(p -> p.getSymbol().getName())
                 .toList();
-        RecommendationEngineType engineType = symbols.size() > RECOMMENDATIONS_CHUNK_SIZE
-                ? RecommendationEngineType.RAW : RecommendationEngineType.AZURE;
 
-        return getRecommendations(symbols, type, sendFixmeRequest, engineType);
+        return getRecommendations(symbols, type, sendFixmeRequest, engineType, overwrite);
     }
 
     @Transactional
@@ -175,10 +180,10 @@ public class DataManager {
     }
 
     @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})
-    public List<News> retrieveNewsByDateRange(List<String> symbolNames, LocalDate from, LocalDate now) throws ClientException, JsonProcessingException {
+    public List<News> retrieveNewsByDateRange(List<String> symbolNames, LocalDate from, LocalDate now, boolean generateEmbeddings) throws ClientException, JsonProcessingException {
         List<Symbol> symbols = symbolNames.stream().distinct().map(symbolService::getOrCreateByName).toList();
         List<News> news = newsClient.retrieveNewsByDateRange(symbols, from, now);
-        newsService.createOrUpdate(news, MAX_SYMBOLS_TO_TRIGGER_NEWS_EMBEDDINGS_GENERATION >= symbols.size());
+        newsService.createOrUpdate(news, generateEmbeddings);
         return news;
     }
 
@@ -191,10 +196,8 @@ public class DataManager {
     }
 
     @Transactional(rollbackOn = IllegalStateException.class)
-    public <T extends PortfolioBase> T executePortfolioAction(
-            PortfolioType type, String symbolName, BigDecimal price,
-            BigDecimal quantity, LocalDateTime timestamp, boolean isBuy
-    ) throws IllegalStateException {
+    public <T extends PortfolioBase> T executePortfolioAction(PortfolioType type, String symbolName, BigDecimal price,
+                                                              BigDecimal quantity, LocalDateTime timestamp, boolean isBuy) throws IllegalStateException {
         Symbol symbol = symbolService.findByName(symbolName).orElseThrow(
                 () -> new IllegalStateException(MessageFormat.format(SYMBOL_NOT_FOUND_ERROR, symbolName))
         );
@@ -202,20 +205,34 @@ public class DataManager {
         return service.executePortfolioAction(symbol, price, quantity, timestamp, isBuy);
     }
 
-    public List<PortfolioManager.SymbolStand> getPortfolioStand(PortfolioType type, List<String> symbols) throws ClientException, JsonProcessingException {
+    public List<PortfolioManager.SymbolStand> getPortfolioStand(List<String> symbolNames, PortfolioType type, boolean dynamic) throws ClientException, JsonProcessingException {
         List<PortfolioBase> portfolio = getService(type).findActivePortfolio()
                 .stream()
-                .filter(p -> symbols.contains(p.getSymbol().getName()))
+                .filter(p -> symbolNames.contains(p.getSymbol().getName()))
                 .toList();
-        Map<Symbol, MarketData> symbolsWithData = typeToRunner.get(MarketDataType.REAL_TIME)
-                .apply(portfolio.stream().map(PortfolioBase::getSymbol).toList())
-                .stream()
-                .collect(Collectors.toMap(MarketData::getSymbol, Function.identity()));
-        return portfolio.stream()
-                .flatMap(p -> Optional.ofNullable(symbolsWithData.get(p.getSymbol()))
-                        .map(md -> portfolioManager.computeStand(p, md))
-                        .stream())
-                .sorted(Comparator.comparing(PortfolioManager.SymbolStand::lastMoveDate).reversed())
+        Stream<PortfolioManager.SymbolStand> res;
+        if (dynamic) {
+            Map<String, MarketData> symbolsWithData = typeToRunner.get(MarketDataType.REAL_TIME)
+                    .apply(portfolio.stream().map(PortfolioBase::getSymbol).toList())
+                    .stream()
+                    .collect(Collectors.toMap(md -> md.getSymbol().getName(), Function.identity()));
+            res = portfolio.stream()
+                    .flatMap(p -> marketDataService.findBySymbolId(p.getSymbol().getId())
+                            .stream()
+                            .max(Comparator.comparing(MarketData::getDate))
+                            .map(md -> portfolioManager.computeStand(p, symbolsWithData.get(md.getSymbol().getName())
+                                    .setRecommendations(md.getRecommendations()))) // artificially link the recommendations to the volatile mds
+                            .stream());
+        } else {
+            res = portfolio.stream()
+                    .flatMap(p -> marketDataService.findBySymbolId(p.getSymbol().getId())
+                            .stream()
+                            .max(Comparator.comparing(MarketData::getDate))
+                            .map(md -> portfolioManager.computeStand(p, md))
+                            .stream());
+        }
+
+        return res.sorted(Comparator.comparing(PortfolioManager.SymbolStand::lastMoveDate).reversed())
                 .toList();
     }
 

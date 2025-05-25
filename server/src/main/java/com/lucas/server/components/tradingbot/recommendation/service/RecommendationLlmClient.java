@@ -67,7 +67,7 @@ public class RecommendationLlmClient implements RecommendationClient {
     }
 
     public List<Recommendation> getRecommendations(Map<Symbol, List<MarketData>> marketData, Map<Symbol, List<News>> newsData,
-                                                   Map<Symbol, ? extends PortfolioBase> portfolioData, Boolean withFixmeRequest)
+                                                   Map<Symbol, ? extends PortfolioBase> portfolioData, boolean withFixmeRequest)
             throws ClientException, IOException {
         List<AssetReportRaw> reports = new ArrayList<>();
         for (Map.Entry<Symbol, List<MarketData>> mdHistory : marketData.entrySet()) {
@@ -91,9 +91,8 @@ public class RecommendationLlmClient implements RecommendationClient {
         logger.info(GENERATING_RECOMMENDATIONS_INFO, marketData.keySet());
         ObjectNode prompt = buildRequestPayload(List.of(systemMessage, promptMessage, fewShotMessage, fixedMessage));
 
-        return mapper.mapAll(marketData.keySet().stream().toList(),
-                objectMapper.readTree(httpRequestClient.fetch(endpoint, apiKey, prompt)
-                        .get("choices").get(0).get("message").get("content").asText()), fixedMessage.get("content").asText());
+        return mapper.mapAll(marketData, objectMapper.readTree(httpRequestClient.fetch(endpoint, apiKey, prompt)
+                .get("choices").get(0).get("message").get("content").asText()), fixedMessage.get("content").asText());
     }
 
     private ObjectNode buildRequestPayload(List<ObjectNode> messageNodes) {

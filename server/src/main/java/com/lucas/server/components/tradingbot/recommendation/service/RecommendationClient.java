@@ -14,6 +14,6 @@ import java.util.Map;
 public interface RecommendationClient {
 
     List<Recommendation> getRecommendations(Map<Symbol, List<MarketData>> marketData, Map<Symbol, List<News>> newsData,
-                                            Map<Symbol, ? extends PortfolioBase> portfolioData, Boolean withFixmeRequest)
+                                            Map<Symbol, ? extends PortfolioBase> portfolioData, boolean withFixmeRequest)
             throws ClientException, IOException;
 }

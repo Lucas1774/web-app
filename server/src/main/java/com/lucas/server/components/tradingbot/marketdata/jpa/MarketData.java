@@ -2,6 +2,7 @@ package com.lucas.server.components.tradingbot.marketdata.jpa;
 
 import com.lucas.server.common.jpa.JpaEntity;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
+import com.lucas.server.components.tradingbot.recommendation.jpa.Recommendation;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,6 +11,8 @@ import lombok.experimental.Accessors;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -27,6 +30,9 @@ public class MarketData implements JpaEntity {
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "symbol_id", nullable = false)
     private Symbol symbol;
+
+    @OneToMany(mappedBy = "marketData", fetch = FetchType.LAZY)
+    private Set<Recommendation> recommendations = new HashSet<>();
 
     @Column(precision = 15, scale = 4)
     private BigDecimal open;
@@ -71,6 +77,10 @@ public class MarketData implements JpaEntity {
 
     @Column(name = "previous_average_loss", precision = 15, scale = 4)
     private BigDecimal previousAverageLoss;
+
+    public void addRecommendation(Recommendation r) {
+        recommendations.add(r);
+    }
 
     @Override
     public String toString() {

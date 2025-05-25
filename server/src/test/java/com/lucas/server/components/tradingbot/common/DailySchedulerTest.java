@@ -43,7 +43,7 @@ class DailySchedulerTest {
         await().atMost(Duration.ofSeconds(10))
                 .untilAsserted(() -> {
                             verify(dataManager, atLeastOnce()).retrieveMarketData(any(), any());
-                            verify(dataManager, atLeastOnce()).retrieveNewsByDateRange(any(), eq(from), eq(to));
+                            verify(dataManager, atLeastOnce()).retrieveNewsByDateRange(any(), eq(from), eq(to), eq(false));
                         }
                 );
     }

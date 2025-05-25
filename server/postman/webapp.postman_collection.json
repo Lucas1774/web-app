@@ -1,11 +1,11 @@
 {
 	"info": {
-		"_postman_id": "57d313fc-fba0-4b7e-9e53-6019f4386448",
+		"_postman_id": "f33a5802-fb6e-4bcf-a5b8-b78ad78b2926",
 		"name": "webapp",
 		"description": "# 🚀 Get started here\n\nThis template guides you through CRUD operations (GET, POST, PUT, DELETE), variables, and tests.\n\n## 🔖 **How to use this template**\n\n#### **Step 1: Send requests**\n\nRESTful APIs allow you to perform CRUD operations using the POST, GET, PUT, and DELETE HTTP methods.\n\nThis collection contains each of these [request](https://learning.postman.com/docs/sending-requests/requests/) types. Open each request and click \"Send\" to see what happens.\n\n#### **Step 2: View responses**\n\nObserve the response tab for status code (200 OK), response time, and size.\n\n#### **Step 3: Send new Body data**\n\nUpdate or add new data in \"Body\" in the POST request. Typically, Body data is also used in PUT request.\n\n```\n{\n    \"name\": \"Add your name in the body\"\n}\n\n ```\n\n#### **Step 4: Update the variable**\n\nVariables enable you to store and reuse values in Postman. We have created a [variable](https://learning.postman.com/docs/sending-requests/variables/) called `base_url` with the sample request [https://postman-api-learner.glitch.me](https://postman-api-learner.glitch.me). Replace it with your API endpoint to customize this collection.\n\n#### **Step 5: Add tests in the \"Scripts\" tab**\n\nAdding tests to your requests can help you confirm that your API is working as expected. You can write test scripts in JavaScript and view the output in the \"Test Results\" tab.\n\n<img src=\"https://content.pstmn.io/fa30ea0a-373d-4545-a668-e7b283cca343/aW1hZ2UucG5n\" alt=\"\" height=\"1530\" width=\"2162\">\n\n## 💪 Pro tips\n\n- Use folders to group related requests and organize the collection.\n    \n- Add more [scripts](https://learning.postman.com/docs/writing-scripts/intro-to-scripts/) to verify if the API works as expected and execute workflows.\n    \n\n## 💡Related templates\n\n[API testing basics](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=e9a37a28-055b-49cd-8c7e-97494a21eb54&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)  \n[API documentation](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=e9c28f47-1253-44af-a2f3-20dce4da1f18&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)  \n[Authorization methods](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=31a9a6ed-4cdf-4ced-984c-d12c9aec1c27&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "44440825",
-		"_collection_link": "https://johndoe-483049.postman.co/workspace/John-Doe's-Workspace~66114b17-ce92-4db7-8551-7be733093137/collection/44440825-57d313fc-fba0-4b7e-9e53-6019f4386448?action=share&source=collection_link&creator=44440825"
+		"_collection_link": "https://johndoe-483049.postman.co/workspace/John-Doe's-Workspace~66114b17-ce92-4db7-8551-7be733093137/collection/44440825-f33a5802-fb6e-4bcf-a5b8-b78ad78b2926?action=share&source=collection_link&creator=44440825"
 	},
 	"item": [
 		{
@@ -241,7 +241,6 @@
 													"            change: { type: \"number\" },\r",
 													"            changePercent: { type: \"number\" }\r",
 													"        },\r",
-													"        additionalProperties: false\r",
 													"    }\r",
 													"};\r",
 													"\r",
@@ -313,7 +312,6 @@
 													"            change: { type: \"number\" },\r",
 													"            changePercent: { type: \"number\" }\r",
 													"        },\r",
-													"        additionalProperties: false\r",
 													"    }\r",
 													"};\r",
 													"\r",
@@ -357,8 +355,8 @@
 													"\r",
 													"const schema = {\r",
 													"    type: \"array\",\r",
-													"    minItems: 450,\r",
-													"    maxItems: 550,\r",
+													"    minItems: 3,\r",
+													"    maxItems: 3,\r",
 													"    items: {\r",
 													"        type: \"object\",\r",
 													"        required: [\r",
@@ -385,7 +383,6 @@
 													"            change: { type: \"number\" },\r",
 													"            changePercent: { type: \"number\" }\r",
 													"        },\r",
-													"        additionalProperties: false\r",
 													"    }\r",
 													"};\r",
 													"\r",
@@ -718,7 +715,7 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "{{base_url}}/news/last/AAPL",
+											"raw": "{{base_url}}/news/last/AAPL?generateEmbeddings=true",
 											"host": [
 												"{{base_url}}"
 											],
@@ -726,6 +723,12 @@
 												"news",
 												"last",
 												"AAPL"
+											],
+											"query": [
+												{
+													"key": "generateEmbeddings",
+													"value": "true"
+												}
 											]
 										}
 									},
@@ -795,14 +798,20 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "{{base_url}}/news/last/AAPL,IBM, GOOG",
+											"raw": "{{base_url}}/news/last/AAPL,IBM,GOOG?generateEmbeddings=false",
 											"host": [
 												"{{base_url}}"
 											],
 											"path": [
 												"news",
 												"last",
-												"AAPL,IBM, GOOG"
+												"AAPL,IBM,GOOG"
+											],
+											"query": [
+												{
+													"key": "generateEmbeddings",
+													"value": "false"
+												}
 											]
 										}
 									},
@@ -872,13 +881,19 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "{{base_url}}/news/last",
+											"raw": "{{base_url}}/news/last?generateEmbeddings=false",
 											"host": [
 												"{{base_url}}"
 											],
 											"path": [
 												"news",
 												"last"
+											],
+											"query": [
+												{
+													"key": "generateEmbeddings",
+													"value": "false"
+												}
 											]
 										}
 									},
@@ -953,7 +968,7 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "{{base_url}}/news/historic/{{specificDate}}/AAPL",
+											"raw": "{{base_url}}/news/historic/{{specificDate}}/AAPL?generateEmbeddings=false",
 											"host": [
 												"{{base_url}}"
 											],
@@ -962,6 +977,12 @@
 												"historic",
 												"{{specificDate}}",
 												"AAPL"
+											],
+											"query": [
+												{
+													"key": "generateEmbeddings",
+													"value": "false"
+												}
 											]
 										}
 									},
@@ -1031,7 +1052,7 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "{{base_url}}/news/historic/{{specificDate}}/AAPL,IBM,GOOG",
+											"raw": "{{base_url}}/news/historic/{{specificDate}}/AAPL,IBM,GOOG?generateEmbeddings=false",
 											"host": [
 												"{{base_url}}"
 											],
@@ -1040,6 +1061,12 @@
 												"historic",
 												"{{specificDate}}",
 												"AAPL,IBM,GOOG"
+											],
+											"query": [
+												{
+													"key": "generateEmbeddings",
+													"value": "false"
+												}
 											]
 										}
 									},
@@ -1108,7 +1135,7 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "{{base_url}}/news/historic/{{specificDate}}",
+											"raw": "{{base_url}}/news/historic/{{specificDate}}?generateEmbeddings=false",
 											"host": [
 												"{{base_url}}"
 											],
@@ -1116,6 +1143,12 @@
 												"news",
 												"historic",
 												"{{specificDate}}"
+											],
+											"query": [
+												{
+													"key": "generateEmbeddings",
+													"value": "false"
+												}
 											]
 										}
 									},
@@ -1284,7 +1317,7 @@
 					"name": "portfolio/",
 					"item": [
 						{
-							"name": "mock/",
+							"name": "trades (run this first)",
 							"item": [
 								{
 									"name": "sell no stock",
@@ -1306,13 +1339,12 @@
 										"method": "POST",
 										"header": [],
 										"url": {
-											"raw": "{{base_url}}/portfolio/mock/sell?symbolName=AAPL&price=5.5&quantity=2&date={{now}}",
+											"raw": "{{base_url}}/portfolio/sell?symbolName=AAPL&price=5.5&quantity=2&mock=true",
 											"host": [
 												"{{base_url}}"
 											],
 											"path": [
 												"portfolio",
-												"mock",
 												"sell"
 											],
 											"query": [
@@ -1329,8 +1361,8 @@
 													"value": "2"
 												},
 												{
-													"key": "date",
-													"value": "{{now}}"
+													"key": "mock",
+													"value": "true"
 												}
 											]
 										}
@@ -1338,7 +1370,7 @@
 									"response": []
 								},
 								{
-									"name": "buy",
+									"name": "buy AAPL",
 									"event": [
 										{
 											"listen": "test",
@@ -1373,13 +1405,12 @@
 										"method": "POST",
 										"header": [],
 										"url": {
-											"raw": "{{base_url}}/portfolio/mock/buy?symbolName=AAPL&price=5.5&quantity=2&date={{now+1}}",
+											"raw": "{{base_url}}/portfolio/buy?symbolName=AAPL&price=5.5&quantity=2&mock=true",
 											"host": [
 												"{{base_url}}"
 											],
 											"path": [
 												"portfolio",
-												"mock",
 												"buy"
 											],
 											"query": [
@@ -1396,8 +1427,74 @@
 													"value": "2"
 												},
 												{
-													"key": "date",
-													"value": "{{now+1}}"
+													"key": "mock",
+													"value": "true"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "buy ABT",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {\r",
+													"    pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"pm.test(\"Response body contains expected fields and types\", function () {\r",
+													"    const json = pm.response.json();\r",
+													"\r",
+													"    pm.expect(json.id).to.be.a(\"number\");\r",
+													"    pm.expect(json.quantity).to.eql(2.000);\r",
+													"    pm.expect(json.averageCost).to.eql(5.50000000);\r",
+													"\r",
+													"    pm.expect(json.symbol).to.be.an(\"object\");\r",
+													"    pm.expect(json.symbol.id).to.be.a(\"number\");\r",
+													"    pm.expect(json.symbol.name).to.eql(\"ABT\");\r",
+													"\r",
+													"    const isoLike = /^\\d{4}-\\d{2}-\\d{2}(T.*)?$/;\r",
+													"    pm.expect(json.effectiveTimestamp).to.match(isoLike);\r",
+													"});\r",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/portfolio/buy?symbolName=ABT&price=5.5&quantity=2&mock=true",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"portfolio",
+												"buy"
+											],
+											"query": [
+												{
+													"key": "symbolName",
+													"value": "ABT"
+												},
+												{
+													"key": "price",
+													"value": "5.5"
+												},
+												{
+													"key": "quantity",
+													"value": "2"
+												},
+												{
+													"key": "mock",
+													"value": "true"
 												}
 											]
 										}
@@ -1440,13 +1537,12 @@
 										"method": "POST",
 										"header": [],
 										"url": {
-											"raw": "{{base_url}}/portfolio/mock/sell?symbolName=AAPL&price=3.5&quantity=1&date={{now+2}}",
+											"raw": "{{base_url}}/portfolio/sell?symbolName=AAPL&price=3.5&quantity=1&mock=true",
 											"host": [
 												"{{base_url}}"
 											],
 											"path": [
 												"portfolio",
-												"mock",
 												"sell"
 											],
 											"query": [
@@ -1463,8 +1559,8 @@
 													"value": "1"
 												},
 												{
-													"key": "date",
-													"value": "{{now+2}}"
+													"key": "mock",
+													"value": "true"
 												}
 											]
 										}
@@ -1491,13 +1587,12 @@
 										"method": "POST",
 										"header": [],
 										"url": {
-											"raw": "{{base_url}}/portfolio/mock/sell?symbolName=AAPL&price=1.5&quantity=2&date={{now+3}}",
+											"raw": "{{base_url}}/portfolio/sell?symbolName=AAPL&price=1.5&quantity=2&mock=true",
 											"host": [
 												"{{base_url}}"
 											],
 											"path": [
 												"portfolio",
-												"mock",
 												"sell"
 											],
 											"query": [
@@ -1514,8 +1609,8 @@
 													"value": "2"
 												},
 												{
-													"key": "date",
-													"value": "{{now+3}}"
+													"key": "mock",
+													"value": "true"
 												}
 											]
 										}
@@ -1523,7 +1618,224 @@
 									"response": []
 								},
 								{
-									"name": "stand",
+									"name": "buy ABT",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {\r",
+													"    pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"pm.test(\"Response body contains expected fields and types\", function () {\r",
+													"    const json = pm.response.json();\r",
+													"\r",
+													"    pm.expect(json.id).to.be.a(\"number\");\r",
+													"    pm.expect(json.quantity).to.eql(2.000);\r",
+													"    pm.expect(json.averageCost).to.eql(5.50000000);\r",
+													"\r",
+													"    pm.expect(json.symbol).to.be.an(\"object\");\r",
+													"    pm.expect(json.symbol.id).to.be.a(\"number\");\r",
+													"    pm.expect(json.symbol.name).to.eql(\"ABT\");\r",
+													"\r",
+													"    const isoLike = /^\\d{4}-\\d{2}-\\d{2}(T.*)?$/;\r",
+													"    pm.expect(json.effectiveTimestamp).to.match(isoLike);\r",
+													"});\r",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/portfolio/buy?symbolName=ABT&price=5.5&quantity=2&mock=true",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"portfolio",
+												"buy"
+											],
+											"query": [
+												{
+													"key": "symbolName",
+													"value": "ABT"
+												},
+												{
+													"key": "price",
+													"value": "5.5"
+												},
+												{
+													"key": "quantity",
+													"value": "2"
+												},
+												{
+													"key": "mock",
+													"value": "true"
+												}
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "stand/",
+							"item": [
+								{
+									"name": "static",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status is 200\", function () {\r",
+													"    pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"pm.test(\"Response matches JSON schema\", function () {\r",
+													"    const schema = {\r",
+													"        type: \"array\",\r",
+													"        minItems: 2,\r",
+													"        maxItems: 2,\r",
+													"        items: {\r",
+													"            type: \"object\",\r",
+													"            required: [\"symbol\", \"quantity\", \"averageCost\", \"positionValue\", \"pnL\"],\r",
+													"            properties: {\r",
+													"                symbol: {\r",
+													"                    type: \"object\",\r",
+													"                    required: [\"id\", \"name\"],\r",
+													"                    properties: {\r",
+													"                        id: { type: \"number\" },\r",
+													"                        name: { type: \"string\" }\r",
+													"                    },\r",
+													"                    additionalProperties: false\r",
+													"                },\r",
+													"                quantity: { type: \"number\" },\r",
+													"                averageCost: { type: \"number\" },\r",
+													"                positionValue: { type: \"number\" },\r",
+													"                pnL: { type: \"number\" }\r",
+													"            },\r",
+													"            additionalProperties: false\r",
+													"        }\r",
+													"    };\r",
+													"\r",
+													"    pm.response.to.have.jsonBody(schema);\r",
+													"});\r",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/portfolio/stand?mock=true&dynamic=false",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"portfolio",
+												"stand"
+											],
+											"query": [
+												{
+													"key": "mock",
+													"value": "true"
+												},
+												{
+													"key": "dynamic",
+													"value": "false"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "dynamic",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status is 200\", function () {\r",
+													"    pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"pm.test(\"Response matches JSON schema\", function () {\r",
+													"    const schema = {\r",
+													"        type: \"array\",\r",
+													"        minItems: 2,\r",
+													"        maxItems: 2,\r",
+													"        items: {\r",
+													"            type: \"object\",\r",
+													"            required: [\"symbol\", \"quantity\", \"averageCost\", \"positionValue\", \"pnL\"],\r",
+													"            properties: {\r",
+													"                symbol: {\r",
+													"                    type: \"object\",\r",
+													"                    required: [\"id\", \"name\"],\r",
+													"                    properties: {\r",
+													"                        id: { type: \"number\" },\r",
+													"                        name: { type: \"string\" }\r",
+													"                    },\r",
+													"                    additionalProperties: false\r",
+													"                },\r",
+													"                quantity: { type: \"number\" },\r",
+													"                averageCost: { type: \"number\" },\r",
+													"                positionValue: { type: \"number\" },\r",
+													"                pnL: { type: \"number\" }\r",
+													"            },\r",
+													"            additionalProperties: false\r",
+													"        }\r",
+													"    };\r",
+													"\r",
+													"    pm.response.to.have.jsonBody(schema);\r",
+													"});\r",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/portfolio/stand?mock=true&dynamic=true",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"portfolio",
+												"stand"
+											],
+											"query": [
+												{
+													"key": "mock",
+													"value": "true"
+												},
+												{
+													"key": "dynamic",
+													"value": "true"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "dynamic AAPL",
 									"event": [
 										{
 											"listen": "test",
@@ -1573,337 +1885,42 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "{{base_url}}/portfolio/mock/stand",
+											"raw": "{{base_url}}/portfolio/stand/AAPL?dynamic=true&llm=false&mock=true&sendFixmeRequest=false&overwrite=true",
 											"host": [
 												"{{base_url}}"
 											],
 											"path": [
 												"portfolio",
-												"mock",
-												"stand"
+												"stand",
+												"AAPL"
+											],
+											"query": [
+												{
+													"key": "dynamic",
+													"value": "true"
+												},
+												{
+													"key": "llm",
+													"value": "false"
+												},
+												{
+													"key": "mock",
+													"value": "true"
+												},
+												{
+													"key": "sendFixmeRequest",
+													"value": "false"
+												},
+												{
+													"key": "overwrite",
+													"value": "true"
+												}
 											]
 										}
 									},
 									"response": []
 								}
-							],
-							"event": [
-								{
-									"listen": "prerequest",
-									"script": {
-										"type": "text/javascript",
-										"packages": {},
-										"exec": [
-											"const toIsoDate = d => d.toISOString().slice(0, 10);\r",
-											"\r",
-											"const now = new Date();\r",
-											"const plus1 = new Date(now);\r",
-											"plus1.setDate(now.getDate() + 1);\r",
-											"\r",
-											"const plus2 = new Date(now);\r",
-											"plus2.setDate(now.getDate() + 2);\r",
-											"\r",
-											"const plus3 = new Date(now);\r",
-											"plus3.setDate(now.getDate() + 3);\r",
-											"\r",
-											"pm.environment.set(\"now\", toIsoDate(now));\r",
-											"pm.environment.set(\"now+1\", toIsoDate(plus1));\r",
-											"pm.environment.set(\"now+2\", toIsoDate(plus2));\r",
-											"pm.environment.set(\"now+3\", toIsoDate(plus3));\r",
-											""
-										]
-									}
-								},
-								{
-									"listen": "test",
-									"script": {
-										"type": "text/javascript",
-										"packages": {},
-										"exec": [
-											""
-										]
-									}
-								}
 							]
-						},
-						{
-							"name": "sell no stock",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"Status code is 422\", () => {\r",
-											"    pm.response.to.have.status(422);\r",
-											"});"
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								}
-							],
-							"request": {
-								"method": "POST",
-								"header": [],
-								"url": {
-									"raw": "{{base_url}}/portfolio/sell?symbolName=AAPL&price=5.5&quantity=2",
-									"host": [
-										"{{base_url}}"
-									],
-									"path": [
-										"portfolio",
-										"sell"
-									],
-									"query": [
-										{
-											"key": "symbolName",
-											"value": "AAPL"
-										},
-										{
-											"key": "price",
-											"value": "5.5"
-										},
-										{
-											"key": "quantity",
-											"value": "2"
-										}
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "buy",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"Status code is 200\", function () {\r",
-											"    pm.response.to.have.status(200);\r",
-											"});\r",
-											"\r",
-											"pm.test(\"Response body contains expected fields and types\", function () {\r",
-											"    const json = pm.response.json();\r",
-											"\r",
-											"    pm.expect(json.id).to.be.a(\"number\");\r",
-											"    pm.expect(json.quantity).to.eql(2.000);\r",
-											"    pm.expect(json.averageCost).to.eql(5.50000000);\r",
-											"\r",
-											"    pm.expect(json.symbol).to.be.an(\"object\");\r",
-											"    pm.expect(json.symbol.id).to.be.a(\"number\");\r",
-											"    pm.expect(json.symbol.name).to.eql(\"AAPL\");\r",
-											"\r",
-											"    const isoLike = /^\\d{4}-\\d{2}-\\d{2}(T.*)?$/;\r",
-											"    pm.expect(json.effectiveTimestamp).to.match(isoLike);\r",
-											"});\r",
-											""
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								}
-							],
-							"request": {
-								"method": "POST",
-								"header": [],
-								"url": {
-									"raw": "{{base_url}}/portfolio/buy?symbolName=AAPL&price=5.5&quantity=2",
-									"host": [
-										"{{base_url}}"
-									],
-									"path": [
-										"portfolio",
-										"buy"
-									],
-									"query": [
-										{
-											"key": "symbolName",
-											"value": "AAPL"
-										},
-										{
-											"key": "price",
-											"value": "5.5"
-										},
-										{
-											"key": "quantity",
-											"value": "2"
-										}
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "sell",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"Status code is 200\", function () {\r",
-											"    pm.response.to.have.status(200);\r",
-											"});\r",
-											"\r",
-											"pm.test(\"Response body contains expected fields and types\", function () {\r",
-											"    const json = pm.response.json();\r",
-											"\r",
-											"    pm.expect(json.id).to.be.a(\"number\");\r",
-											"    pm.expect(json.quantity).to.eql(1.000);\r",
-											"    pm.expect(json.averageCost).to.eql(5.50000000);\r",
-											"\r",
-											"    pm.expect(json.symbol).to.be.an(\"object\");\r",
-											"    pm.expect(json.symbol.id).to.be.a(\"number\");\r",
-											"    pm.expect(json.symbol.name).to.eql(\"AAPL\");\r",
-											"\r",
-											"    const isoLike = /^\\d{4}-\\d{2}-\\d{2}(T.*)?$/;\r",
-											"    pm.expect(json.effectiveTimestamp).to.match(isoLike);\r",
-											"});\r",
-											""
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								}
-							],
-							"request": {
-								"method": "POST",
-								"header": [],
-								"url": {
-									"raw": "{{base_url}}/portfolio/sell?symbolName=AAPL&price=3.5&quantity=1",
-									"host": [
-										"{{base_url}}"
-									],
-									"path": [
-										"portfolio",
-										"sell"
-									],
-									"query": [
-										{
-											"key": "symbolName",
-											"value": "AAPL"
-										},
-										{
-											"key": "price",
-											"value": "3.5"
-										},
-										{
-											"key": "quantity",
-											"value": "1"
-										}
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "sell no stock",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"Status code is 422\", () => {\r",
-											"    pm.response.to.have.status(422);\r",
-											"});"
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								}
-							],
-							"request": {
-								"method": "POST",
-								"header": [],
-								"url": {
-									"raw": "{{base_url}}/portfolio/sell?symbolName=AAPL&price=1.5&quantity=2",
-									"host": [
-										"{{base_url}}"
-									],
-									"path": [
-										"portfolio",
-										"sell"
-									],
-									"query": [
-										{
-											"key": "symbolName",
-											"value": "AAPL"
-										},
-										{
-											"key": "price",
-											"value": "1.5"
-										},
-										{
-											"key": "quantity",
-											"value": "2"
-										}
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "stand",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"Status is 200\", function () {\r",
-											"    pm.response.to.have.status(200);\r",
-											"});\r",
-											"\r",
-											"pm.test(\"Response matches JSON schema\", function () {\r",
-											"    const schema = {\r",
-											"        type: \"array\",\r",
-											"        minItems: 1,\r",
-											"        maxItems: 1,\r",
-											"        items: {\r",
-											"            type: \"object\",\r",
-											"            required: [\"symbol\", \"quantity\", \"averageCost\", \"positionValue\", \"pnL\"],\r",
-											"            properties: {\r",
-											"                symbol: {\r",
-											"                    type: \"object\",\r",
-											"                    required: [\"id\", \"name\"],\r",
-											"                    properties: {\r",
-											"                        id: { type: \"number\" },\r",
-											"                        name: { type: \"string\" }\r",
-											"                    },\r",
-											"                    additionalProperties: false\r",
-											"                },\r",
-											"                quantity: { type: \"number\" },\r",
-											"                averageCost: { type: \"number\" },\r",
-											"                positionValue: { type: \"number\" },\r",
-											"                pnL: { type: \"number\" }\r",
-											"            },\r",
-											"            additionalProperties: false\r",
-											"        }\r",
-											"    };\r",
-											"\r",
-											"    pm.response.to.have.jsonBody(schema);\r",
-											"});\r",
-											""
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								}
-							],
-							"request": {
-								"method": "GET",
-								"header": [],
-								"url": {
-									"raw": "{{base_url}}/portfolio/stand",
-									"host": [
-										"{{base_url}}"
-									],
-									"path": [
-										"portfolio",
-										"stand"
-									]
-								}
-							},
-							"response": []
 						}
 					]
 				},
@@ -2182,173 +2199,6 @@
 					"name": "recommendations/",
 					"item": [
 						{
-							"name": "mock/",
-							"item": [
-								{
-									"name": "AAPL",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"pm.test(\"Status code is 200\", () => {\r",
-													"    pm.response.to.have.status(200);\r",
-													"});\r",
-													"\r",
-													"console.log(pm.response.json());\r",
-													"\r",
-													"const schema = {\r",
-													"    type: \"array\",\r",
-													"    minItems: 1,\r",
-													"    maxItems: 1,\r",
-													"    items: {\r",
-													"        type: \"object\",\r",
-													"        required: [\"input\", \"output\"],\r",
-													"        additionalProperties: false,\r",
-													"        properties: {\r",
-													"            input: { type: \"string\" },\r",
-													"            output: {\r",
-													"                type: \"object\",\r",
-													"                required: [\"recommendations\", \"errors\"],\r",
-													"                additionalProperties: false,\r",
-													"                properties: {\r",
-													"                    recommendations: {\r",
-													"                        type: \"array\",\r",
-													"                        minItems: 1,\r",
-													"                        maxItems: 1,\r",
-													"                        items: {\r",
-													"                            type: \"object\",\r",
-													"                            required: [\"symbol\", \"action\", \"confidence\", \"rationale\"],\r",
-													"                            additionalProperties: false,\r",
-													"                            properties: {\r",
-													"                                symbol: { type: \"string\" },\r",
-													"                                action: { type: \"string\", enum: [\"BUY\", \"SELL\", \"HOLD\"] },\r",
-													"                                confidence: { type: \"number\", minimum: 0, maximum: 1 },\r",
-													"                                rationale: { type: \"string\" }\r",
-													"                            }\r",
-													"                        }\r",
-													"                    },\r",
-													"                    errors: {\r",
-													"                        type: \"array\",\r",
-													"                        items: { type: \"string\" }\r",
-													"                    }\r",
-													"                }\r",
-													"            }\r",
-													"        }\r",
-													"    }\r",
-													"};\r",
-													"\r",
-													"pm.test(\"Response schema is valid\", () => {\r",
-													"    pm.response.to.have.jsonSchema(schema);\r",
-													"});\r",
-													""
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"method": "GET",
-										"header": [],
-										"url": {
-											"raw": "{{base_url}}/recommendations/mock/AAPL",
-											"host": [
-												"{{base_url}}"
-											],
-											"path": [
-												"recommendations",
-												"mock",
-												"AAPL"
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "AAPL,IBM,GOOG,MMM,AOS,ABT",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"pm.test(\"Status code is 200\", () => {\r",
-													"    pm.response.to.have.status(200);\r",
-													"});\r",
-													"\r",
-													"console.log(pm.response.json());\r",
-													"\r",
-													"const schema = {\r",
-													"    type: \"array\",\r",
-													"    minItems: 2,\r",
-													"    maxItems: 2,\r",
-													"    items: {\r",
-													"        type: \"object\",\r",
-													"        required: [\"input\", \"output\"],\r",
-													"        additionalProperties: false,\r",
-													"        properties: {\r",
-													"            input: { type: \"string\" },\r",
-													"            output: {\r",
-													"                type: \"object\",\r",
-													"                required: [\"recommendations\", \"errors\"],\r",
-													"                additionalProperties: false,\r",
-													"                properties: {\r",
-													"                    recommendations: {\r",
-													"                        type: \"array\",\r",
-													"                        minItems: 1,\r",
-													"                        maxItems: 5,\r",
-													"                        items: {\r",
-													"                            type: \"object\",\r",
-													"                            required: [\"symbol\", \"action\", \"confidence\", \"rationale\"],\r",
-													"                            additionalProperties: false,\r",
-													"                            properties: {\r",
-													"                                symbol: { type: \"string\" },\r",
-													"                                action: { type: \"string\", enum: [\"BUY\", \"SELL\", \"HOLD\"] },\r",
-													"                                confidence: { type: \"number\", minimum: 0, maximum: 1 },\r",
-													"                                rationale: { type: \"string\" }\r",
-													"                            }\r",
-													"                        }\r",
-													"                    },\r",
-													"                    errors: {\r",
-													"                        type: \"array\",\r",
-													"                        items: { type: \"string\" }\r",
-													"                    }\r",
-													"                }\r",
-													"            }\r",
-													"        }\r",
-													"    }\r",
-													"};\r",
-													"\r",
-													"pm.test(\"Response schema is valid\", () => {\r",
-													"    pm.response.to.have.jsonSchema(schema);\r",
-													"});\r",
-													""
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"method": "GET",
-										"header": [],
-										"url": {
-											"raw": "{{base_url}}/recommendations/mock/AAPL,IBM,GOOG,MMM,AOS,ABT",
-											"host": [
-												"{{base_url}}"
-											],
-											"path": [
-												"recommendations",
-												"mock",
-												"AAPL,IBM,GOOG,MMM,AOS,ABT"
-											]
-										}
-									},
-									"response": []
-								}
-							]
-						},
-						{
 							"name": "AAPL",
 							"event": [
 								{
@@ -2367,37 +2217,13 @@
 											"    maxItems: 1,\r",
 											"    items: {\r",
 											"        type: \"object\",\r",
-											"        required: [\"input\", \"output\"],\r",
-											"        additionalProperties: false,\r",
+											"        required: [\"input\", \"action\", \"confidence\", \"rationale\", \"errors\"],\r",
 											"        properties: {\r",
 											"            input: { type: \"string\" },\r",
-											"            output: {\r",
-											"                type: \"object\",\r",
-											"                required: [\"recommendations\", \"errors\"],\r",
-											"                additionalProperties: false,\r",
-											"                properties: {\r",
-											"                    recommendations: {\r",
-											"                        type: \"array\",\r",
-											"                        minItems: 1,\r",
-											"                        maxItems: 1,\r",
-											"                        items: {\r",
-											"                            type: \"object\",\r",
-											"                            required: [\"symbol\", \"action\", \"confidence\", \"rationale\"],\r",
-											"                            additionalProperties: false,\r",
-											"                            properties: {\r",
-											"                                symbol: { type: \"string\" },\r",
-											"                                action: { type: \"string\", enum: [\"BUY\", \"SELL\", \"HOLD\"] },\r",
-											"                                confidence: { type: \"number\", minimum: 0, maximum: 1 },\r",
-											"                                rationale: { type: \"string\" }\r",
-											"                            }\r",
-											"                        }\r",
-											"                    },\r",
-											"                    errors: {\r",
-											"                        type: \"array\",\r",
-											"                        items: { type: \"string\" }\r",
-											"                    }\r",
-											"                }\r",
-											"            }\r",
+											"            action: { type: \"string\" },\r",
+											"            confidence: { type: \"number\" },\r",
+											"            rationale: { type: \"string\" },\r",
+											"            errors: { type: \"array\" }\r",
 											"        }\r",
 											"    }\r",
 											"};\r",
@@ -2416,13 +2242,31 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{base_url}}/recommendations/AAPL",
+									"raw": "{{base_url}}/recommendations/AAPL?llm=false&mock=true&sendFixmeRequest=false&overwrite=true",
 									"host": [
 										"{{base_url}}"
 									],
 									"path": [
 										"recommendations",
 										"AAPL"
+									],
+									"query": [
+										{
+											"key": "llm",
+											"value": "false"
+										},
+										{
+											"key": "mock",
+											"value": "true"
+										},
+										{
+											"key": "sendFixmeRequest",
+											"value": "false"
+										},
+										{
+											"key": "overwrite",
+											"value": "true"
+										}
 									]
 								}
 							},
@@ -2443,41 +2287,17 @@
 											"\r",
 											"const schema = {\r",
 											"    type: \"array\",\r",
-											"    minItems: 2,\r",
-											"    maxItems: 2,\r",
+											"    minItems: 3,\r",
+											"    maxItems: 3,\r",
 											"    items: {\r",
 											"        type: \"object\",\r",
-											"        required: [\"input\", \"output\"],\r",
-											"        additionalProperties: false,\r",
+											"                required: [\"input\", \"action\", \"confidence\", \"rationale\", \"errors\"],\r",
 											"        properties: {\r",
 											"            input: { type: \"string\" },\r",
-											"            output: {\r",
-											"                type: \"object\",\r",
-											"                required: [\"recommendations\", \"errors\"],\r",
-											"                additionalProperties: false,\r",
-											"                properties: {\r",
-											"                    recommendations: {\r",
-											"                        type: \"array\",\r",
-											"                        minItems: 1,\r",
-											"                        maxItems: 5,\r",
-											"                        items: {\r",
-											"                            type: \"object\",\r",
-											"                            required: [\"symbol\", \"action\", \"confidence\", \"rationale\"],\r",
-											"                            additionalProperties: false,\r",
-											"                            properties: {\r",
-											"                                symbol: { type: \"string\" },\r",
-											"                                action: { type: \"string\", enum: [\"BUY\", \"SELL\", \"HOLD\"] },\r",
-											"                                confidence: { type: \"number\", minimum: 0, maximum: 1 },\r",
-											"                                rationale: { type: \"string\" }\r",
-											"                            }\r",
-											"                        }\r",
-											"                    },\r",
-											"                    errors: {\r",
-											"                        type: \"array\",\r",
-											"                        items: { type: \"string\" }\r",
-											"                    }\r",
-											"                }\r",
-											"            }\r",
+											"            action: { type: \"string\" },\r",
+											"            confidence: { type: \"number\" },\r",
+											"            rationale: { type: \"string\" },\r",
+											"            errors: { type: \"array\" }\r",
 											"        }\r",
 											"    }\r",
 											"};\r",
@@ -2496,13 +2316,192 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{base_url}}/recommendations/AAPL,IBM,GOOG,MMM,AOS,ABT",
+									"raw": "{{base_url}}/recommendations/AAPL,IBM,GOOG?llm=false&mock=true&sendFixmeRequest=false&overwrite=true",
 									"host": [
 										"{{base_url}}"
 									],
 									"path": [
 										"recommendations",
-										"AAPL,IBM,GOOG,MMM,AOS,ABT"
+										"AAPL,IBM,GOOG"
+									],
+									"query": [
+										{
+											"key": "llm",
+											"value": "false"
+										},
+										{
+											"key": "mock",
+											"value": "true"
+										},
+										{
+											"key": "sendFixmeRequest",
+											"value": "false"
+										},
+										{
+											"key": "overwrite",
+											"value": "true"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "stand",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response matches JSON schema\", function () {\r",
+											"    const schema = {\r",
+											"        type: \"array\",\r",
+											"        minItems: 1,\r",
+											"        maxItems: 1,\r",
+											"        items: {\r",
+											"            type: \"object\",\r",
+											"            required: [\"symbol\", \"quantity\", \"averageCost\", \"positionValue\", \"pnL\"],\r",
+											"            properties: {\r",
+											"                symbol: {\r",
+											"                    type: \"object\",\r",
+											"                    required: [\"id\", \"name\"],\r",
+											"                    properties: {\r",
+											"                        id: { type: \"number\" },\r",
+											"                        name: { type: \"string\" }\r",
+											"                    },\r",
+											"                    additionalProperties: false\r",
+											"                },\r",
+											"                quantity: { type: \"number\" },\r",
+											"                averageCost: { type: \"number\" },\r",
+											"                positionValue: { type: \"number\" },\r",
+											"                pnL: { type: \"number\" }\r",
+											"            },\r",
+											"            additionalProperties: false\r",
+											"        }\r",
+											"    };\r",
+											"\r",
+											"    pm.response.to.have.jsonBody(schema);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"recommendation field is not null\", function() {\r",
+											"    const jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData[0].recommendation).to.not.be.null;\r",
+											"})\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/recommendations/stand?llm=false&mock=true&sendFixmeRequest=false&overwrite=true",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"recommendations",
+										"stand"
+									],
+									"query": [
+										{
+											"key": "llm",
+											"value": "false"
+										},
+										{
+											"key": "mock",
+											"value": "true"
+										},
+										{
+											"key": "sendFixmeRequest",
+											"value": "false"
+										},
+										{
+											"key": "overwrite",
+											"value": "true"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "random 3",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", () => {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"console.log(pm.response.json());\r",
+											"\r",
+											"const schema = {\r",
+											"    type: \"array\",\r",
+											"    minItems: 3,\r",
+											"    maxItems: 3,\r",
+											"    items: {\r",
+											"        type: \"object\",\r",
+											"        required: [\"input\", \"action\", \"confidence\", \"rationale\", \"errors\"],\r",
+											"        properties: {\r",
+											"            input: { type: \"string\" },\r",
+											"            action: { type: \"string\" },\r",
+											"            confidence: { type: \"number\" },\r",
+											"            rationale: { type: \"string\" },\r",
+											"            errors: { type: \"array\" }\r",
+											"        }\r",
+											"    }\r",
+											"};\r",
+											"\r",
+											"pm.test(\"Response schema is valid\", () => {\r",
+											"    pm.response.to.have.jsonSchema(schema);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/recommendations/random/3?llm=false&mock=true&sendFixmeRequest=false&overwrite=true",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"recommendations",
+										"random",
+										"3"
+									],
+									"query": [
+										{
+											"key": "llm",
+											"value": "false"
+										},
+										{
+											"key": "mock",
+											"value": "true"
+										},
+										{
+											"key": "sendFixmeRequest",
+											"value": "false"
+										},
+										{
+											"key": "overwrite",
+											"value": "true"
+										}
 									]
 								}
 							},
@@ -4085,6 +4084,14 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "New Request",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
 		}
 	],
 	"auth": {

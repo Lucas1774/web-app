@@ -6,7 +6,6 @@ import com.lucas.server.components.tradingbot.common.jpa.DataManager;
 import com.lucas.server.components.tradingbot.news.jpa.News;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,11 +27,11 @@ public class NewsController {
     }
 
     @GetMapping("/last")
-    public ResponseEntity<List<News>> fetchAndSaveAll() {
+    public ResponseEntity<List<News>> fetchAndSaveAll(@RequestParam boolean generateEmbeddings) {
         LocalDate to = LocalDate.now();
         LocalDate from = to.minusDays(1);
         try {
-            return ResponseEntity.ok(jpaService.retrieveNewsByDateRange(SP500_SYMBOLS, from, to));
+            return ResponseEntity.ok(jpaService.retrieveNewsByDateRange(SP500_SYMBOLS, from, to, generateEmbeddings));
         } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -40,11 +39,12 @@ public class NewsController {
     }
 
     @GetMapping("/last/{symbols}")
-    public ResponseEntity<List<News>> fetchAndSaveSome(@PathVariable List<String> symbols) {
+    public ResponseEntity<List<News>> fetchAndSaveSome(@PathVariable List<String> symbols,
+                                                       @RequestParam boolean generateEmbeddings) {
         LocalDate to = LocalDate.now();
         LocalDate from = to.minusDays(1);
         try {
-            return ResponseEntity.ok(jpaService.retrieveNewsByDateRange(symbols, from, to));
+            return ResponseEntity.ok(jpaService.retrieveNewsByDateRange(symbols, from, to, generateEmbeddings));
         } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -52,10 +52,10 @@ public class NewsController {
     }
 
     @GetMapping("/historic/{from}")
-    public ResponseEntity<List<News>> fetchAndSaveHistoricAll(
-            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from) {
+    public ResponseEntity<List<News>> fetchAndSaveHistoricAll(@PathVariable LocalDate from,
+                                                              @RequestParam boolean generateEmbeddings) {
         try {
-            return ResponseEntity.ok(jpaService.retrieveNewsByDateRange(SP500_SYMBOLS, from, LocalDate.now()));
+            return ResponseEntity.ok(jpaService.retrieveNewsByDateRange(SP500_SYMBOLS, from, LocalDate.now(), generateEmbeddings));
         } catch (JsonProcessingException | ClientException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -63,11 +63,11 @@ public class NewsController {
     }
 
     @GetMapping("/historic/{from}/{symbols}")
-    public ResponseEntity<List<News>> fetchAndSaveHistoricSome(
-            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-            @PathVariable List<String> symbols) {
+    public ResponseEntity<List<News>> fetchAndSaveHistoricSome(@PathVariable LocalDate from,
+                                                               @PathVariable List<String> symbols,
+                                                               @RequestParam boolean generateEmbeddings) {
         try {
-            return ResponseEntity.ok(jpaService.retrieveNewsByDateRange(symbols, from, LocalDate.now()));
+            return ResponseEntity.ok(jpaService.retrieveNewsByDateRange(symbols, from, LocalDate.now(), generateEmbeddings));
         } catch (JsonProcessingException | ClientException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

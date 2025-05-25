@@ -45,4 +45,16 @@ public class RecommendationsJpaService implements JpaService<Recommendation> {
     public List<Recommendation> findBySymbolId(Long id) {
         return repository.findBySymbol_Id(id);
     }
+
+    public List<Recommendation> createOrUpdate(List<Recommendation> entities) {
+        return uniqueConstraintDelegate.createOrUpdate(entity -> repository.findBySymbol_IdAndDate(entity.getSymbol().getId(), entity.getDate()),
+                (oldEntity, newEntity) -> oldEntity
+                        .setAction(newEntity.getAction())
+                        .setConfidence(newEntity.getConfidence())
+                        .setRationale(newEntity.getRationale())
+                        .setMarketData(newEntity.getMarketData())
+                        .setInput(newEntity.getInput())
+                        .setErrors(newEntity.getErrors()),
+                entities);
+    }
 }

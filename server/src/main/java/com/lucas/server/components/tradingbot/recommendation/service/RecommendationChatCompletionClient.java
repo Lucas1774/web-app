@@ -69,7 +69,7 @@ public class RecommendationChatCompletionClient implements RecommendationClient 
     }
 
     public List<Recommendation> getRecommendations(Map<Symbol, List<MarketData>> marketData, Map<Symbol, List<News>> newsData,
-                                                   Map<Symbol, ? extends PortfolioBase> portfolioData, Boolean withFixmeRequest) throws ClientException, IOException {
+                                                   Map<Symbol, ? extends PortfolioBase> portfolioData, boolean withFixmeRequest) throws ClientException, IOException {
         List<AssetReportRaw> reports = new ArrayList<>();
         for (Map.Entry<Symbol, List<MarketData>> mdHistory : marketData.entrySet()) {
             reports.add(assertReportDataProvider.provide(mdHistory.getKey(), mdHistory.getValue(),
@@ -89,7 +89,7 @@ public class RecommendationChatCompletionClient implements RecommendationClient 
         logger.info(GENERATING_RECOMMENDATIONS_INFO, marketData.keySet());
         Prompt prompt = new Prompt(List.of(systemMessage, promptMessage, fewShotMessage, fixedMessage), client.getDefaultOptions());
 
-        return mapper.mapAll(marketData.keySet().stream().toList(), objectMapper.readTree(retryableClient.callWithBackupStrategy(prompt)), fixedMessage.getText());
+        return mapper.mapAll(marketData, objectMapper.readTree(retryableClient.callWithBackupStrategy(prompt)), fixedMessage.getText());
     }
 
     private Message generateMessageFromNode(ObjectNode data) throws JsonProcessingException {

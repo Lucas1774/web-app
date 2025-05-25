@@ -1,7 +1,9 @@
 package com.lucas.server.components.tradingbot.recommendation.jpa;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.lucas.server.common.jpa.JpaEntity;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
+import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,6 +31,11 @@ public class Recommendation implements JpaEntity {
     @JoinColumn(name = "symbol_id", nullable = false)
     private Symbol symbol;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "market_data_id")
+    @JsonIgnore
+    private MarketData marketData;
+
     @Column(nullable = false, length = 4)
     private String action;
 
@@ -46,6 +53,12 @@ public class Recommendation implements JpaEntity {
 
     @Transient
     private List<String> errors;
+
+    public Recommendation setMarketData(MarketData marketData) {
+        this.marketData = marketData;
+        marketData.addRecommendation(this);
+        return this;
+    }
 
     @Override
     public String toString() {
