@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button, Form, Table } from "react-bootstrap";
 import { get, post } from "../../api";
 import deleteIcon from "../../assets/images/bin.png";
@@ -13,7 +13,7 @@ import Spinner from "../Spinner";
 import ConfirmProductRemovalPopup from "./ConfirmProductRemovalPopup";
 import EditProductPopup from "./EditProductPopup";
 import EditSortablesPopup from "./EditSortablesPopup";
-import "./Shopping.css";
+import "../../Table.css";
 
 const Shopping = () => {
     const [tableData, setTableData] = useState(null);
@@ -408,7 +408,7 @@ const Shopping = () => {
 
     return (
         <><h1 id="shopping">Shopping</h1>
-            <div className="app shopping"> {message ? <div>{message}</div> :
+            <div className="app custom-table"> {message ? <div>{message}</div> :
                 isLoginFormVisible ? <LoginForm onSubmit={(e) => {
                     handleLoginSubmit(e)
                 }} /> :

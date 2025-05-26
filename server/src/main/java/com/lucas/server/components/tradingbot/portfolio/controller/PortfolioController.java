@@ -1,11 +1,13 @@
 package com.lucas.server.components.tradingbot.portfolio.controller;
 
+import com.lucas.server.common.controller.ControllerUtil;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.common.exception.IllegalStateException;
 import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;
 import com.lucas.server.components.tradingbot.portfolio.jpa.PortfolioBase;
 import com.lucas.server.components.tradingbot.portfolio.service.PortfolioManager;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -25,10 +27,12 @@ import static com.lucas.server.common.Constants.SP500_SYMBOLS;
 public class PortfolioController {
 
     private final DataManager jpaService;
+    private final ControllerUtil controllerUtil;
     private static final Logger logger = LoggerFactory.getLogger(PortfolioController.class);
 
-    public PortfolioController(DataManager jpaService) {
+    public PortfolioController(DataManager jpaService, ControllerUtil controllerUtil) {
         this.jpaService = jpaService;
+        this.controllerUtil = controllerUtil;
     }
 
     @PostMapping("/buy")
@@ -60,9 +64,8 @@ public class PortfolioController {
     }
 
     @GetMapping("/stand")
-    public ResponseEntity<List<PortfolioManager.SymbolStand>> getGlobalStandAll(@RequestParam boolean mock,
-                                                                                @RequestParam boolean dynamic) {
-        PortfolioType type = mock ? PortfolioType.MOCK : PortfolioType.REAL;
+    public ResponseEntity<List<PortfolioManager.SymbolStand>> getGlobalStandAll(HttpServletRequest request, @RequestParam boolean dynamic) {
+        PortfolioType type = controllerUtil.isAdmin(controllerUtil.retrieveUsername(request.getCookies())) ? PortfolioType.REAL : PortfolioType.MOCK;
         try {
             return ResponseEntity.ok(jpaService.getPortfolioStand(SP500_SYMBOLS, type, dynamic));
         } catch (ClientException | JsonProcessingException e) {
@@ -72,10 +75,10 @@ public class PortfolioController {
     }
 
     @GetMapping("/stand/{symbols}")
-    public ResponseEntity<List<PortfolioManager.SymbolStand>> getGlobalStandSome(@PathVariable List<String> symbols,
-                                                                                 @RequestParam boolean mock,
+    public ResponseEntity<List<PortfolioManager.SymbolStand>> getGlobalStandSome(HttpServletRequest request,
+                                                                                 @PathVariable List<String> symbols,
                                                                                  @RequestParam boolean dynamic) {
-        PortfolioType type = mock ? PortfolioType.MOCK : PortfolioType.REAL;
+        PortfolioType type = controllerUtil.isAdmin(controllerUtil.retrieveUsername(request.getCookies())) ? PortfolioType.REAL : PortfolioType.MOCK;
         try {
             return ResponseEntity.ok(jpaService.getPortfolioStand(symbols, type, dynamic));
         } catch (ClientException | JsonProcessingException e) {

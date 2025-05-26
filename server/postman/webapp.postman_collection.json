@@ -1681,7 +1681,7 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "{{base_url}}/portfolio/stand?mock=true&dynamic=false",
+											"raw": "{{base_url}}/portfolio/stand?dynamic=false",
 											"host": [
 												"{{base_url}}"
 											],
@@ -1690,10 +1690,6 @@
 												"stand"
 											],
 											"query": [
-												{
-													"key": "mock",
-													"value": "true"
-												},
 												{
 													"key": "dynamic",
 													"value": "false"
@@ -1754,7 +1750,7 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "{{base_url}}/portfolio/stand?mock=true&dynamic=true",
+											"raw": "{{base_url}}/portfolio/stand?dynamic=true",
 											"host": [
 												"{{base_url}}"
 											],
@@ -1763,10 +1759,6 @@
 												"stand"
 											],
 											"query": [
-												{
-													"key": "mock",
-													"value": "true"
-												},
 												{
 													"key": "dynamic",
 													"value": "true"
@@ -1827,7 +1819,7 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "{{base_url}}/portfolio/stand/AAPL?dynamic=true&llm=false&mock=true&sendFixmeRequest=false&overwrite=true",
+											"raw": "{{base_url}}/portfolio/stand/AAPL?dynamic=true&llm=false&sendFixmeRequest=false&overwrite=true",
 											"host": [
 												"{{base_url}}"
 											],
@@ -1844,10 +1836,6 @@
 												{
 													"key": "llm",
 													"value": "false"
-												},
-												{
-													"key": "mock",
-													"value": "true"
 												},
 												{
 													"key": "sendFixmeRequest",
