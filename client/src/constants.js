@@ -41,7 +41,19 @@ export const EDIT_KEY = "EDIT";
 export const REMOVE_KEY = "REMOVE";
 export const STRING = "string";
 export const NUMBER = "number";
+export const DATE = "date";
 export const ICON = "icon";
+export const SYMBOL_NAME_KEY = "symbolName";
+export const LAST_MOVE_DATE_KEY = "lastMoveDate";
+export const AVERAGE_COST_KEY = "averageCost";
+export const POSITION_VALUE_KEY = "positionValue";
+export const PNL_KEY = "pnl";
+export const PERCENT_PNL_KEY = "percentPnl";
+export const NET_RELATIVE_POSITION_KEY = "netRelPos";
+export const RECOMMENDATION_ACTION_KEY = "recommendationAction";
+export const RECOMMENDATION_CONFIDENCE_KEY = "recommendationConfidence";
+export const RECOMMENDATION_DATE_KEY = "recommendationDate";
+export const RECOMMENDATION_RATIONALE_KEY = "recommendationRationale";
 export const META = {
     KEYS: [ID_KEY, NAME_KEY, CATEGORY_KEY, QUANTITY_KEY, EDIT_KEY, REMOVE_KEY],
     DATATYPE: {
@@ -83,6 +95,97 @@ export const META = {
         [QUANTITY_KEY]: true,
         [EDIT_KEY]: false,
         [REMOVE_KEY]: false
+    }
+}
+export const PORTFOLIO_META = {
+    KEYS: [ID_KEY,
+        SYMBOL_NAME_KEY,
+        LAST_MOVE_DATE_KEY,
+        RECOMMENDATION_DATE_KEY,
+        RECOMMENDATION_ACTION_KEY,
+        QUANTITY_KEY,
+        AVERAGE_COST_KEY,
+        POSITION_VALUE_KEY,
+        PNL_KEY,
+        PERCENT_PNL_KEY,
+        NET_RELATIVE_POSITION_KEY,
+        RECOMMENDATION_CONFIDENCE_KEY,
+        RECOMMENDATION_RATIONALE_KEY
+    ],
+    DATATYPE: {
+        [ID_KEY]: NUMBER,
+        [SYMBOL_NAME_KEY]: STRING,
+        [LAST_MOVE_DATE_KEY]: DATE,
+        [QUANTITY_KEY]: NUMBER,
+        [AVERAGE_COST_KEY]: NUMBER,
+        [POSITION_VALUE_KEY]: NUMBER,
+        [RECOMMENDATION_DATE_KEY]: DATE,
+        [RECOMMENDATION_ACTION_KEY]: STRING,
+        [PNL_KEY]: NUMBER,
+        [PERCENT_PNL_KEY]: NUMBER,
+        [NET_RELATIVE_POSITION_KEY]: NUMBER,
+        [RECOMMENDATION_CONFIDENCE_KEY]: NUMBER,
+        [RECOMMENDATION_RATIONALE_KEY]: STRING
+    },
+    VISIBLE: {
+        [ID_KEY]: false,
+        [SYMBOL_NAME_KEY]: true,
+        [LAST_MOVE_DATE_KEY]: true,
+        [QUANTITY_KEY]: true,
+        [AVERAGE_COST_KEY]: true,
+        [POSITION_VALUE_KEY]: false,
+        [RECOMMENDATION_DATE_KEY]: true,
+        [RECOMMENDATION_ACTION_KEY]: true,
+        [PNL_KEY]: true,
+        [PERCENT_PNL_KEY]: true,
+        [NET_RELATIVE_POSITION_KEY]: true,
+        [RECOMMENDATION_CONFIDENCE_KEY]: true,
+        [RECOMMENDATION_RATIONALE_KEY]: false
+    },
+    DISPLAY_NAME: {
+        [ID_KEY]: "",
+        [SYMBOL_NAME_KEY]: "Symbol",
+        [LAST_MOVE_DATE_KEY]: "Last Move Date",
+        [QUANTITY_KEY]: "Quantity",
+        [AVERAGE_COST_KEY]: "Average Cost",
+        [POSITION_VALUE_KEY]: "Position Value",
+        [RECOMMENDATION_DATE_KEY]: "Recommendation Date",
+        [RECOMMENDATION_ACTION_KEY]: "Recommended Action",
+        [PNL_KEY]: "PNL",
+        [PERCENT_PNL_KEY]: "% PNL",
+        [NET_RELATIVE_POSITION_KEY]: "% gross PNL",
+        [RECOMMENDATION_CONFIDENCE_KEY]: "Recommendation Confidence",
+        [RECOMMENDATION_RATIONALE_KEY]: ""
+    },
+    SORTABLE: {
+        [ID_KEY]: true,
+        [SYMBOL_NAME_KEY]: true,
+        [LAST_MOVE_DATE_KEY]: true,
+        [QUANTITY_KEY]: true,
+        [AVERAGE_COST_KEY]: true,
+        [POSITION_VALUE_KEY]: true,
+        [PNL_KEY]: true,
+        [PERCENT_PNL_KEY]: true,
+        [NET_RELATIVE_POSITION_KEY]: true,
+        [RECOMMENDATION_ACTION_KEY]: true,
+        [RECOMMENDATION_CONFIDENCE_KEY]: true,
+        [RECOMMENDATION_DATE_KEY]: true,
+        [RECOMMENDATION_RATIONALE_KEY]: false
+    },
+    FILTERABLE: {
+        [ID_KEY]: true,
+        [SYMBOL_NAME_KEY]: true,
+        [LAST_MOVE_DATE_KEY]: true,
+        [QUANTITY_KEY]: false,
+        [AVERAGE_COST_KEY]: false,
+        [POSITION_VALUE_KEY]: true,
+        [PNL_KEY]: false,
+        [PERCENT_PNL_KEY]: false,
+        [NET_RELATIVE_POSITION_KEY]: false,
+        [RECOMMENDATION_ACTION_KEY]: true,
+        [RECOMMENDATION_CONFIDENCE_KEY]: false,
+        [RECOMMENDATION_DATE_KEY]: true,
+        [RECOMMENDATION_RATIONALE_KEY]: false
     }
 }
 

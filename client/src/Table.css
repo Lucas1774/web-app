@@ -1,18 +1,18 @@
-.app.shopping .table-responsive {
+.app.custom-table .table-responsive {
     max-height: 350px;
     overflow-y: auto;
 }
 
-.app.shopping label.form-label {
+.app.custom-table label.form-label {
     margin: 0;
 }
 
-.app.shopping .table {
+.app.custom-table .table {
     margin: 15px 0px;
 }
 
-.app.shopping .table th,
-.app.shopping .table td {
+.app.custom-table .table th,
+.app.custom-table .table td {
     color: white;
     display: table-cell;
     vertical-align: middle;
@@ -21,22 +21,22 @@
     overflow: hidden;
 }
 
-.app.shopping .table .cell-item-container {
+.app.custom-table .table .cell-item-container {
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 5%;
 }
 
-.app.shopping button {
+.app.custom-table button {
     font-size: x-large;
 }
 
-.app.shopping .table button {
+.app.custom-table .table button {
     padding: 0;
 }
 
-.app.shopping .table button.icon-button {
+.app.custom-table .table button.icon-button {
     visibility: hidden;
     height: 0;
     width: fit-content;
@@ -44,12 +44,12 @@
     align-items: center;
 }
 
-.app.shopping .table button img {
+.app.custom-table .table button img {
     visibility: visible;
     height: 20px;
 }
 
-.app.shopping .table .form-control {
+.app.custom-table .table .form-control {
     margin: 0;
     padding: 0 5%;
 }
