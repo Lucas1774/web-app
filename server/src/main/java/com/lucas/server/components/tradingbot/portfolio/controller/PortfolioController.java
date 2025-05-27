@@ -26,13 +26,13 @@ import static com.lucas.server.common.Constants.SP500_SYMBOLS;
 @RequestMapping("/portfolio")
 public class PortfolioController {
 
-    private final DataManager jpaService;
     private final ControllerUtil controllerUtil;
+    private final DataManager jpaService;
     private static final Logger logger = LoggerFactory.getLogger(PortfolioController.class);
 
-    public PortfolioController(DataManager jpaService, ControllerUtil controllerUtil) {
-        this.jpaService = jpaService;
+    public PortfolioController(ControllerUtil controllerUtil, DataManager jpaService) {
         this.controllerUtil = controllerUtil;
+        this.jpaService = jpaService;
     }
 
     @PostMapping("/buy")
@@ -65,9 +65,11 @@ public class PortfolioController {
 
     @GetMapping("/stand")
     public ResponseEntity<List<PortfolioManager.SymbolStand>> getGlobalStandAll(HttpServletRequest request, @RequestParam boolean dynamic) {
-        PortfolioType type = controllerUtil.isAdmin(controllerUtil.retrieveUsername(request.getCookies())) ? PortfolioType.REAL : PortfolioType.MOCK;
+        if (dynamic && !controllerUtil.isAdmin(controllerUtil.retrieveUsername(request.getCookies()))) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         try {
-            return ResponseEntity.ok(jpaService.getPortfolioStand(SP500_SYMBOLS, type, dynamic));
+            return ResponseEntity.ok(jpaService.getPortfolioStand(SP500_SYMBOLS, PortfolioType.MOCK, dynamic));
         } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -78,9 +80,11 @@ public class PortfolioController {
     public ResponseEntity<List<PortfolioManager.SymbolStand>> getGlobalStandSome(HttpServletRequest request,
                                                                                  @PathVariable List<String> symbols,
                                                                                  @RequestParam boolean dynamic) {
-        PortfolioType type = controllerUtil.isAdmin(controllerUtil.retrieveUsername(request.getCookies())) ? PortfolioType.REAL : PortfolioType.MOCK;
+        if (dynamic && !controllerUtil.isAdmin(controllerUtil.retrieveUsername(request.getCookies()))) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         try {
-            return ResponseEntity.ok(jpaService.getPortfolioStand(symbols, type, dynamic));
+            return ResponseEntity.ok(jpaService.getPortfolioStand(symbols, PortfolioType.MOCK, dynamic));
         } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

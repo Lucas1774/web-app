@@ -89,11 +89,22 @@ public class DataManager {
         ));
     }
 
-    @Transactional(rollbackOn = {ClientException.class, IOException.class})
-    public List<Recommendation>
-    getRecommendations(List<String> symbolNames, PortfolioType type, boolean sendFixmeRequest,
-                       RecommendationEngineType engineType, boolean overwrite) throws ClientException, IOException {
+    public List<Recommendation> getRecommendationsById(List<Long> symbolIds, PortfolioType type, boolean sendFixmeRequest,
+                                                       RecommendationEngineType engineType, boolean overwrite) throws ClientException, IOException {
+        List<Symbol> symbols = symbolService.findAllById(symbolIds);
+        return getRecommendations(symbols, type, sendFixmeRequest, engineType, overwrite);
+    }
+
+    public List<Recommendation> getRecommendationsByName(List<String> symbolNames, PortfolioType type, boolean sendFixmeRequest,
+                                                         RecommendationEngineType engineType, boolean overwrite) throws ClientException, IOException {
         List<Symbol> symbols = symbolNames.stream().distinct().map(symbolService::getOrCreateByName).toList();
+        return getRecommendations(symbols, type, sendFixmeRequest, engineType, overwrite);
+    }
+
+
+    @Transactional(rollbackOn = {ClientException.class, IOException.class})
+    private List<Recommendation> getRecommendations(List<Symbol> symbols, PortfolioType type, boolean sendFixmeRequest,
+                                                    RecommendationEngineType engineType, boolean overwrite) throws ClientException, IOException {
         Map<Symbol, List<MarketData>> marketData = symbols.stream()
                 .map(symbol -> Map.entry(symbol, marketDataService.getTopForSymbolId(symbol.getId(), MARKET_DATA_RELEVANT_DAYS_COUNT)))
                 .filter(entry -> !entry.getValue().isEmpty())
@@ -158,15 +169,15 @@ public class DataManager {
             finalList.addAll(pool.subList(0, Math.min(needed, pool.size())));
         }
 
-        return getRecommendations(finalList, type, sendFixmeRequest, engineType, overwrite);
+        return getRecommendationsByName(finalList, type, sendFixmeRequest, engineType, overwrite);
     }
 
     @Transactional(rollbackOn = {ClientException.class, IOException.class})
     public List<Recommendation> getRecommendationsForStand(PortfolioType type, boolean sendFixmeRequest,
                                                            RecommendationEngineType engineType, boolean overwrite) throws ClientException, IOException {
-        List<String> symbols = getService(type).findActivePortfolio()
+        List<Symbol> symbols = getService(type).findActivePortfolio()
                 .stream()
-                .map(p -> p.getSymbol().getName())
+                .map(PortfolioBase::getSymbol)
                 .toList();
 
         return getRecommendations(symbols, type, sendFixmeRequest, engineType, overwrite);

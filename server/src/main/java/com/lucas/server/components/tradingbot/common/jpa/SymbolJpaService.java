@@ -6,6 +6,7 @@ import com.lucas.server.common.jpa.UniqueConstraintWearyJpaServiceDelegate;
 import lombok.experimental.Delegate;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -28,5 +29,9 @@ public class SymbolJpaService implements JpaService<Symbol> {
 
     public Optional<Symbol> findByName(String name) {
         return repository.findByName(name);
+    }
+
+    public List<Symbol> findAllById(List<Long> symbolIds) {
+        return repository.findAllById(symbolIds);
     }
 }
