@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class RequestPerSecondLimitFilter implements RateLimitFilter {
 
-    private static final int MAX_REQUESTS_PER_SECOND = 5;
+    private static final int MAX_REQUESTS_PER_SECOND = 10;
     private static final Map<String, List<Long>> requestTimestamps = new ConcurrentHashMap<>();
 
     @Override
