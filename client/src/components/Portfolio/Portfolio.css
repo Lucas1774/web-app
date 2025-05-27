@@ -1,8 +1,14 @@
 .app.portfolio {
-    width: 60%;
+    width: 1080px;
 }
 
 .app.portfolio .form-check {
     text-wrap: nowrap;
     margin: 0 2%;
+}
+
+@media (pointer: coarse) and (orientation: landscape) {
+    .app.portfolio {
+        width: 100%;
+    }
 }

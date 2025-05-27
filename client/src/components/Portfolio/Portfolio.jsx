@@ -1,5 +1,5 @@
 import chroma from "chroma-js";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button, Form, Table } from "react-bootstrap";
 import "../../Table.css";
 import { get, post } from "../../api";
@@ -20,11 +20,9 @@ const Portfolio = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [isLoginFormVisible, setIsLoginFormVisible] = useState(false);
     const [filters, setFilters] = useState({});
-    const [order, setOrder] = useState({ key: null, order: constants.DESC })
-    const [percentPnlRange, setPercentPnlRange] = useState({ min: 0, max: 0 });
-    const [netPositionRange, setNetPositionRange] = useState({ min: 0, max: 0 });
-    const [confidenceRange, setConfidenceRange] = useState({ min: 0, max: 0 });
+    const [order, setOrder] = useState({ key: null, order: constants.DESC });
     const [isShowRealTime, setIsShowRealTime] = useState(false);
+    const [isShowAllData, setIsShowAllData] = useState(false);
 
     const inputsRef = useRef({});
     const filterDebouncedValue = useDebounce(filterValue, constants.DEBOUNCE_DELAY);
@@ -44,7 +42,7 @@ const Portfolio = () => {
             setIsLoading(true);
             try {
                 await get("/authentication/check-auth");
-                await getData(false);
+                await getData();
             } catch (error) {
                 if (error.response?.status === 403) {
                     setIsLoginFormVisible(true);
@@ -67,30 +65,13 @@ const Portfolio = () => {
                 if (constants.PORTFOLIO_META.DATATYPE[key] === constants.NUMBER) {
                     return isNaN(filters[key]) || row[key] === filters[key];
                 } else if (constants.PORTFOLIO_META.DATATYPE[key] === constants.STRING) {
-                    return row[key].toString().toLowerCase().includes(filters[key].toLowerCase());
+                    return row[key]?.toString().toLowerCase().includes(filters[key].toLowerCase());
                 } else if (constants.PORTFOLIO_META.DATATYPE[key] === constants.DATE) {
-                    return filters[key] === "" || row[key].toLocaleDateString() === new Date(filters[key]).toLocaleDateString();
+                    return filters[key] === "" || row[key]?.toLocaleDateString() === new Date(filters[key]).toLocaleDateString();
                 } else {
                     return true;
                 }
             });
-        });
-
-        const percentPnls = filtered.map(d => d[constants.PERCENT_PNL_KEY]);
-        const netPositions = filtered.map(d => d[constants.NET_RELATIVE_POSITION_KEY]);
-        const confidences = filtered.map(d => d[constants.RECOMMENDATION_CONFIDENCE_KEY]);
-
-        setPercentPnlRange({
-            min: Math.min(...percentPnls),
-            max: Math.max(...percentPnls),
-        });
-        setNetPositionRange({
-            min: Math.min(...netPositions),
-            max: Math.max(...netPositions),
-        });
-        setConfidenceRange({
-            min: Math.min(...confidences),
-            max: Math.max(...confidences),
         });
 
         const ordered = [...filtered].sort((a, b) => {
@@ -98,8 +79,12 @@ const Portfolio = () => {
                 return 0;
             };
             if (order.order === constants.DESC) {
+                if (a[order.key] == null) return 1;
+                if (b[order.key] == null) return -1;
                 return a[order.key] < b[order.key] ? 1 : -1;
             } else {
+                if (a[order.key] == null) return 1;
+                if (b[order.key] == null) return -1;
                 return a[order.key] > b[order.key] ? 1 : -1;
             }
         });
@@ -107,10 +92,11 @@ const Portfolio = () => {
         setDisplayData(ordered);
     }, [tableData, filters, order]);
 
-    const getData = async (dynamically) => {
+    const getData = async (dynamically = false, all = false) => {
         setIsLoading(true);
         try {
-            const resp = await get(`/portfolio/stand?dynamic=${dynamically}`);
+            const url = all ? "/portfolio/stand/all" : `/portfolio/stand?dynamic=${dynamically}`;
+            const resp = await get(url);
             const data = resp.data.map((item) => {
                 const newest = item.recommendation.reduce(
                     (best, curr) =>
@@ -120,23 +106,24 @@ const Portfolio = () => {
                 return {
                     [constants.ID_KEY]: item.symbol.id,
                     [constants.SYMBOL_NAME_KEY]: item.symbol.name,
-                    [constants.LAST_MOVE_DATE_KEY]: new Date(item.lastMoveDate),
+                    [constants.LAST_MOVE_DATE_KEY]: item.lastMoveDate ? new Date(item.lastMoveDate) : null,
                     [constants.QUANTITY_KEY]: item.quantity,
                     [constants.AVERAGE_COST_KEY]: item.averageCost,
                     [constants.POSITION_VALUE_KEY]: item.positionValue,
                     [constants.PNL_KEY]: item.pnL,
                     [constants.PERCENT_PNL_KEY]: item.percentPnl,
                     [constants.NET_RELATIVE_POSITION_KEY]: item.netRelativePosition,
-                    [constants.RECOMMENDATION_ACTION_KEY]: newest.action,
-                    [constants.RECOMMENDATION_CONFIDENCE_KEY]: newest.confidence,
-                    [constants.RECOMMENDATION_DATE_KEY]: new Date(newest.date),
-                    [constants.RECOMMENDATION_RATIONALE_KEY]: newest.rationale,
+                    [constants.RECOMMENDATION_ACTION_KEY]: newest?.action,
+                    [constants.RECOMMENDATION_CONFIDENCE_KEY]: newest?.confidence,
+                    [constants.RECOMMENDATION_DATE_KEY]: newest ? new Date(newest.date) : null,
+                    [constants.RECOMMENDATION_RATIONALE_KEY]: newest?.rationale,
                 };
             });
 
             setTableData(data);
             setDisplayData(data);
             setIsShowRealTime(dynamically);
+            setIsShowAllData(all);
         } catch (error) {
             if (error.response?.status === 401) {
                 setMessage("Unauthorized");
@@ -186,6 +173,37 @@ const Portfolio = () => {
 
             setTableData(updated);
             setDisplayData(updated);
+            setIsShowAllData(false);
+        } catch (error) {
+            if (error.response?.status === 401) {
+                setMessage("Unauthorized");
+                setTimeout(() => {
+                    setMessage(null);
+                }, constants.TIMEOUT_DELAY);
+            } else {
+                handleError("Error fetching data", error);
+            }
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    const updateNewsSentiment = async () => {
+        setIsLoading(true);
+        try {
+            const resp = await get(`/sentiment/historic?from=${new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10)}`);
+            if (resp.data.length === 0) {
+                setMessage("No news to update");
+                setTimeout(() => {
+                    setMessage(null);
+                }, constants.TIMEOUT_DELAY);
+                return;
+            }
+            setMessage("Updated sentiment for " + resp.data.length + " news items");
+            setTimeout(() => {
+                setMessage(null);
+            }, constants.TIMEOUT_DELAY);
+            return;
         } catch (error) {
             if (error.response?.status === 401) {
                 setMessage("Unauthorized");
@@ -211,7 +229,7 @@ const Portfolio = () => {
                 setMessage(null);
                 setIsLoading(true);
                 setIsLoginFormVisible(false);
-                getData(false);
+                getData();
             }, constants.TIMEOUT_DELAY);
         } else {
             setIsLoading(true);
@@ -222,7 +240,7 @@ const Portfolio = () => {
                     setMessage(null);
                     setIsLoading(true);
                     setIsLoginFormVisible(false);
-                    getData(false);
+                    getData();
                 }, constants.TIMEOUT_DELAY);
             } catch (error) {
                 if (error.response?.status === 403) {
@@ -231,7 +249,7 @@ const Portfolio = () => {
                         setMessage(null);
                         setIsLoading(true);
                         setIsLoginFormVisible(false);
-                        getData(false);
+                        getData();
                     }, constants.TIMEOUT_DELAY);
                 } else {
                     handleError("Error sending data", error);
@@ -263,22 +281,39 @@ const Portfolio = () => {
         );
     };
 
+    const scales = useMemo(() => {
+        const extractValidNumbers = (key) => displayData.map(d => d[key]).filter(v => v != null && !Number.isNaN(v)).map(Number);
+
+        const percentPnls = extractValidNumbers(constants.PERCENT_PNL_KEY);
+        const confidences = extractValidNumbers(constants.RECOMMENDATION_CONFIDENCE_KEY);
+        const netPositions = extractValidNumbers(constants.NET_RELATIVE_POSITION_KEY);
+
+        return {
+            [constants.PERCENT_PNL_KEY]: chroma.scale(['red', 'yellow', 'green']).domain([Math.min(...percentPnls), 0, Math.max(...percentPnls)]),
+            [constants.RECOMMENDATION_CONFIDENCE_KEY]: chroma.scale(['red', 'yellow', 'green']).domain([
+                Math.min(...confidences),
+                (Math.min(...confidences) + Math.max(...confidences)) / 2,
+                Math.max(...confidences)
+            ]),
+            [constants.NET_RELATIVE_POSITION_KEY]: chroma.scale(['red', 'yellow', 'green']).domain([Math.min(...netPositions), 0, Math.max(...netPositions)]),
+        };
+    }, [displayData]);
+
     const renderCell = (key, row) => {
         const value = row[key];
         const type = constants.PORTFOLIO_META.DATATYPE[key];
 
         if (key === constants.PERCENT_PNL_KEY || key === constants.RECOMMENDATION_CONFIDENCE_KEY || key === constants.NET_RELATIVE_POSITION_KEY) {
-            const domain = key === constants.PERCENT_PNL_KEY
-                ? percentPnlRange : key === constants.RECOMMENDATION_CONFIDENCE_KEY
-                    ? confidenceRange : netPositionRange;
-            const scale = chroma.scale(['red', 'yellow', 'green']).domain([domain.min, 0, domain.max]);
-            return <td key={key} style={{ backgroundColor: scale(value).hex(), color: "black" }}>{value.toFixed(2)}%</td>;
+            return <td key={key} style={{
+                backgroundColor: value != null ? scales[key](value).hex() : "black",
+                color: "black"
+            }}>{value != null ? value.toFixed(2) : null}%</td>;
         }
         if (type === constants.NUMBER || type === constants.STRING) {
             return <td key={key}>{value}</td>;
         }
         if (type === constants.DATE) {
-            return <td key={key}>{value.toLocaleDateString()}</td>;
+            return <td key={key}>{value?.toLocaleDateString()}</td>;
         }
         return <td key={key}>{String(value)}</td>;
     };
@@ -303,11 +338,11 @@ const Portfolio = () => {
                             e.preventDefault();
                             getRecommendations(e.target[3].checked, e.target[4].checked, e.target[5].checked);
                         }}>
-                            <Button className="thirty-percent" type="submit" variant="success">Recommend</Button>
-                            <Button className="thirty-percent" onClick={() => { getData(!isShowRealTime); }}>{
+                            <Button className={isShowAllData ? "fifty-percent" : "thirty-percent"} type="submit" variant="success">Recommend</Button>
+                            <Button className="thirty-percent" style={{ visibility: isShowAllData ? "collapse" : "visible" }} onClick={() => { getData(!isShowRealTime); }}>{
                                 isShowRealTime ? "Last close" : "Real time"
                             }</Button>
-                            <Button className="thirty-percent" onClick={() => {
+                            <Button className={isShowAllData ? "fifty-percent" : "thirty-percent"} onClick={() => {
                                 Object.values(inputsRef.current).forEach((input) => {
                                     if (input) {
                                         input.value = "";
@@ -321,6 +356,12 @@ const Portfolio = () => {
                                 <Form.Check type="checkbox" label="Pre-request" />
                                 <Form.Check type="checkbox" label="Overwrite" />
                             </div>
+                        </Form>
+                        <Form>
+                            <Button className="fifty-percent" onClick={updateNewsSentiment}>Update news sentiment</Button>
+                            <Button className="fifty-percent" onClick={() => { isShowAllData ? getData() : getData(undefined, true); }}>{
+                                isShowAllData ? "Show active data" : "Show all data"
+                            }</Button>
                         </Form>
                         <Table striped bordered hover responsive>
                             <thead>
