@@ -247,6 +247,31 @@ public class DataManager {
                 .toList();
     }
 
+    public List<PortfolioManager.SymbolStand> getAllAsPortfolio(List<String> symbolNames, PortfolioType type) {
+        Set<String> namesSet = new HashSet<>(symbolNames);
+        List<Symbol> symbols = namesSet.stream().map(symbolService::getOrCreateByName).toList();
+        Map<Symbol, PortfolioBase> portfolioBySymbol = getService(type)
+                .findActivePortfolio().stream()
+                .filter(p -> namesSet.contains(p.getSymbol().getName()))
+                .collect(Collectors.toMap(
+                        PortfolioBase::getSymbol,
+                        Function.identity()
+                ));
+        symbols.forEach(s -> portfolioBySymbol
+                .computeIfAbsent(s, symbol -> portfolioTypeToNewPortfolio.get(type).get().setSymbol(symbol)));
+
+        return portfolioBySymbol.values().stream()
+                .flatMap(p -> marketDataService.findBySymbolId(p.getSymbol().getId()).stream()
+                        .max(Comparator.comparing(MarketData::getDate))
+                        .map(md -> portfolioManager.computeStand(p, md))
+                        .stream()
+                )
+                .sorted(Comparator.comparing(PortfolioManager.SymbolStand::lastMoveDate,
+                        Comparator.nullsFirst(Comparator.naturalOrder())
+                ).reversed())
+                .toList();
+    }
+
     @Transactional
     public List<News> removeOldNews(int keepCount) {
         List<News> res = new ArrayList<>();
