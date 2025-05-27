@@ -13,7 +13,8 @@ import "./Portfolio.css";
 const Portfolio = () => {
 
     const [tableData, setTableData] = useState(null);
-    const [displayData, setDisplayData] = useState(null);
+    const [displayData, setDisplayData] = useState([]);
+    const [selectedIds, setSelectedIds] = useState(new Set());
     const [filterValue, setFilterValue] = useState({});
     const [message, setMessage] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -23,6 +24,7 @@ const Portfolio = () => {
     const [percentPnlRange, setPercentPnlRange] = useState({ min: 0, max: 0 });
     const [netPositionRange, setNetPositionRange] = useState({ min: 0, max: 0 });
     const [confidenceRange, setConfidenceRange] = useState({ min: 0, max: 0 });
+    const [isShowRealTime, setIsShowRealTime] = useState(false);
 
     const inputsRef = useRef({});
     const filterDebouncedValue = useDebounce(filterValue, constants.DEBOUNCE_DELAY);
@@ -42,7 +44,7 @@ const Portfolio = () => {
             setIsLoading(true);
             try {
                 await get("/authentication/check-auth");
-                await getData();
+                await getData(false);
             } catch (error) {
                 if (error.response?.status === 403) {
                     setIsLoginFormVisible(true);
@@ -105,10 +107,10 @@ const Portfolio = () => {
         setDisplayData(ordered);
     }, [tableData, filters, order]);
 
-    const getData = async () => {
+    const getData = async (dynamically) => {
         setIsLoading(true);
         try {
-            const resp = await get("/portfolio/stand?mock=true&dynamic=false");
+            const resp = await get(`/portfolio/stand?dynamic=${dynamically}`);
             const data = resp.data.map((item) => {
                 const newest = item.recommendation.reduce(
                     (best, curr) =>
@@ -134,12 +136,69 @@ const Portfolio = () => {
 
             setTableData(data);
             setDisplayData(data);
+            setIsShowRealTime(dynamically);
         } catch (error) {
-            handleError("Error fetching data", error);
+            if (error.response?.status === 401) {
+                setMessage("Unauthorized");
+                setTimeout(() => {
+                    setMessage(null);
+                }, constants.TIMEOUT_DELAY);
+            } else {
+                handleError("Error fetching data", error);
+            }
         } finally {
             setIsLoading(false);
         }
     };
+
+    const getRecommendations = async (llm, sendFixmeRequest, overwrite) => {
+        setIsLoading(true);
+        try {
+            const ids = visibleSelectedIds().join(',')
+            if (ids.length === 0) {
+                setMessage("Select at least one row");
+                setTimeout(() => {
+                    setMessage(null);
+                }, constants.TIMEOUT_DELAY);
+                return;
+            }
+            const resp = await get(`/recommendations/${ids}?llm=${llm}&sendFixmeRequest=${sendFixmeRequest}&overwrite=${overwrite}`);
+            const data = new Map(
+                resp.data.map(item => [
+                    item.symbol.id,
+                    {
+                        [constants.SYMBOL_NAME_KEY]: item.symbol.name,
+                        [constants.RECOMMENDATION_ACTION_KEY]: item.action,
+                        [constants.RECOMMENDATION_CONFIDENCE_KEY]: item.confidence,
+                        [constants.RECOMMENDATION_DATE_KEY]: new Date(item.date),
+                        [constants.RECOMMENDATION_RATIONALE_KEY]: item.rationale,
+                    }
+                ])
+            );
+
+            const updated = tableData.map(row => {
+                const id = row[constants.ID_KEY];
+                if (data.has(id)) {
+                    return { ...row, ...data.get(id) };
+                }
+                return row;
+            });
+
+            setTableData(updated);
+            setDisplayData(updated);
+        } catch (error) {
+            if (error.response?.status === 401) {
+                setMessage("Unauthorized");
+                setTimeout(() => {
+                    setMessage(null);
+                }, constants.TIMEOUT_DELAY);
+            } else {
+                handleError("Error fetching data", error);
+            }
+        } finally {
+            setIsLoading(false);
+        }
+    }
 
     const handleLoginSubmit = async (event) => {
         event.preventDefault();
@@ -152,7 +211,7 @@ const Portfolio = () => {
                 setMessage(null);
                 setIsLoading(true);
                 setIsLoginFormVisible(false);
-                getData();
+                getData(false);
             }, constants.TIMEOUT_DELAY);
         } else {
             setIsLoading(true);
@@ -163,7 +222,7 @@ const Portfolio = () => {
                     setMessage(null);
                     setIsLoading(true);
                     setIsLoginFormVisible(false);
-                    getData();
+                    getData(false);
                 }, constants.TIMEOUT_DELAY);
             } catch (error) {
                 if (error.response?.status === 403) {
@@ -172,7 +231,7 @@ const Portfolio = () => {
                         setMessage(null);
                         setIsLoading(true);
                         setIsLoginFormVisible(false);
-                        getData();
+                        getData(false);
                     }, constants.TIMEOUT_DELAY);
                 } else {
                     handleError("Error sending data", error);
@@ -190,6 +249,18 @@ const Portfolio = () => {
                 ? (prevOrder.order === constants.DESC ? constants.ASC : constants.DESC)
                 : constants.ASC
         }));
+    };
+
+    const allIds = () => displayData.map(row => row[constants.ID_KEY]);
+    const isAllSelected = () => allIds().every(id => selectedIds.has(id));
+
+    const visibleSelectedIds = () => {
+        const visibleIdSet = new Set(
+            displayData.map(row => row[constants.ID_KEY])
+        );
+        return Array.from(selectedIds).filter(id =>
+            visibleIdSet.has(id)
+        );
     };
 
     const renderCell = (key, row) => {
@@ -228,21 +299,44 @@ const Portfolio = () => {
             <div className="app custom-table portfolio">
                 {tableData &&
                     <>
-                        <Button onClick={() => {
-                            Object.values(inputsRef.current).forEach((input) => {
-                                if (input) {
-                                    input.value = "";
-                                }
-                            });
-                            setFilters({});
-                        }}>Clear filters</Button><Table striped bordered hover responsive>
+                        <Form onSubmit={(e) => {
+                            e.preventDefault();
+                            getRecommendations(e.target[3].checked, e.target[4].checked, e.target[5].checked);
+                        }}>
+                            <Button className="thirty-percent" type="submit" variant="success">Recommend</Button>
+                            <Button className="thirty-percent" onClick={() => { getData(!isShowRealTime); }}>{
+                                isShowRealTime ? "Last close" : "Real time"
+                            }</Button>
+                            <Button className="thirty-percent" onClick={() => {
+                                Object.values(inputsRef.current).forEach((input) => {
+                                    if (input) {
+                                        input.value = "";
+                                    }
+                                });
+                                setFilters({});
+
+                            }}>Clear filters</Button>
+                            <div className="flex-div">
+                                <Form.Check type="checkbox" label="Custom LLM" />
+                                <Form.Check type="checkbox" label="Pre-request" />
+                                <Form.Check type="checkbox" label="Overwrite" />
+                            </div>
+                        </Form>
+                        <Table striped bordered hover responsive>
                             <thead>
                                 <tr>
+                                    <th>
+                                        <Form.Check
+                                            type="checkbox"
+                                            checked={isAllSelected()}
+                                            onChange={() => setSelectedIds(() => isAllSelected() ? new Set() : new Set(allIds()))}
+                                        /></th>
                                     {constants.PORTFOLIO_META.KEYS.filter((key) => constants.PORTFOLIO_META.VISIBLE[key]).map((key) => (
                                         <th key={key}>{constants.PORTFOLIO_META.DISPLAY_NAME[key]}</th>
                                     ))}
                                 </tr>
                                 <tr>
+                                    <th />
                                     {constants.PORTFOLIO_META.KEYS.filter((key) => constants.PORTFOLIO_META.VISIBLE[key]).map((key) => (
                                         <th key={key}>
                                             {constants.PORTFOLIO_META.FILTERABLE[key] && (
@@ -272,6 +366,21 @@ const Portfolio = () => {
                                     const id = row[constants.ID_KEY];
                                     return (
                                         <tr key={id}>
+                                            <td>
+                                                <Form.Check
+                                                    type="checkbox"
+                                                    checked={selectedIds.has(id)}
+                                                    onChange={() => {
+                                                        setSelectedIds(prev => {
+                                                            const next = new Set(prev);
+                                                            if (next.has(id)) {
+                                                                next.delete(id);
+                                                            } else {
+                                                                next.add(id);
+                                                            }
+                                                            return next;
+                                                        });
+                                                    }} /></td>
                                             {constants.PORTFOLIO_META.KEYS
                                                 .filter((key) => constants.PORTFOLIO_META.VISIBLE[key])
                                                 .map((key) => renderCell(key, row))}
