@@ -110,7 +110,8 @@ export const PORTFOLIO_META = {
         PERCENT_PNL_KEY,
         NET_RELATIVE_POSITION_KEY,
         RECOMMENDATION_CONFIDENCE_KEY,
-        RECOMMENDATION_RATIONALE_KEY
+        RECOMMENDATION_RATIONALE_KEY,
+        EDIT_KEY
     ],
     DATATYPE: {
         [ID_KEY]: NUMBER,
@@ -125,7 +126,8 @@ export const PORTFOLIO_META = {
         [PERCENT_PNL_KEY]: NUMBER,
         [NET_RELATIVE_POSITION_KEY]: NUMBER,
         [RECOMMENDATION_CONFIDENCE_KEY]: NUMBER,
-        [RECOMMENDATION_RATIONALE_KEY]: STRING
+        [RECOMMENDATION_RATIONALE_KEY]: STRING,
+        [EDIT_KEY]: ICON
     },
     VISIBLE: {
         [ID_KEY]: false,
@@ -140,7 +142,8 @@ export const PORTFOLIO_META = {
         [PERCENT_PNL_KEY]: true,
         [NET_RELATIVE_POSITION_KEY]: true,
         [RECOMMENDATION_CONFIDENCE_KEY]: true,
-        [RECOMMENDATION_RATIONALE_KEY]: false
+        [RECOMMENDATION_RATIONALE_KEY]: false,
+        [EDIT_KEY]: true
     },
     DISPLAY_NAME: {
         [ID_KEY]: "",
@@ -155,7 +158,8 @@ export const PORTFOLIO_META = {
         [PERCENT_PNL_KEY]: "% PNL",
         [NET_RELATIVE_POSITION_KEY]: "% gross PNL",
         [RECOMMENDATION_CONFIDENCE_KEY]: "Recommendation Confidence",
-        [RECOMMENDATION_RATIONALE_KEY]: ""
+        [RECOMMENDATION_RATIONALE_KEY]: "",
+        [EDIT_KEY]: ""
     },
     SORTABLE: {
         [ID_KEY]: true,
@@ -170,7 +174,8 @@ export const PORTFOLIO_META = {
         [RECOMMENDATION_ACTION_KEY]: true,
         [RECOMMENDATION_CONFIDENCE_KEY]: true,
         [RECOMMENDATION_DATE_KEY]: true,
-        [RECOMMENDATION_RATIONALE_KEY]: false
+        [RECOMMENDATION_RATIONALE_KEY]: false,
+        [EDIT_KEY]: false
     },
     FILTERABLE: {
         [ID_KEY]: true,
@@ -185,7 +190,8 @@ export const PORTFOLIO_META = {
         [RECOMMENDATION_ACTION_KEY]: true,
         [RECOMMENDATION_CONFIDENCE_KEY]: false,
         [RECOMMENDATION_DATE_KEY]: true,
-        [RECOMMENDATION_RATIONALE_KEY]: false
+        [RECOMMENDATION_RATIONALE_KEY]: false,
+        [EDIT_KEY]: false
     }
 }
 

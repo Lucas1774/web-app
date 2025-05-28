@@ -27,6 +27,10 @@ public class SymbolJpaService implements JpaService<Symbol> {
         return uniqueConstraintDelegate.getOrCreate(entity -> findByName(entity.getName()), new Symbol().setName(name));
     }
 
+    public Optional<Symbol> findById(Long id) {
+        return repository.findById(id);
+    }
+
     public Optional<Symbol> findByName(String name) {
         return repository.findByName(name);
     }

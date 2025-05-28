@@ -36,13 +36,18 @@ public class PortfolioController {
     }
 
     @PostMapping("/buy")
-    public ResponseEntity<PortfolioBase> buy(@RequestParam String symbolName, @RequestParam BigDecimal price,
-                                             @RequestParam BigDecimal quantity, @RequestParam BigDecimal commission,
-                                             @RequestParam boolean mock, @RequestParam(required = false) LocalDate date) {
+    public ResponseEntity<PortfolioBase> buy(HttpServletRequest request,
+                                             @RequestParam Long symbolId,
+                                             @RequestParam BigDecimal price,
+                                             @RequestParam BigDecimal quantity,
+                                             @RequestParam BigDecimal commission,
+                                             @RequestParam(required = false) LocalDate date) {
+        if (!controllerUtil.isAdmin(controllerUtil.retrieveUsername(request.getCookies()))) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         LocalDateTime effectiveDate = date == null ? LocalDateTime.now() : date.atStartOfDay();
-        PortfolioType type = mock ? PortfolioType.MOCK : PortfolioType.REAL;
         try {
-            return ResponseEntity.ok(jpaService.executePortfolioAction(type, symbolName, price, quantity, commission, effectiveDate, true));
+            return ResponseEntity.ok(jpaService.executePortfolioAction(PortfolioType.MOCK, symbolId, price, quantity, commission, effectiveDate, true));
         } catch (IllegalStateException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
@@ -50,13 +55,17 @@ public class PortfolioController {
     }
 
     @PostMapping("/sell")
-    public ResponseEntity<PortfolioBase> sell(@RequestParam String symbolName, @RequestParam BigDecimal price,
-                                              @RequestParam BigDecimal quantity, @RequestParam boolean mock,
+    public ResponseEntity<PortfolioBase> sell(HttpServletRequest request,
+                                              @RequestParam Long symbolId,
+                                              @RequestParam BigDecimal price,
+                                              @RequestParam BigDecimal quantity,
                                               @RequestParam(required = false) LocalDate date) {
+        if (!controllerUtil.isAdmin(controllerUtil.retrieveUsername(request.getCookies()))) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         LocalDateTime effectiveDate = date == null ? LocalDateTime.now() : date.atStartOfDay();
-        PortfolioType type = mock ? PortfolioType.MOCK : PortfolioType.REAL;
         try {
-            return ResponseEntity.ok(jpaService.executePortfolioAction(type, symbolName, price, quantity, null, effectiveDate, false));
+            return ResponseEntity.ok(jpaService.executePortfolioAction(PortfolioType.MOCK, symbolId, price, quantity, null, effectiveDate, false));
         } catch (IllegalStateException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();

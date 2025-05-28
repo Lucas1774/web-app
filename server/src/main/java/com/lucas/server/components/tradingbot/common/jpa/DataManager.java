@@ -89,18 +89,12 @@ public class DataManager {
         ));
     }
 
+    @Transactional(rollbackOn = {ClientException.class, IOException.class})
     public List<Recommendation> getRecommendationsById(List<Long> symbolIds, PortfolioType type, boolean sendFixmeRequest,
                                                        RecommendationEngineType engineType, boolean overwrite) throws ClientException, IOException {
         List<Symbol> symbols = symbolService.findAllById(symbolIds);
         return getRecommendations(symbols, type, sendFixmeRequest, engineType, overwrite);
     }
-
-    public List<Recommendation> getRecommendationsByName(List<String> symbolNames, PortfolioType type, boolean sendFixmeRequest,
-                                                         RecommendationEngineType engineType, boolean overwrite) throws ClientException, IOException {
-        List<Symbol> symbols = symbolNames.stream().distinct().map(symbolService::getOrCreateByName).toList();
-        return getRecommendations(symbols, type, sendFixmeRequest, engineType, overwrite);
-    }
-
 
     @Transactional(rollbackOn = {ClientException.class, IOException.class})
     private List<Recommendation> getRecommendations(List<Symbol> symbols, PortfolioType type, boolean sendFixmeRequest,
@@ -145,42 +139,34 @@ public class DataManager {
         return res;
     }
 
+    @Transactional(rollbackOn = {ClientException.class, IOException.class})
     public List<Recommendation> getRandomRecommendations(PortfolioType type, int count, boolean sendFixmeRequest,
                                                          RecommendationEngineType engineType, boolean overwrite) throws ClientException, IOException {
-        Set<String> active = portfolioTypeToService.get(type)
+        Set<Long> active = portfolioTypeToService.get(type)
                 .findActivePortfolio().stream()
-                .map(p -> p.getSymbol().getName())
+                .map(p -> p.getSymbol().getId())
                 .collect(Collectors.toSet());
-        Set<String> already = recommendationsService.findByDateBetween(LocalDate.now().minusDays(1), LocalDate.now()).stream()
-                .map(r -> r.getSymbol().getName())
+        Set<Long> already = recommendationsService.findByDateBetween(LocalDate.now().minusDays(1), LocalDate.now()).stream()
+                .map(r -> r.getSymbol().getId())
                 .collect(Collectors.toSet());
 
-        Set<String> candidates = new HashSet<>(SP500_SYMBOLS);
+        Set<Long> candidates = symbolService.findAll().stream()
+                .filter(s -> SP500_SYMBOLS.contains(s.getName()) && !marketDataService.findBySymbolId(s.getId()).isEmpty())
+                .map(Symbol::getId)
+                .collect(Collectors.toSet());
         candidates.removeAll(active);
         candidates.removeAll(already);
 
-        List<String> finalList = new ArrayList<>(active);
-        finalList.removeAll(already);
+        List<Long> finalList = new ArrayList<>(active.stream().filter(s -> !already.contains(s)).toList());
         finalList = finalList.subList(0, Math.min(finalList.size(), count));
         int needed = count - finalList.size();
         if (needed > 0 && !candidates.isEmpty()) {
-            List<String> pool = new ArrayList<>(candidates);
+            List<Long> pool = new ArrayList<>(candidates);
             Collections.shuffle(pool);
             finalList.addAll(pool.subList(0, Math.min(needed, pool.size())));
         }
 
-        return getRecommendationsByName(finalList, type, sendFixmeRequest, engineType, overwrite);
-    }
-
-    @Transactional(rollbackOn = {ClientException.class, IOException.class})
-    public List<Recommendation> getRecommendationsForStand(PortfolioType type, boolean sendFixmeRequest,
-                                                           RecommendationEngineType engineType, boolean overwrite) throws ClientException, IOException {
-        List<Symbol> symbols = getService(type).findActivePortfolio()
-                .stream()
-                .map(PortfolioBase::getSymbol)
-                .toList();
-
-        return getRecommendations(symbols, type, sendFixmeRequest, engineType, overwrite);
+        return getRecommendationsById(finalList, type, sendFixmeRequest, engineType, overwrite);
     }
 
     @Transactional
@@ -207,10 +193,10 @@ public class DataManager {
     }
 
     @Transactional(rollbackOn = IllegalStateException.class)
-    public <T extends PortfolioBase> T executePortfolioAction(PortfolioType type, String symbolName, BigDecimal price,
+    public <T extends PortfolioBase> T executePortfolioAction(PortfolioType type, Long symbolId, BigDecimal price,
                                                               BigDecimal quantity, BigDecimal commission, LocalDateTime timestamp, boolean isBuy) throws IllegalStateException {
-        Symbol symbol = symbolService.findByName(symbolName).orElseThrow(
-                () -> new IllegalStateException(MessageFormat.format(SYMBOL_NOT_FOUND_ERROR, symbolName))
+        Symbol symbol = symbolService.findById(symbolId).orElseThrow(
+                () -> new IllegalStateException(MessageFormat.format(SYMBOL_NOT_FOUND_ERROR, symbolId))
         );
         IPortfolioJpaService<T> service = getService(type);
         return service.executePortfolioAction(symbol, price, quantity, commission, timestamp, isBuy);
@@ -306,6 +292,7 @@ public class DataManager {
         return res;
     }
 
+    @Transactional
     public List<Recommendation> removeOldRecommendations(int keepCount) {
         List<Recommendation> res = new ArrayList<>();
         List<Symbol> symbols = symbolService.findAll();

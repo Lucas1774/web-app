@@ -48,31 +48,18 @@ public class RecommendationsController {
         }
     }
 
-    @GetMapping("/stand")
-    public ResponseEntity<List<Recommendation>> generateStandRecommendations(@RequestParam boolean llm,
-                                                                             @RequestParam boolean mock,
-                                                                             @RequestParam boolean sendFixmeRequest,
-                                                                             @RequestParam boolean overwrite) {
-        PortfolioType type = mock ? PortfolioType.MOCK : PortfolioType.REAL;
-        RecommendationEngineType engineType = llm ? RecommendationEngineType.RAW : RecommendationEngineType.AZURE;
-        try {
-            return ResponseEntity.ok(jpaService.getRecommendationsForStand(type, sendFixmeRequest, engineType, overwrite));
-        } catch (ClientException | IOException e) {
-            logger.error(e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
     @GetMapping("/random/{count}")
-    public ResponseEntity<List<Recommendation>> generateRandomRecommendations(@PathVariable int count,
+    public ResponseEntity<List<Recommendation>> generateRandomRecommendations(HttpServletRequest request,
+                                                                              @PathVariable int count,
                                                                               @RequestParam boolean llm,
-                                                                              @RequestParam boolean mock,
                                                                               @RequestParam boolean sendFixmeRequest,
                                                                               @RequestParam boolean overwrite) {
-        PortfolioType type = mock ? PortfolioType.MOCK : PortfolioType.REAL;
+        if (!controllerUtil.isAdmin(controllerUtil.retrieveUsername(request.getCookies()))) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         RecommendationEngineType engineType = llm ? RecommendationEngineType.RAW : RecommendationEngineType.AZURE;
         try {
-            return ResponseEntity.ok(jpaService.getRandomRecommendations(type, count, sendFixmeRequest, engineType, overwrite));
+            return ResponseEntity.ok(jpaService.getRandomRecommendations(PortfolioType.MOCK, count, sendFixmeRequest, engineType, overwrite));
         } catch (ClientException | IOException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

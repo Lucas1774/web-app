@@ -74,11 +74,8 @@ ssh "${VM_CONN}" bash <<EOF
   echo "Stopping and removing any existing containers..."
   docker-compose down
 
-  echo "Building application image..."
-  docker-compose build
-
-  echo "Starting services..."
-  docker-compose up -d
+  echo "Building application image and starting services..."
+  docker-compose up --build -d
 
   echo "Cleaning up dangling Docker images..."
   docker image prune -f
