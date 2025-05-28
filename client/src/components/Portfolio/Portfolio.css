@@ -1,10 +1,17 @@
 .app.portfolio {
-    width: 1080px;
+    width: 1110px;
 }
 
 .app.portfolio .form-check {
     text-wrap: nowrap;
     margin: 0 2%;
+}
+
+.app.portfolio .flex-div .form-control {
+    width: 49%;
+    margin: 0;
+    padding-top: 0;
+    padding-bottom: 0;
 }
 
 @media (pointer: coarse) and (orientation: landscape) {

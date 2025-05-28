@@ -3,12 +3,15 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Button, Form, Table } from "react-bootstrap";
 import "../../Table.css";
 import { get, post } from "../../api";
+import commerceIcon from "../../assets/images/commerce.png";
 import * as constants from "../../constants";
 import useDebounce from "../../hooks/useDebounce";
 import LoginForm from "../LoginForm";
 import Spinner from "../Spinner";
 import { handleError } from "../errorHandler";
 import "./Portfolio.css";
+import RecommendationPopup from "./RecommendationPopup";
+import TransactionPopup from "./TransactionPopup";
 
 const Portfolio = () => {
 
@@ -23,6 +26,9 @@ const Portfolio = () => {
     const [order, setOrder] = useState({ key: null, order: constants.DESC });
     const [isShowRealTime, setIsShowRealTime] = useState(false);
     const [isShowAllData, setIsShowAllData] = useState(false);
+    const [popupContent, setPopupContent] = useState(null);
+    const [transactionPopupContent, setTransactionPopupContent] = useState(null);
+    const [count, setCount] = useState("");
 
     const inputsRef = useRef({});
     const filterDebouncedValue = useDebounce(filterValue, constants.DEBOUNCE_DELAY);
@@ -138,18 +144,24 @@ const Portfolio = () => {
         }
     };
 
-    const getRecommendations = async (llm, sendFixmeRequest, overwrite) => {
+    const getRecommendations = async (llm, sendFixmeRequest, overwrite, count = undefined) => {
         setIsLoading(true);
         try {
-            const ids = visibleSelectedIds().join(',')
-            if (ids.length === 0) {
-                setMessage("Select at least one row");
-                setTimeout(() => {
-                    setMessage(null);
-                }, constants.TIMEOUT_DELAY);
-                return;
+            let path;
+            if (count !== undefined) {
+                path = `/recommendations/random/${count}`
+            } else {
+                const ids = visibleSelectedIds().join(',')
+                if (ids.length === 0) {
+                    setMessage("Select at least one row");
+                    setTimeout(() => {
+                        setMessage(null);
+                    }, constants.TIMEOUT_DELAY);
+                    return;
+                }
+                path = `/recommendations/${ids}`;
             }
-            const resp = await get(`/recommendations/${ids}?llm=${llm}&sendFixmeRequest=${sendFixmeRequest}&overwrite=${overwrite}`);
+            const resp = await get(`${path}?llm=${llm}&sendFixmeRequest=${sendFixmeRequest}&overwrite=${overwrite}`);
             const data = new Map(
                 resp.data.map(item => [
                     item.symbol.id,
@@ -303,6 +315,12 @@ const Portfolio = () => {
         const value = row[key];
         const type = constants.PORTFOLIO_META.DATATYPE[key];
 
+        if (key === constants.RECOMMENDATION_ACTION_KEY) {
+            return <td key={key} onClick={(e) => {
+                e.preventDefault();
+                setPopupContent(row[constants.RECOMMENDATION_RATIONALE_KEY]);
+            }}>{String(value)}</td>;
+        }
         if (key === constants.PERCENT_PNL_KEY || key === constants.RECOMMENDATION_CONFIDENCE_KEY || key === constants.NET_RELATIVE_POSITION_KEY) {
             return <td key={key} style={{
                 backgroundColor: value != null ? scales[key](value).hex() : "black",
@@ -314,6 +332,22 @@ const Portfolio = () => {
         }
         if (type === constants.DATE) {
             return <td key={key}>{value?.toLocaleDateString()}</td>;
+        }
+        if (key === constants.EDIT_KEY) {
+            return (
+                <td key={key} title={"buy / sell"} style={{ padding: '5px' }}>
+                    <Button className="icon-button" onClick={(e) => {
+                        e.preventDefault();
+                        setTransactionPopupContent({
+                            [constants.ID_KEY]: row[constants.ID_KEY],
+                            [constants.SYMBOL_NAME_KEY]: row[constants.SYMBOL_NAME_KEY],
+                            onPopupClose: () => setTransactionPopupContent(null)
+                        });
+                    }}>
+                        <img src={commerceIcon} alt=""></img>
+                    </Button>
+                </td>
+            );
         }
         return <td key={key}>{String(value)}</td>;
     };
@@ -327,6 +361,18 @@ const Portfolio = () => {
     if (isLoading || !tableData) {
         return <Spinner />;
     }
+    if (popupContent != null) {
+        return <div className="app custom-table portfolio">
+            <RecommendationPopup content={popupContent} onPopupClose={() => setPopupContent(null)} />
+        </div>;
+    }
+    if (transactionPopupContent != null) {
+        return <div className="app custom-table portfolio">
+            <TransactionPopup id={transactionPopupContent[constants.ID_KEY]}
+                name={transactionPopupContent[constants.SYMBOL_NAME_KEY]}
+                onPopupClose={() => { setTransactionPopupContent(null); getData(false, isShowAllData) }} />
+        </div>
+    }
 
     return (
         <>
@@ -339,7 +385,7 @@ const Portfolio = () => {
                             getRecommendations(e.target[3].checked, e.target[4].checked, e.target[5].checked);
                         }}>
                             <Button className={isShowAllData ? "fifty-percent" : "thirty-percent"} type="submit" variant="success">Recommend</Button>
-                            <Button className="thirty-percent" style={{ visibility: isShowAllData ? "collapse" : "visible" }} onClick={() => { getData(!isShowRealTime); }}>{
+                            <Button className="thirty-percent" style={isShowAllData ? { position: "absolute", visibility: "hidden" } : {}} onClick={() => { getData(!isShowRealTime); }}>{
                                 isShowRealTime ? "Last close" : "Real time"
                             }</Button>
                             <Button className={isShowAllData ? "fifty-percent" : "thirty-percent"} onClick={() => {
@@ -357,11 +403,29 @@ const Portfolio = () => {
                                 <Form.Check type="checkbox" label="Overwrite" />
                             </div>
                         </Form>
-                        <Form>
-                            <Button className="fifty-percent" onClick={updateNewsSentiment}>Update news sentiment</Button>
-                            <Button className="fifty-percent" onClick={() => { isShowAllData ? getData() : getData(undefined, true); }}>{
+                        <Form onSubmit={(e) => {
+                            e.preventDefault();
+                            const amount = e.target[6].value;
+                            if (!amount) {
+                                setMessage("Specify an amount");
+                                setTimeout(() => {
+                                    setMessage(null);
+                                }, constants.TIMEOUT_DELAY);
+                                return;
+                            }
+                            getRecommendations(e.target[3].checked, e.target[4].checked, e.target[5].checked, amount)
+                        }}>
+                            <Button className={"thirty-percent"} type="submit" variant="success">Random recommendations</Button>
+                            <Button className="thirty-percent" onClick={updateNewsSentiment}>Update news sentiment</Button>
+                            <Button className="thirty-percent" onClick={() => { isShowAllData ? getData() : getData(undefined, true); }}>{
                                 isShowAllData ? "Show active data" : "Show all data"
                             }</Button>
+                            <div className="flex-div">
+                                <Form.Check type="checkbox" label="Custom LLM" />
+                                <Form.Check type="checkbox" label="Pre-request" />
+                                <Form.Check type="checkbox" label="Overwrite" />
+                                <Form.Control type="number" placeholder="Amount" min="1" value={count} onChange={(e) => setCount(Number(e.target.value))} />
+                            </div>
                         </Form>
                         <Table striped bordered hover responsive>
                             <thead>
