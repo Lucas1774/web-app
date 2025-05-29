@@ -74,6 +74,8 @@ const Portfolio = () => {
                     return row[key]?.toString().toLowerCase().includes(filters[key].toLowerCase());
                 } else if (constants.PORTFOLIO_META.DATATYPE[key] === constants.DATE) {
                     return filters[key] === "" || row[key]?.toLocaleDateString() === new Date(filters[key]).toLocaleDateString();
+                } else if (key === "select") {
+                    return !filters[key] || selectedIds.has(row[constants.ID_KEY]);
                 } else {
                     return true;
                 }
@@ -96,7 +98,7 @@ const Portfolio = () => {
         });
 
         setDisplayData(ordered);
-    }, [tableData, filters, order]);
+    }, [tableData, filters, order, selectedIds]);
 
     const getData = async (dynamically = false, all = false) => {
         setIsLoading(true);
@@ -113,15 +115,20 @@ const Portfolio = () => {
                     [constants.ID_KEY]: item.symbol.id,
                     [constants.SYMBOL_NAME_KEY]: item.symbol.name,
                     [constants.LAST_MOVE_DATE_KEY]: item.lastMoveDate ? new Date(item.lastMoveDate) : null,
+                    [constants.RECOMMENDATION_DATE_KEY]: newest ? new Date(newest.date) : null,
+                    [constants.RECOMMENDATION_ACTION_KEY]: newest?.action,
+                    [constants.PRICE_KEY]: item.price,
+                    [constants.OPEN_KEY]: item.open,
+                    [constants.HIGH_KEY]: item.high,
+                    [constants.LOW_KEY]: item.low,
+                    [constants.VOLUME_KEY]: item.volume,
                     [constants.QUANTITY_KEY]: item.quantity,
                     [constants.AVERAGE_COST_KEY]: item.averageCost,
                     [constants.POSITION_VALUE_KEY]: item.positionValue,
                     [constants.PNL_KEY]: item.pnL,
                     [constants.PERCENT_PNL_KEY]: item.percentPnl,
                     [constants.NET_RELATIVE_POSITION_KEY]: item.netRelativePosition,
-                    [constants.RECOMMENDATION_ACTION_KEY]: newest?.action,
                     [constants.RECOMMENDATION_CONFIDENCE_KEY]: newest?.confidence,
-                    [constants.RECOMMENDATION_DATE_KEY]: newest ? new Date(newest.date) : null,
                     [constants.RECOMMENDATION_RATIONALE_KEY]: newest?.rationale,
                 };
             });
@@ -319,7 +326,7 @@ const Portfolio = () => {
             return <td key={key} onClick={(e) => {
                 e.preventDefault();
                 setPopupContent(row[constants.RECOMMENDATION_RATIONALE_KEY]);
-            }}>{String(value)}</td>;
+            }}>{value}</td>;
         }
         if (key === constants.PERCENT_PNL_KEY || key === constants.RECOMMENDATION_CONFIDENCE_KEY || key === constants.NET_RELATIVE_POSITION_KEY) {
             return <td key={key} style={{
@@ -391,7 +398,11 @@ const Portfolio = () => {
                             <Button className={isShowAllData ? "fifty-percent" : "thirty-percent"} onClick={() => {
                                 Object.values(inputsRef.current).forEach((input) => {
                                     if (input) {
-                                        input.value = "";
+                                        if (!input.hasOwnProperty("checked")) {
+                                            input.value = ""
+                                        } else {
+                                            input.checked = false;
+                                        }
                                     }
                                 });
                                 setFilters({});
@@ -441,7 +452,15 @@ const Portfolio = () => {
                                     ))}
                                 </tr>
                                 <tr>
-                                    <th />
+                                    <th key="select">
+                                        <Form.Check ref={(e) => inputsRef.current["select"] = e}
+                                            type="checkbox"
+                                            onChange={(e) => setFilterValue({
+                                                column: "select",
+                                                value: e.target.checked
+                                            })}
+                                        />
+                                    </th>
                                     {constants.PORTFOLIO_META.KEYS.filter((key) => constants.PORTFOLIO_META.VISIBLE[key]).map((key) => (
                                         <th key={key}>
                                             {constants.PORTFOLIO_META.FILTERABLE[key] && (
