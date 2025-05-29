@@ -1,5 +1,5 @@
 .app.portfolio {
-    width: 1110px;
+    width: 100%;
 }
 
 .app.portfolio .form-check {
@@ -12,10 +12,4 @@
     margin: 0;
     padding-top: 0;
     padding-bottom: 0;
-}
-
-@media (pointer: coarse) and (orientation: landscape) {
-    .app.portfolio {
-        width: 100%;
-    }
 }

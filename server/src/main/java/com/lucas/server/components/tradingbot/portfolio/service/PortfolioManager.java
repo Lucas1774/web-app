@@ -16,6 +16,11 @@ public class PortfolioManager {
 
     public record SymbolStand(
             Symbol symbol,
+            BigDecimal price,
+            BigDecimal open,
+            BigDecimal high,
+            BigDecimal low,
+            Long volume,
             LocalDateTime lastMoveDate,
             BigDecimal quantity,
             BigDecimal averageCost,
@@ -60,7 +65,7 @@ public class PortfolioManager {
             }
         }
 
-        return new SymbolStand(portfolio.getSymbol(), portfolio.getEffectiveTimestamp(),
-                quantity, averageCost, positionValue, pnL, percentPnL, netRelativePosition, last.getRecommendations());
+        return new SymbolStand(portfolio.getSymbol(), last.getPrice(), last.getOpen(), last.getHigh(), last.getLow(), last.getVolume(),
+                portfolio.getEffectiveTimestamp(), quantity, averageCost, positionValue, pnL, percentPnL, netRelativePosition, last.getRecommendations());
     }
 }
