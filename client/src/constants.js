@@ -58,6 +58,7 @@ export const PRICE_KEY = "price"
 export const OPEN_KEY = "open"
 export const HIGH_KEY = "high"
 export const LOW_KEY = "low"
+export const PERCENT_DAY_CHANGE_KEY = "percentDayChange"
 export const VOLUME_KEY = "volume"
 export const META = {
     KEYS: [ID_KEY, NAME_KEY, CATEGORY_KEY, QUANTITY_KEY, EDIT_KEY, REMOVE_KEY],
@@ -117,6 +118,7 @@ export const PORTFOLIO_META = {
         AVERAGE_COST_KEY,
         POSITION_VALUE_KEY,
         PNL_KEY,
+        PERCENT_DAY_CHANGE_KEY,
         PERCENT_PNL_KEY,
         NET_RELATIVE_POSITION_KEY,
         RECOMMENDATION_CONFIDENCE_KEY,
@@ -133,6 +135,7 @@ export const PORTFOLIO_META = {
         [OPEN_KEY]: NUMBER,
         [HIGH_KEY]: NUMBER,
         [LOW_KEY]: NUMBER,
+        [PERCENT_DAY_CHANGE_KEY]: NUMBER,
         [VOLUME_KEY]: NUMBER,
         [QUANTITY_KEY]: NUMBER,
         [AVERAGE_COST_KEY]: NUMBER,
@@ -154,6 +157,7 @@ export const PORTFOLIO_META = {
         [OPEN_KEY]: true,
         [HIGH_KEY]: true,
         [LOW_KEY]: true,
+        [PERCENT_DAY_CHANGE_KEY]: true,
         [VOLUME_KEY]: true,
         [QUANTITY_KEY]: true,
         [AVERAGE_COST_KEY]: true,
@@ -169,12 +173,13 @@ export const PORTFOLIO_META = {
         [ID_KEY]: "",
         [SYMBOL_NAME_KEY]: "Symbol",
         [LAST_MOVE_DATE_KEY]: "Last Move Date",
-        [RECOMMENDATION_DATE_KEY]: "Recommendation Date",
-        [RECOMMENDATION_ACTION_KEY]: "Recommended Action",
+        [RECOMMENDATION_DATE_KEY]: "Rec. Date",
+        [RECOMMENDATION_ACTION_KEY]: "Rec. Action",
         [PRICE_KEY]: "Price",
         [OPEN_KEY]: "Open",
         [HIGH_KEY]: "High",
         [LOW_KEY]: "Low",
+        [PERCENT_DAY_CHANGE_KEY]: "%Day Change",
         [VOLUME_KEY]: "Volume",
         [QUANTITY_KEY]: "Quantity",
         [AVERAGE_COST_KEY]: "Average Cost",
@@ -182,7 +187,7 @@ export const PORTFOLIO_META = {
         [PNL_KEY]: "PNL",
         [PERCENT_PNL_KEY]: "%PNL",
         [NET_RELATIVE_POSITION_KEY]: "gross  %PNL",
-        [RECOMMENDATION_CONFIDENCE_KEY]: "Recommendation Confidence",
+        [RECOMMENDATION_CONFIDENCE_KEY]: "Rec. Confidence",
         [RECOMMENDATION_RATIONALE_KEY]: "",
         [EDIT_KEY]: ""
     },
@@ -196,6 +201,7 @@ export const PORTFOLIO_META = {
         [OPEN_KEY]: true,
         [HIGH_KEY]: true,
         [LOW_KEY]: true,
+        [PERCENT_DAY_CHANGE_KEY]: true,
         [VOLUME_KEY]: true,
         [QUANTITY_KEY]: true,
         [AVERAGE_COST_KEY]: true,
@@ -217,6 +223,7 @@ export const PORTFOLIO_META = {
         [OPEN_KEY]: false,
         [HIGH_KEY]: false,
         [LOW_KEY]: false,
+        [PERCENT_DAY_CHANGE_KEY]: false,
         [VOLUME_KEY]: false,
         [QUANTITY_KEY]: false,
         [AVERAGE_COST_KEY]: false,

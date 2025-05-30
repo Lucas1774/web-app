@@ -20,6 +20,7 @@ public class PortfolioManager {
             BigDecimal open,
             BigDecimal high,
             BigDecimal low,
+            BigDecimal percentDayChange,
             Long volume,
             LocalDateTime lastMoveDate,
             BigDecimal quantity,
@@ -64,8 +65,10 @@ public class PortfolioManager {
                         .multiply(BigDecimal.valueOf(100)).setScale(4, RoundingMode.HALF_UP);
             }
         }
+        BigDecimal percentDayChange = last.getPrice().subtract(last.getPreviousClose()).divide(last.getPreviousClose(), 8, RoundingMode.HALF_UP)
+                        .multiply(BigDecimal.valueOf(100)).setScale(4, RoundingMode.HALF_UP);
 
-        return new SymbolStand(portfolio.getSymbol(), last.getPrice(), last.getOpen(), last.getHigh(), last.getLow(), last.getVolume(),
+        return new SymbolStand(portfolio.getSymbol(), last.getPrice(), last.getOpen(), last.getHigh(), last.getLow(), percentDayChange, last.getVolume(),
                 portfolio.getEffectiveTimestamp(), quantity, averageCost, positionValue, pnL, percentPnL, netRelativePosition, last.getRecommendations());
     }
 }
