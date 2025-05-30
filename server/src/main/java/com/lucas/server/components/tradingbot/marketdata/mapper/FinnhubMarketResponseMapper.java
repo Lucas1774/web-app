@@ -13,7 +13,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 
 import static com.lucas.server.common.Constants.JSON_MAPPING_ERROR;
-import static com.lucas.server.common.Constants.MARKET;
+import static com.lucas.server.common.Constants.MARKET_DATA;
 
 @Component
 public class FinnhubMarketResponseMapper implements Mapper<JsonNode, MarketData> {
@@ -33,7 +33,7 @@ public class FinnhubMarketResponseMapper implements Mapper<JsonNode, MarketData>
                     .setChange(new BigDecimal(json.get("d").asText()))
                     .setChangePercent(new BigDecimal(json.get("dp").asText()));
         } catch (Exception e) {
-            throw new JsonProcessingException(MessageFormat.format(JSON_MAPPING_ERROR, MARKET), e);
+            throw new JsonProcessingException(MessageFormat.format(JSON_MAPPING_ERROR, MARKET_DATA), e);
         }
     }
 

@@ -30,7 +30,7 @@ public class RetryableNewsSentimentClientComponent {
 
     @Retryable(retryFor = ClientException.class, maxAttempts = REQUEST_MAX_ATTEMPTS)
     News generateSentiment(News news) throws ClientException, JsonProcessingException {
-        logger.info(GENERATING_SENTIMENT_INFO, news);
+        logger.info(RETRIEVING_DATA_INFO, SENTIMENT, news);
         return mapper.map(httpRequestClient.fetch(url + ANALYZE, news.getHeadline() + " [SEP] " + news.getSummary()), news);
     }
 }

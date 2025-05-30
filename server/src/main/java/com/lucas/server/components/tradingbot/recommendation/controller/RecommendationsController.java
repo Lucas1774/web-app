@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.util.List;
 
 import static com.lucas.server.common.Constants.PortfolioType;
-import static com.lucas.server.common.Constants.RecommendationEngineType;
+import static com.lucas.server.common.Constants.RECOMMENDATION_CLIENTS;
 
 @RestController
 @RequestMapping("/recommendations")
@@ -33,15 +33,14 @@ public class RecommendationsController {
     @GetMapping("/{symbols}")
     public ResponseEntity<List<Recommendation>> generateRecommendations(HttpServletRequest request,
                                                                         @PathVariable List<Long> symbols,
-                                                                        @RequestParam boolean llm,
                                                                         @RequestParam boolean sendFixmeRequest,
                                                                         @RequestParam boolean overwrite) {
         if (!controllerUtil.isAdmin(controllerUtil.retrieveUsername(request.getCookies()))) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        RecommendationEngineType engineType = llm ? RecommendationEngineType.RAW : RecommendationEngineType.AZURE;
         try {
-            return ResponseEntity.ok(jpaService.getRecommendationsById(symbols, PortfolioType.MOCK, sendFixmeRequest, engineType, overwrite));
+            return ResponseEntity.ok(jpaService.getRecommendationsById(symbols, PortfolioType.MOCK, sendFixmeRequest,
+                    overwrite, RECOMMENDATION_CLIENTS));
         } catch (ClientException | IOException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -51,15 +50,13 @@ public class RecommendationsController {
     @GetMapping("/random/{count}")
     public ResponseEntity<List<Recommendation>> generateRandomRecommendations(HttpServletRequest request,
                                                                               @PathVariable int count,
-                                                                              @RequestParam boolean llm,
                                                                               @RequestParam boolean sendFixmeRequest,
                                                                               @RequestParam boolean overwrite) {
         if (!controllerUtil.isAdmin(controllerUtil.retrieveUsername(request.getCookies()))) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        RecommendationEngineType engineType = llm ? RecommendationEngineType.RAW : RecommendationEngineType.AZURE;
         try {
-            return ResponseEntity.ok(jpaService.getRandomRecommendations(PortfolioType.MOCK, count, sendFixmeRequest, engineType, overwrite));
+            return ResponseEntity.ok(jpaService.getRandomRecommendations(PortfolioType.MOCK, count, sendFixmeRequest, overwrite));
         } catch (ClientException | IOException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

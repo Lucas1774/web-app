@@ -38,7 +38,7 @@ public class FinnhubNewsClient {
     }
 
     private List<News> retrieveNewsByDateRange(Symbol symbol, LocalDate from, LocalDate to) throws JsonProcessingException, ClientException {
-        logger.info(RETRIEVING_NEWS_INFO, symbol);
+        logger.info(RETRIEVING_DATA_INFO, NEWS, symbol);
         String url = UriComponentsBuilder.fromUriString(endpoint + COMPANY_NEWS)
                 .queryParam("symbol", symbol.getName())
                 .queryParam("from", from)

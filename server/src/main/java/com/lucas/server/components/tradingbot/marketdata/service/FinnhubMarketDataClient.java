@@ -36,7 +36,7 @@ public class FinnhubMarketDataClient {
     }
 
     public MarketData retrieveMarketData(Symbol symbol) throws JsonProcessingException, ClientException {
-        logger.info(RETRIEVING_MARKET_DATA_INFO, symbol);
+        logger.info(RETRIEVING_DATA_INFO, MARKET_DATA, symbol);
         String url = UriComponentsBuilder.fromUriString(endpoint + QUOTE)
                 .queryParam("symbol", symbol.getName())
                 .queryParam("token", apiKey)

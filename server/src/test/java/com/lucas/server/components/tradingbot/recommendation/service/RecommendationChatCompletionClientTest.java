@@ -85,7 +85,7 @@ class RecommendationChatCompletionClientTest {
                     .setSentimentConfidence(BigDecimal.valueOf((i * 6) % 100));
             articles.add(news);
         }
-        newsService.createIgnoringDuplicates(articles, false);
+        newsService.createOrUpdate(articles);
 
         // given: a portfolio for the symbol
         Portfolio portfolio = new Portfolio();

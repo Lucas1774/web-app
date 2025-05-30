@@ -15,8 +15,6 @@ import com.lucas.server.components.tradingbot.portfolio.service.PortfolioManager
 import com.lucas.server.components.tradingbot.recommendation.jpa.Recommendation;
 import com.lucas.server.components.tradingbot.recommendation.jpa.RecommendationsJpaService;
 import com.lucas.server.components.tradingbot.recommendation.service.RecommendationChatCompletionClient;
-import com.lucas.server.components.tradingbot.recommendation.service.RecommendationClient;
-import com.lucas.server.components.tradingbot.recommendation.service.RecommendationLlmClient;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,10 +42,9 @@ public class DataManager {
     private final RecommendationsJpaService recommendationsService;
     private final FinnhubNewsClient newsClient;
     private final PortfolioManager portfolioManager;
+    private final RecommendationChatCompletionClient recommendationClient;
     private final Map<MarketDataType, TypeToMarketDataFunction> typeToRunner;
     private final Map<PortfolioType, IPortfolioJpaService<?>> portfolioTypeToService;
-    private final Map<RecommendationEngineType, RecommendationClient> recommendationsClientTypeToClient;
-    private final Map<RecommendationEngineType, Integer> recommendationsClientTypeToBackoff;
     private static final Logger logger = LoggerFactory.getLogger(DataManager.class);
     private static final Map<PortfolioType, Supplier<? extends PortfolioBase>> portfolioTypeToNewPortfolio = Map.of(
             PortfolioType.REAL, Portfolio::new,
@@ -60,14 +57,15 @@ public class DataManager {
     }
 
     public DataManager(SymbolJpaService symbolService, MarketDataJpaService marketDataService, NewsJpaService newsService,
-                       RecommendationsJpaService recommendationsService, PortfolioJpaService portfolioService,
-                       PortfolioMockJpaService portfolioMockService, RecommendationChatCompletionClient azureRecommendationClient,
-                       RecommendationLlmClient llmRecommendationClient, FinnhubNewsClient newsClient, PortfolioManager portfolioManager,
+                       RecommendationsJpaService recommendationsService, RecommendationChatCompletionClient recommendationClient,
+                       PortfolioJpaService portfolioService, PortfolioMockJpaService portfolioMockService,
+                       FinnhubNewsClient newsClient, PortfolioManager portfolioManager,
                        TwelveDataMarketDataClient twelveDataMarketDataClient, FinnhubMarketDataClient finnhubMarketDataClient) {
         this.symbolService = symbolService;
         this.marketDataService = marketDataService;
         this.newsService = newsService;
         this.recommendationsService = recommendationsService;
+        this.recommendationClient = recommendationClient;
         this.newsClient = newsClient;
         this.portfolioManager = portfolioManager;
         typeToRunner = new EnumMap<>(Map.of(
@@ -79,26 +77,18 @@ public class DataManager {
                 PortfolioType.REAL, portfolioService,
                 PortfolioType.MOCK, portfolioMockService
         ));
-        recommendationsClientTypeToClient = new EnumMap<>(Map.of(
-                RecommendationEngineType.RAW, llmRecommendationClient,
-                RecommendationEngineType.AZURE, azureRecommendationClient
-        ));
-        recommendationsClientTypeToBackoff = new EnumMap<>(Map.of(
-                RecommendationEngineType.RAW, LLM_BACKOFF_MILLIS,
-                RecommendationEngineType.AZURE, CHAT_COMPLETIONS_BACKOFF_MILLIS
-        ));
     }
 
     @Transactional(rollbackOn = {ClientException.class, IOException.class})
     public List<Recommendation> getRecommendationsById(List<Long> symbolIds, PortfolioType type, boolean sendFixmeRequest,
-                                                       RecommendationEngineType engineType, boolean overwrite) throws ClientException, IOException {
+                                                       boolean overwrite, List<Clients> clients) throws ClientException, IOException {
         List<Symbol> symbols = symbolService.findAllById(symbolIds);
-        return getRecommendations(symbols, type, sendFixmeRequest, engineType, overwrite);
+        return getRecommendations(symbols, type, sendFixmeRequest, overwrite, clients);
     }
 
     @Transactional(rollbackOn = {ClientException.class, IOException.class})
     private List<Recommendation> getRecommendations(List<Symbol> symbols, PortfolioType type, boolean sendFixmeRequest,
-                                                    RecommendationEngineType engineType, boolean overwrite) throws ClientException, IOException {
+                                                    boolean overwrite, List<Clients> clients) throws ClientException, IOException {
         Map<Symbol, List<MarketData>> marketData = symbols.stream()
                 .map(symbol -> Map.entry(symbol, marketDataService.getTopForSymbolId(symbol.getId(), MARKET_DATA_RELEVANT_DAYS_COUNT)))
                 .filter(entry -> !entry.getValue().isEmpty())
@@ -110,7 +100,7 @@ public class DataManager {
         List<Symbol> symbolsWithData = marketData.keySet().stream().toList();
 
         List<Recommendation> res = new ArrayList<>();
-        logger.info(GENERATING_RECOMMENDATIONS_INFO, marketData.size());
+        logger.info(RETRIEVING_DATA_INFO, MARKET_DATA, marketData.size());
         for (int i = 0; i < symbolsWithData.size(); i += RECOMMENDATIONS_CHUNK_SIZE) {
             List<Symbol> batch = symbolsWithData.subList(i, Math.min(i + RECOMMENDATIONS_CHUNK_SIZE, symbolsWithData.size()));
             Map<Symbol, List<MarketData>> marketDataBatch = new LinkedHashMap<>();
@@ -125,13 +115,14 @@ public class DataManager {
                                 .orElseGet(() -> portfolioTypeToNewPortfolio.get(type).get().setSymbol(symbol))
                 );
             }
-            res.addAll(recommendationsClientTypeToClient.get(engineType)
-                    .getRecommendations(marketDataBatch, newsDataBatch, portfolioDataBatch, sendFixmeRequest));
+            res.addAll(recommendationClient.getRecommendations(marketDataBatch, newsDataBatch, portfolioDataBatch,
+                    sendFixmeRequest, clients));
             if (i + RECOMMENDATIONS_CHUNK_SIZE < symbolsWithData.size()) {
-                backOff(recommendationsClientTypeToBackoff.get(engineType));
+                backOff(CHAT_COMPLETIONS_BACKOFF_MILLIS);
             }
         }
 
+        logger.info(GENERATION_SUCCESSFUL_INFO, RECOMMENDATION);
         if (overwrite) {
             return recommendationsService.createOrUpdate(res);
         }
@@ -141,12 +132,12 @@ public class DataManager {
 
     @Transactional(rollbackOn = {ClientException.class, IOException.class})
     public List<Recommendation> getRandomRecommendations(PortfolioType type, int count, boolean sendFixmeRequest,
-                                                         RecommendationEngineType engineType, boolean overwrite) throws ClientException, IOException {
+                                                         boolean overwrite) throws ClientException, IOException {
         Set<Long> active = portfolioTypeToService.get(type)
                 .findActivePortfolio().stream()
                 .map(p -> p.getSymbol().getId())
                 .collect(Collectors.toSet());
-        Set<Long> already = recommendationsService.findByDateBetween(LocalDate.now().minusDays(1), LocalDate.now()).stream()
+        Set<Long> already = recommendationsService.findByDateBetween(LocalDate.now(), LocalDate.now().plusDays(1)).stream()
                 .map(r -> r.getSymbol().getId())
                 .collect(Collectors.toSet());
 
@@ -166,35 +157,41 @@ public class DataManager {
             finalList.addAll(pool.subList(0, Math.min(needed, pool.size())));
         }
 
-        return getRecommendationsById(finalList, type, sendFixmeRequest, engineType, overwrite);
+        return getRecommendationsById(finalList, type, sendFixmeRequest, overwrite, RANDOM_RECOMMENDATION_CLIENTS);
     }
 
     @Transactional
     public List<News> generateSentiment(List<String> symbolNames, LocalDate from, LocalDate to)
             throws ClientException, JsonProcessingException {
         List<Symbol> symbols = symbolNames.stream().distinct().map(symbolService::getOrCreateByName).toList();
+        logger.info(GENERATION_SUCCESSFUL_INFO, SENTIMENT);
         return newsService.generateSentiment(symbols.stream().map(Symbol::getId).toList(), from, to);
     }
 
     @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})
-    public List<News> retrieveNewsByDateRange(List<String> symbolNames, LocalDate from, LocalDate now, boolean generateEmbeddings) throws ClientException, JsonProcessingException {
+    public List<News> retrieveNewsByDateRange(List<String> symbolNames, LocalDate from,
+                                              LocalDate now) throws ClientException, JsonProcessingException {
         List<Symbol> symbols = symbolNames.stream().distinct().map(symbolService::getOrCreateByName).toList();
         List<News> news = newsClient.retrieveNewsByDateRange(symbols, from, now);
-        newsService.createOrUpdate(news, generateEmbeddings);
+        logger.info(GENERATION_SUCCESSFUL_INFO, NEWS);
+        newsService.createOrUpdate(news);
         return news;
     }
 
     @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})
-    public List<MarketData> retrieveMarketData(List<String> symbolNames, MarketDataType type) throws ClientException, JsonProcessingException {
+    public List<MarketData> retrieveMarketData(List<String> symbolNames,
+                                               MarketDataType type) throws ClientException, JsonProcessingException {
         List<Symbol> symbols = symbolNames.stream().distinct().map(symbolService::getOrCreateByName).toList();
         List<MarketData> mds = typeToRunner.get(type).apply(symbols);
+        logger.info(GENERATION_SUCCESSFUL_INFO, MARKET_DATA);
         marketDataService.createIgnoringDuplicates(mds);
         return mds;
     }
 
     @Transactional(rollbackOn = IllegalStateException.class)
     public <T extends PortfolioBase> T executePortfolioAction(PortfolioType type, Long symbolId, BigDecimal price,
-                                                              BigDecimal quantity, BigDecimal commission, LocalDateTime timestamp, boolean isBuy) throws IllegalStateException {
+                                                              BigDecimal quantity, BigDecimal commission, LocalDateTime timestamp,
+                                                              boolean isBuy) throws IllegalStateException {
         Symbol symbol = symbolService.findById(symbolId).orElseThrow(
                 () -> new IllegalStateException(MessageFormat.format(SYMBOL_NOT_FOUND_ERROR, symbolId))
         );
@@ -202,7 +199,8 @@ public class DataManager {
         return service.executePortfolioAction(symbol, price, quantity, commission, timestamp, isBuy);
     }
 
-    public List<PortfolioManager.SymbolStand> getPortfolioStand(List<String> symbolNames, PortfolioType type, boolean dynamic) throws ClientException, JsonProcessingException {
+    public List<PortfolioManager.SymbolStand> getPortfolioStand(List<String> symbolNames, PortfolioType type,
+                                                                boolean dynamic) throws ClientException, JsonProcessingException {
         List<PortfolioBase> portfolio = getService(type).findActivePortfolio()
                 .stream()
                 .filter(p -> symbolNames.contains(p.getSymbol().getName()))
@@ -315,9 +313,7 @@ public class DataManager {
             try {
                 res.add(twelveDataMarketDataClient.retrieveMarketData(List.of(symbol), MarketDataType.LAST).getFirst());
             } catch (ClientException | JsonProcessingException e) {
-                logger.warn(MAIN_CLIENT_FAILED_BACKUP_WARN,
-                        twelveDataMarketDataClient.getClass().getSimpleName(), symbol,
-                        finnhubMarketDataClient.getClass().getSimpleName(), e);
+                logger.warn(CLIENT_FAILED_BACKUP_WARN, twelveDataMarketDataClient.getClass().getSimpleName(), symbol, e);
                 res.add(finnhubMarketDataClient.retrieveMarketData(symbol));
                 backOff(FINNHUB_BACKOFF_MILLIS);
             }

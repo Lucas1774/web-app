@@ -6,9 +6,7 @@ import com.lucas.server.common.jpa.GenericJpaServiceDelegate;
 import com.lucas.server.common.jpa.JpaService;
 import com.lucas.server.common.jpa.UniqueConstraintWearyJpaServiceDelegate;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
-import com.lucas.server.components.tradingbot.news.service.NewsEmbeddingsClient;
 import com.lucas.server.components.tradingbot.news.service.NewsSentimentClient;
-import jakarta.transaction.Transactional;
 import lombok.experimental.Delegate;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -24,24 +22,13 @@ public class NewsJpaService implements JpaService<News> {
     private final GenericJpaServiceDelegate<News, NewsRepository> delegate;
     private final UniqueConstraintWearyJpaServiceDelegate<News> uniqueConstraintDelegate;
     private final NewsRepository repository;
-    private final NewsEmbeddingsClient embeddingsClient;
     private final NewsSentimentClient sentimentClient;
 
-    public NewsJpaService(NewsRepository repository, NewsEmbeddingsClient embeddingsClient, NewsSentimentClient sentimentClient) {
+    public NewsJpaService(NewsRepository repository, NewsSentimentClient sentimentClient) {
         delegate = new GenericJpaServiceDelegate<>(repository);
         uniqueConstraintDelegate = new UniqueConstraintWearyJpaServiceDelegate<>(repository);
         this.repository = repository;
-        this.embeddingsClient = embeddingsClient;
         this.sentimentClient = sentimentClient;
-    }
-
-    public List<News> createIgnoringDuplicates(Iterable<News> entities, boolean triggerEntityCallback) {
-        NewsListener.setActive(triggerEntityCallback);
-        return createIgnoringDuplicates(entities);
-    }
-
-    private List<News> createIgnoringDuplicates(Iterable<News> entities) {
-        return uniqueConstraintDelegate.createIgnoringDuplicates(entity -> repository.findByExternalId(entity.getExternalId()), entities);
     }
 
     public List<News> getTopForSymbolId(Long symbolId, int limit) {
@@ -54,19 +41,7 @@ public class NewsJpaService implements JpaService<News> {
                 .getContent();
     }
 
-    @Transactional(rollbackOn = {ClientException.class})
-    public List<News> generateEmbeddingsByNewsId(List<Long> ids) throws ClientException {
-        List<News> news = repository.findAllByIdIn(ids);
-        NewsListener.setActive(false);
-        return embeddingsClient.embed(news);
-    }
-
-    public List<News> createOrUpdate(List<News> entities, boolean triggerEntityCallback) {
-        NewsListener.setActive(triggerEntityCallback);
-        return createOrUpdate(entities);
-    }
-
-    private List<News> createOrUpdate(List<News> entities) {
+    public List<News> createOrUpdate(List<News> entities) {
         return uniqueConstraintDelegate.createOrUpdate(entity -> repository.findByExternalId(entity.getExternalId()),
                 (oldEntity, newEntity) -> {
                     for (Symbol symbol : newEntity.getSymbols()) {
@@ -81,7 +56,6 @@ public class NewsJpaService implements JpaService<News> {
     public List<News> generateSentiment(List<Long> list, LocalDate from, LocalDate to)
             throws ClientException, JsonProcessingException {
         List<News> news = repository.findAllBySymbols_IdInAndDateBetween(list, from, to);
-        NewsListener.setActive(false);
         return sentimentClient.generateSentiment(news);
     }
 

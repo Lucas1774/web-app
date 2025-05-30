@@ -22,7 +22,6 @@ import java.util.Set;
 @Accessors(chain = true)
 @NoArgsConstructor
 @Entity
-@EntityListeners(NewsListener.class)
 @Table(name = "news")
 public class News implements JpaEntity {
 

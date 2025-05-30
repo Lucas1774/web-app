@@ -17,23 +17,57 @@ spring:
   datasource:
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
-  ai:
-    azure:
-      openai:
-        api-key: ${OPENAI_KEY}
-        endpoint: ${OPENAI_ENDPOINT}
-        embedding:
-          options:
-            deployment-name: ${OPENAI_EMBEDDINGS_MODEL}
-        chat:
-          options:
-            deployment-name: ${OPENAI_MODEL}
-            secondary-deployment-name: ${OPENAI_SECONDARY_MODEL}
-            llm-deployment-name: ${LLM}
-            temperature: 0.2
-            max-tokens: 8000
-    model:
-      chat: azure-openai
+
+ai:
+  deployments:
+    first:
+      api-key: ${GITHUB_KEY}
+      url: ${GITHUB_URL}
+      model: ${OPENAI_MODEL}
+      temperature: 0.2
+      max-tokens: 8000
+    second:
+      api-key: ${GITHUB_KEY}
+      url: ${GITHUB_URL}
+      model: ${DEEPSEEK_MODEL}
+      temperature: 0.2
+      max-tokens: 8000
+    third:
+      api-key: ${GITHUB_KEY}
+      url: ${GITHUB_URL}
+      model: ${OPENAI_SECONDARY_MODEL}
+      temperature: 0.2
+      max-tokens: 8000
+    fourth:
+      api-key: ${GITHUB_KEY}
+      url: ${GITHUB_URL}
+      model: ${GORK_MODEL}
+      temperature: 0.2
+      max-tokens: 8000
+    fifth:
+      api-key: ${GITHUB_KEY}
+      url: ${GITHUB_URL}
+      model: ${LLAMA_MODEL}
+      temperature: 0.2
+      max-tokens: 8000
+    sixth:
+      api-key: ${GITHUB_KEY}
+      url: ${GITHUB_URL}
+      model: ${OPENAI_THIRD_MODEL}
+      temperature: 0.2
+      max-tokens: 8000
+    seventh:
+      api-key: ${GITHUB_KEY}
+      url: ${GITHUB_URL}
+      model: ${OPENAI_FOURTH_MODEL}
+      temperature: 0.2
+      max-tokens: 8000
+    eighth:
+      api-key: ${GITHUB_KEY}
+      url: ${GITHUB_URL}
+      model: ${OPENAI_FIFTH_MODEL}
+      temperature: 0.2
+      max-tokens: 8000
 
 finnhub:
   api-key: ${FINNHUB_KEY}

@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -32,6 +33,7 @@ public class DailyScheduler {
         removeOldMarketData();
         updateNews();
         removeOldNews();
+        getRandomRecommendations();
         removeOldRecommendations();
     }
 
@@ -48,10 +50,20 @@ public class DailyScheduler {
         LocalDate to = LocalDate.now();
         LocalDate from = to.minusDays(1);
         try {
-            List<News> updatedNews = dataManager.retrieveNewsByDateRange(SP500_SYMBOLS, from, to, false);
+            List<News> updatedNews = dataManager.retrieveNewsByDateRange(SP500_SYMBOLS, from, to);
             logger.info(SCHEDULED_TASK_SUCCESS_INFO, "fetched news", updatedNews.stream()
                     .map(News::getHeadline).toList());
         } catch (ClientException | JsonProcessingException e) {
+            logger.error(e.getMessage(), e);
+        }
+    }
+
+    private void getRandomRecommendations() {
+        try {
+            List<Recommendation> updatedRecommendations = dataManager.getRandomRecommendations(PortfolioType.MOCK, SCHEDULED_RECOMMENDATIONS_COUNT, false, false);
+            logger.info(SCHEDULED_TASK_SUCCESS_INFO, "generated recommendations", updatedRecommendations.stream()
+                    .map(Recommendation::getSymbol).toList());
+        } catch (ClientException | IOException e) {
             logger.error(e.getMessage(), e);
         }
     }

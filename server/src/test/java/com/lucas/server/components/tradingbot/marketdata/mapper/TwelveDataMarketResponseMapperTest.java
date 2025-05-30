@@ -18,6 +18,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static com.lucas.server.common.Constants.JSON_MAPPING_ERROR;
+import static com.lucas.server.common.Constants.MARKET_DATA;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -150,7 +151,7 @@ class TwelveDataMarketResponseMapperTest {
         // when & then
         assertThatThrownBy(() -> mapper.map(objectMapper.readTree(json), symbolService.getOrCreateByName("AAPL")))
                 .isInstanceOf(JsonProcessingException.class)
-                .hasMessageContaining(MessageFormat.format(JSON_MAPPING_ERROR, "market"));
+                .hasMessageContaining(MessageFormat.format(JSON_MAPPING_ERROR, MARKET_DATA));
     }
 
     @Test
@@ -199,7 +200,7 @@ class TwelveDataMarketResponseMapperTest {
         // when & then
         assertThatThrownBy(() -> mapper.map(objectMapper.readTree(json), symbolService.getOrCreateByName("AAPL")))
                 .isInstanceOf(JsonProcessingException.class)
-                .hasMessageContaining(MessageFormat.format(JSON_MAPPING_ERROR, "market"));
+                .hasMessageContaining(MessageFormat.format(JSON_MAPPING_ERROR, MARKET_DATA));
     }
 
     @Test

@@ -55,7 +55,7 @@ public class TwelveDataMarketDataClient {
     }
 
     private List<MarketData> retrieveMarketData(Symbol symbol, MarketDataType type) throws ClientException, JsonProcessingException {
-        logger.info(RETRIEVING_MARKET_DATA_INFO, symbol);
+        logger.info(RETRIEVING_DATA_INFO, MARKET_DATA, symbol);
         String url = typeToBuilderCustomizer.get(type).apply(UriComponentsBuilder.fromUriString(endpoint + typeToEndpoint.get(type)))
                 .queryParam("symbol", symbol.getName())
                 .queryParam("apikey", apiKey)
