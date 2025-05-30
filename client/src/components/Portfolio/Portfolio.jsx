@@ -121,6 +121,7 @@ const Portfolio = () => {
                     [constants.OPEN_KEY]: item.open,
                     [constants.HIGH_KEY]: item.high,
                     [constants.LOW_KEY]: item.low,
+                    [constants.PERCENT_DAY_CHANGE_KEY]: item.percentDayChange,
                     [constants.VOLUME_KEY]: item.volume,
                     [constants.QUANTITY_KEY]: item.quantity,
                     [constants.AVERAGE_COST_KEY]: item.averageCost,
@@ -303,11 +304,13 @@ const Portfolio = () => {
     const scales = useMemo(() => {
         const extractValidNumbers = (key) => displayData.map(d => d[key]).filter(v => v != null && !Number.isNaN(v)).map(Number);
 
+        const percentDayChanges = extractValidNumbers(constants.PERCENT_DAY_CHANGE_KEY);
         const percentPnls = extractValidNumbers(constants.PERCENT_PNL_KEY);
         const confidences = extractValidNumbers(constants.RECOMMENDATION_CONFIDENCE_KEY);
         const netPositions = extractValidNumbers(constants.NET_RELATIVE_POSITION_KEY);
 
         return {
+            [constants.PERCENT_DAY_CHANGE_KEY]: chroma.scale(['red', 'yellow', 'green']).domain([Math.min(...percentDayChanges), 0, Math.max(...percentDayChanges)]),
             [constants.PERCENT_PNL_KEY]: chroma.scale(['red', 'yellow', 'green']).domain([Math.min(...percentPnls), 0, Math.max(...percentPnls)]),
             [constants.RECOMMENDATION_CONFIDENCE_KEY]: chroma.scale(['red', 'yellow', 'green']).domain([
                 Math.min(...confidences),
@@ -328,7 +331,8 @@ const Portfolio = () => {
                 setPopupContent(row[constants.RECOMMENDATION_RATIONALE_KEY]);
             }}>{value}</td>;
         }
-        if (key === constants.PERCENT_PNL_KEY || key === constants.RECOMMENDATION_CONFIDENCE_KEY || key === constants.NET_RELATIVE_POSITION_KEY) {
+        if (key === constants.PERCENT_DAY_CHANGE_KEY || key === constants.PERCENT_PNL_KEY
+            || key === constants.RECOMMENDATION_CONFIDENCE_KEY || key === constants.NET_RELATIVE_POSITION_KEY) {
             return <td key={key} style={{
                 backgroundColor: value != null ? scales[key](value).hex() : "black",
                 color: "black"
