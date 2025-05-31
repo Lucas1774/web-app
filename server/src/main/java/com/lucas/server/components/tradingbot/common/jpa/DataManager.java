@@ -100,7 +100,7 @@ public class DataManager {
         List<Symbol> symbolsWithData = marketData.keySet().stream().toList();
 
         List<Recommendation> res = new ArrayList<>();
-        logger.info(RETRIEVING_DATA_INFO, MARKET_DATA, marketData.size());
+        logger.info(RETRIEVING_DATA_INFO, RECOMMENDATION, marketData.size());
         for (int i = 0; i < symbolsWithData.size(); i += RECOMMENDATIONS_CHUNK_SIZE) {
             List<Symbol> batch = symbolsWithData.subList(i, Math.min(i + RECOMMENDATIONS_CHUNK_SIZE, symbolsWithData.size()));
             Map<Symbol, List<MarketData>> marketDataBatch = new LinkedHashMap<>();

@@ -3,7 +3,6 @@ package com.lucas.server.components.tradingbot.config;
 import com.azure.ai.inference.ChatCompletionsClient;
 import com.azure.ai.inference.ChatCompletionsClientBuilder;
 import com.azure.ai.inference.models.ChatCompletionsOptions;
-import com.azure.ai.inference.models.ChatCompletionsResponseFormatJson;
 import com.azure.ai.inference.models.ChatRequestMessage;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.http.HttpClient;

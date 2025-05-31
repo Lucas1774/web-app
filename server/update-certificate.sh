@@ -9,7 +9,7 @@ if [ -z "$KEYSTORE_PASSWORD" ]; then
   exit 1
 fi
 
-VM_USER="azureuser"
+VM_USER="ubuntu"
 VM_URL="ferafera.ddns.net"
 CERT_PATH="/etc/letsencrypt/live/ferafera.ddns.net"
 LOCAL_CERT_PATH="src/main/resources/certificates"

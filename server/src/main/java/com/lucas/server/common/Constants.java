@@ -45,7 +45,7 @@ public class Constants {
     public static final int DATABASE_RECOMMENDATIONS_PER_SYMBOL = 5;
     public static final int SCHEDULED_RECOMMENDATIONS_COUNT = 502;
     public static final int REQUEST_MAX_ATTEMPTS = 2;
-    public static final int RECOMMENDATIONS_CHUNK_SIZE = 5;
+    public static final int RECOMMENDATIONS_CHUNK_SIZE = 3;
     public static final int CHAT_COMPLETIONS_BACKOFF_MILLIS = 60000;
     public static final int FINNHUB_BACKOFF_MILLIS = 1000;
     public static final int TWELVEDATA_BACKOFF_MILLIS = 7500;
@@ -68,6 +68,7 @@ public class Constants {
     public static final String OBV = "OBV";
 
     public static final String SUDOKU_IGNORED_MALFORMED_JSON_WARN = "Couldn't deserialize sudoku from raw data {}";
+    public static final String SENTIMENT_GENERATION_FAILED_WARN = "Couldn't generate sentiment for {}";
     public static final String KPI_RETURNED_ZERO_WARN = "Value is zero for {}, {}";
     public static final String NON_COMPUTABLE_KPI_WARN = "Error attempting to compute {} for {}";
     public static final String CLIENT_FAILED_BACKUP_WARN = "{} failed when trying to process {}";
@@ -75,7 +76,7 @@ public class Constants {
     public static final String SCHEDULED_TASK_SUCCESS_INFO = "Successfully {}: {}";
     public static final String RETRIEVING_DATA_INFO = "Retrieving {} for {}";
     public static final String PROMPTING_MODEL_INFO = "Prompting model {}";
-    public static final String GENERATION_SUCCESSFUL_INFO = "Successfully generated {}}";
+    public static final String GENERATION_SUCCESSFUL_INFO = "Successfully generated {}";
     public static final String JSON_MAPPING_ERROR = "Error mapping {0} JSON";
     public static final String INSUFFICIENT_STOCK_ERROR = "{0}: Nothing to sell";
     public static final String SYMBOL_NOT_FOUND_ERROR = "{0}: Unknown symbol";

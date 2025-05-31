@@ -41,31 +41,31 @@ ai:
     fourth:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: ${GORK_MODEL}
+      model: ${GROK_MODEL}
       temperature: 0.2
-      max-tokens: 8000
+      max-tokens: 4000
     fifth:
-      api-key: ${GITHUB_KEY}
-      url: ${GITHUB_URL}
-      model: ${LLAMA_MODEL}
-      temperature: 0.2
-      max-tokens: 8000
-    sixth:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
       model: ${OPENAI_THIRD_MODEL}
       temperature: 0.2
-      max-tokens: 8000
-    seventh:
+      max-tokens: 4000
+    sixth:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
       model: ${OPENAI_FOURTH_MODEL}
       temperature: 0.2
-      max-tokens: 8000
-    eighth:
+      max-tokens: 4000
+    seventh:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
       model: ${OPENAI_FIFTH_MODEL}
+      temperature: 0.2
+      max-tokens: 4000
+    eighth:
+      api-key: ${GITHUB_KEY}
+      url: ${GITHUB_URL}
+      model: ${LLAMA_MODEL}
       temperature: 0.2
       max-tokens: 8000
 
