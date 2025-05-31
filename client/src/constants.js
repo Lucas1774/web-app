@@ -43,6 +43,7 @@ export const STRING = "string";
 export const NUMBER = "number";
 export const DATE = "date";
 export const ICON = "icon";
+export const REAL_TIME_KEY = "Real time";
 export const SYMBOL_NAME_KEY = "symbolName";
 export const LAST_MOVE_DATE_KEY = "lastMoveDate";
 export const AVERAGE_COST_KEY = "averageCost";
@@ -105,6 +106,7 @@ export const META = {
 }
 export const PORTFOLIO_META = {
     KEYS: [ID_KEY,
+        REAL_TIME_KEY,
         SYMBOL_NAME_KEY,
         LAST_MOVE_DATE_KEY,
         RECOMMENDATION_DATE_KEY,
@@ -127,6 +129,7 @@ export const PORTFOLIO_META = {
     ],
     DATATYPE: {
         [ID_KEY]: NUMBER,
+        [REAL_TIME_KEY]: STRING,
         [SYMBOL_NAME_KEY]: STRING,
         [LAST_MOVE_DATE_KEY]: DATE,
         [RECOMMENDATION_DATE_KEY]: DATE,
@@ -149,6 +152,7 @@ export const PORTFOLIO_META = {
     },
     VISIBLE: {
         [ID_KEY]: false,
+        [REAL_TIME_KEY]: true,
         [SYMBOL_NAME_KEY]: true,
         [LAST_MOVE_DATE_KEY]: true,
         [RECOMMENDATION_DATE_KEY]: true,
@@ -171,6 +175,7 @@ export const PORTFOLIO_META = {
     },
     DISPLAY_NAME: {
         [ID_KEY]: "",
+        [REAL_TIME_KEY]: "Real Time",
         [SYMBOL_NAME_KEY]: "Symbol",
         [LAST_MOVE_DATE_KEY]: "Last Move Date",
         [RECOMMENDATION_DATE_KEY]: "Rec. Date",
@@ -193,6 +198,7 @@ export const PORTFOLIO_META = {
     },
     SORTABLE: {
         [ID_KEY]: true,
+        [REAL_TIME_KEY]: false,
         [SYMBOL_NAME_KEY]: true,
         [LAST_MOVE_DATE_KEY]: true,
         [RECOMMENDATION_DATE_KEY]: true,
@@ -215,6 +221,7 @@ export const PORTFOLIO_META = {
     },
     FILTERABLE: {
         [ID_KEY]: true,
+        [REAL_TIME_KEY]: false,
         [SYMBOL_NAME_KEY]: true,
         [LAST_MOVE_DATE_KEY]: true,
         [RECOMMENDATION_DATE_KEY]: true,

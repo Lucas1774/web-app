@@ -62,4 +62,9 @@ public class RecommendationsController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    @DeleteMapping("/purge")
+    public ResponseEntity<List<Recommendation>> purge(@RequestParam int toKeep) {
+        return ResponseEntity.ok(jpaService.removeOldRecommendations(toKeep));
+    }
 }

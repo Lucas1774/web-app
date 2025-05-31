@@ -73,20 +73,27 @@ public class PortfolioController {
     }
 
     @GetMapping("/stand")
-    public ResponseEntity<List<PortfolioManager.SymbolStand>> getGlobalStandPortfolio(HttpServletRequest request, @RequestParam boolean dynamic) {
+    public ResponseEntity<List<PortfolioManager.SymbolStand>> getStandPortfolio(HttpServletRequest request) {
+        return ResponseEntity.ok(jpaService.getPortfolioStand(SP500_SYMBOLS, PortfolioType.MOCK));
+    }
+
+    @GetMapping("/stand/all")
+    public ResponseEntity<List<PortfolioManager.SymbolStand>> getStandPortfolioAll() {
+        return ResponseEntity.ok(jpaService.getAllAsPortfolioStand(SP500_SYMBOLS, PortfolioType.MOCK));
+    }
+
+    @GetMapping("stand/{symbols}")
+    public ResponseEntity<List<PortfolioManager.SymbolStand>> getStandPortfolioBySymbol(HttpServletRequest request,
+                                                                                        @PathVariable List<Long> symbols,
+                                                                                        @RequestParam boolean dynamic) {
         if (dynamic && !controllerUtil.isAdmin(controllerUtil.retrieveUsername(request.getCookies()))) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         try {
-            return ResponseEntity.ok(jpaService.getPortfolioStand(SP500_SYMBOLS, PortfolioType.MOCK, dynamic));
+            return ResponseEntity.ok(jpaService.getAllAsPortfolioStandById(symbols, PortfolioType.MOCK, dynamic));
         } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-    }
-
-    @GetMapping("/stand/all")
-    public ResponseEntity<List<PortfolioManager.SymbolStand>> getGlobalStandAll() {
-        return ResponseEntity.ok(jpaService.getAllAsPortfolio(SP500_SYMBOLS, PortfolioType.MOCK));
     }
 }

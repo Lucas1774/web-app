@@ -8,6 +8,8 @@ import org.springframework.web.client.RestTemplate;
 import java.time.Duration;
 import java.util.Random;
 
+import static com.lucas.server.common.Constants.TWELVEDATA_BACKOFF_MILLIS;
+
 @Configuration
 public class Config {
 
@@ -18,8 +20,8 @@ public class Config {
 
     @Bean
     public RestTemplate restTemplate(RestTemplateBuilder restTemplateBuilder) {
-        return restTemplateBuilder.connectTimeout(Duration.ofMinutes(10))
-                .readTimeout(Duration.ofMinutes(10))
+        return restTemplateBuilder.connectTimeout(Duration.ofMillis(TWELVEDATA_BACKOFF_MILLIS))
+                .readTimeout(Duration.ofMillis(TWELVEDATA_BACKOFF_MILLIS))
                 .build();
     }
 }

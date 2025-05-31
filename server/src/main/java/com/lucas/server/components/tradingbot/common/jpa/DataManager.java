@@ -29,7 +29,6 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.lucas.server.common.Constants.*;
 
@@ -199,39 +198,31 @@ public class DataManager {
         return service.executePortfolioAction(symbol, price, quantity, commission, timestamp, isBuy);
     }
 
-    public List<PortfolioManager.SymbolStand> getPortfolioStand(List<String> symbolNames, PortfolioType type,
-                                                                boolean dynamic) throws ClientException, JsonProcessingException {
+    public List<PortfolioManager.SymbolStand> getPortfolioStand(List<String> symbolNames, PortfolioType type) {
         List<PortfolioBase> portfolio = getService(type).findActivePortfolio()
                 .stream()
                 .filter(p -> symbolNames.contains(p.getSymbol().getName()))
                 .toList();
-        Stream<PortfolioManager.SymbolStand> res;
-        if (dynamic) {
-            Map<String, MarketData> symbolsWithData = typeToRunner.get(MarketDataType.REAL_TIME)
-                    .apply(portfolio.stream().map(PortfolioBase::getSymbol).toList())
-                    .stream()
-                    .collect(Collectors.toMap(md -> md.getSymbol().getName(), Function.identity()));
-            res = portfolio.stream()
-                    .flatMap(p -> marketDataService.findBySymbolId(p.getSymbol().getId())
-                            .stream()
-                            .max(Comparator.comparing(MarketData::getDate))
-                            .map(md -> portfolioManager.computeStand(p, symbolsWithData.get(md.getSymbol().getName())
-                                    .setRecommendations(md.getRecommendations()))) // artificially link the recommendations to the volatile mds
-                            .stream());
-        } else {
-            res = portfolio.stream()
-                    .flatMap(p -> marketDataService.findBySymbolId(p.getSymbol().getId())
-                            .stream()
-                            .max(Comparator.comparing(MarketData::getDate))
-                            .map(md -> portfolioManager.computeStand(p, md))
-                            .stream());
-        }
-
-        return res.sorted(Comparator.comparing(PortfolioManager.SymbolStand::lastMoveDate).reversed())
-                .toList();
+        return getStand(portfolio);
     }
 
-    public List<PortfolioManager.SymbolStand> getAllAsPortfolio(List<String> symbolNames, PortfolioType type) {
+    public List<PortfolioManager.SymbolStand> getAllAsPortfolioStandById(List<Long> symbolIds, PortfolioType type,
+                                                                         boolean dynamic) throws ClientException, JsonProcessingException {
+        List<Symbol> symbols = symbolService.findAllById(symbolIds);
+        Map<Symbol, PortfolioBase> portfolioBySymbol = getService(type)
+                .findActivePortfolio().stream()
+                .filter(p -> symbols.contains(p.getSymbol()))
+                .collect(Collectors.toMap(
+                        PortfolioBase::getSymbol,
+                        Function.identity()
+                ));
+        symbols.forEach(s -> portfolioBySymbol
+                .computeIfAbsent(s, symbol -> portfolioTypeToNewPortfolio.get(type).get().setSymbol(symbol)));
+        return dynamic ? getStandDynamically(portfolioBySymbol.values().stream().toList())
+                : getStand(portfolioBySymbol.values().stream().toList());
+    }
+
+    public List<PortfolioManager.SymbolStand> getAllAsPortfolioStand(List<String> symbolNames, PortfolioType type) {
         Set<String> namesSet = new HashSet<>(symbolNames);
         List<Symbol> symbols = namesSet.stream().map(symbolService::getOrCreateByName).toList();
         Map<Symbol, PortfolioBase> portfolioBySymbol = getService(type)
@@ -244,13 +235,36 @@ public class DataManager {
         symbols.forEach(s -> portfolioBySymbol
                 .computeIfAbsent(s, symbol -> portfolioTypeToNewPortfolio.get(type).get().setSymbol(symbol)));
 
-        return portfolioBySymbol.values().stream()
-                .flatMap(p -> marketDataService.findBySymbolId(p.getSymbol().getId()).stream()
+        return getStand(portfolioBySymbol.values().stream().toList());
+    }
+
+    private List<PortfolioManager.SymbolStand> getStand(List<PortfolioBase> portfolio) {
+        return portfolio.stream()
+                .flatMap(p -> marketDataService.findBySymbolId(p.getSymbol().getId())
+                        .stream()
                         .max(Comparator.comparing(MarketData::getDate))
                         .map(md -> portfolioManager.computeStand(p, md))
+                        .stream()).sorted(Comparator.comparing(
+                        PortfolioManager.SymbolStand::lastMoveDate,
+                        Comparator.nullsFirst(Comparator.naturalOrder())
+                ).reversed())
+                .toList();
+    }
+
+    private List<PortfolioManager.SymbolStand> getStandDynamically(List<PortfolioBase> portfolio) throws ClientException, JsonProcessingException {
+        Map<String, MarketData> symbolsWithData = typeToRunner.get(MarketDataType.REAL_TIME)
+                .apply(portfolio.stream().map(PortfolioBase::getSymbol).toList())
+                .stream()
+                .collect(Collectors.toMap(md -> md.getSymbol().getName(), Function.identity()));
+        return portfolio.stream()
+                .flatMap(p -> marketDataService.findBySymbolId(p.getSymbol().getId())
                         .stream()
-                )
-                .sorted(Comparator.comparing(PortfolioManager.SymbolStand::lastMoveDate,
+                        .max(Comparator.comparing(MarketData::getDate))
+                        .map(md -> portfolioManager.computeStand(p, symbolsWithData.get(md.getSymbol().getName())
+                                .setRecommendations(md.getRecommendations()))) // artificially link the recommendations to the volatile mds
+                        .stream())
+                .sorted(Comparator.comparing(
+                        PortfolioManager.SymbolStand::lastMoveDate,
                         Comparator.nullsFirst(Comparator.naturalOrder())
                 ).reversed())
                 .toList();
