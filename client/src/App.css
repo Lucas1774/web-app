@@ -66,6 +66,10 @@ h1 {
     width: 32%;
 }
 
+.app button.twenty-five-percent {
+    width: 24%;
+}
+
 .app button.popup-icon {
     width: 30px;
     height: 30px;

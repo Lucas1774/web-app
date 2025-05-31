@@ -24,7 +24,6 @@ const Portfolio = () => {
     const [isLoginFormVisible, setIsLoginFormVisible] = useState(false);
     const [filters, setFilters] = useState({});
     const [order, setOrder] = useState({ key: null, order: constants.DESC });
-    const [isShowRealTime, setIsShowRealTime] = useState(false);
     const [isShowAllData, setIsShowAllData] = useState(false);
     const [popupContent, setPopupContent] = useState(null);
     const [transactionPopupContent, setTransactionPopupContent] = useState(null);
@@ -100,10 +99,10 @@ const Portfolio = () => {
         setDisplayData(ordered);
     }, [tableData, filters, order, selectedIds]);
 
-    const getData = async (dynamically = false, all = false) => {
+    const getData = async (all = false) => {
         setIsLoading(true);
+        const url = all ? "/portfolio/stand/all" : "/portfolio/stand";
         try {
-            const url = all ? "/portfolio/stand/all" : `/portfolio/stand?dynamic=${dynamically}`;
             const resp = await get(url);
             const data = resp.data.map((item) => {
                 const newest = item.recommendation.reduce(
@@ -113,6 +112,7 @@ const Portfolio = () => {
                 );
                 return {
                     [constants.ID_KEY]: item.symbol.id,
+                    [constants.REAL_TIME_KEY]: "N",
                     [constants.SYMBOL_NAME_KEY]: item.symbol.name,
                     [constants.LAST_MOVE_DATE_KEY]: item.lastMoveDate ? new Date(item.lastMoveDate) : null,
                     [constants.RECOMMENDATION_DATE_KEY]: newest ? new Date(newest.date) : null,
@@ -136,8 +136,54 @@ const Portfolio = () => {
 
             setTableData(data);
             setDisplayData(data);
-            setIsShowRealTime(dynamically);
             setIsShowAllData(all);
+        } catch (error) {
+            handleError("Error fetching data", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const getDataByRow = async (dynamic) => {
+        const ids = visibleSelectedIds().join(',')
+        if (ids.length === 0) {
+            setMessage("Select at least one row");
+            setTimeout(() => {
+                setMessage(null);
+            }, constants.TIMEOUT_DELAY);
+            return;
+        }
+        setIsLoading(true);
+        try {
+            const resp = await get(`/portfolio/stand/${ids}?dynamic=${dynamic}`);
+            const data = new Map(
+                resp.data.map(item => [
+                    item.symbol.id,
+                    {
+                        [constants.REAL_TIME_KEY]: dynamic ? "Y" : "N",
+                        [constants.PRICE_KEY]: item.price,
+                        [constants.OPEN_KEY]: item.open,
+                        [constants.HIGH_KEY]: item.high,
+                        [constants.LOW_KEY]: item.low,
+                        [constants.PERCENT_DAY_CHANGE_KEY]: item.percentDayChange,
+                        [constants.VOLUME_KEY]: item.volume,
+                        [constants.PNL_KEY]: item.pnL,
+                        [constants.PERCENT_PNL_KEY]: item.percentPnl,
+                        [constants.NET_RELATIVE_POSITION_KEY]: item.netRelativePosition,
+                    }
+                ])
+            );
+
+            const updated = tableData.map(row => {
+                const id = row[constants.ID_KEY];
+                if (data.has(id)) {
+                    return { ...row, ...data.get(id) };
+                }
+                return row;
+            });
+
+            setTableData(updated);
+            setDisplayData(updated);
         } catch (error) {
             if (error.response?.status === 401) {
                 setMessage("Unauthorized");
@@ -174,7 +220,6 @@ const Portfolio = () => {
                 resp.data.map(item => [
                     item.symbol.id,
                     {
-                        [constants.SYMBOL_NAME_KEY]: item.symbol.name,
                         [constants.RECOMMENDATION_ACTION_KEY]: item.action,
                         [constants.RECOMMENDATION_CONFIDENCE_KEY]: item.confidence,
                         [constants.RECOMMENDATION_DATE_KEY]: new Date(item.date),
@@ -193,7 +238,6 @@ const Portfolio = () => {
 
             setTableData(updated);
             setDisplayData(updated);
-            setIsShowAllData(false);
         } catch (error) {
             if (error.response?.status === 401) {
                 setMessage("Unauthorized");
@@ -381,7 +425,7 @@ const Portfolio = () => {
         return <div className="app custom-table portfolio">
             <TransactionPopup id={transactionPopupContent[constants.ID_KEY]}
                 name={transactionPopupContent[constants.SYMBOL_NAME_KEY]}
-                onPopupClose={() => { setTransactionPopupContent(null); getData(false, isShowAllData) }} />
+                onPopupClose={() => { setTransactionPopupContent(null); getData(isShowAllData) }} />
         </div>
     }
 
@@ -395,11 +439,32 @@ const Portfolio = () => {
                             e.preventDefault();
                             getRecommendations(e.target[3].checked, e.target[4].checked);
                         }}>
-                            <Button className={isShowAllData ? "fifty-percent" : "thirty-percent"} type="submit" variant="success">Recommend</Button>
-                            <Button className="thirty-percent" style={isShowAllData ? { position: "absolute", visibility: "hidden" } : {}} onClick={() => { getData(!isShowRealTime); }}>{
-                                isShowRealTime ? "Last close" : "Real time"
+                            <Button className={"thirty-percent"} type="submit" variant="success">Recommend</Button>
+                            <Button className={"thirty-percent"} onClick={() => { getDataByRow(false); }}>Last close</Button>
+                            <Button className={"thirty-percent"} onClick={() => { getDataByRow(true); }}>Real time</Button>
+                            <div className="flex-div">
+                                <Form.Check type="checkbox" label="Pre-request" />
+                                <Form.Check type="checkbox" label="Overwrite" />
+                            </div>
+                        </Form>
+                        <Form onSubmit={(e) => {
+                            e.preventDefault();
+                            const amount = e.target[6].value;
+                            if (!amount) {
+                                setMessage("Specify an amount");
+                                setTimeout(() => {
+                                    setMessage(null);
+                                }, constants.TIMEOUT_DELAY);
+                                return;
+                            }
+                            getRecommendations(e.target[4].checked, e.target[5].checked, amount)
+                        }}>
+                            <Button className={"twenty-five-percent"} type="submit" variant="success">Random recommendations</Button>
+                            <Button className="twenty-five-percent" onClick={updateNewsSentiment}>Update news sentiment</Button>
+                            <Button className="twenty-five-percent" onClick={() => { getData(!isShowAllData); }}>{
+                                isShowAllData ? "Show active data" : "Show all data"
                             }</Button>
-                            <Button className={isShowAllData ? "fifty-percent" : "thirty-percent"} onClick={() => {
+                            <Button className={"twenty-five-percent"} onClick={() => {
                                 Object.values(inputsRef.current).forEach((input) => {
                                     if (input) {
                                         if (!input.hasOwnProperty("checked")) {
@@ -412,28 +477,6 @@ const Portfolio = () => {
                                 setFilters({});
 
                             }}>Clear filters</Button>
-                            <div className="flex-div">
-                                <Form.Check type="checkbox" label="Pre-request" />
-                                <Form.Check type="checkbox" label="Overwrite" />
-                            </div>
-                        </Form>
-                        <Form onSubmit={(e) => {
-                            e.preventDefault();
-                            const amount = e.target[5].value;
-                            if (!amount) {
-                                setMessage("Specify an amount");
-                                setTimeout(() => {
-                                    setMessage(null);
-                                }, constants.TIMEOUT_DELAY);
-                                return;
-                            }
-                            getRecommendations(e.target[3].checked, e.target[4].checked, amount)
-                        }}>
-                            <Button className={"thirty-percent"} type="submit" variant="success">Random recommendations</Button>
-                            <Button className="thirty-percent" onClick={updateNewsSentiment}>Update news sentiment</Button>
-                            <Button className="thirty-percent" onClick={() => { isShowAllData ? getData() : getData(undefined, true); }}>{
-                                isShowAllData ? "Show active data" : "Show all data"
-                            }</Button>
                             <div className="flex-div">
                                 <Form.Check type="checkbox" label="Pre-request" />
                                 <Form.Check type="checkbox" label="Overwrite" />
