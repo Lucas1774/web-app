@@ -2,7 +2,7 @@ security:
   ip-address: ${SOME_IP_ADDRESS}
 
 scheduler:
-  daily-cron: "0 0 2 * * *" # Every day at 2 AM UTC
+  daily-cron: "0 0 8 * * *" # Every day at 8 AM UTC
 
 spring:
   application:
@@ -24,49 +24,49 @@ ai:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
       model: ${OPENAI_MODEL}
-      temperature: 0.2
+      temperature: 0
       max-tokens: 8000
     second:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: ${DEEPSEEK_MODEL}
-      temperature: 0.2
-      max-tokens: 8000
+      model: ${GROK_MODEL}
+      temperature: 0
+      max-tokens: 4000
     third:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: ${OPENAI_SECONDARY_MODEL}
-      temperature: 0.2
-      max-tokens: 8000
+      model: ${DEEPSEEK_MODEL}
+      temperature: 0
+      max-tokens: 4000
     fourth:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: ${GROK_MODEL}
-      temperature: 0.2
-      max-tokens: 4000
+      model: ${OPENAI_SECONDARY_MODEL}
+      temperature: 0
+      max-tokens: 8000
     fifth:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
       model: ${OPENAI_THIRD_MODEL}
-      temperature: 0.2
+      temperature: 0
       max-tokens: 4000
     sixth:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
       model: ${OPENAI_FOURTH_MODEL}
-      temperature: 0.2
+      temperature: 0
       max-tokens: 4000
     seventh:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
       model: ${OPENAI_FIFTH_MODEL}
-      temperature: 0.2
+      temperature: 0
       max-tokens: 4000
     eighth:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
       model: ${LLAMA_MODEL}
-      temperature: 0.2
+      temperature: 0
       max-tokens: 8000
 
 finnhub:
@@ -76,10 +76,6 @@ finnhub:
 twelve-data:
   api-key: ${TWELVE_DATA_KEY}
   endpoint: ${TWELVE_DATA_ENDPOINT}
-
-language:
-  api-key: ${LANGUAGE_API_KEY}
-  endpoint: ${LANGUAGE_ENDPOINT}
 
 sentiment:
   url: ${SENTIMENT_URL}

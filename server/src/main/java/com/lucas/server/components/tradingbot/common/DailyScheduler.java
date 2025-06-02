@@ -30,10 +30,10 @@ public class DailyScheduler {
     @Scheduled(cron = "${scheduler.daily-cron}")
     public void dailyTask() {
         updateMarketData();
-        removeOldMarketData();
         updateNews();
-        removeOldNews();
         getRandomRecommendations();
+        removeOldMarketData();
+        removeOldNews();
         removeOldRecommendations();
     }
 
