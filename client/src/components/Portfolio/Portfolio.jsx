@@ -100,8 +100,8 @@ const Portfolio = () => {
     }, [tableData, filters, order, selectedIds]);
 
     const getData = async (all = false) => {
-        setIsLoading(true);
         const url = all ? "/portfolio/stand/all" : "/portfolio/stand";
+        setIsLoading(true);
         try {
             const resp = await get(url);
             const data = resp.data.map((item) => {
@@ -199,22 +199,22 @@ const Portfolio = () => {
     };
 
     const getRecommendations = async (sendFixmeRequest, overwrite, count = undefined) => {
+        let path;
+        if (count !== undefined) {
+            path = `/recommendations/random/${count}`
+        } else {
+            const ids = visibleSelectedIds().join(',')
+            if (ids.length === 0) {
+                setMessage("Select at least one row");
+                setTimeout(() => {
+                    setMessage(null);
+                }, constants.TIMEOUT_DELAY);
+                return;
+            }
+            path = `/recommendations/${ids}`;
+        }
         setIsLoading(true);
         try {
-            let path;
-            if (count !== undefined) {
-                path = `/recommendations/random/${count}`
-            } else {
-                const ids = visibleSelectedIds().join(',')
-                if (ids.length === 0) {
-                    setMessage("Select at least one row");
-                    setTimeout(() => {
-                        setMessage(null);
-                    }, constants.TIMEOUT_DELAY);
-                    return;
-                }
-                path = `/recommendations/${ids}`;
-            }
             const resp = await get(`${path}?sendFixmeRequest=${sendFixmeRequest}&overwrite=${overwrite}`);
             const data = new Map(
                 resp.data.map(item => [
@@ -252,18 +252,26 @@ const Portfolio = () => {
         }
     }
 
-    const updateNewsSentiment = async () => {
+    const updateNews = async () => {
+        const ids = visibleSelectedIds().join(',')
+        if (ids.length === 0) {
+            setMessage("Select at least one row");
+            setTimeout(() => {
+                setMessage(null);
+            }, constants.TIMEOUT_DELAY);
+            return;
+        }
         setIsLoading(true);
         try {
-            const resp = await get(`/sentiment/historic?from=${new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10)}`);
+            const resp = await get(`/news/historic/${new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10)}/${ids}`);
             if (resp.data.length === 0) {
-                setMessage("No news to update");
+                setMessage("No new news");
                 setTimeout(() => {
                     setMessage(null);
                 }, constants.TIMEOUT_DELAY);
                 return;
             }
-            setMessage("Updated sentiment for " + resp.data.length + " news items");
+            setMessage("Updated " + resp.data.length + " news");
             setTimeout(() => {
                 setMessage(null);
             }, constants.TIMEOUT_DELAY);
@@ -437,11 +445,12 @@ const Portfolio = () => {
                     <>
                         <Form onSubmit={(e) => {
                             e.preventDefault();
-                            getRecommendations(e.target[3].checked, e.target[4].checked);
+                            getRecommendations(e.target[4].checked, e.target[5].checked);
                         }}>
-                            <Button className={"thirty-percent"} type="submit" variant="success">Recommend</Button>
-                            <Button className={"thirty-percent"} onClick={() => { getDataByRow(false); }}>Last close</Button>
-                            <Button className={"thirty-percent"} onClick={() => { getDataByRow(true); }}>Real time</Button>
+                            <Button className="twenty-five-percent" type="submit" variant="success">Recommend</Button>
+                            <Button className="twenty-five-percent" onClick={updateNews}>Fetch latest news</Button>
+                            <Button className="twenty-five-percent" onClick={() => { getDataByRow(false); }}>Last close</Button>
+                            <Button className="twenty-five-percent" onClick={() => { getDataByRow(true); }}>Real time</Button>
                             <div className="flex-div">
                                 <Form.Check type="checkbox" label="Pre-request" />
                                 <Form.Check type="checkbox" label="Overwrite" />
@@ -449,7 +458,7 @@ const Portfolio = () => {
                         </Form>
                         <Form onSubmit={(e) => {
                             e.preventDefault();
-                            const amount = e.target[6].value;
+                            const amount = e.target[5].value;
                             if (!amount) {
                                 setMessage("Specify an amount");
                                 setTimeout(() => {
@@ -457,14 +466,13 @@ const Portfolio = () => {
                                 }, constants.TIMEOUT_DELAY);
                                 return;
                             }
-                            getRecommendations(e.target[4].checked, e.target[5].checked, amount)
+                            getRecommendations(e.target[3].checked, e.target[4].checked, amount)
                         }}>
-                            <Button className={"twenty-five-percent"} type="submit" variant="success">Random recommendations</Button>
-                            <Button className="twenty-five-percent" onClick={updateNewsSentiment}>Update news sentiment</Button>
-                            <Button className="twenty-five-percent" onClick={() => { getData(!isShowAllData); }}>{
+                            <Button className="thirty-percent" type="submit" variant="success">Random recommendations</Button>
+                            <Button className="thirty-percent" onClick={() => { getData(!isShowAllData); }}>{
                                 isShowAllData ? "Show active data" : "Show all data"
                             }</Button>
-                            <Button className={"twenty-five-percent"} onClick={() => {
+                            <Button className="thirty-percent" onClick={() => {
                                 Object.values(inputsRef.current).forEach((input) => {
                                     if (input) {
                                         if (!input.hasOwnProperty("checked")) {

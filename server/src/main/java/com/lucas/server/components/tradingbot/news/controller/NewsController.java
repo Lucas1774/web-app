@@ -1,9 +1,11 @@
 package com.lucas.server.components.tradingbot.news.controller;
 
+import com.lucas.server.common.controller.ControllerUtil;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;
 import com.lucas.server.components.tradingbot.news.jpa.News;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -19,15 +21,20 @@ import static com.lucas.server.common.Constants.SP500_SYMBOLS;
 @RequestMapping("/news")
 public class NewsController {
 
+    private final ControllerUtil controllerUtil;
     private final DataManager jpaService;
     private static final Logger logger = LoggerFactory.getLogger(NewsController.class);
 
-    public NewsController(DataManager jpaService) {
+    public NewsController(ControllerUtil controllerUtil, DataManager jpaService) {
+        this.controllerUtil = controllerUtil;
         this.jpaService = jpaService;
     }
 
     @GetMapping("/last")
-    public ResponseEntity<List<News>> fetchAndSaveAll() {
+    public ResponseEntity<List<News>> fetchAndSaveAll(HttpServletRequest request) {
+        if (!controllerUtil.isAdmin(controllerUtil.retrieveUsername(request.getCookies()))) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         LocalDate to = LocalDate.now();
         LocalDate from = to.minusDays(1);
         try {
@@ -39,7 +46,10 @@ public class NewsController {
     }
 
     @GetMapping("/last/{symbols}")
-    public ResponseEntity<List<News>> fetchAndSaveSome(@PathVariable List<String> symbols) {
+    public ResponseEntity<List<News>> fetchAndSaveSome(HttpServletRequest request, @PathVariable List<String> symbols) {
+        if (!controllerUtil.isAdmin(controllerUtil.retrieveUsername(request.getCookies()))) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         LocalDate to = LocalDate.now();
         LocalDate from = to.minusDays(1);
         try {
@@ -51,7 +61,10 @@ public class NewsController {
     }
 
     @GetMapping("/historic/{from}")
-    public ResponseEntity<List<News>> fetchAndSaveHistoricAll(@PathVariable LocalDate from) {
+    public ResponseEntity<List<News>> fetchAndSaveHistoricAll(HttpServletRequest request, @PathVariable LocalDate from) {
+        if (!controllerUtil.isAdmin(controllerUtil.retrieveUsername(request.getCookies()))) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         try {
             return ResponseEntity.ok(jpaService.retrieveNewsByDateRange(SP500_SYMBOLS, from, LocalDate.now()));
         } catch (JsonProcessingException | ClientException e) {
@@ -61,8 +74,12 @@ public class NewsController {
     }
 
     @GetMapping("/historic/{from}/{symbols}")
-    public ResponseEntity<List<News>> fetchAndSaveHistoricSome(@PathVariable LocalDate from,
+    public ResponseEntity<List<News>> fetchAndSaveHistoricSome(HttpServletRequest request,
+                                                               @PathVariable LocalDate from,
                                                                @PathVariable List<String> symbols) {
+        if (!controllerUtil.isAdmin(controllerUtil.retrieveUsername(request.getCookies()))) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         try {
             return ResponseEntity.ok(jpaService.retrieveNewsByDateRange(symbols, from, LocalDate.now()));
         } catch (JsonProcessingException | ClientException e) {
