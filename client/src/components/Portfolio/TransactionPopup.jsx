@@ -7,7 +7,7 @@ import { handleError } from "../errorHandler";
 import Spinner from "../Spinner";
 import "./Portfolio.css";
 
-const TransactionPopup = ({ id: symbolId, name: symbolName, onPopupClose }) => {
+const TransactionPopup = ({ id: symbolId, name: symbolName, onPopupClose, onTransactionSuccessful }) => {
     const [action, setAction] = useState("");
     const [price, setPrice] = useState("");
     const [quantity, setQuantity] = useState("");
@@ -32,6 +32,7 @@ const TransactionPopup = ({ id: symbolId, name: symbolName, onPopupClose }) => {
             setTimeout(() => {
                 setMessage(null);
                 onPopupClose();
+                onTransactionSuccessful();
             }, TIMEOUT_DELAY);
         } catch (error) {
             if (error.response?.status === 422) {
@@ -99,7 +100,8 @@ const TransactionPopup = ({ id: symbolId, name: symbolName, onPopupClose }) => {
 TransactionPopup.propTypes = {
     id: PropTypes.number,
     name: PropTypes.string,
-    onPopupClose: PropTypes.func
+    onPopupClose: PropTypes.func,
+    onTransactionSuccessful: PropTypes.func
 };
 
 export default TransactionPopup;

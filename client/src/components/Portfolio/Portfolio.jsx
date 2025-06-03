@@ -433,7 +433,8 @@ const Portfolio = () => {
         return <div className="app custom-table portfolio">
             <TransactionPopup id={transactionPopupContent[constants.ID_KEY]}
                 name={transactionPopupContent[constants.SYMBOL_NAME_KEY]}
-                onPopupClose={() => { setTransactionPopupContent(null); getData(isShowAllData) }} />
+                onPopupClose={() => { setTransactionPopupContent(null); }}
+                onTransactionSuccessful={() => { getData(false) }} />
         </div>
     }
 
