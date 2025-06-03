@@ -50,7 +50,7 @@ public class DailyScheduler {
         LocalDate to = LocalDate.now();
         LocalDate from = to.minusDays(1);
         try {
-            List<News> updatedNews = dataManager.retrieveNewsByDateRange(SP500_SYMBOLS, from, to);
+            List<News> updatedNews = dataManager.retrieveNewsByDateRangeAndName(SP500_SYMBOLS, from, to);
             logger.info(SCHEDULED_TASK_SUCCESS_INFO, "fetched news", updatedNews.stream()
                     .map(News::getHeadline).toList());
         } catch (ClientException | JsonProcessingException e) {

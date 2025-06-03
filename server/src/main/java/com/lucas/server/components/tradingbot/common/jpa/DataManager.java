@@ -168,9 +168,22 @@ public class DataManager {
     }
 
     @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})
-    public List<News> retrieveNewsByDateRange(List<String> symbolNames, LocalDate from,
-                                              LocalDate now) throws ClientException, JsonProcessingException {
+    public List<News> retrieveNewsByDateRangeAndId(List<Long> symbolIds, LocalDate from,
+                                                   LocalDate to) throws ClientException, JsonProcessingException {
+        List<Symbol> symbols = symbolService.findAllById(symbolIds);
+        return retrieveNewsByDateRange(symbols, from, to);
+    }
+
+    @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})
+    public List<News> retrieveNewsByDateRangeAndName(List<String> symbolNames, LocalDate from,
+                                                     LocalDate to) throws ClientException, JsonProcessingException {
         List<Symbol> symbols = symbolNames.stream().distinct().map(symbolService::getOrCreateByName).toList();
+        return retrieveNewsByDateRange(symbols, from, to);
+    }
+
+    @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})
+    public List<News> retrieveNewsByDateRange(List<Symbol> symbols, LocalDate from,
+                                              LocalDate now) throws ClientException, JsonProcessingException {
         List<News> news = newsClient.retrieveNewsByDateRange(symbols, from, now);
         logger.info(GENERATION_SUCCESSFUL_INFO, NEWS);
         newsService.createOrUpdate(news);

@@ -38,7 +38,7 @@ public class NewsController {
         LocalDate to = LocalDate.now();
         LocalDate from = to.minusDays(1);
         try {
-            return ResponseEntity.ok(jpaService.retrieveNewsByDateRange(SP500_SYMBOLS, from, to));
+            return ResponseEntity.ok(jpaService.retrieveNewsByDateRangeAndName(SP500_SYMBOLS, from, to));
         } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -46,14 +46,14 @@ public class NewsController {
     }
 
     @GetMapping("/last/{symbols}")
-    public ResponseEntity<List<News>> fetchAndSaveSome(HttpServletRequest request, @PathVariable List<String> symbols) {
+    public ResponseEntity<List<News>> fetchAndSaveSome(HttpServletRequest request, @PathVariable List<Long> symbols) {
         if (!controllerUtil.isAdmin(controllerUtil.retrieveUsername(request.getCookies()))) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         LocalDate to = LocalDate.now();
         LocalDate from = to.minusDays(1);
         try {
-            return ResponseEntity.ok(jpaService.retrieveNewsByDateRange(symbols, from, to));
+            return ResponseEntity.ok(jpaService.retrieveNewsByDateRangeAndId(symbols, from, to));
         } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -66,7 +66,7 @@ public class NewsController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         try {
-            return ResponseEntity.ok(jpaService.retrieveNewsByDateRange(SP500_SYMBOLS, from, LocalDate.now()));
+            return ResponseEntity.ok(jpaService.retrieveNewsByDateRangeAndName(SP500_SYMBOLS, from, LocalDate.now()));
         } catch (JsonProcessingException | ClientException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -76,12 +76,12 @@ public class NewsController {
     @GetMapping("/historic/{from}/{symbols}")
     public ResponseEntity<List<News>> fetchAndSaveHistoricSome(HttpServletRequest request,
                                                                @PathVariable LocalDate from,
-                                                               @PathVariable List<String> symbols) {
+                                                               @PathVariable List<Long> symbols) {
         if (!controllerUtil.isAdmin(controllerUtil.retrieveUsername(request.getCookies()))) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         try {
-            return ResponseEntity.ok(jpaService.retrieveNewsByDateRange(symbols, from, LocalDate.now()));
+            return ResponseEntity.ok(jpaService.retrieveNewsByDateRangeAndId(symbols, from, LocalDate.now()));
         } catch (JsonProcessingException | ClientException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
