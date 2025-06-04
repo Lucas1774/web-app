@@ -26,12 +26,16 @@ public class DailyScheduler {
         this.dataManager = dataManager;
     }
 
-    @Scheduled(cron = "${scheduler.daily-cron}")
-    public void dailyTask() {
+    @Scheduled(cron = "${scheduler.market-data-cron}")
+    public void midnightTask() {
         updateMarketData();
+        removeOldMarketData();
+    }
+
+    @Scheduled(cron = "${scheduler.news-recommendations-cron}")
+    public void morningTask() {
         updateNews();
         getRandomRecommendations();
-        removeOldMarketData();
         removeOldNews();
         removeOldRecommendations();
     }
