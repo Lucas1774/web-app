@@ -26,6 +26,7 @@ import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -78,60 +79,20 @@ public class DataManager {
         ));
     }
 
-    @Transactional(rollbackOn = {ClientException.class, IOException.class})
+    private record BatchJob(
+            Future<List<Recommendation>> future,
+            List<Symbol> symbols
+    ) {
+    }
+
     public List<Recommendation> getRecommendationsById(List<Long> symbolIds, PortfolioType type, boolean sendFixmeRequest,
-                                                       boolean overwrite, List<Clients> clients) throws ClientException, IOException {
+                                                       boolean overwrite, List<Clients> clients, int chunkSize) {
         List<Symbol> symbols = symbolService.findAllById(symbolIds);
-        return getRecommendations(symbols, type, sendFixmeRequest, overwrite, clients);
+        return getRecommendationsInParallel(symbols, type, sendFixmeRequest, overwrite, clients, chunkSize);
     }
 
-    @Transactional(rollbackOn = {ClientException.class, IOException.class})
-    private List<Recommendation> getRecommendations(List<Symbol> symbols, PortfolioType type, boolean sendFixmeRequest,
-                                                    boolean overwrite, List<Clients> clients) throws ClientException, IOException {
-        Map<Symbol, List<MarketData>> marketData = symbols.stream()
-                .map(symbol -> Map.entry(symbol, marketDataService.getTopForSymbolId(symbol.getId(), MARKET_DATA_RELEVANT_DAYS_COUNT)))
-                .filter(entry -> !entry.getValue().isEmpty())
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-        if (marketData.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        List<Symbol> symbolsWithData = marketData.keySet().stream().toList();
-
-        List<Recommendation> res = new ArrayList<>();
-        logger.info(RETRIEVING_DATA_INFO, RECOMMENDATION, marketData.size());
-        for (int i = 0; i < symbolsWithData.size(); i += RECOMMENDATIONS_CHUNK_SIZE) {
-            List<Symbol> batch = symbolsWithData.subList(i, Math.min(i + RECOMMENDATIONS_CHUNK_SIZE, symbolsWithData.size()));
-            Map<Symbol, List<MarketData>> marketDataBatch = new LinkedHashMap<>();
-            Map<Symbol, List<News>> newsDataBatch = new LinkedHashMap<>();
-            Map<Symbol, PortfolioBase> portfolioDataBatch = new LinkedHashMap<>();
-
-            for (Symbol symbol : batch) {
-                marketDataBatch.put(symbol, marketData.get(symbol));
-                newsDataBatch.put(symbol, newsService.getTopForSymbolId(symbol.getId(), NEWS_COUNT));
-                portfolioDataBatch.put(symbol,
-                        getService(type).findBySymbol(symbol)
-                                .orElseGet(() -> portfolioTypeToNewPortfolio.get(type).get().setSymbol(symbol))
-                );
-            }
-            res.addAll(recommendationClient.getRecommendations(marketDataBatch, newsDataBatch, portfolioDataBatch,
-                    sendFixmeRequest, clients));
-            if (i + RECOMMENDATIONS_CHUNK_SIZE < symbolsWithData.size()) {
-                backOff(CHAT_COMPLETIONS_BACKOFF_MILLIS);
-            }
-        }
-
-        logger.info(GENERATION_SUCCESSFUL_INFO, RECOMMENDATION);
-        if (overwrite) {
-            return recommendationsService.createOrUpdate(res);
-        }
-        recommendationsService.createIgnoringDuplicates(res);
-        return res;
-    }
-
-    @Transactional(rollbackOn = {ClientException.class, IOException.class})
     public List<Recommendation> getRandomRecommendations(PortfolioType type, int count, boolean sendFixmeRequest,
-                                                         boolean overwrite) throws ClientException, IOException {
+                                                         boolean overwrite) {
         Set<Long> active = portfolioTypeToService.get(type)
                 .findActivePortfolio().stream()
                 .map(p -> p.getSymbol().getId())
@@ -147,16 +108,84 @@ public class DataManager {
         candidates.removeAll(active);
         candidates.removeAll(already);
 
-        List<Long> finalList = new ArrayList<>(active.stream().filter(s -> !already.contains(s)).toList());
-        finalList = finalList.subList(0, Math.min(finalList.size(), count));
-        int needed = count - finalList.size();
-        if (needed > 0 && !candidates.isEmpty()) {
+        List<Long> finalList = new ArrayList<>();
+        if (count > 0 && !candidates.isEmpty()) {
             List<Long> pool = new ArrayList<>(candidates);
             Collections.shuffle(pool);
-            finalList.addAll(pool.subList(0, Math.min(needed, pool.size())));
+            finalList.addAll(pool.subList(0, Math.min(count, pool.size())));
         }
 
-        return getRecommendationsById(finalList, type, sendFixmeRequest, overwrite, RANDOM_RECOMMENDATION_CLIENTS);
+        return getRecommendationsInParallel(symbolService.findAllById(finalList), type, sendFixmeRequest, overwrite,
+                RANDOM_RECOMMENDATION_CLIENTS, RANDOM_RECOMMENDATIONS_CHUNK_SIZE);
+    }
+
+    private List<Recommendation> getRecommendationsInParallel(List<Symbol> symbols, PortfolioType type, boolean sendFixmeRequest, boolean overwrite,
+                                                              List<Clients> clients, int chunkSize) {
+        Map<Symbol, List<MarketData>> marketData = symbols.stream()
+                .map(symbol -> Map.entry(symbol, marketDataService.getTopForSymbolId(symbol.getId(), MARKET_DATA_RELEVANT_DAYS_COUNT)))
+                .filter(entry -> !entry.getValue().isEmpty())
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        if (marketData.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<Symbol> symbolsWithData = marketData.keySet().stream().toList();
+        int numBatches = (symbolsWithData.size() + chunkSize - 1) / chunkSize;
+
+        logger.info(RETRIEVING_DATA_INFO, RECOMMENDATION, marketData.size());
+        try (ExecutorService executor = Executors.newFixedThreadPool(clients.size())) {
+            List<BatchJob> jobs = new ArrayList<>();
+            for (int batchIndex = 0; batchIndex < numBatches; batchIndex++) {
+                final int start = batchIndex * chunkSize;
+                final int end = Math.min(start + chunkSize, symbolsWithData.size());
+                final List<Symbol> batch = symbolsWithData.subList(start, end);
+                Map<Symbol, List<MarketData>> marketDataBatch = new LinkedHashMap<>();
+                Map<Symbol, List<News>> newsDataBatch = new LinkedHashMap<>();
+                Map<Symbol, PortfolioBase> portfolioDataBatch = new LinkedHashMap<>();
+
+                for (Symbol symbol : batch) {
+                    marketDataBatch.put(symbol, marketData.get(symbol));
+                    newsDataBatch.put(symbol, newsService.getTopForSymbolId(symbol.getId(), NEWS_COUNT));
+                    portfolioDataBatch.put(symbol,
+                            getService(type).findBySymbol(symbol)
+                                    .orElseGet(() -> portfolioTypeToNewPortfolio.get(type).get().setSymbol(symbol))
+                    );
+                }
+
+                Callable<List<Recommendation>> task = () -> getRecommendations(marketDataBatch, newsDataBatch, portfolioDataBatch,
+                        sendFixmeRequest, clients, overwrite);
+                jobs.add(new BatchJob(executor.submit(task), batch));
+            }
+
+            List<Recommendation> res = new ArrayList<>();
+            for (BatchJob job : jobs) {
+                try {
+                    res.addAll(job.future().get());
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    logger.warn(RETRIEVAL_FAILED_WARN, RECOMMENDATION, job.symbols(), e);
+                } catch (ExecutionException e) {
+                    logger.warn(RETRIEVAL_FAILED_WARN, RECOMMENDATION, job.symbols(), e);
+                }
+            }
+
+            return res;
+        }
+    }
+
+    private List<Recommendation> getRecommendations(Map<Symbol, List<MarketData>> marketDataBatch, Map<Symbol, List<News>> newsDataBatch,
+                                                    Map<Symbol, ? extends PortfolioBase> portfolioDataBatch, boolean withFixmeRequest,
+                                                    List<Clients> rotatedClients, boolean overwrite) throws ClientException, IOException {
+        List<Recommendation> partialRecommendations = recommendationClient.getRecommendations(marketDataBatch, newsDataBatch,
+                portfolioDataBatch, withFixmeRequest, rotatedClients);
+
+        logger.info(GENERATION_SUCCESSFUL_INFO, RECOMMENDATION);
+        if (overwrite) {
+            return recommendationsService.createOrUpdate(partialRecommendations);
+        } else {
+            recommendationsService.createIgnoringDuplicates(partialRecommendations);
+            return partialRecommendations;
+        }
     }
 
     @Transactional
@@ -340,7 +369,7 @@ public class DataManager {
             try {
                 res.add(twelveDataMarketDataClient.retrieveMarketData(List.of(symbol), MarketDataType.LAST).getFirst());
             } catch (ClientException | JsonProcessingException e) {
-                logger.warn(CLIENT_FAILED_BACKUP_WARN, twelveDataMarketDataClient.getClass().getSimpleName(), symbol, e);
+                logger.warn(CLIENT_FAILED_BACKUP_WARN, twelveDataMarketDataClient.getClass().getSimpleName(), symbol, e.getMessage());
                 res.add(finnhubMarketDataClient.retrieveMarketData(symbol));
                 backOff(FINNHUB_BACKOFF_MILLIS);
             }

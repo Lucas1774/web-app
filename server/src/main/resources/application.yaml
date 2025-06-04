@@ -20,52 +20,88 @@ spring:
 
 ai:
   deployments:
-    first:
+    one:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: ${OPENAI_MODEL}
+      model: ${OPENAI_41}
       temperature: 0
       max-tokens: 8000
-    second:
+    two:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: ${GROK_MODEL}
+      model: ${OPENAI_4O}
       temperature: 0
-      max-tokens: 4000
-    third:
+      max-tokens: 8000
+    three:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
       model: ${DEEPSEEK_MODEL}
       temperature: 0
       max-tokens: 4000
-    fourth:
+    four:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: ${OPENAI_SECONDARY_MODEL}
+      model: ${GROK_MODEL}
+      temperature: 0
+      max-tokens: 4000
+    five:
+      api-key: ${GITHUB_KEY}
+      url: ${GITHUB_URL}
+      model: ${OPENAI_41_MINI}
       temperature: 0
       max-tokens: 8000
-    fifth:
+    six:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: ${OPENAI_THIRD_MODEL}
+      model: ${OPENAI_41_NANO}
       temperature: 0
-      max-tokens: 4000
-    sixth:
+      max-tokens: 8000
+    seven:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: ${OPENAI_FOURTH_MODEL}
+      model: ${OPENAI_4O_MINI}
       temperature: 0
-      max-tokens: 4000
-    seventh:
+      max-tokens: 8000
+    eight:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: ${OPENAI_FIFTH_MODEL}
+      model: ${AI21_MINI}
       temperature: 0
-      max-tokens: 4000
-    eighth:
+      max-tokens: 8000
+    nine:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: ${LLAMA_MODEL}
+      model: ${LLAMA_31}
+      temperature: 0
+      max-tokens: 8000
+    ten:
+      api-key: ${GITHUB_KEY}
+      url: ${GITHUB_URL}
+      model: ${MISTRAL_2501}
+      temperature: 0
+      max-tokens: 8000
+    eleven:
+      api-key: ${GITHUB_KEY}
+      url: ${GITHUB_URL}
+      model: ${PHI_35_MINI}
+      temperature: 0
+      max-tokens: 8000
+    twelve:
+      api-key: ${GITHUB_KEY}
+      url: ${GITHUB_URL}
+      model: ${PHI_4}
+      temperature: 0
+      max-tokens: 8000
+    thirteen:
+      api-key: ${GITHUB_KEY}
+      url: ${GITHUB_URL}
+      model: ${PHI_4_MINI}
+      temperature: 0
+      max-tokens: 8000
+    fourteen:
+      api-key: ${GITHUB_KEY}
+      url: ${GITHUB_URL}
+      model: ${PHI_4_REASONING}
       temperature: 0
       max-tokens: 8000
 

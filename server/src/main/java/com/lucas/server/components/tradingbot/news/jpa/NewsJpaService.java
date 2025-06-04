@@ -9,9 +9,11 @@ import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.news.service.NewsSentimentClient;
 import lombok.experimental.Delegate;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -32,12 +34,24 @@ public class NewsJpaService implements JpaService<News> {
     }
 
     public List<News> getTopForSymbolId(Long symbolId, int limit) {
-        // This query will prioritize null before high sentiment within a single date.
-        // That shouldn't be an issue as long as sentiment is generated per date.
-        return this.repository.findBySymbols_IdAndSentimentNotOrSymbols_IdAndSentimentIsNull(symbolId, "neutral", symbolId, PageRequest.of(
-                        0, limit, Sort.by("date").descending()
-                                .and(Sort.by("sentimentConfidence").descending())
-                ))
+        LocalDate today = LocalDate.now();
+        LocalDate lastMarketDay;
+        if (today.getDayOfWeek() == DayOfWeek.SUNDAY) {
+            lastMarketDay = today.minusDays(2);
+        } else if (today.getDayOfWeek() == DayOfWeek.MONDAY) {
+            lastMarketDay = today.minusDays(3);
+        } else {
+            lastMarketDay = today.minusDays(1);
+        }
+        Pageable pageRequest = PageRequest.of(
+                0, limit, Sort.by("date").descending()
+                        .and(Sort.by("sentimentConfidence").descending())
+        );
+
+        return this.repository.findBySymbols_IdAndDateBetweenAndSentimentNotOrSymbols_IdAndDateBetweenAndSentimentIsNull(
+                        symbolId, lastMarketDay, today, "neutral",
+                        symbolId, lastMarketDay, today, pageRequest
+                )
                 .getContent();
     }
 

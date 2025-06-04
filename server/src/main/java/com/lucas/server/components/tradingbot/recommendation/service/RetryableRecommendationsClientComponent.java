@@ -35,7 +35,7 @@ public class RetryableRecommendationsClientComponent {
                         .getMessage()
                         .getContent();
             } catch (Exception e) {
-                logger.warn(CLIENT_FAILED_BACKUP_WARN, current.getModelName(), PROMPT, e);
+                logger.warn(CLIENT_FAILED_BACKUP_WARN, current.getModelName(), PROMPT, e.getMessage());
             }
         }
 
