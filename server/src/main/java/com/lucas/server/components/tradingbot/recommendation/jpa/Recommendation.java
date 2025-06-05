@@ -12,7 +12,6 @@ import lombok.experimental.Accessors;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Objects;
 
 @Getter
@@ -48,11 +47,11 @@ public class Recommendation implements JpaEntity {
     @Column(name = "recommendation_date", nullable = false)
     private LocalDate date;
 
-    @Transient
+    @Column(columnDefinition = "TEXT")
     private String input;
 
-    @Transient
-    private List<String> errors;
+    @Column(columnDefinition = "TEXT")
+    private String errors;
 
     public Recommendation setMarketData(MarketData marketData) {
         this.marketData = marketData;

@@ -6,7 +6,7 @@ import com.azure.ai.inference.models.ChatCompletionsOptions;
 import com.azure.ai.inference.models.ChatRequestMessage;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.http.HttpClient;
-import com.azure.core.http.netty.NettyAsyncHttpClientBuilder;
+import com.azure.core.http.okhttp.OkHttpAsyncHttpClientBuilder;
 import com.azure.core.http.policy.ExponentialBackoffOptions;
 import com.azure.core.http.policy.RetryOptions;
 import com.azure.core.http.policy.RetryPolicy;
@@ -31,8 +31,8 @@ public class AIClientAutoconfig {
 
     @Bean
     public HttpClient httpClient() {
-        return new NettyAsyncHttpClientBuilder()
-                .responseTimeout(Duration.ofMinutes(5))
+        return new OkHttpAsyncHttpClientBuilder()
+                .responseTimeout(Duration.ofMinutes(10))
                 .build();
     }
 

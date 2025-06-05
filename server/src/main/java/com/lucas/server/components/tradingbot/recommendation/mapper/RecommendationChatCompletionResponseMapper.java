@@ -57,8 +57,8 @@ public class RecommendationChatCompletionResponseMapper implements Mapper<JsonNo
             for (int i = 0; i < output.size(); i++) {
                 JsonNode load = output.get(i);
                 recommendations.add(map(load)
-                        .setInput(i == 0 ? fixedMessage : "")
-                        .setErrors(i == 0 ? objectMapper.readerForListOf(String.class).readValue(jsonNode.get("errors")) : new ArrayList<>())
+                        .setInput(fixedMessage)
+                        .setErrors(objectMapper.readerForListOf(String.class).readValue(jsonNode.get("errors")).toString())
                         .setMarketData(latestMarketDataByName.get(load.get("symbol").asText()))
                         .setSymbol(symbolByName.get(load.get("symbol").asText())));
             }

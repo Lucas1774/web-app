@@ -44,7 +44,7 @@ public class RecommendationsController {
         if (!controllerUtil.isAdmin(controllerUtil.retrieveUsername(request.getCookies()))) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        return ResponseEntity.ok(jpaService.getRandomRecommendations(PortfolioType.MOCK, count, sendFixmeRequest, overwrite));
+        return ResponseEntity.ok(jpaService.getRandomRecommendations(PortfolioType.MOCK, count, sendFixmeRequest, overwrite, false));
     }
 
     @DeleteMapping("/purge")

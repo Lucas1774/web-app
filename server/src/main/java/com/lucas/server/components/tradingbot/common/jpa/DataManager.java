@@ -85,14 +85,16 @@ public class DataManager {
     ) {
     }
 
+    @Transactional
     public List<Recommendation> getRecommendationsById(List<Long> symbolIds, PortfolioType type, boolean sendFixmeRequest,
                                                        boolean overwrite, List<Clients> clients, int chunkSize) {
         List<Symbol> symbols = symbolService.findAllById(symbolIds);
-        return getRecommendationsInParallel(symbols, type, sendFixmeRequest, overwrite, clients, chunkSize);
+        return getRecommendationsInParallel(symbols, type, sendFixmeRequest, overwrite, clients, chunkSize, false);
     }
 
+    @Transactional
     public List<Recommendation> getRandomRecommendations(PortfolioType type, int count, boolean sendFixmeRequest,
-                                                         boolean overwrite) {
+                                                         boolean overwrite, boolean onlyIfHasNews) {
         Set<Long> active = portfolioTypeToService.get(type)
                 .findActivePortfolio().stream()
                 .map(p -> p.getSymbol().getId())
@@ -116,45 +118,54 @@ public class DataManager {
         }
 
         return getRecommendationsInParallel(symbolService.findAllById(finalList), type, sendFixmeRequest, overwrite,
-                RANDOM_RECOMMENDATION_CLIENTS, RANDOM_RECOMMENDATIONS_CHUNK_SIZE);
+                RANDOM_RECOMMENDATION_CLIENTS, RANDOM_RECOMMENDATIONS_CHUNK_SIZE, onlyIfHasNews);
     }
 
     private List<Recommendation> getRecommendationsInParallel(List<Symbol> symbols, PortfolioType type, boolean sendFixmeRequest, boolean overwrite,
-                                                              List<Clients> clients, int chunkSize) {
-        Map<Symbol, List<MarketData>> marketData = symbols.stream()
-                .map(symbol -> Map.entry(symbol, marketDataService.getTopForSymbolId(symbol.getId(), MARKET_DATA_RELEVANT_DAYS_COUNT)))
-                .filter(entry -> !entry.getValue().isEmpty())
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-        if (marketData.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        List<Symbol> symbolsWithData = marketData.keySet().stream().toList();
-        int numBatches = (symbolsWithData.size() + chunkSize - 1) / chunkSize;
-
-        logger.info(RETRIEVING_DATA_INFO, RECOMMENDATION, marketData.size());
+                                                              List<Clients> clients, int chunkSize, boolean onlyIfHasNews) {
+        logger.info(RETRIEVING_DATA_INFO, RECOMMENDATION, symbols.size());
+        List<BatchJob> jobs = new ArrayList<>();
         try (ExecutorService executor = Executors.newFixedThreadPool(clients.size())) {
-            List<BatchJob> jobs = new ArrayList<>();
-            for (int batchIndex = 0; batchIndex < numBatches; batchIndex++) {
-                final int start = batchIndex * chunkSize;
-                final int end = Math.min(start + chunkSize, symbolsWithData.size());
-                final List<Symbol> batch = symbolsWithData.subList(start, end);
-                Map<Symbol, List<MarketData>> marketDataBatch = new LinkedHashMap<>();
-                Map<Symbol, List<News>> newsDataBatch = new LinkedHashMap<>();
-                Map<Symbol, PortfolioBase> portfolioDataBatch = new LinkedHashMap<>();
+            List<Clients> mutableClients = new ArrayList<>(clients);
+            Map<Symbol, List<MarketData>> marketDataBuffer = new LinkedHashMap<>();
+            Map<Symbol, List<News>> newsDataBuffer = new LinkedHashMap<>();
+            Map<Symbol, PortfolioBase> portfolioDataBuffer = new LinkedHashMap<>();
+            List<Symbol> symbolBuffer = new ArrayList<>();
 
-                for (Symbol symbol : batch) {
-                    marketDataBatch.put(symbol, marketData.get(symbol));
-                    newsDataBatch.put(symbol, newsService.getTopForSymbolId(symbol.getId(), NEWS_COUNT));
-                    portfolioDataBatch.put(symbol,
-                            getService(type).findBySymbol(symbol)
-                                    .orElseGet(() -> portfolioTypeToNewPortfolio.get(type).get().setSymbol(symbol))
-                    );
+            for (Symbol symbol : symbols) {
+                List<MarketData> marketData = marketDataService.getTopForSymbolId(symbol.getId(), MARKET_DATA_RELEVANT_DAYS_COUNT);
+                if (marketData.isEmpty()) {
+                    continue;
                 }
 
-                Callable<List<Recommendation>> task = () -> getRecommendations(marketDataBatch, newsDataBatch, portfolioDataBatch,
-                        sendFixmeRequest, clients, overwrite);
-                jobs.add(new BatchJob(executor.submit(task), batch));
+                List<News> news = newsService.getTopForSymbolId(symbol.getId(), NEWS_COUNT);
+                if (onlyIfHasNews && news.isEmpty()) {
+                    continue;
+                }
+
+                PortfolioBase portfolio = getService(type).findBySymbol(symbol)
+                        .orElseGet(() -> portfolioTypeToNewPortfolio.get(type).get().setSymbol(symbol));
+
+                marketDataBuffer.put(symbol, marketData);
+                newsDataBuffer.put(symbol, news);
+                portfolioDataBuffer.put(symbol, portfolio);
+                symbolBuffer.add(symbol);
+
+                if (symbolBuffer.size() == chunkSize) {
+                    submitChunk(sendFixmeRequest, overwrite, mutableClients, marketDataBuffer,
+                            newsDataBuffer, portfolioDataBuffer, symbolBuffer, jobs, executor);
+
+                    marketDataBuffer.clear();
+                    newsDataBuffer.clear();
+                    portfolioDataBuffer.clear();
+                    symbolBuffer.clear();
+                    Collections.rotate(mutableClients, -1);
+                }
+            }
+
+            if (!symbolBuffer.isEmpty()) {
+                submitChunk(sendFixmeRequest, overwrite, mutableClients, marketDataBuffer,
+                        newsDataBuffer, portfolioDataBuffer, symbolBuffer, jobs, executor);
             }
 
             List<Recommendation> res = new ArrayList<>();
@@ -173,6 +184,20 @@ public class DataManager {
         }
     }
 
+    private void submitChunk(boolean sendFixmeRequest, boolean overwrite, List<Clients> clients,
+                             Map<Symbol, List<MarketData>> marketDataBuffer, Map<Symbol, List<News>> newsDataBuffer,
+                             Map<Symbol, PortfolioBase> portfolioDataBuffer, List<Symbol> symbolBuffer, List<BatchJob> jobs, ExecutorService executor) {
+        List<Clients> clientsSnapshot = new ArrayList<>(clients);
+        Map<Symbol, List<MarketData>> marketDataSnapshot = new LinkedHashMap<>(marketDataBuffer);
+        Map<Symbol, List<News>> newsDataSnapshot = new LinkedHashMap<>(newsDataBuffer);
+        Map<Symbol, PortfolioBase> portfolioDataSnapshot = new LinkedHashMap<>(portfolioDataBuffer);
+        List<Symbol> symbolSnapshot = new ArrayList<>(symbolBuffer);
+
+        Callable<List<Recommendation>> task = () -> getRecommendations(marketDataSnapshot, newsDataSnapshot,
+                portfolioDataSnapshot, sendFixmeRequest, clientsSnapshot, overwrite);
+        jobs.add(new BatchJob(executor.submit(task), symbolSnapshot));
+    }
+
     private List<Recommendation> getRecommendations(Map<Symbol, List<MarketData>> marketDataBatch, Map<Symbol, List<News>> newsDataBatch,
                                                     Map<Symbol, ? extends PortfolioBase> portfolioDataBatch, boolean withFixmeRequest,
                                                     List<Clients> rotatedClients, boolean overwrite) throws ClientException, IOException {
@@ -188,7 +213,7 @@ public class DataManager {
         }
     }
 
-    @Transactional
+    @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})
     public List<News> generateSentiment(List<String> symbolNames, LocalDate from, LocalDate to)
             throws ClientException, JsonProcessingException {
         List<Symbol> symbols = symbolNames.stream().distinct().map(symbolService::getOrCreateByName).toList();

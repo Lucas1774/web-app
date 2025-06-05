@@ -26,7 +26,6 @@ public class RecommendationsJpaService implements JpaService<Recommendation> {
         this.repository = repository;
     }
 
-    @Transactional
     public List<Recommendation> createIgnoringDuplicates(Iterable<Recommendation> entities) {
         return uniqueConstraintDelegate.createIgnoringDuplicates(
                 entity -> repository.findBySymbol_IdAndDate(entity.getSymbol().getId(), entity.getDate()), entities);
@@ -48,7 +47,6 @@ public class RecommendationsJpaService implements JpaService<Recommendation> {
         return repository.findBySymbol_Id(id);
     }
 
-    @Transactional
     public List<Recommendation> createOrUpdate(List<Recommendation> entities) {
         return uniqueConstraintDelegate.createOrUpdate(entity -> repository.findBySymbol_IdAndDate(entity.getSymbol().getId(), entity.getDate()),
                 (oldEntity, newEntity) -> oldEntity

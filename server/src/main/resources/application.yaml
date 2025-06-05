@@ -3,7 +3,7 @@ security:
 
 scheduler:
   market-data-cron: "0 0 0 * * *" # Every day at midnight UTC
-  news-recommendations-cron: "0 0 12 * * *" # Every day at noon UTC
+  news-recommendations-cron: "0 30 8 * * *" # Every day one hour before the market opens
 
 spring:
   application:
@@ -24,87 +24,99 @@ ai:
     one:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: ${OPENAI_41}
+      model: ${MODEL_ONE}
       temperature: 0
       max-tokens: 8000
     two:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: ${OPENAI_4O}
+      model: ${MODEL_TWO}
       temperature: 0
       max-tokens: 8000
     three:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: ${DEEPSEEK_MODEL}
+      model: ${MODEL_THREE}
       temperature: 0
       max-tokens: 4000
     four:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: ${GROK_MODEL}
+      model: ${MODEL_FOUR}
       temperature: 0
       max-tokens: 4000
     five:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: ${OPENAI_41_MINI}
+      model: ${MODEL_FIVE}
       temperature: 0
       max-tokens: 8000
     six:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: ${OPENAI_41_NANO}
+      model: ${MODEL_SIX}
       temperature: 0
       max-tokens: 8000
     seven:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: ${OPENAI_4O_MINI}
+      model: ${MODEL_SEVEN}
       temperature: 0
       max-tokens: 8000
     eight:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: ${AI21_MINI}
+      model: ${MODEL_EIGHT}
       temperature: 0
       max-tokens: 8000
     nine:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: ${LLAMA_31}
+      model: ${MODEL_NINE}
       temperature: 0
       max-tokens: 8000
     ten:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: ${MISTRAL_2501}
+      model: ${MODEL_TEN}
       temperature: 0
       max-tokens: 8000
     eleven:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: ${PHI_35_MINI}
+      model: ${MODEL_ELEVEN}
       temperature: 0
       max-tokens: 8000
     twelve:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: ${PHI_4}
+      model: ${MODEL_TWELVE}
       temperature: 0
-      max-tokens: 8000
+      max-tokens: 4000
     thirteen:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: ${PHI_4_MINI}
+      model: ${MODEL_THIRTEEN}
       temperature: 0
       max-tokens: 8000
     fourteen:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: ${PHI_4_REASONING}
+      model: ${MODEL_FOURTEEN}
       temperature: 0
       max-tokens: 8000
+    fifteen:
+      api-key: ${GITHUB_KEY}
+      url: ${GITHUB_URL}
+      model: ${MODEL_FIFTEEN}
+      temperature: 0
+      max-tokens: 8000
+    sixteen:
+      api-key: ${GITHUB_KEY}
+      url: ${GITHUB_URL}
+      model: ${MODEL_SIXTEEN}
+      temperature: 0
+      max-tokens: 80008000
 
 finnhub:
   api-key: ${FINNHUB_KEY}

@@ -85,8 +85,9 @@ public class RecommendationChatCompletionClient {
         logger.info(RETRIEVING_DATA_INFO, RECOMMENDATION, marketData.keySet());
 
         return mapper.mapAll(marketData, objectMapper.readTree(retryableClient
-                .callWithBackupStrategy(List.of(systemMessage, promptMessage, fewShotMessage, fixedMessage), clients)
-                .replace("```", "").replace("json", "")), fixedMessage.toString());
+                        .callWithBackupStrategy(List.of(systemMessage, promptMessage, fewShotMessage, fixedMessage), clients)
+                        .replace("```", "").replace("json", "")),
+                ((ChatRequestUserMessage) fixedMessage).getContent().toString());
     }
 
     private ChatRequestMessage generateMessageFromNode(ObjectNode data) throws JsonProcessingException {

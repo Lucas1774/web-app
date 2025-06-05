@@ -1,4 +1,4 @@
 {
   "role": "user",
-  "content": "• Current date: {date}\n• Location: Spain (Europe/Madrid timezone)\n• Broker: Interactive Brokers\n• Trading Style: Low-volume (~€800/trade), high-activity\n\n"
+  "content": "• Current date: {date}\n• Location: Spain (Europe/Madrid timezone)\n• Trading Style: Low-volume (~€800/trade), news- and technical-based morning entries. Exit on profit if no further upside is clear; exit on bad news or cut-loss in the morning or near market close.\n\n"
 }

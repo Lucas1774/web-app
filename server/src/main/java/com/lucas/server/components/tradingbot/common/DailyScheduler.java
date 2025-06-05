@@ -26,13 +26,13 @@ public class DailyScheduler {
         this.dataManager = dataManager;
     }
 
-    @Scheduled(cron = "${scheduler.market-data-cron}")
+    @Scheduled(cron = "${scheduler.market-data-cron}", zone = "UTC")
     public void midnightTask() {
         updateMarketData();
         removeOldMarketData();
     }
 
-    @Scheduled(cron = "${scheduler.news-recommendations-cron}")
+    @Scheduled(cron = "${scheduler.news-recommendations-cron}", zone = "America/New_York")
     public void morningTask() {
         updateNews();
         getRandomRecommendations();
@@ -62,7 +62,8 @@ public class DailyScheduler {
     }
 
     private void getRandomRecommendations() {
-        List<Recommendation> updatedRecommendations = dataManager.getRandomRecommendations(PortfolioType.MOCK, SCHEDULED_RECOMMENDATIONS_COUNT, false, false);
+        List<Recommendation> updatedRecommendations = dataManager.getRandomRecommendations(PortfolioType.MOCK,
+                SCHEDULED_RECOMMENDATIONS_COUNT, false, false, true);
         logger.info(SCHEDULED_TASK_SUCCESS_INFO, "generated recommendations", updatedRecommendations.stream()
                 .map(Recommendation::getSymbol).toList());
     }
