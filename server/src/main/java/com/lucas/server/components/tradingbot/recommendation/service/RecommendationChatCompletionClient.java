@@ -15,7 +15,6 @@ import com.lucas.server.components.tradingbot.portfolio.jpa.PortfolioBase;
 import com.lucas.server.components.tradingbot.recommendation.jpa.Recommendation;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.AssetReportRaw;
-import com.lucas.server.components.tradingbot.recommendation.mapper.RecommendationChatCompletionResponseMapper;
 import com.lucas.server.components.tradingbot.recommendation.prompt.PromptRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +38,6 @@ public class RecommendationChatCompletionClient {
     private final ChatRequestMessage fixMeMessage;
     private final AssetReportDataProvider assertReportDataProvider;
     private final AssetReportToMustacheMapper assetReportToMustacheMapper;
-    private final RecommendationChatCompletionResponseMapper mapper;
     private final ObjectMapper objectMapper;
     private final RetryableRecommendationsClientComponent retryableClient;
     private static final Map<String, Function<String, ChatRequestMessage>> messageFactory = Map.of(
@@ -50,8 +48,8 @@ public class RecommendationChatCompletionClient {
     private static final Logger logger = LoggerFactory.getLogger(RecommendationChatCompletionClient.class);
 
     public RecommendationChatCompletionClient(PromptRepository promptRepository, AssetReportDataProvider assertReportDataProvider,
-                                              AssetReportToMustacheMapper assetReportToMustacheMapper, RecommendationChatCompletionResponseMapper mapper,
-                                              ObjectMapper objectMapper, RetryableRecommendationsClientComponent retryableClient)
+                                              AssetReportToMustacheMapper assetReportToMustacheMapper, ObjectMapper objectMapper,
+                                              RetryableRecommendationsClientComponent retryableClient)
             throws JsonProcessingException {
         fixMeMessage = generateMessageFromNode(promptRepository.getFixMeMessage());
         systemMessage = generateMessageFromNode(promptRepository.getSystem());
@@ -59,7 +57,6 @@ public class RecommendationChatCompletionClient {
         fewShotMessage = generateMessageFromNode(promptRepository.getFewShot());
         this.assertReportDataProvider = assertReportDataProvider;
         this.assetReportToMustacheMapper = assetReportToMustacheMapper;
-        this.mapper = mapper;
         this.objectMapper = objectMapper;
         this.retryableClient = retryableClient;
     }
@@ -72,8 +69,8 @@ public class RecommendationChatCompletionClient {
                     newsData.get(mdHistory.getKey()), portfolioData.get(mdHistory.getKey())));
         }
 
-        ChatRequestMessage reportMessage = generateMessageFromNode(objectMapper.readValue(assetReportToMustacheMapper.map(reports), ObjectNode.class));
-        ChatRequestMessage fixedMessage;
+        ChatRequestUserMessage reportMessage = (ChatRequestUserMessage) generateMessageFromNode(objectMapper.readValue(assetReportToMustacheMapper.map(reports), ObjectNode.class));
+        ChatRequestUserMessage fixedMessage;
         if (Boolean.TRUE.equals(withFixmeRequest)) {
             logger.info(RETRIEVING_DATA_INFO, PRE_REQUEST, marketData.keySet());
             fixedMessage = new ChatRequestUserMessage(retryableClient.callWithBackupStrategy(List.of(fixMeMessage, reportMessage), clients));
@@ -83,11 +80,8 @@ public class RecommendationChatCompletionClient {
         }
 
         logger.info(RETRIEVING_DATA_INFO, RECOMMENDATION, marketData.keySet());
-
-        return mapper.mapAll(marketData, objectMapper.readTree(retryableClient
-                        .callWithBackupStrategy(List.of(systemMessage, promptMessage, fewShotMessage, fixedMessage), clients)
-                        .replace("```", "").replace("json", "")),
-                ((ChatRequestUserMessage) fixedMessage).getContent().toString());
+        return retryableClient.callWithBackupStrategyAndMap(marketData, List.of(systemMessage, promptMessage, fewShotMessage, fixedMessage),
+                clients, fixedMessage);
     }
 
     private ChatRequestMessage generateMessageFromNode(ObjectNode data) throws JsonProcessingException {
