@@ -3,7 +3,6 @@ package com.lucas.server.components.tradingbot.recommendation.jpa;
 import com.lucas.server.common.jpa.GenericJpaServiceDelegate;
 import com.lucas.server.common.jpa.JpaService;
 import com.lucas.server.common.jpa.UniqueConstraintWearyJpaServiceDelegate;
-import jakarta.transaction.Transactional;
 import lombok.experimental.Delegate;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -50,6 +49,7 @@ public class RecommendationsJpaService implements JpaService<Recommendation> {
     public List<Recommendation> createOrUpdate(List<Recommendation> entities) {
         return uniqueConstraintDelegate.createOrUpdate(entity -> repository.findBySymbol_IdAndDate(entity.getSymbol().getId(), entity.getDate()),
                 (oldEntity, newEntity) -> oldEntity
+                        .setModel(newEntity.getModel())
                         .setAction(newEntity.getAction())
                         .setConfidence(newEntity.getConfidence())
                         .setRationale(newEntity.getRationale())

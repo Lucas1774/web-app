@@ -18,7 +18,8 @@ public class AIProperties {
             String url,
             String model,
             double temperature,
-            int maxTokens
+            int maxTokens,
+            int requestsPerMinute
     ) {
     }
 

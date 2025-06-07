@@ -11,15 +11,21 @@ import com.azure.core.http.policy.ExponentialBackoffOptions;
 import com.azure.core.http.policy.RetryOptions;
 import com.azure.core.http.policy.RetryPolicy;
 import com.lucas.server.components.tradingbot.common.AIClient;
+import io.github.resilience4j.ratelimiter.RateLimiter;
+import io.github.resilience4j.ratelimiter.RateLimiterConfig;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static com.lucas.server.common.Constants.PER_MINUTE_RATE_LIMITER;
+import static com.lucas.server.common.Constants.PER_SECOND_RATE_LIMITER;
 
 @Configuration
 public class AIClientAutoconfig {
@@ -54,10 +60,33 @@ public class AIClientAutoconfig {
                                             .setModel(config.model())
                                             .setTemperature(config.temperature())
                                             .setMaxTokens(config.maxTokens());
-                            return new AIClient(client, optionsProvider, config.model());
+                            RateLimiter rateLimiter = RateLimiter.of(config.model(), RateLimiterConfig.custom()
+                                    .limitRefreshPeriod(Duration.ofMinutes(1))
+                                    .limitForPeriod(config.requestsPerMinute())
+                                    .timeoutDuration(Duration.ofMinutes(1))
+                                    .build());
+                            return new AIClient(client, optionsProvider, config.model(), rateLimiter);
                         },
                         (a, b) -> a,
                         LinkedHashMap::new
                 ));
+    }
+
+    @Bean
+    public Map<String, RateLimiter> rateLimiter() {
+        Map<String, RateLimiter> res = new HashMap<>();
+        res.put(PER_MINUTE_RATE_LIMITER,
+                RateLimiter.of(PER_MINUTE_RATE_LIMITER, RateLimiterConfig.custom()
+                        .limitRefreshPeriod(Duration.ofMinutes(1))
+                        .limitForPeriod(24)
+                        .timeoutDuration(Duration.ofMinutes(5))
+                        .build()));
+        res.put(PER_SECOND_RATE_LIMITER,
+                RateLimiter.of(PER_SECOND_RATE_LIMITER, RateLimiterConfig.custom()
+                        .limitRefreshPeriod(Duration.ofSeconds(2))
+                        .limitForPeriod(1)
+                        .timeoutDuration(Duration.ofMinutes(1))
+                        .build()));
+        return res;
     }
 }

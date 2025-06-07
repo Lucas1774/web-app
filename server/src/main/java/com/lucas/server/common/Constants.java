@@ -69,6 +69,8 @@ public class Constants {
     public static final String PROMPT = "prompt";
     public static final String VOLATILITY = "volatility";
     public static final String OBV = "OBV";
+    public static final String PER_MINUTE_RATE_LIMITER = "perMinuteRateLimiter";
+    public static final String PER_SECOND_RATE_LIMITER = "perSecondRateLimiter";
 
     public static final String SUDOKU_IGNORED_MALFORMED_JSON_WARN = "Couldn't deserialize sudoku from raw data {}";
     public static final String SENTIMENT_GENERATION_FAILED_WARN = "Couldn't generate sentiment for {}";

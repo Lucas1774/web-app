@@ -45,7 +45,8 @@ public class RecommendationChatCompletionResponseMapper implements Mapper<JsonNo
         }
     }
 
-    public List<Recommendation> mapAll(Map<Symbol, List<MarketData>> marketData, JsonNode jsonNode, String fixedMessage) throws JsonProcessingException {
+    public List<Recommendation> mapAll(Map<Symbol, List<MarketData>> marketData, JsonNode jsonNode, String fixedMessage,
+                                       String model) throws JsonProcessingException {
         try {
             ArrayNode output = (ArrayNode) jsonNode.get("recommendations");
 
@@ -57,6 +58,7 @@ public class RecommendationChatCompletionResponseMapper implements Mapper<JsonNo
             for (int i = 0; i < output.size(); i++) {
                 JsonNode load = output.get(i);
                 recommendations.add(map(load)
+                        .setModel(model)
                         .setInput(fixedMessage)
                         .setErrors(objectMapper.readerForListOf(String.class).readValue(jsonNode.get("errors")).toString())
                         .setMarketData(latestMarketDataByName.get(load.get("symbol").asText()))

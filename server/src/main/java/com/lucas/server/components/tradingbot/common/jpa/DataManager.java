@@ -125,7 +125,7 @@ public class DataManager {
                                                               List<Clients> clients, int chunkSize, boolean onlyIfHasNews) {
         logger.info(RETRIEVING_DATA_INFO, RECOMMENDATION, symbols.size());
         List<BatchJob> jobs = new ArrayList<>();
-        try (ExecutorService executor = Executors.newFixedThreadPool(clients.size())) {
+        try (ExecutorService executor = Executors.newFixedThreadPool(clients.size() * 5)) {
             List<Clients> mutableClients = new ArrayList<>(clients);
             Map<Symbol, List<MarketData>> marketDataBuffer = new LinkedHashMap<>();
             Map<Symbol, List<News>> newsDataBuffer = new LinkedHashMap<>();

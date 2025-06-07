@@ -27,96 +27,112 @@ ai:
       model: ${MODEL_ONE}
       temperature: 0
       max-tokens: 8000
+      requests-per-minute: 5
     two:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
       model: ${MODEL_TWO}
       temperature: 0
       max-tokens: 8000
+      requests-per-minute: 5
     three:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
       model: ${MODEL_THREE}
       temperature: 0
       max-tokens: 4000
+      requests-per-minute: 5
     four:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
       model: ${MODEL_FOUR}
       temperature: 0
       max-tokens: 4000
+      requests-per-minute: 5
     five:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
       model: ${MODEL_FIVE}
       temperature: 0
       max-tokens: 8000
+      requests-per-minute: 5
     six:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
       model: ${MODEL_SIX}
       temperature: 0
       max-tokens: 8000
+      requests-per-minute: 5
     seven:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
       model: ${MODEL_SEVEN}
       temperature: 0
       max-tokens: 8000
+      requests-per-minute: 5
     eight:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
       model: ${MODEL_EIGHT}
       temperature: 0
       max-tokens: 8000
+      requests-per-minute: 5
     nine:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
       model: ${MODEL_NINE}
       temperature: 0
       max-tokens: 8000
+      requests-per-minute: 5
     ten:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
       model: ${MODEL_TEN}
       temperature: 0
       max-tokens: 8000
+      requests-per-minute: 5
     eleven:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
       model: ${MODEL_ELEVEN}
       temperature: 0
       max-tokens: 8000
+      requests-per-minute: 5
     twelve:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
       model: ${MODEL_TWELVE}
       temperature: 0
       max-tokens: 4000
+      requests-per-minute: 5
     thirteen:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
       model: ${MODEL_THIRTEEN}
       temperature: 0
       max-tokens: 8000
+      requests-per-minute: 5
     fourteen:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
       model: ${MODEL_FOURTEEN}
       temperature: 0
       max-tokens: 8000
+      requests-per-minute: 5
     fifteen:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
       model: ${MODEL_FIFTEEN}
       temperature: 0
       max-tokens: 8000
+      requests-per-minute: 5
     sixteen:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
       model: ${MODEL_SIXTEEN}
       temperature: 0
-      max-tokens: 80008000
+      max-tokens: 8000
+      requests-per-minute: 5
 
 finnhub:
   api-key: ${FINNHUB_KEY}
