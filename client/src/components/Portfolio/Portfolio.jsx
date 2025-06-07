@@ -117,6 +117,7 @@ const Portfolio = () => {
                     [constants.LAST_MOVE_DATE_KEY]: item.lastMoveDate ? new Date(item.lastMoveDate) : null,
                     [constants.RECOMMENDATION_DATE_KEY]: newest ? new Date(newest.date) : null,
                     [constants.RECOMMENDATION_ACTION_KEY]: newest?.action,
+                    [constants.RECOMMENDATION_MODEL_KEY]: newest?.model,
                     [constants.PRICE_KEY]: item.price,
                     [constants.OPEN_KEY]: item.open,
                     [constants.HIGH_KEY]: item.high,
@@ -220,9 +221,10 @@ const Portfolio = () => {
                 resp.data.map(item => [
                     item.symbol.id,
                     {
-                        [constants.RECOMMENDATION_ACTION_KEY]: item.action,
-                        [constants.RECOMMENDATION_CONFIDENCE_KEY]: item.confidence,
                         [constants.RECOMMENDATION_DATE_KEY]: new Date(item.date),
+                        [constants.RECOMMENDATION_ACTION_KEY]: item.action,
+                        [constants.RECOMMENDATION_MODEL_KEY]: item.model,
+                        [constants.RECOMMENDATION_CONFIDENCE_KEY]: item.confidence,
                         [constants.RECOMMENDATION_RATIONALE_KEY]: item.rationale,
                     }
                 ])
