@@ -46,14 +46,15 @@ export const ICON = "icon";
 export const REAL_TIME_KEY = "Real time";
 export const SYMBOL_NAME_KEY = "symbolName";
 export const LAST_MOVE_DATE_KEY = "lastMoveDate";
+export const RECOMMENDATION_DATE_KEY = "recommendationDate";
+export const RECOMMENDATION_ACTION_KEY = "recommendationAction";
+export const RECOMMENDATION_MODEL_KEY = "recommendationModel";
 export const AVERAGE_COST_KEY = "averageCost";
 export const POSITION_VALUE_KEY = "positionValue";
 export const PNL_KEY = "pnl";
 export const PERCENT_PNL_KEY = "percentPnl";
 export const NET_RELATIVE_POSITION_KEY = "netRelPos";
-export const RECOMMENDATION_ACTION_KEY = "recommendationAction";
 export const RECOMMENDATION_CONFIDENCE_KEY = "recommendationConfidence";
-export const RECOMMENDATION_DATE_KEY = "recommendationDate";
 export const RECOMMENDATION_RATIONALE_KEY = "recommendationRationale";
 export const PRICE_KEY = "price"
 export const OPEN_KEY = "open"
@@ -111,6 +112,7 @@ export const PORTFOLIO_META = {
         LAST_MOVE_DATE_KEY,
         RECOMMENDATION_DATE_KEY,
         RECOMMENDATION_ACTION_KEY,
+        RECOMMENDATION_MODEL_KEY,
         PRICE_KEY,
         OPEN_KEY,
         HIGH_KEY,
@@ -134,6 +136,7 @@ export const PORTFOLIO_META = {
         [LAST_MOVE_DATE_KEY]: DATE,
         [RECOMMENDATION_DATE_KEY]: DATE,
         [RECOMMENDATION_ACTION_KEY]: STRING,
+        [RECOMMENDATION_MODEL_KEY]: STRING,
         [PRICE_KEY]: NUMBER,
         [OPEN_KEY]: NUMBER,
         [HIGH_KEY]: NUMBER,
@@ -157,6 +160,7 @@ export const PORTFOLIO_META = {
         [LAST_MOVE_DATE_KEY]: true,
         [RECOMMENDATION_DATE_KEY]: true,
         [RECOMMENDATION_ACTION_KEY]: true,
+        [RECOMMENDATION_MODEL_KEY]: true,
         [PRICE_KEY]: true,
         [OPEN_KEY]: true,
         [HIGH_KEY]: true,
@@ -180,6 +184,7 @@ export const PORTFOLIO_META = {
         [LAST_MOVE_DATE_KEY]: "Last Move Date",
         [RECOMMENDATION_DATE_KEY]: "Rec. Date",
         [RECOMMENDATION_ACTION_KEY]: "Rec. Action",
+        [RECOMMENDATION_MODEL_KEY]: "Rec. Model",
         [PRICE_KEY]: "Price",
         [OPEN_KEY]: "Open",
         [HIGH_KEY]: "High",
@@ -203,6 +208,7 @@ export const PORTFOLIO_META = {
         [LAST_MOVE_DATE_KEY]: true,
         [RECOMMENDATION_DATE_KEY]: true,
         [RECOMMENDATION_ACTION_KEY]: true,
+        [RECOMMENDATION_MODEL_KEY]: true,
         [PRICE_KEY]: true,
         [OPEN_KEY]: true,
         [HIGH_KEY]: true,
@@ -226,6 +232,7 @@ export const PORTFOLIO_META = {
         [LAST_MOVE_DATE_KEY]: true,
         [RECOMMENDATION_DATE_KEY]: true,
         [RECOMMENDATION_ACTION_KEY]: true,
+        [RECOMMENDATION_MODEL_KEY]: true,
         [PRICE_KEY]: false,
         [OPEN_KEY]: false,
         [HIGH_KEY]: false,
