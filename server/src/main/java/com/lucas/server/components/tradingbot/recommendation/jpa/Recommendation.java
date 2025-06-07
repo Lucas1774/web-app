@@ -47,6 +47,9 @@ public class Recommendation implements JpaEntity {
     @Column(name = "recommendation_date", nullable = false)
     private LocalDate date;
 
+    @Column(nullable = false, length = 50)
+    private String model;
+
     @Column(columnDefinition = "TEXT")
     private String input;
 

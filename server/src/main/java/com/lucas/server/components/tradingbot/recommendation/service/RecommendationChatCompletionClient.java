@@ -74,7 +74,6 @@ public class RecommendationChatCompletionClient {
         if (Boolean.TRUE.equals(withFixmeRequest)) {
             logger.info(RETRIEVING_DATA_INFO, PRE_REQUEST, marketData.keySet());
             fixedMessage = new ChatRequestUserMessage(retryableClient.callWithBackupStrategy(List.of(fixMeMessage, reportMessage), clients));
-            backOff(CHAT_COMPLETIONS_BACKOFF_MILLIS);
         } else {
             fixedMessage = reportMessage;
         }

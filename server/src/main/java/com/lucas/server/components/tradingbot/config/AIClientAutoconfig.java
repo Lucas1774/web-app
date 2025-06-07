@@ -11,6 +11,8 @@ import com.azure.core.http.policy.ExponentialBackoffOptions;
 import com.azure.core.http.policy.RetryOptions;
 import com.azure.core.http.policy.RetryPolicy;
 import com.lucas.server.components.tradingbot.common.AIClient;
+import io.github.resilience4j.ratelimiter.RateLimiter;
+import io.github.resilience4j.ratelimiter.RateLimiterConfig;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -59,5 +61,14 @@ public class AIClientAutoconfig {
                         (a, b) -> a,
                         LinkedHashMap::new
                 ));
+    }
+
+    @Bean
+    public RateLimiter rateLimiter() {
+        return RateLimiter.of("rateLimiter", RateLimiterConfig.custom()
+                .limitRefreshPeriod(Duration.ofMinutes(1))
+                .limitForPeriod(24)
+                .timeoutDuration(Duration.ofMinutes(1))
+                .build());
     }
 }
