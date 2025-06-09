@@ -3,6 +3,7 @@ package com.lucas.server.components.tradingbot.common.jpa;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.common.exception.IllegalStateException;
 import com.lucas.server.common.exception.JsonProcessingException;
+import com.lucas.server.components.tradingbot.common.AIClient;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataJpaService;
 import com.lucas.server.components.tradingbot.marketdata.service.FinnhubMarketDataClient;
@@ -20,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.time.LocalDate;
@@ -42,11 +42,12 @@ public class DataManager {
     private final RecommendationsJpaService recommendationsService;
     private final FinnhubNewsClient newsClient;
     private final PortfolioManager portfolioManager;
+    private final Map<String, AIClient> clients;
     private final RecommendationChatCompletionClient recommendationClient;
     private final Map<MarketDataType, TypeToMarketDataFunction> typeToRunner;
     private final Map<PortfolioType, IPortfolioJpaService<?>> portfolioTypeToService;
     private static final Logger logger = LoggerFactory.getLogger(DataManager.class);
-    private static final Map<PortfolioType, Supplier<? extends PortfolioBase>> portfolioTypeToNewPortfolio = Map.of(
+    private static final Map<PortfolioType, Supplier<PortfolioBase>> portfolioTypeToNewPortfolio = Map.of(
             PortfolioType.REAL, Portfolio::new,
             PortfolioType.MOCK, PortfolioMock::new
     );
@@ -59,7 +60,7 @@ public class DataManager {
     public DataManager(SymbolJpaService symbolService, MarketDataJpaService marketDataService, NewsJpaService newsService,
                        RecommendationsJpaService recommendationsService, RecommendationChatCompletionClient recommendationClient,
                        PortfolioJpaService portfolioService, PortfolioMockJpaService portfolioMockService,
-                       FinnhubNewsClient newsClient, PortfolioManager portfolioManager,
+                       FinnhubNewsClient newsClient, PortfolioManager portfolioManager, Map<String, AIClient> clients,
                        TwelveDataMarketDataClient twelveDataMarketDataClient, FinnhubMarketDataClient finnhubMarketDataClient) {
         this.symbolService = symbolService;
         this.marketDataService = marketDataService;
@@ -68,6 +69,7 @@ public class DataManager {
         this.recommendationClient = recommendationClient;
         this.newsClient = newsClient;
         this.portfolioManager = portfolioManager;
+        this.clients = clients;
         typeToRunner = new EnumMap<>(Map.of(
                 MarketDataType.LAST, symbols -> retrieveMarketDataWithBackupStrategy(symbols, twelveDataMarketDataClient, finnhubMarketDataClient),
                 MarketDataType.HISTORIC, symbols -> twelveDataMarketDataClient.retrieveMarketData(symbols, MarketDataType.HISTORIC),
@@ -79,6 +81,14 @@ public class DataManager {
         ));
     }
 
+    public record SymbolPayload(
+            Symbol symbol,
+            List<MarketData> marketData,
+            List<News> news,
+            PortfolioBase portfolio
+    ) {
+    }
+
     private record BatchJob(
             Future<List<Recommendation>> future,
             List<Symbol> symbols
@@ -86,14 +96,14 @@ public class DataManager {
     }
 
     @Transactional
-    public List<Recommendation> getRecommendationsById(List<Long> symbolIds, PortfolioType type, boolean sendFixmeRequest,
-                                                       boolean overwrite, List<Clients> clients, int chunkSize) {
+    public List<Recommendation> getRecommendationsById(List<Long> symbolIds, PortfolioType type,
+                                                       boolean overwrite, List<Clients> clientNames) {
         List<Symbol> symbols = symbolService.findAllById(symbolIds);
-        return getRecommendationsInParallel(symbols, type, sendFixmeRequest, overwrite, clients, chunkSize, false);
+        return getRecommendationsInParallel(symbols, type, overwrite, clientNames, false);
     }
 
     @Transactional
-    public List<Recommendation> getRandomRecommendations(PortfolioType type, int count, boolean sendFixmeRequest,
+    public List<Recommendation> getRandomRecommendations(PortfolioType type, int count,
                                                          boolean overwrite, boolean onlyIfHasNews) {
         Set<Long> active = portfolioTypeToService.get(type)
                 .findActivePortfolio().stream()
@@ -117,100 +127,110 @@ public class DataManager {
             finalList.addAll(pool.subList(0, Math.min(count, pool.size())));
         }
 
-        return getRecommendationsInParallel(symbolService.findAllById(finalList), type, sendFixmeRequest, overwrite,
-                RANDOM_RECOMMENDATION_CLIENTS, RANDOM_RECOMMENDATIONS_CHUNK_SIZE, onlyIfHasNews);
+        return getRecommendationsInParallel(symbolService.findAllById(finalList), type, overwrite,
+                RANDOM_RECOMMENDATION_CLIENTS, onlyIfHasNews);
     }
 
-    private List<Recommendation> getRecommendationsInParallel(List<Symbol> symbols, PortfolioType type, boolean sendFixmeRequest, boolean overwrite,
-                                                              List<Clients> clients, int chunkSize, boolean onlyIfHasNews) {
-        logger.info(RETRIEVING_DATA_INFO, RECOMMENDATION, symbols.size());
+    private List<Recommendation> getRecommendationsInParallel(List<Symbol> symbols, PortfolioType type, boolean overwrite,
+                                                              List<Clients> clientNames, boolean onlyIfHasNews) {
+        List<Recommendation> res = new ArrayList<>();
+        List<Clients> mutableClients = new ArrayList<>(clientNames);
+        IPortfolioJpaService<PortfolioBase> portfolioService = getService(type);
+        Supplier<PortfolioBase> portfolioSupplier = portfolioTypeToNewPortfolio.get(type);
+
+        List<SymbolPayload> remainingPayload = symbols.stream()
+                .map(symbol -> {
+                    List<MarketData> marketData = marketDataService.getTopForSymbolId(symbol.getId(), MARKET_DATA_RELEVANT_DAYS_COUNT);
+                    if (marketData.isEmpty()) {
+                        return Optional.<SymbolPayload>empty();
+                    }
+
+                    List<News> news = newsService.getTopForSymbolId(symbol.getId(), NEWS_COUNT);
+                    if (onlyIfHasNews && news.isEmpty()) {
+                        return Optional.<SymbolPayload>empty();
+                    }
+
+                    PortfolioBase portfolio = portfolioService.findBySymbol(symbol)
+                            .orElseGet(() -> portfolioSupplier.get().setSymbol(symbol));
+
+                    return Optional.of(new SymbolPayload(symbol, marketData, news, portfolio));
+                })
+                .flatMap(Optional::stream)
+                .toList();
+
+        logger.info(RETRIEVING_DATA_INFO, RECOMMENDATION, remainingPayload.size());
+        try (ExecutorService executor = Executors.newFixedThreadPool(clientNames.size() * 5)) {
+            while (!remainingPayload.isEmpty()) {
+                List<Recommendation> fetched = doGetRecommendationsInParallel(executor, remainingPayload,
+                        overwrite, mutableClients);
+                res.addAll(fetched);
+                Set<Symbol> fetchedSymbols = fetched.stream()
+                        .map(Recommendation::getSymbol)
+                        .collect(Collectors.toSet());
+                remainingPayload = remainingPayload.stream()
+                        .filter(p -> !fetchedSymbols.contains(p.symbol()))
+                        .toList();
+            }
+        }
+
+        return res;
+    }
+
+    private List<Recommendation> doGetRecommendationsInParallel(ExecutorService executor, List<SymbolPayload> payload,
+                                                                boolean overwrite, List<Clients> clientNames) {
         List<BatchJob> jobs = new ArrayList<>();
-        try (ExecutorService executor = Executors.newFixedThreadPool(clients.size() * 5)) {
-            List<Clients> mutableClients = new ArrayList<>(clients);
-            Map<Symbol, List<MarketData>> marketDataBuffer = new LinkedHashMap<>();
-            Map<Symbol, List<News>> newsDataBuffer = new LinkedHashMap<>();
-            Map<Symbol, PortfolioBase> portfolioDataBuffer = new LinkedHashMap<>();
-            List<Symbol> symbolBuffer = new ArrayList<>();
+        List<SymbolPayload> buffer = new ArrayList<>();
 
-            for (Symbol symbol : symbols) {
-                List<MarketData> marketData = marketDataService.getTopForSymbolId(symbol.getId(), MARKET_DATA_RELEVANT_DAYS_COUNT);
-                if (marketData.isEmpty()) {
-                    continue;
-                }
+        for (SymbolPayload load : payload) {
+            AIClient client = clients.get(clientNames.getFirst().toString());
+            buffer.add(load);
 
-                List<News> news = newsService.getTopForSymbolId(symbol.getId(), NEWS_COUNT);
-                if (onlyIfHasNews && news.isEmpty()) {
-                    continue;
-                }
-
-                PortfolioBase portfolio = getService(type).findBySymbol(symbol)
-                        .orElseGet(() -> portfolioTypeToNewPortfolio.get(type).get().setSymbol(symbol));
-
-                marketDataBuffer.put(symbol, marketData);
-                newsDataBuffer.put(symbol, news);
-                portfolioDataBuffer.put(symbol, portfolio);
-                symbolBuffer.add(symbol);
-
-                if (symbolBuffer.size() == chunkSize) {
-                    submitChunk(sendFixmeRequest, overwrite, mutableClients, marketDataBuffer,
-                            newsDataBuffer, portfolioDataBuffer, symbolBuffer, jobs, executor);
-
-                    marketDataBuffer.clear();
-                    newsDataBuffer.clear();
-                    portfolioDataBuffer.clear();
-                    symbolBuffer.clear();
-                    Collections.rotate(mutableClients, -1);
-                }
+            if (buffer.size() == client.getChunkSize()) {
+                submitChunk(overwrite, client, buffer, jobs, executor);
+                buffer.clear();
+                Collections.rotate(clientNames, -1);
             }
-
-            if (!symbolBuffer.isEmpty()) {
-                submitChunk(sendFixmeRequest, overwrite, mutableClients, marketDataBuffer,
-                        newsDataBuffer, portfolioDataBuffer, symbolBuffer, jobs, executor);
-            }
-
-            List<Recommendation> res = new ArrayList<>();
-            for (BatchJob job : jobs) {
-                try {
-                    res.addAll(job.future().get());
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    logger.warn(RETRIEVAL_FAILED_WARN, RECOMMENDATION, job.symbols(), e);
-                } catch (ExecutionException e) {
-                    logger.warn(RETRIEVAL_FAILED_WARN, RECOMMENDATION, job.symbols(), e);
-                }
-            }
-
-            return res;
         }
+
+        if (!buffer.isEmpty()) {
+            AIClient client = clients.get(clientNames.getFirst().toString());
+            submitChunk(overwrite, client, buffer, jobs, executor);
+            Collections.rotate(clientNames, -1);
+        }
+
+        List<Recommendation> res = new ArrayList<>();
+        for (BatchJob job : jobs) {
+            try {
+                res.addAll(job.future().get());
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                logger.warn(RETRIEVAL_FAILED_WARN, RECOMMENDATION, job.symbols(), e);
+            } catch (ExecutionException e) {
+                logger.warn(RETRIEVAL_FAILED_WARN, RECOMMENDATION, job.symbols(), e);
+            }
+        }
+
+        return res;
     }
 
-    private void submitChunk(boolean sendFixmeRequest, boolean overwrite, List<Clients> clients,
-                             Map<Symbol, List<MarketData>> marketDataBuffer, Map<Symbol, List<News>> newsDataBuffer,
-                             Map<Symbol, PortfolioBase> portfolioDataBuffer, List<Symbol> symbolBuffer, List<BatchJob> jobs, ExecutorService executor) {
-        List<Clients> clientsSnapshot = new ArrayList<>(clients);
-        Map<Symbol, List<MarketData>> marketDataSnapshot = new LinkedHashMap<>(marketDataBuffer);
-        Map<Symbol, List<News>> newsDataSnapshot = new LinkedHashMap<>(newsDataBuffer);
-        Map<Symbol, PortfolioBase> portfolioDataSnapshot = new LinkedHashMap<>(portfolioDataBuffer);
-        List<Symbol> symbolSnapshot = new ArrayList<>(symbolBuffer);
+    private void submitChunk(boolean overwrite, AIClient client, List<SymbolPayload> buffer,
+                             List<BatchJob> jobs, ExecutorService executor) {
+        List<SymbolPayload> snapshot = new ArrayList<>(buffer);
+        Callable<List<Recommendation>> task = () -> {
+            List<Recommendation> partialRecommendations = recommendationClient.getRecommendations(snapshot, client);
+            if (partialRecommendations.isEmpty()) {
+                return partialRecommendations;
+            }
+            logger.info(GENERATION_SUCCESSFUL_INFO, RECOMMENDATION);
+            if (overwrite) {
+                return recommendationsService.createOrUpdate(partialRecommendations);
+            } else {
+                recommendationsService.createIgnoringDuplicates(partialRecommendations);
+                return partialRecommendations;
+            }
+        };
 
-        Callable<List<Recommendation>> task = () -> getRecommendations(marketDataSnapshot, newsDataSnapshot,
-                portfolioDataSnapshot, sendFixmeRequest, clientsSnapshot, overwrite);
-        jobs.add(new BatchJob(executor.submit(task), symbolSnapshot));
-    }
-
-    private List<Recommendation> getRecommendations(Map<Symbol, List<MarketData>> marketDataBatch, Map<Symbol, List<News>> newsDataBatch,
-                                                    Map<Symbol, ? extends PortfolioBase> portfolioDataBatch, boolean withFixmeRequest,
-                                                    List<Clients> rotatedClients, boolean overwrite) throws ClientException, IOException {
-        List<Recommendation> partialRecommendations = recommendationClient.getRecommendations(marketDataBatch, newsDataBatch,
-                portfolioDataBatch, withFixmeRequest, rotatedClients);
-
-        logger.info(GENERATION_SUCCESSFUL_INFO, RECOMMENDATION);
-        if (overwrite) {
-            return recommendationsService.createOrUpdate(partialRecommendations);
-        } else {
-            recommendationsService.createIgnoringDuplicates(partialRecommendations);
-            return partialRecommendations;
-        }
+        jobs.add(new BatchJob(executor.submit(task), snapshot.stream().map(SymbolPayload::symbol).toList()));
     }
 
     @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})

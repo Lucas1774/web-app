@@ -45,11 +45,8 @@ public class Constants {
     public static final int DATABASE_MARKET_DATA_PER_SYMBOL = 100;
     public static final int DATABASE_RECOMMENDATIONS_PER_SYMBOL = 5;
     public static final int SCHEDULED_RECOMMENDATIONS_COUNT = 500;
-    public static final int REQUEST_MAX_ATTEMPTS = 10;
-    public static final int RECOMMENDATIONS_CHUNK_SIZE = 5;
-    public static final int RANDOM_RECOMMENDATIONS_CHUNK_SIZE = 5;
+    public static final int REQUEST_MAX_ATTEMPTS = 5;
 
-    public static final int CHAT_COMPLETIONS_BACKOFF_MILLIS = 60000;
     public static final int FINNHUB_BACKOFF_MILLIS = 1000;
     public static final int TWELVEDATA_BACKOFF_MILLIS = 7500;
 

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.lucas.server.common.Mapper;
 import com.lucas.server.common.exception.JsonProcessingException;
+import com.lucas.server.components.tradingbot.common.jpa.DataManager;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.recommendation.jpa.Recommendation;
@@ -14,12 +15,7 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.*;
 
 import static com.lucas.server.common.Constants.JSON_MAPPING_ERROR;
 
@@ -45,22 +41,28 @@ public class RecommendationChatCompletionResponseMapper implements Mapper<JsonNo
         }
     }
 
-    public List<Recommendation> mapAll(Map<Symbol, List<MarketData>> marketData, JsonNode jsonNode, String fixedMessage,
+    public List<Recommendation> mapAll(List<DataManager.SymbolPayload> payload, JsonNode jsonNode, String message,
                                        String model) throws JsonProcessingException {
         try {
             ArrayNode output = (ArrayNode) jsonNode.get("recommendations");
 
             List<Recommendation> recommendations = new ArrayList<>();
-            Map<String, Symbol> symbolByName = marketData.keySet().stream().collect(Collectors.toMap(Symbol::getName, Function.identity()));
-            Map<String, MarketData> latestMarketDataByName = marketData.values().stream()
-                    .map(all -> all.stream().max(Comparator.comparing(MarketData::getDate)).orElseThrow())
-                    .collect(Collectors.toMap(md -> md.getSymbol().getName(), Function.identity()));
+            Map<String, Symbol> symbolByName = new HashMap<>();
+            Map<String, MarketData> latestMarketDataByName = new HashMap<>();
+            for (DataManager.SymbolPayload p : payload) {
+                String name = p.symbol().getName();
+                symbolByName.put(name, p.symbol());
+                MarketData latest = p.marketData().stream().max(Comparator.comparing(MarketData::getDate)).orElseThrow();
+                latestMarketDataByName.put(name, latest);
+            }
+            String errors = objectMapper.readerForListOf(String.class).readValue(jsonNode.get("errors")).toString();
+
             for (int i = 0; i < output.size(); i++) {
                 JsonNode load = output.get(i);
                 recommendations.add(map(load)
                         .setModel(model)
-                        .setInput(fixedMessage)
-                        .setErrors(objectMapper.readerForListOf(String.class).readValue(jsonNode.get("errors")).toString())
+                        .setInput(message)
+                        .setErrors(errors)
                         .setMarketData(latestMarketDataByName.get(load.get("symbol").asText()))
                         .setSymbol(symbolByName.get(load.get("symbol").asText())));
             }

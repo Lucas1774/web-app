@@ -17,13 +17,19 @@ public class AIClient {
     @Getter
     private final String modelName;
     @Getter
+    private final int chunkSize;
+    @Getter
+    private final boolean fixMe;
+    @Getter
     private final RateLimiter rateLimiter;
 
     public AIClient(ChatCompletionsClient client, Function<List<ChatRequestMessage>, ChatCompletionsOptions> optionsProvider,
-                    String modelName, RateLimiter rateLimiter) {
+                    String modelName, int chunkSize, boolean fixMe, RateLimiter rateLimiter) {
         this.client = client;
         this.optionsProvider = optionsProvider;
         this.modelName = modelName;
+        this.chunkSize = chunkSize;
+        this.fixMe = fixMe;
         this.rateLimiter = rateLimiter;
     }
 

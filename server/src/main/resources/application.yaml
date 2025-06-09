@@ -3,7 +3,7 @@ security:
 
 scheduler:
   market-data-cron: "0 0 0 * * *" # Every day at midnight UTC
-  news-recommendations-cron: "0 30 8 * * *" # Every day one hour before the market opens
+  news-recommendations-cron: "0 00 9 * * *" # Every day half an hour before the market opens
 
 spring:
   application:
@@ -28,6 +28,8 @@ ai:
       temperature: 0
       max-tokens: 8000
       requests-per-minute: 5
+      chunk-size: 5
+      fix-me: true
     two:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
@@ -35,6 +37,8 @@ ai:
       temperature: 0
       max-tokens: 8000
       requests-per-minute: 5
+      chunk-size: 5
+      fix-me: true
     three:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
@@ -42,6 +46,8 @@ ai:
       temperature: 0
       max-tokens: 4000
       requests-per-minute: 5
+      chunk-size: 2
+      fix-me: true
     four:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
@@ -49,6 +55,8 @@ ai:
       temperature: 0
       max-tokens: 4000
       requests-per-minute: 5
+      chunk-size: 2
+      fix-me: true
     five:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
@@ -56,6 +64,8 @@ ai:
       temperature: 0
       max-tokens: 8000
       requests-per-minute: 5
+      chunk-size: 5
+      fix-me: false
     six:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
@@ -63,6 +73,8 @@ ai:
       temperature: 0
       max-tokens: 8000
       requests-per-minute: 5
+      chunk-size: 5
+      fix-me: false
     seven:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
@@ -70,6 +82,8 @@ ai:
       temperature: 0
       max-tokens: 8000
       requests-per-minute: 5
+      chunk-size: 5
+      fix-me: false
     eight:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
@@ -77,6 +91,8 @@ ai:
       temperature: 0
       max-tokens: 8000
       requests-per-minute: 5
+      chunk-size: 5
+      fix-me: false
     nine:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
@@ -84,6 +100,8 @@ ai:
       temperature: 0
       max-tokens: 8000
       requests-per-minute: 5
+      chunk-size: 5
+      fix-me: false
     ten:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
@@ -91,6 +109,8 @@ ai:
       temperature: 0
       max-tokens: 8000
       requests-per-minute: 5
+      chunk-size: 5
+      fix-me: false
     eleven:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
@@ -98,13 +118,17 @@ ai:
       temperature: 0
       max-tokens: 8000
       requests-per-minute: 5
+      chunk-size: 5
+      fix-me: false
     twelve:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
       model: ${MODEL_TWELVE}
       temperature: 0
-      max-tokens: 4000
+      max-tokens: 8000
       requests-per-minute: 5
+      chunk-size: 5
+      fix-me: false
     thirteen:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
@@ -112,6 +136,8 @@ ai:
       temperature: 0
       max-tokens: 8000
       requests-per-minute: 5
+      chunk-size: 5
+      fix-me: false
     fourteen:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
@@ -119,6 +145,8 @@ ai:
       temperature: 0
       max-tokens: 8000
       requests-per-minute: 5
+      chunk-size: 5
+      fix-me: false
     fifteen:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
@@ -126,6 +154,8 @@ ai:
       temperature: 0
       max-tokens: 8000
       requests-per-minute: 5
+      chunk-size: 5
+      fix-me: false
     sixteen:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
@@ -133,6 +163,8 @@ ai:
       temperature: 0
       max-tokens: 8000
       requests-per-minute: 5
+      chunk-size: 5
+      fix-me: false
 
 finnhub:
   api-key: ${FINNHUB_KEY}

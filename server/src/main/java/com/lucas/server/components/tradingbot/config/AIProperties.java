@@ -19,7 +19,9 @@ public class AIProperties {
             String model,
             double temperature,
             int maxTokens,
-            int requestsPerMinute
+            int requestsPerMinute,
+            int chunkSize,
+            boolean fixMe
     ) {
     }
 

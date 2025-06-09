@@ -10,7 +10,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import static com.lucas.server.common.Constants.*;
+import static com.lucas.server.common.Constants.PortfolioType;
+import static com.lucas.server.common.Constants.RECOMMENDATION_CLIENTS;
 
 @RestController
 @RequestMapping("/recommendations")
@@ -27,24 +28,22 @@ public class RecommendationsController {
     @GetMapping("/{symbols}")
     public ResponseEntity<List<Recommendation>> generateRecommendations(HttpServletRequest request,
                                                                         @PathVariable List<Long> symbols,
-                                                                        @RequestParam boolean sendFixmeRequest,
                                                                         @RequestParam boolean overwrite) {
         if (!controllerUtil.isAdmin(controllerUtil.retrieveUsername(request.getCookies()))) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        return ResponseEntity.ok(jpaService.getRecommendationsById(symbols, PortfolioType.MOCK, sendFixmeRequest,
-                overwrite, RECOMMENDATION_CLIENTS, RECOMMENDATIONS_CHUNK_SIZE));
+        return ResponseEntity.ok(jpaService.getRecommendationsById(symbols, PortfolioType.MOCK,
+                overwrite, RECOMMENDATION_CLIENTS));
     }
 
     @GetMapping("/random/{count}")
     public ResponseEntity<List<Recommendation>> generateRandomRecommendations(HttpServletRequest request,
                                                                               @PathVariable int count,
-                                                                              @RequestParam boolean sendFixmeRequest,
                                                                               @RequestParam boolean overwrite) {
         if (!controllerUtil.isAdmin(controllerUtil.retrieveUsername(request.getCookies()))) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        return ResponseEntity.ok(jpaService.getRandomRecommendations(PortfolioType.MOCK, count, sendFixmeRequest, overwrite, false));
+        return ResponseEntity.ok(jpaService.getRandomRecommendations(PortfolioType.MOCK, count, overwrite, false));
     }
 
     @DeleteMapping("/purge")

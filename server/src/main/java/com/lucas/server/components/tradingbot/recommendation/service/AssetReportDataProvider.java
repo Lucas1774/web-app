@@ -1,10 +1,8 @@
 package com.lucas.server.components.tradingbot.recommendation.service;
 
-import com.lucas.server.components.tradingbot.common.jpa.Symbol;
+import com.lucas.server.components.tradingbot.common.jpa.DataManager;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.marketdata.service.MarketDataKpiGenerator;
-import com.lucas.server.components.tradingbot.news.jpa.News;
-import com.lucas.server.components.tradingbot.portfolio.jpa.PortfolioBase;
 import com.lucas.server.components.tradingbot.portfolio.service.PortfolioManager;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.AssetReportRaw;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.NewsItemRaw;
@@ -28,7 +26,8 @@ public class AssetReportDataProvider {
         this.portfolioManager = portfolioManager;
     }
 
-    public AssetReportRaw provide(Symbol symbol, List<MarketData> mdHistory, List<News> articles, PortfolioBase portfolio) {
+    public AssetReportRaw provide(DataManager.SymbolPayload payload) {
+        List<MarketData> mdHistory = payload.marketData();
         List<PricePointRaw> priceHistory = mdHistory.subList(0, min(mdHistory.size(), HISTORY_DAYS_COUNT)).stream()
                 .map(md -> new PricePointRaw(md.getDate(), md.getOpen(), md.getHigh(), md.getLow(), md.getPrice(), md.getVolume()))
                 .toList();
@@ -41,12 +40,12 @@ public class AssetReportDataProvider {
         BigDecimal atr14 = current.getAtr();
         BigDecimal obv20 = kpiGenerator.computeObv(mdHistory, 20).orElse(null);
 
-        List<NewsItemRaw> news = articles.stream()
+        List<NewsItemRaw> news = payload.news().stream()
                 .map(a -> new NewsItemRaw(a.getHeadline(), a.getSentiment(), a.getSentimentConfidence(), a.getSummary(), a.getDate()))
                 .toList();
 
-        PortfolioManager.SymbolStand stand = portfolioManager.computeStand(portfolio, current);
-        return new AssetReportRaw(symbol.getName(), stand.quantity(), stand.positionValue(), stand.averageCost(), stand.pnL(), stand.percentPnl(),
+        PortfolioManager.SymbolStand stand = portfolioManager.computeStand(payload.portfolio(), current);
+        return new AssetReportRaw(payload.symbol().getName(), stand.quantity(), stand.positionValue(), stand.averageCost(), stand.pnL(), stand.percentPnl(),
                 priceHistory.size(), priceHistory, ema20, macdLine1226, macdSignalLine9, rsi14, atr14, obv20, news.size(), news);
     }
 }

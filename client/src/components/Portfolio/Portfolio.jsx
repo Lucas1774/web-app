@@ -199,7 +199,7 @@ const Portfolio = () => {
         }
     };
 
-    const getRecommendations = async (sendFixmeRequest, overwrite, count = undefined) => {
+    const getRecommendations = async (overwrite, count = undefined) => {
         let path;
         if (count !== undefined) {
             path = `/recommendations/random/${count}`
@@ -216,7 +216,7 @@ const Portfolio = () => {
         }
         setIsLoading(true);
         try {
-            const resp = await get(`${path}?sendFixmeRequest=${sendFixmeRequest}&overwrite=${overwrite}`);
+            const resp = await get(`${path}?overwrite=${overwrite}`);
             const data = new Map(
                 resp.data.map(item => [
                     item.symbol.id,
@@ -448,20 +448,19 @@ const Portfolio = () => {
                     <>
                         <Form onSubmit={(e) => {
                             e.preventDefault();
-                            getRecommendations(e.target[4].checked, e.target[5].checked);
+                            getRecommendations(e.target[4].checked);
                         }}>
                             <Button className="twenty-five-percent" type="submit" variant="success">Recommend</Button>
                             <Button className="twenty-five-percent" onClick={updateNews}>Fetch latest news</Button>
                             <Button className="twenty-five-percent" onClick={() => { getDataByRow(false); }}>Last close</Button>
                             <Button className="twenty-five-percent" onClick={() => { getDataByRow(true); }}>Real time</Button>
                             <div className="flex-div">
-                                <Form.Check type="checkbox" label="Pre-request" />
                                 <Form.Check type="checkbox" label="Overwrite" />
                             </div>
                         </Form>
                         <Form onSubmit={(e) => {
                             e.preventDefault();
-                            const amount = e.target[5].value;
+                            const amount = e.target[4].value;
                             if (!amount) {
                                 setMessage("Specify an amount");
                                 setTimeout(() => {
@@ -469,7 +468,7 @@ const Portfolio = () => {
                                 }, constants.TIMEOUT_DELAY);
                                 return;
                             }
-                            getRecommendations(e.target[3].checked, e.target[4].checked, amount)
+                            getRecommendations(e.target[3].checked, amount)
                         }}>
                             <Button className="thirty-percent" type="submit" variant="success">Random recommendations</Button>
                             <Button className="thirty-percent" onClick={() => { getData(!isShowAllData); }}>{
@@ -489,7 +488,6 @@ const Portfolio = () => {
 
                             }}>Clear filters</Button>
                             <div className="flex-div">
-                                <Form.Check type="checkbox" label="Pre-request" />
                                 <Form.Check type="checkbox" label="Overwrite" />
                                 <Form.Control type="number" placeholder="Amount" min="1" value={count} onChange={(e) => setCount(Number(e.target.value))} />
                             </div>

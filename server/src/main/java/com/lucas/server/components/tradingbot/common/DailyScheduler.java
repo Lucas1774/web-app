@@ -63,7 +63,7 @@ public class DailyScheduler {
 
     private void getRandomRecommendations() {
         List<Recommendation> updatedRecommendations = dataManager.getRandomRecommendations(PortfolioType.MOCK,
-                SCHEDULED_RECOMMENDATIONS_COUNT, false, false, true);
+                SCHEDULED_RECOMMENDATIONS_COUNT, false, true);
         logger.info(SCHEDULED_TASK_SUCCESS_INFO, "generated recommendations", updatedRecommendations.stream()
                 .map(Recommendation::getSymbol).toList());
     }

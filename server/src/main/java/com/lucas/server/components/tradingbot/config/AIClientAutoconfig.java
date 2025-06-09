@@ -65,7 +65,7 @@ public class AIClientAutoconfig {
                                     .limitForPeriod(config.requestsPerMinute())
                                     .timeoutDuration(Duration.ofMinutes(1))
                                     .build());
-                            return new AIClient(client, optionsProvider, config.model(), rateLimiter);
+                            return new AIClient(client, optionsProvider, config.model(), config.chunkSize(), config.fixMe(), rateLimiter);
                         },
                         (a, b) -> a,
                         LinkedHashMap::new

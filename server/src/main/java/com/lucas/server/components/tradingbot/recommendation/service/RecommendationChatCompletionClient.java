@@ -6,16 +6,16 @@ import com.azure.ai.inference.models.ChatRequestSystemMessage;
 import com.azure.ai.inference.models.ChatRequestUserMessage;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.common.exception.JsonProcessingException;
+import com.lucas.server.components.tradingbot.common.AIClient;
+import com.lucas.server.components.tradingbot.common.jpa.DataManager;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
-import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
-import com.lucas.server.components.tradingbot.news.jpa.News;
-import com.lucas.server.components.tradingbot.portfolio.jpa.PortfolioBase;
 import com.lucas.server.components.tradingbot.recommendation.jpa.Recommendation;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.AssetReportRaw;
+import com.lucas.server.components.tradingbot.recommendation.mapper.RecommendationChatCompletionResponseMapper;
 import com.lucas.server.components.tradingbot.recommendation.prompt.PromptRepository;
+import io.github.resilience4j.ratelimiter.RateLimiter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -39,7 +39,8 @@ public class RecommendationChatCompletionClient {
     private final AssetReportDataProvider assertReportDataProvider;
     private final AssetReportToMustacheMapper assetReportToMustacheMapper;
     private final ObjectMapper objectMapper;
-    private final RetryableRecommendationsClientComponent retryableClient;
+    private final RecommendationChatCompletionResponseMapper mapper;
+    private final Map<String, RateLimiter> rateLimiters;
     private static final Map<String, Function<String, ChatRequestMessage>> messageFactory = Map.of(
             "user", ChatRequestUserMessage::new,
             "assistant", ChatRequestAssistantMessage::new,
@@ -49,7 +50,7 @@ public class RecommendationChatCompletionClient {
 
     public RecommendationChatCompletionClient(PromptRepository promptRepository, AssetReportDataProvider assertReportDataProvider,
                                               AssetReportToMustacheMapper assetReportToMustacheMapper, ObjectMapper objectMapper,
-                                              RetryableRecommendationsClientComponent retryableClient)
+                                              RecommendationChatCompletionResponseMapper mapper, Map<String, RateLimiter> rateLimiters)
             throws JsonProcessingException {
         fixMeMessage = generateMessageFromNode(promptRepository.getFixMeMessage());
         systemMessage = generateMessageFromNode(promptRepository.getSystem());
@@ -58,29 +59,44 @@ public class RecommendationChatCompletionClient {
         this.assertReportDataProvider = assertReportDataProvider;
         this.assetReportToMustacheMapper = assetReportToMustacheMapper;
         this.objectMapper = objectMapper;
-        this.retryableClient = retryableClient;
+        this.mapper = mapper;
+        this.rateLimiters = rateLimiters;
     }
 
-    public List<Recommendation> getRecommendations(Map<Symbol, List<MarketData>> marketData, Map<Symbol, List<News>> newsData,
-                                                   Map<Symbol, ? extends PortfolioBase> portfolioData, boolean withFixmeRequest, List<Clients> clients) throws ClientException, IOException {
-        List<AssetReportRaw> reports = new ArrayList<>();
-        for (Map.Entry<Symbol, List<MarketData>> mdHistory : marketData.entrySet()) {
-            reports.add(assertReportDataProvider.provide(mdHistory.getKey(), mdHistory.getValue(),
-                    newsData.get(mdHistory.getKey()), portfolioData.get(mdHistory.getKey())));
-        }
-
-        ChatRequestUserMessage reportMessage = (ChatRequestUserMessage) generateMessageFromNode(objectMapper.readValue(assetReportToMustacheMapper.map(reports), ObjectNode.class));
-        ChatRequestUserMessage fixedMessage;
-        if (Boolean.TRUE.equals(withFixmeRequest)) {
-            logger.info(RETRIEVING_DATA_INFO, PRE_REQUEST, marketData.keySet());
-            fixedMessage = new ChatRequestUserMessage(retryableClient.callWithBackupStrategy(List.of(fixMeMessage, reportMessage), clients));
+    public List<Recommendation> getRecommendations(List<DataManager.SymbolPayload> payload, AIClient client) throws IOException {
+        List<AssetReportRaw> reports = payload.stream()
+                .map(assertReportDataProvider::provide)
+                .toList();
+        ChatRequestUserMessage rawReportMessage = (ChatRequestUserMessage) generateMessageFromNode(objectMapper.readValue(
+                assetReportToMustacheMapper.map(reports), ObjectNode.class
+        ));
+        ChatRequestUserMessage reportMessage;
+        if (!client.isFixMe()) {
+            reportMessage = rawReportMessage;
         } else {
-            fixedMessage = reportMessage;
+            reportMessage = new ChatRequestUserMessage(((ChatRequestUserMessage) fixMeMessage).getContent().toObject(String.class)
+                    .replace("{placeholder}", rawReportMessage.getContent().toObject(String.class)));
         }
+        List<Symbol> symbols = payload.stream().map(DataManager.SymbolPayload::symbol).toList();
 
-        logger.info(RETRIEVING_DATA_INFO, RECOMMENDATION, marketData.keySet());
-        return retryableClient.callWithBackupStrategyAndMap(marketData, List.of(systemMessage, promptMessage, fewShotMessage, fixedMessage),
-                clients, fixedMessage);
+        logger.info(RETRIEVING_DATA_INFO, RECOMMENDATION, symbols);
+        try {
+            client.getRateLimiter().acquirePermission();
+            rateLimiters.get(PER_MINUTE_RATE_LIMITER).acquirePermission();
+            rateLimiters.get(PER_SECOND_RATE_LIMITER).acquirePermission();
+            logger.info(PROMPTING_MODEL_INFO, client.getModelName());
+            return mapper.mapAll(payload,
+                    objectMapper.readTree(client.complete(List.of(systemMessage, promptMessage, fewShotMessage, reportMessage))
+                            .getChoice()
+                            .getMessage()
+                            .getContent()
+                            .replace("```", "")
+                            .replace("json", "")),
+                    reportMessage.getContent().toObject(String.class), client.getModelName());
+        } catch (Exception e) {
+            logger.warn(CLIENT_FAILED_BACKUP_WARN, client.getModelName(), PROMPT, e.getMessage());
+            return new ArrayList<>();
+        }
     }
 
     private ChatRequestMessage generateMessageFromNode(ObjectNode data) throws JsonProcessingException {
