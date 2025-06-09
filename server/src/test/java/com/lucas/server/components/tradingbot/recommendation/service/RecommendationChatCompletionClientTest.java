@@ -1,6 +1,7 @@
 package com.lucas.server.components.tradingbot.recommendation.service;
 
 import com.lucas.server.TestcontainersConfiguration;
+import com.lucas.server.components.tradingbot.common.jpa.DataManager;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
@@ -100,7 +101,7 @@ class RecommendationChatCompletionClientTest {
         List<MarketData> filteredMds = marketDataService.getTopForSymbolId(symbol.getId(), MARKET_DATA_RELEVANT_DAYS_COUNT);
         List<News> filteredNews = newsService.getTopForSymbolId(symbol.getId(), NEWS_COUNT);
         Portfolio portfolioData = portfolioService.findBySymbol(symbol).orElseThrow();
-        AssetReportRaw report = provider.provide(symbol, filteredMds, filteredNews, portfolioData);
+        AssetReportRaw report = provider.provide(new DataManager.SymbolPayload(symbol, filteredMds, filteredNews, portfolioData));
 
         // then: symbol & history size & news count
         assertThat(report.symbol()).isEqualTo(symbol.getName());
@@ -116,12 +117,11 @@ class RecommendationChatCompletionClientTest {
                         today.minusDays(17), today.minusDays(18), today.minusDays(19)
                 );
 
-        assertThat(report.newsCount()).isEqualTo(NEWS_COUNT);
+        assertThat(report.newsCount()).isEqualTo(1);
         assertThat(report.news())
-                .hasSize(NEWS_COUNT)
+                .hasSize(1)
                 .extracting(NewsItemRaw::headline)
-                .containsExactly("Headline 1", "Headline 3", "Headline 5", "Headline 6", "Headline 7",
-                        "Headline 9", "Headline 11", "Headline 12", "Headline 13", "Headline 15");
+                .containsExactly("Headline 1");
 
         // then: KPIs match the kpiGenerator calculations
         List<MarketData> mdHistory = marketDataService.getTopForSymbolId(

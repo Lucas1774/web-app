@@ -18,7 +18,6 @@ import org.springframework.context.annotation.Configuration;
 
 import java.time.Duration;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -44,11 +43,10 @@ public class AIClientAutoconfig {
 
     @Bean
     public Map<String, AIClient> clients(HttpClient httpClient, RetryPolicy retryPolicy, AIProperties aiProps) {
-        return aiProps.getDeployments().entrySet().stream()
+        return aiProps.getDeployments().stream()
                 .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> {
-                            AIProperties.DeploymentProperties config = entry.getValue();
+                        AIProperties.DeploymentProperties::name,
+                        config -> {
                             ChatCompletionsClient client = new ChatCompletionsClientBuilder()
                                     .httpClient(httpClient)
                                     .retryPolicy(retryPolicy)
@@ -65,10 +63,8 @@ public class AIClientAutoconfig {
                                     .limitForPeriod(config.requestsPerMinute())
                                     .timeoutDuration(Duration.ofMinutes(1))
                                     .build());
-                            return new AIClient(client, optionsProvider, config.model(), config.chunkSize(), config.fixMe(), rateLimiter);
-                        },
-                        (a, b) -> a,
-                        LinkedHashMap::new
+                            return new AIClient(client, optionsProvider, config.name(), config.chunkSize(), config.fixMe(), rateLimiter);
+                        }
                 ));
     }
 

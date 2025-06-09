@@ -20,7 +20,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 
-@SpringBootTest(properties = "scheduler.daily-cron=* * * * * *")
+@SpringBootTest(properties = {"scheduler.market-data-cron=* * * * * *", "scheduler.news-recommendations-cron=* * * * * *"})
 @Import(TestcontainersConfiguration.class)
 class DailySchedulerTest {
 
@@ -43,7 +43,7 @@ class DailySchedulerTest {
         await().atMost(Duration.ofSeconds(10))
                 .untilAsserted(() -> {
                             verify(dataManager, atLeastOnce()).retrieveMarketData(any(), any());
-                            verify(dataManager, atLeastOnce()).retrieveNewsByDateRange(any(), eq(from), eq(to));
+                            verify(dataManager, atLeastOnce()).retrieveNewsByDateRangeAndName(any(), eq(from), eq(to));
                         }
                 );
     }

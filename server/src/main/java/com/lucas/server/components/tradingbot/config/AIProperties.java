@@ -4,8 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.List;
 
 
 @Getter
@@ -14,6 +13,7 @@ import java.util.Map;
 public class AIProperties {
 
     public record DeploymentProperties(
+            String name,
             String apiKey,
             String url,
             String model,
@@ -25,5 +25,5 @@ public class AIProperties {
     ) {
     }
 
-    private Map<String, DeploymentProperties> deployments = new LinkedHashMap<>();
+    private List<DeploymentProperties> deployments;
 }

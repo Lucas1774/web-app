@@ -21,145 +21,145 @@ spring:
 
 ai:
   deployments:
-    one:
+    - name: gpt-4.1
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: ${MODEL_ONE}
+      model: openai/gpt-4.1
       temperature: 0
       max-tokens: 8000
       requests-per-minute: 5
       chunk-size: 5
       fix-me: true
-    two:
+    - name: gpt-4o
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: ${MODEL_TWO}
+      model: openai/gpt-4o
       temperature: 0
       max-tokens: 8000
       requests-per-minute: 5
       chunk-size: 5
       fix-me: true
-    three:
+    - name: gpt-4.1-mini
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: ${MODEL_THREE}
+      model: openai/gpt-4.1-mini
+      temperature: 0
+      max-tokens: 8000
+      requests-per-minute: 5
+      chunk-size: 5
+      fix-me: false
+    - name: gpt-4o-mini
+      api-key: ${GITHUB_KEY}
+      url: ${GITHUB_URL}
+      model: openai/gpt-4o-mini
+      temperature: 0
+      max-tokens: 8000
+      requests-per-minute: 5
+      chunk-size: 5
+      fix-me: false
+    - name: gpt-4.1-nano
+      api-key: ${GITHUB_KEY}
+      url: ${GITHUB_URL}
+      model: openai/gpt-4.1-nano
+      temperature: 0
+      max-tokens: 8000
+      requests-per-minute: 5
+      chunk-size: 5
+      fix-me: false
+    - name: deepseek-v3
+      api-key: ${GITHUB_KEY}
+      url: ${GITHUB_URL}
+      model: deepseek/DeepSeek-V3-0324
       temperature: 0
       max-tokens: 4000
       requests-per-minute: 5
       chunk-size: 2
       fix-me: true
-    four:
+    - name: grok-3
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: ${MODEL_FOUR}
+      model: xai/grok-3
       temperature: 0
       max-tokens: 4000
       requests-per-minute: 5
       chunk-size: 2
       fix-me: true
-    five:
+    - name: llama-3.3-70b
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: ${MODEL_FIVE}
+      model: meta/llama-3.3-70b-instruct
       temperature: 0
       max-tokens: 8000
       requests-per-minute: 5
       chunk-size: 5
       fix-me: false
-    six:
+    - name: llama-3.1-405b
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: ${MODEL_SIX}
+      model: meta/meta-llama-3.1-405b-instruct
       temperature: 0
       max-tokens: 8000
       requests-per-minute: 5
       chunk-size: 5
       fix-me: false
-    seven:
+    - name: llama-3.1-70b
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: ${MODEL_SEVEN}
+      model: meta/meta-llama-3.1-70b-instruct
       temperature: 0
       max-tokens: 8000
       requests-per-minute: 5
       chunk-size: 5
       fix-me: false
-    eight:
+    - name: llama-3.1-8b
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: ${MODEL_EIGHT}
+      model: meta/meta-llama-3.1-8b-instruct
       temperature: 0
       max-tokens: 8000
       requests-per-minute: 5
       chunk-size: 5
       fix-me: false
-    nine:
+    - name: mistral-large
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: ${MODEL_NINE}
+      model: mistral-ai/mistral-large-2411
       temperature: 0
       max-tokens: 8000
       requests-per-minute: 5
       chunk-size: 5
       fix-me: false
-    ten:
+    - name: mistral-nemo
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: ${MODEL_TEN}
+      model: mistral-ai/mistral-nemo
       temperature: 0
       max-tokens: 8000
       requests-per-minute: 5
       chunk-size: 5
       fix-me: false
-    eleven:
+    - name: ministral-3b
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: ${MODEL_ELEVEN}
+      model: mistral-ai/ministral-3b
       temperature: 0
       max-tokens: 8000
       requests-per-minute: 5
       chunk-size: 5
       fix-me: false
-    twelve:
+    - name: phi-4
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: ${MODEL_TWELVE}
+      model: microsoft/phi-4
       temperature: 0
       max-tokens: 8000
       requests-per-minute: 5
       chunk-size: 5
       fix-me: false
-    thirteen:
+    - name: command-a
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: ${MODEL_THIRTEEN}
-      temperature: 0
-      max-tokens: 8000
-      requests-per-minute: 5
-      chunk-size: 5
-      fix-me: false
-    fourteen:
-      api-key: ${GITHUB_KEY}
-      url: ${GITHUB_URL}
-      model: ${MODEL_FOURTEEN}
-      temperature: 0
-      max-tokens: 8000
-      requests-per-minute: 5
-      chunk-size: 5
-      fix-me: false
-    fifteen:
-      api-key: ${GITHUB_KEY}
-      url: ${GITHUB_URL}
-      model: ${MODEL_FIFTEEN}
-      temperature: 0
-      max-tokens: 8000
-      requests-per-minute: 5
-      chunk-size: 5
-      fix-me: false
-    sixteen:
-      api-key: ${GITHUB_KEY}
-      url: ${GITHUB_URL}
-      model: ${MODEL_SIXTEEN}
+      model: cohere/cohere-command-a
       temperature: 0
       max-tokens: 8000
       requests-per-minute: 5
