@@ -48,20 +48,20 @@ export const SYMBOL_NAME_KEY = "symbolName";
 export const LAST_MOVE_DATE_KEY = "lastMoveDate";
 export const RECOMMENDATION_DATE_KEY = "recommendationDate";
 export const RECOMMENDATION_ACTION_KEY = "recommendationAction";
-export const RECOMMENDATION_CONFIDENCE_KEY = "recommendationConfidence";
 export const RECOMMENDATION_MODEL_KEY = "recommendationModel";
-export const AVERAGE_COST_KEY = "averageCost";
-export const POSITION_VALUE_KEY = "positionValue";
-export const PNL_KEY = "pnl";
+export const RECOMMENDATION_CONFIDENCE_KEY = "recommendationConfidence";
+export const PERCENT_DAY_CHANGE_KEY = "percentDayChange"
 export const PERCENT_PNL_KEY = "percentPnl";
 export const NET_RELATIVE_POSITION_KEY = "netRelPos";
-export const RECOMMENDATION_RATIONALE_KEY = "recommendationRationale";
+export const PNL_KEY = "pnl";
+export const AVERAGE_COST_KEY = "averageCost";
 export const PRICE_KEY = "price"
 export const OPEN_KEY = "open"
 export const HIGH_KEY = "high"
 export const LOW_KEY = "low"
-export const PERCENT_DAY_CHANGE_KEY = "percentDayChange"
 export const VOLUME_KEY = "volume"
+export const RECOMMENDATION_RATIONALE_KEY = "recommendationRationale";
+export const POSITION_VALUE_KEY = "positionValue";
 export const META = {
     KEYS: [ID_KEY, NAME_KEY, CATEGORY_KEY, QUANTITY_KEY, EDIT_KEY, REMOVE_KEY],
     DATATYPE: {
@@ -106,28 +106,29 @@ export const META = {
     }
 }
 export const PORTFOLIO_META = {
-    KEYS: [ID_KEY,
+    KEYS: [
+        ID_KEY,
         REAL_TIME_KEY,
         SYMBOL_NAME_KEY,
         LAST_MOVE_DATE_KEY,
         RECOMMENDATION_DATE_KEY,
         RECOMMENDATION_ACTION_KEY,
-        RECOMMENDATION_CONFIDENCE_KEY,
         RECOMMENDATION_MODEL_KEY,
+        RECOMMENDATION_CONFIDENCE_KEY,
+        PERCENT_DAY_CHANGE_KEY,
+        PERCENT_PNL_KEY,
+        NET_RELATIVE_POSITION_KEY,
+        PNL_KEY,
+        AVERAGE_COST_KEY,
+        QUANTITY_KEY,
         PRICE_KEY,
         OPEN_KEY,
         HIGH_KEY,
         LOW_KEY,
         VOLUME_KEY,
-        QUANTITY_KEY,
-        AVERAGE_COST_KEY,
-        POSITION_VALUE_KEY,
-        PNL_KEY,
-        PERCENT_DAY_CHANGE_KEY,
-        PERCENT_PNL_KEY,
-        NET_RELATIVE_POSITION_KEY,
+        EDIT_KEY,
         RECOMMENDATION_RATIONALE_KEY,
-        EDIT_KEY
+        POSITION_VALUE_KEY
     ],
     DATATYPE: {
         [ID_KEY]: NUMBER,
@@ -136,22 +137,22 @@ export const PORTFOLIO_META = {
         [LAST_MOVE_DATE_KEY]: DATE,
         [RECOMMENDATION_DATE_KEY]: DATE,
         [RECOMMENDATION_ACTION_KEY]: STRING,
-        [RECOMMENDATION_CONFIDENCE_KEY]: NUMBER,
         [RECOMMENDATION_MODEL_KEY]: STRING,
+        [RECOMMENDATION_CONFIDENCE_KEY]: NUMBER,
+        [PERCENT_DAY_CHANGE_KEY]: NUMBER,
+        [PERCENT_PNL_KEY]: NUMBER,
+        [NET_RELATIVE_POSITION_KEY]: NUMBER,
+        [PNL_KEY]: NUMBER,
+        [AVERAGE_COST_KEY]: NUMBER,
+        [QUANTITY_KEY]: NUMBER,
         [PRICE_KEY]: NUMBER,
         [OPEN_KEY]: NUMBER,
         [HIGH_KEY]: NUMBER,
         [LOW_KEY]: NUMBER,
-        [PERCENT_DAY_CHANGE_KEY]: NUMBER,
         [VOLUME_KEY]: NUMBER,
-        [QUANTITY_KEY]: NUMBER,
-        [AVERAGE_COST_KEY]: NUMBER,
-        [POSITION_VALUE_KEY]: NUMBER,
-        [PNL_KEY]: NUMBER,
-        [PERCENT_PNL_KEY]: NUMBER,
-        [NET_RELATIVE_POSITION_KEY]: NUMBER,
+        [EDIT_KEY]: ICON,
         [RECOMMENDATION_RATIONALE_KEY]: STRING,
-        [EDIT_KEY]: ICON
+        [POSITION_VALUE_KEY]: NUMBER
     },
     VISIBLE: {
         [ID_KEY]: false,
@@ -160,94 +161,94 @@ export const PORTFOLIO_META = {
         [LAST_MOVE_DATE_KEY]: true,
         [RECOMMENDATION_DATE_KEY]: true,
         [RECOMMENDATION_ACTION_KEY]: true,
-        [RECOMMENDATION_CONFIDENCE_KEY]: true,
         [RECOMMENDATION_MODEL_KEY]: true,
+        [RECOMMENDATION_CONFIDENCE_KEY]: true,
+        [PERCENT_DAY_CHANGE_KEY]: true,
+        [PERCENT_PNL_KEY]: true,
+        [NET_RELATIVE_POSITION_KEY]: true,
+        [PNL_KEY]: true,
+        [AVERAGE_COST_KEY]: true,
+        [QUANTITY_KEY]: true,
         [PRICE_KEY]: true,
         [OPEN_KEY]: true,
         [HIGH_KEY]: true,
         [LOW_KEY]: true,
-        [PERCENT_DAY_CHANGE_KEY]: true,
         [VOLUME_KEY]: true,
-        [QUANTITY_KEY]: true,
-        [AVERAGE_COST_KEY]: true,
-        [POSITION_VALUE_KEY]: false,
-        [PNL_KEY]: true,
-        [PERCENT_PNL_KEY]: true,
-        [NET_RELATIVE_POSITION_KEY]: true,
+        [EDIT_KEY]: true,
         [RECOMMENDATION_RATIONALE_KEY]: false,
-        [EDIT_KEY]: true
+        [POSITION_VALUE_KEY]: false
     },
     DISPLAY_NAME: {
         [ID_KEY]: "",
-        [REAL_TIME_KEY]: "Real Time",
+        [REAL_TIME_KEY]: "R.T.",
         [SYMBOL_NAME_KEY]: "Symbol",
         [LAST_MOVE_DATE_KEY]: "Last Move Date",
         [RECOMMENDATION_DATE_KEY]: "Rec. Date",
         [RECOMMENDATION_ACTION_KEY]: "Rec. Action",
-        [RECOMMENDATION_CONFIDENCE_KEY]: "Rec. Confidence",
         [RECOMMENDATION_MODEL_KEY]: "Rec. Model",
+        [RECOMMENDATION_CONFIDENCE_KEY]: "Rec. Confidence",
+        [PERCENT_DAY_CHANGE_KEY]: "%Day Change",
+        [PERCENT_PNL_KEY]: "%PNL",
+        [NET_RELATIVE_POSITION_KEY]: "gross  %PNL",
+        [PNL_KEY]: "PNL",
+        [AVERAGE_COST_KEY]: "Average Cost",
+        [QUANTITY_KEY]: "Quantity",
         [PRICE_KEY]: "Price",
         [OPEN_KEY]: "Open",
         [HIGH_KEY]: "High",
         [LOW_KEY]: "Low",
-        [PERCENT_DAY_CHANGE_KEY]: "%Day Change",
         [VOLUME_KEY]: "Volume",
-        [QUANTITY_KEY]: "Quantity",
-        [AVERAGE_COST_KEY]: "Average Cost",
-        [POSITION_VALUE_KEY]: "Position Value",
-        [PNL_KEY]: "PNL",
-        [PERCENT_PNL_KEY]: "%PNL",
-        [NET_RELATIVE_POSITION_KEY]: "gross  %PNL",
+        [EDIT_KEY]: "",
         [RECOMMENDATION_RATIONALE_KEY]: "",
-        [EDIT_KEY]: ""
+        [POSITION_VALUE_KEY]: ""
     },
     SORTABLE: {
-        [ID_KEY]: true,
+        [ID_KEY]: false,
         [REAL_TIME_KEY]: false,
         [SYMBOL_NAME_KEY]: true,
         [LAST_MOVE_DATE_KEY]: true,
         [RECOMMENDATION_DATE_KEY]: true,
         [RECOMMENDATION_ACTION_KEY]: true,
-        [RECOMMENDATION_CONFIDENCE_KEY]: true,
         [RECOMMENDATION_MODEL_KEY]: true,
+        [RECOMMENDATION_CONFIDENCE_KEY]: true,
+        [PERCENT_DAY_CHANGE_KEY]: true,
+        [PERCENT_PNL_KEY]: true,
+        [NET_RELATIVE_POSITION_KEY]: true,
+        [PNL_KEY]: true,
+        [AVERAGE_COST_KEY]: true,
+        [QUANTITY_KEY]: true,
         [PRICE_KEY]: true,
         [OPEN_KEY]: true,
         [HIGH_KEY]: true,
         [LOW_KEY]: true,
-        [PERCENT_DAY_CHANGE_KEY]: true,
         [VOLUME_KEY]: true,
-        [QUANTITY_KEY]: true,
-        [AVERAGE_COST_KEY]: true,
-        [POSITION_VALUE_KEY]: true,
-        [PNL_KEY]: true,
-        [PERCENT_PNL_KEY]: true,
-        [NET_RELATIVE_POSITION_KEY]: true,
+        [EDIT_KEY]: false,
         [RECOMMENDATION_RATIONALE_KEY]: false,
-        [EDIT_KEY]: false
+        [POSITION_VALUE_KEY]: false
     },
     FILTERABLE: {
-        [ID_KEY]: true,
+        [ID_KEY]: false,
         [REAL_TIME_KEY]: false,
         [SYMBOL_NAME_KEY]: true,
         [LAST_MOVE_DATE_KEY]: true,
         [RECOMMENDATION_DATE_KEY]: true,
         [RECOMMENDATION_ACTION_KEY]: true,
-        [RECOMMENDATION_CONFIDENCE_KEY]: true,
         [RECOMMENDATION_MODEL_KEY]: true,
+        [RECOMMENDATION_CONFIDENCE_KEY]: true,
+        [PERCENT_DAY_CHANGE_KEY]: false,
+        [PERCENT_PNL_KEY]: false,
+        [NET_RELATIVE_POSITION_KEY]: false,
+        [PNL_KEY]: false,
+        [AVERAGE_COST_KEY]: false,
+        [QUANTITY_KEY]: false,
         [PRICE_KEY]: false,
         [OPEN_KEY]: false,
         [HIGH_KEY]: false,
         [LOW_KEY]: false,
-        [PERCENT_DAY_CHANGE_KEY]: false,
         [VOLUME_KEY]: false,
-        [QUANTITY_KEY]: false,
-        [AVERAGE_COST_KEY]: false,
-        [POSITION_VALUE_KEY]: true,
-        [PNL_KEY]: false,
-        [PERCENT_PNL_KEY]: false,
-        [NET_RELATIVE_POSITION_KEY]: false,
+        [EDIT_KEY]: false,
         [RECOMMENDATION_RATIONALE_KEY]: false,
-        [EDIT_KEY]: false
+        [POSITION_VALUE_KEY]: false
     }
 }
 
