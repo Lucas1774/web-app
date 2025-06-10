@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 
+import static com.lucas.server.common.Constants.DEFAULT_USERNAME;
+
 @Component
 public class ControllerUtil {
 
@@ -24,7 +26,6 @@ public class ControllerUtil {
     private final JWTVerifier verifier;
     private final Algorithm algorithm;
     private static final Logger logger = LoggerFactory.getLogger(ControllerUtil.class);
-    private static final String DEFAULT = "default";
 
     public boolean isAdmin(String username) {
         return admin.contains(username);
@@ -57,7 +58,7 @@ public class ControllerUtil {
     public String retrieveUsername(Cookie[] cookies) {
         return retrieveAuthCookie(cookies)
                 .map(jwt -> JWT.decode(jwt).getSubject())
-                .orElse(DEFAULT);
+                .orElse(DEFAULT_USERNAME);
     }
 
     public Optional<String> retrieveAuthCookie(Cookie[] cookies) {

@@ -19,6 +19,7 @@ target/
 !server/**/src/test/**/target/
 
 V0_update_passwords.sql
+V2_create_mock_user.sql
 
 # misc
 .vscode/

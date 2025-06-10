@@ -10,8 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import static com.lucas.server.common.Constants.PortfolioType;
-import static com.lucas.server.common.Constants.RECOMMENDATION_CLIENTS;
+import static com.lucas.server.common.Constants.*;
 
 @RestController
 @RequestMapping("/recommendations")
@@ -29,10 +28,11 @@ public class RecommendationsController {
     public ResponseEntity<List<Recommendation>> generateRecommendations(HttpServletRequest request,
                                                                         @PathVariable List<Long> symbols,
                                                                         @RequestParam boolean overwrite) {
-        if (!controllerUtil.isAdmin(controllerUtil.retrieveUsername(request.getCookies()))) {
+        String username = controllerUtil.retrieveUsername(request.getCookies());
+        if (DEFAULT_USERNAME.equals(username)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        return ResponseEntity.ok(jpaService.getRecommendationsById(symbols, PortfolioType.MOCK,
+        return ResponseEntity.ok(jpaService.getRecommendationsById(symbols, getPortfolioType(username),
                 overwrite, RECOMMENDATION_CLIENTS));
     }
 
@@ -40,14 +40,19 @@ public class RecommendationsController {
     public ResponseEntity<List<Recommendation>> generateRandomRecommendations(HttpServletRequest request,
                                                                               @PathVariable int count,
                                                                               @RequestParam boolean overwrite) {
-        if (!controllerUtil.isAdmin(controllerUtil.retrieveUsername(request.getCookies()))) {
+        String username = controllerUtil.retrieveUsername(request.getCookies());
+        if (DEFAULT_USERNAME.equals(username)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        return ResponseEntity.ok(jpaService.getRandomRecommendations(PortfolioType.MOCK, count, overwrite, false));
+        return ResponseEntity.ok(jpaService.getRandomRecommendations(getPortfolioType(username), count, overwrite, false));
     }
 
     @DeleteMapping("/purge")
     public ResponseEntity<List<Recommendation>> purge(@RequestParam int toKeep) {
         return ResponseEntity.ok(jpaService.removeOldRecommendations(toKeep));
+    }
+
+    private PortfolioType getPortfolioType(String username) {
+        return controllerUtil.isAdmin(username) ? PortfolioType.REAL : PortfolioType.MOCK;
     }
 }

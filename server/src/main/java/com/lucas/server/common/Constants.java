@@ -70,6 +70,7 @@ public class Constants {
     public static final int FINNHUB_BACKOFF_MILLIS = 1000;
     public static final int TWELVEDATA_BACKOFF_MILLIS = 7500;
 
+    public static final String DEFAULT_USERNAME = "default";
     public static final String NA = "N/A";
     public static final String INVALID_EXPRESSION = "Invalid expression";
     public static final String COMPANY_NEWS = "/company-news";
@@ -82,7 +83,6 @@ public class Constants {
     public static final String NEWS = "news";
     public static final String SENTIMENT = "sentiment";
     public static final String RECOMMENDATION = "recommendation";
-    public static final String PRE_REQUEST = "pre-request";
     public static final String PROMPT = "prompt";
     public static final String VOLATILITY = "volatility";
     public static final String OBV = "OBV";
