@@ -67,6 +67,9 @@ const Portfolio = () => {
 
         const filtered = tableData.filter((row) => {
             return Object.keys(filters).every((key) => {
+                if (key === constants.RECOMMENDATION_CONFIDENCE_KEY) {
+                    return isNaN(filters[key]) || row[key] >= filters[key];
+                }
                 if (constants.PORTFOLIO_META.DATATYPE[key] === constants.NUMBER) {
                     return isNaN(filters[key]) || row[key] === filters[key];
                 } else if (constants.PORTFOLIO_META.DATATYPE[key] === constants.STRING) {
@@ -117,6 +120,7 @@ const Portfolio = () => {
                     [constants.LAST_MOVE_DATE_KEY]: item.lastMoveDate ? new Date(item.lastMoveDate) : null,
                     [constants.RECOMMENDATION_DATE_KEY]: newest ? new Date(newest.date) : null,
                     [constants.RECOMMENDATION_ACTION_KEY]: newest?.action,
+                    [constants.RECOMMENDATION_CONFIDENCE_KEY]: newest?.confidence,
                     [constants.RECOMMENDATION_MODEL_KEY]: newest?.model,
                     [constants.PRICE_KEY]: item.price,
                     [constants.OPEN_KEY]: item.open,
@@ -130,7 +134,6 @@ const Portfolio = () => {
                     [constants.PNL_KEY]: item.pnL,
                     [constants.PERCENT_PNL_KEY]: item.percentPnl,
                     [constants.NET_RELATIVE_POSITION_KEY]: item.netRelativePosition,
-                    [constants.RECOMMENDATION_CONFIDENCE_KEY]: newest?.confidence,
                     [constants.RECOMMENDATION_RATIONALE_KEY]: newest?.rationale,
                 };
             });
@@ -223,8 +226,8 @@ const Portfolio = () => {
                     {
                         [constants.RECOMMENDATION_DATE_KEY]: new Date(item.date),
                         [constants.RECOMMENDATION_ACTION_KEY]: item.action,
-                        [constants.RECOMMENDATION_MODEL_KEY]: item.model,
                         [constants.RECOMMENDATION_CONFIDENCE_KEY]: item.confidence,
+                        [constants.RECOMMENDATION_MODEL_KEY]: item.model,
                         [constants.RECOMMENDATION_RATIONALE_KEY]: item.rationale,
                     }
                 ])

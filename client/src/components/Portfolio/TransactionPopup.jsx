@@ -35,13 +35,18 @@ const TransactionPopup = ({ id: symbolId, name: symbolName, onPopupClose, onTran
                 onTransactionSuccessful();
             }, TIMEOUT_DELAY);
         } catch (error) {
-            if (error.response?.status === 422) {
+            if (error.response?.status === 401) {
+                setMessage("Unauthorized");
+                setTimeout(() => {
+                    setMessage(null);
+                }, TIMEOUT_DELAY);
+            } else if (error.response?.status === 422) {
                 setMessage("Nothing to sell");
                 setTimeout(() => {
                     setMessage(null);
                 }, TIMEOUT_DELAY);
             } else {
-                handleError("Error registering transaction", error);
+                handleError("Error fetching data", error);
             }
         } finally {
             setIsLoading(false);
