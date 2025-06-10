@@ -48,13 +48,13 @@ export const SYMBOL_NAME_KEY = "symbolName";
 export const LAST_MOVE_DATE_KEY = "lastMoveDate";
 export const RECOMMENDATION_DATE_KEY = "recommendationDate";
 export const RECOMMENDATION_ACTION_KEY = "recommendationAction";
+export const RECOMMENDATION_CONFIDENCE_KEY = "recommendationConfidence";
 export const RECOMMENDATION_MODEL_KEY = "recommendationModel";
 export const AVERAGE_COST_KEY = "averageCost";
 export const POSITION_VALUE_KEY = "positionValue";
 export const PNL_KEY = "pnl";
 export const PERCENT_PNL_KEY = "percentPnl";
 export const NET_RELATIVE_POSITION_KEY = "netRelPos";
-export const RECOMMENDATION_CONFIDENCE_KEY = "recommendationConfidence";
 export const RECOMMENDATION_RATIONALE_KEY = "recommendationRationale";
 export const PRICE_KEY = "price"
 export const OPEN_KEY = "open"
@@ -112,6 +112,7 @@ export const PORTFOLIO_META = {
         LAST_MOVE_DATE_KEY,
         RECOMMENDATION_DATE_KEY,
         RECOMMENDATION_ACTION_KEY,
+        RECOMMENDATION_CONFIDENCE_KEY,
         RECOMMENDATION_MODEL_KEY,
         PRICE_KEY,
         OPEN_KEY,
@@ -125,7 +126,6 @@ export const PORTFOLIO_META = {
         PERCENT_DAY_CHANGE_KEY,
         PERCENT_PNL_KEY,
         NET_RELATIVE_POSITION_KEY,
-        RECOMMENDATION_CONFIDENCE_KEY,
         RECOMMENDATION_RATIONALE_KEY,
         EDIT_KEY
     ],
@@ -136,6 +136,7 @@ export const PORTFOLIO_META = {
         [LAST_MOVE_DATE_KEY]: DATE,
         [RECOMMENDATION_DATE_KEY]: DATE,
         [RECOMMENDATION_ACTION_KEY]: STRING,
+        [RECOMMENDATION_CONFIDENCE_KEY]: NUMBER,
         [RECOMMENDATION_MODEL_KEY]: STRING,
         [PRICE_KEY]: NUMBER,
         [OPEN_KEY]: NUMBER,
@@ -149,7 +150,6 @@ export const PORTFOLIO_META = {
         [PNL_KEY]: NUMBER,
         [PERCENT_PNL_KEY]: NUMBER,
         [NET_RELATIVE_POSITION_KEY]: NUMBER,
-        [RECOMMENDATION_CONFIDENCE_KEY]: NUMBER,
         [RECOMMENDATION_RATIONALE_KEY]: STRING,
         [EDIT_KEY]: ICON
     },
@@ -160,6 +160,7 @@ export const PORTFOLIO_META = {
         [LAST_MOVE_DATE_KEY]: true,
         [RECOMMENDATION_DATE_KEY]: true,
         [RECOMMENDATION_ACTION_KEY]: true,
+        [RECOMMENDATION_CONFIDENCE_KEY]: true,
         [RECOMMENDATION_MODEL_KEY]: true,
         [PRICE_KEY]: true,
         [OPEN_KEY]: true,
@@ -173,7 +174,6 @@ export const PORTFOLIO_META = {
         [PNL_KEY]: true,
         [PERCENT_PNL_KEY]: true,
         [NET_RELATIVE_POSITION_KEY]: true,
-        [RECOMMENDATION_CONFIDENCE_KEY]: true,
         [RECOMMENDATION_RATIONALE_KEY]: false,
         [EDIT_KEY]: true
     },
@@ -184,6 +184,7 @@ export const PORTFOLIO_META = {
         [LAST_MOVE_DATE_KEY]: "Last Move Date",
         [RECOMMENDATION_DATE_KEY]: "Rec. Date",
         [RECOMMENDATION_ACTION_KEY]: "Rec. Action",
+        [RECOMMENDATION_CONFIDENCE_KEY]: "Rec. Confidence",
         [RECOMMENDATION_MODEL_KEY]: "Rec. Model",
         [PRICE_KEY]: "Price",
         [OPEN_KEY]: "Open",
@@ -197,7 +198,6 @@ export const PORTFOLIO_META = {
         [PNL_KEY]: "PNL",
         [PERCENT_PNL_KEY]: "%PNL",
         [NET_RELATIVE_POSITION_KEY]: "gross  %PNL",
-        [RECOMMENDATION_CONFIDENCE_KEY]: "Rec. Confidence",
         [RECOMMENDATION_RATIONALE_KEY]: "",
         [EDIT_KEY]: ""
     },
@@ -208,6 +208,7 @@ export const PORTFOLIO_META = {
         [LAST_MOVE_DATE_KEY]: true,
         [RECOMMENDATION_DATE_KEY]: true,
         [RECOMMENDATION_ACTION_KEY]: true,
+        [RECOMMENDATION_CONFIDENCE_KEY]: true,
         [RECOMMENDATION_MODEL_KEY]: true,
         [PRICE_KEY]: true,
         [OPEN_KEY]: true,
@@ -221,7 +222,6 @@ export const PORTFOLIO_META = {
         [PNL_KEY]: true,
         [PERCENT_PNL_KEY]: true,
         [NET_RELATIVE_POSITION_KEY]: true,
-        [RECOMMENDATION_CONFIDENCE_KEY]: true,
         [RECOMMENDATION_RATIONALE_KEY]: false,
         [EDIT_KEY]: false
     },
@@ -232,6 +232,7 @@ export const PORTFOLIO_META = {
         [LAST_MOVE_DATE_KEY]: true,
         [RECOMMENDATION_DATE_KEY]: true,
         [RECOMMENDATION_ACTION_KEY]: true,
+        [RECOMMENDATION_CONFIDENCE_KEY]: true,
         [RECOMMENDATION_MODEL_KEY]: true,
         [PRICE_KEY]: false,
         [OPEN_KEY]: false,
@@ -245,7 +246,6 @@ export const PORTFOLIO_META = {
         [PNL_KEY]: false,
         [PERCENT_PNL_KEY]: false,
         [NET_RELATIVE_POSITION_KEY]: false,
-        [RECOMMENDATION_CONFIDENCE_KEY]: false,
         [RECOMMENDATION_RATIONALE_KEY]: false,
         [EDIT_KEY]: false
     }
