@@ -2,6 +2,11 @@
     width: 100%;
 }
 
+.app.portfolio.custom-table .table-responsive {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
 .app.portfolio .form-check {
     text-wrap: nowrap;
     margin: 0 2%;

@@ -69,8 +69,9 @@ const Portfolio = () => {
             return Object.keys(filters).every((key) => {
                 if (key === constants.RECOMMENDATION_CONFIDENCE_KEY) {
                     return isNaN(filters[key]) || row[key] >= filters[key];
-                }
-                if (constants.PORTFOLIO_META.DATATYPE[key] === constants.NUMBER) {
+                } else if (key === constants.RECOMMENDATION_MODEL_KEY) {
+                    return filters[key] === "" || row[key]?.toString().toLowerCase() === (filters[key].toLowerCase())
+                } else if (constants.PORTFOLIO_META.DATATYPE[key] === constants.NUMBER) {
                     return isNaN(filters[key]) || row[key] === filters[key];
                 } else if (constants.PORTFOLIO_META.DATATYPE[key] === constants.STRING) {
                     return row[key]?.toString().toLowerCase().includes(filters[key].toLowerCase());
