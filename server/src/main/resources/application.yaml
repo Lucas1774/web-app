@@ -29,7 +29,7 @@ ai:
       max-tokens: 8000
       requests-per-minute: 5
       chunk-size: 5
-      fix-me: true
+      fix-me: false
     - name: gpt-4o
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
@@ -38,7 +38,7 @@ ai:
       max-tokens: 8000
       requests-per-minute: 5
       chunk-size: 5
-      fix-me: true
+      fix-me: false
     - name: gpt-4.1-mini
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
@@ -69,21 +69,21 @@ ai:
     - name: deepseek-v3
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: deepseek/DeepSeek-V3-0324
+      model: deepseek/deepseek-V3-0324
       temperature: 0
       max-tokens: 4000
-      requests-per-minute: 5
+      requests-per-minute: 1
       chunk-size: 2
-      fix-me: true
+      fix-me: false
     - name: grok-3
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
       model: xai/grok-3
       temperature: 0
       max-tokens: 4000
-      requests-per-minute: 5
+      requests-per-minute: 1
       chunk-size: 2
-      fix-me: true
+      fix-me: false
     - name: llama-3.3-70b
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
@@ -129,6 +129,24 @@ ai:
       requests-per-minute: 5
       chunk-size: 5
       fix-me: false
+    - name: a21-jamba
+      api-key: ${GITHUB_KEY}
+      url: ${GITHUB_URL}
+      model: ai21-labs/ai21-jamba-1.5-large
+      temperature: 0
+      max-tokens: 4096
+      requests-per-minute: 5
+      chunk-size: 2
+      fix-me: false
+    - name: command-r-plus-2024
+      api-key: ${GITHUB_KEY}
+      url: ${GITHUB_URL}
+      model: cohere/cohere-command-r-plus-08-2024
+      temperature: 0
+      max-tokens: 8000
+      requests-per-minute: 5
+      chunk-size: 5
+      fix-me: false
     - name: mistral-nemo
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
@@ -160,6 +178,87 @@ ai:
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
       model: cohere/cohere-command-a
+      temperature: 0
+      max-tokens: 8000
+      requests-per-minute: 5
+      chunk-size: 5
+      fix-me: false
+    - name: deepseek-r1
+      api-key: ${GITHUB_KEY}
+      url: ${GITHUB_URL}
+      model: deepseek/deepseek-r1
+      temperature: 0
+      max-tokens: 8000
+      requests-per-minute: 1
+      chunk-size: 5
+      fix-me: false
+    - name: deepseek-r1-0528
+      api-key: ${GITHUB_KEY}
+      url: ${GITHUB_URL}
+      model: deepseek/deepseek-r1-0528
+      temperature: 0
+      max-tokens: 8000
+      requests-per-minute: 1
+      chunk-size: 5
+      fix-me: false
+    - name: command-r-plus
+      api-key: ${GITHUB_KEY}
+      url: ${GITHUB_URL}
+      model: cohere/cohere-command-r-plus
+      temperature: 0
+      max-tokens: 8000
+      requests-per-minute: 5
+      chunk-size: 5
+      fix-me: false
+    - name: o4-mini
+      api-key: ${GITHUB_KEY}
+      url: ${GITHUB_URL}
+      model: openai/o4-mini
+      temperature: 0
+      max-tokens: 8000
+      requests-per-minute: 5
+      chunk-size: 5
+      fix-me: false
+    - name: o3
+      api-key: ${GITHUB_KEY}
+      url: ${GITHUB_URL}
+      model: openai/o3
+      temperature: 0
+      max-tokens: 8000
+      requests-per-minute: 5
+      chunk-size: 5
+      fix-me: false
+    - name: o3-mini
+      api-key: ${GITHUB_KEY}
+      url: ${GITHUB_URL}
+      model: openai/o3-mini
+      temperature: 0
+      max-tokens: 8000
+      requests-per-minute: 5
+      chunk-size: 5
+      fix-me: false
+    - name: o1
+      api-key: ${GITHUB_KEY}
+      url: ${GITHUB_URL}
+      model: openai/o1
+      temperature: 0
+      max-tokens: 8000
+      requests-per-minute: 5
+      chunk-size: 5
+      fix-me: false
+    - name: o1-preview
+      api-key: ${GITHUB_KEY}
+      url: ${GITHUB_URL}
+      model: openai/o1-preview
+      temperature: 0
+      max-tokens: 8000
+      requests-per-minute: 5
+      chunk-size: 5
+      fix-me: false
+    - name: o1-mini
+      api-key: ${GITHUB_KEY}
+      url: ${GITHUB_URL}
+      model: openai/o1-mini
       temperature: 0
       max-tokens: 8000
       requests-per-minute: 5
