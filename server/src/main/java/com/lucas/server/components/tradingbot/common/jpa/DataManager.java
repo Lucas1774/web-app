@@ -42,7 +42,6 @@ public class DataManager {
     private final RecommendationsJpaService recommendationsService;
     private final FinnhubNewsClient newsClient;
     private final PortfolioManager portfolioManager;
-    private final Map<String, AIClient> clients;
     private final RecommendationChatCompletionClient recommendationClient;
     private final Map<MarketDataType, TypeToMarketDataFunction> typeToRunner;
     private final Map<PortfolioType, IPortfolioJpaService<?>> portfolioTypeToService;
@@ -60,7 +59,7 @@ public class DataManager {
     public DataManager(SymbolJpaService symbolService, MarketDataJpaService marketDataService, NewsJpaService newsService,
                        RecommendationsJpaService recommendationsService, RecommendationChatCompletionClient recommendationClient,
                        PortfolioJpaService portfolioService, PortfolioMockJpaService portfolioMockService,
-                       FinnhubNewsClient newsClient, PortfolioManager portfolioManager, Map<String, AIClient> clients,
+                       FinnhubNewsClient newsClient, PortfolioManager portfolioManager,
                        TwelveDataMarketDataClient twelveDataMarketDataClient, FinnhubMarketDataClient finnhubMarketDataClient) {
         this.symbolService = symbolService;
         this.marketDataService = marketDataService;
@@ -69,7 +68,6 @@ public class DataManager {
         this.recommendationClient = recommendationClient;
         this.newsClient = newsClient;
         this.portfolioManager = portfolioManager;
-        this.clients = clients;
         typeToRunner = new EnumMap<>(Map.of(
                 MarketDataType.LAST, symbols -> retrieveMarketDataWithBackupStrategy(symbols, twelveDataMarketDataClient, finnhubMarketDataClient),
                 MarketDataType.HISTORIC, symbols -> twelveDataMarketDataClient.retrieveMarketData(symbols, MarketDataType.HISTORIC),
@@ -97,14 +95,14 @@ public class DataManager {
 
     @Transactional
     public List<Recommendation> getRecommendationsById(List<Long> symbolIds, PortfolioType type,
-                                                       boolean overwrite, List<Clients> clientNames) {
+                                                       boolean overwrite, boolean bailout, List<AIClient> clients) {
         List<Symbol> symbols = symbolService.findAllById(symbolIds);
-        return getRecommendationsInParallel(symbols, type, overwrite, clientNames, false);
+        return getRecommendationsInParallel(symbols, type, overwrite, clients, false, bailout);
     }
 
     @Transactional
     public List<Recommendation> getRandomRecommendations(PortfolioType type, int count,
-                                                         boolean overwrite, boolean onlyIfHasNews) {
+                                                         boolean overwrite, boolean onlyIfHasNews, boolean bailout, List<AIClient> clients) {
         Set<Long> active = portfolioTypeToService.get(type)
                 .findActivePortfolio().stream()
                 .map(p -> p.getSymbol().getId())
@@ -128,13 +126,13 @@ public class DataManager {
         }
 
         return getRecommendationsInParallel(symbolService.findAllById(finalList), type, overwrite,
-                RANDOM_RECOMMENDATION_CLIENTS, onlyIfHasNews);
+                clients, onlyIfHasNews, bailout);
     }
 
     private List<Recommendation> getRecommendationsInParallel(List<Symbol> symbols, PortfolioType type, boolean overwrite,
-                                                              List<Clients> clientNames, boolean onlyIfHasNews) {
+                                                              List<AIClient> clients, boolean onlyIfHasNews, boolean bailout) {
         List<Recommendation> res = new ArrayList<>();
-        List<Clients> mutableClients = new ArrayList<>(clientNames);
+        List<AIClient> mutableClients = new ArrayList<>(clients);
         IPortfolioJpaService<PortfolioBase> portfolioService = getService(type);
         Supplier<PortfolioBase> portfolioSupplier = portfolioTypeToNewPortfolio.get(type);
 
@@ -159,8 +157,10 @@ public class DataManager {
                 .toList();
 
         logger.info(RETRIEVING_DATA_INFO, RECOMMENDATION, remainingPayload.size());
-        try (ExecutorService executor = Executors.newFixedThreadPool(clientNames.size() * 5)) {
-            while (!remainingPayload.isEmpty()) {
+        try (ExecutorService executor = Executors.newFixedThreadPool(clients.size() * 5)) {
+            int retries = 0;
+            while (!remainingPayload.isEmpty() && (!bailout || retries < RECOMMENDATION_W_BAILOUT_MAX_RETRIES)) {
+                retries++;
                 List<Recommendation> fetched = doGetRecommendationsInParallel(executor, remainingPayload,
                         overwrite, mutableClients);
                 res.addAll(fetched);
@@ -177,25 +177,25 @@ public class DataManager {
     }
 
     private List<Recommendation> doGetRecommendationsInParallel(ExecutorService executor, List<SymbolPayload> payload,
-                                                                boolean overwrite, List<Clients> clientNames) {
+                                                                boolean overwrite, List<AIClient> clients) {
         List<BatchJob> jobs = new ArrayList<>();
         List<SymbolPayload> buffer = new ArrayList<>();
 
         for (SymbolPayload load : payload) {
-            AIClient client = clients.get(clientNames.getFirst().toString());
+            AIClient client = clients.getFirst();
             buffer.add(load);
 
             if (buffer.size() == client.getChunkSize()) {
                 submitChunk(overwrite, client, buffer, jobs, executor);
                 buffer.clear();
-                Collections.rotate(clientNames, -1);
+                Collections.rotate(clients, -1);
             }
         }
 
         if (!buffer.isEmpty()) {
-            AIClient client = clients.get(clientNames.getFirst().toString());
+            AIClient client = clients.getFirst();
             submitChunk(overwrite, client, buffer, jobs, executor);
-            Collections.rotate(clientNames, -1);
+            Collections.rotate(clients, -1);
         }
 
         List<Recommendation> res = new ArrayList<>();

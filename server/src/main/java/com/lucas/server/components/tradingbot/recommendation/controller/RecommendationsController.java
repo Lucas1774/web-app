@@ -1,6 +1,7 @@
 package com.lucas.server.components.tradingbot.recommendation.controller;
 
 import com.lucas.server.common.controller.ControllerUtil;
+import com.lucas.server.components.tradingbot.common.AIClient;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;
 import com.lucas.server.components.tradingbot.recommendation.jpa.Recommendation;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 import static com.lucas.server.common.Constants.*;
 
@@ -18,33 +20,49 @@ public class RecommendationsController {
 
     private final ControllerUtil controllerUtil;
     private final DataManager jpaService;
+    private final Map<String, AIClient> clients;
 
-    public RecommendationsController(ControllerUtil controllerUtil, DataManager jpaService) {
+    public RecommendationsController(ControllerUtil controllerUtil, DataManager jpaService, Map<String, AIClient> clients) {
         this.controllerUtil = controllerUtil;
         this.jpaService = jpaService;
+        this.clients = clients;
     }
 
     @GetMapping("/{symbols}")
     public ResponseEntity<List<Recommendation>> generateRecommendations(HttpServletRequest request,
                                                                         @PathVariable List<Long> symbols,
-                                                                        @RequestParam boolean overwrite) {
+                                                                        @RequestParam boolean overwrite,
+                                                                        @RequestParam(required = false) List<String> models) {
         String username = controllerUtil.retrieveUsername(request.getCookies());
         if (DEFAULT_USERNAME.equals(username)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+        List<AIClient> selectedClients = null == models
+                ? filterClients(clients, RandomMode.NOT_RANDOM)
+                : models.stream().map(clients::get).toList();
         return ResponseEntity.ok(jpaService.getRecommendationsById(symbols, getPortfolioType(username),
-                overwrite, RECOMMENDATION_CLIENTS));
+                overwrite, null != models, selectedClients));
     }
 
     @GetMapping("/random/{count}")
     public ResponseEntity<List<Recommendation>> generateRandomRecommendations(HttpServletRequest request,
                                                                               @PathVariable int count,
-                                                                              @RequestParam boolean overwrite) {
+                                                                              @RequestParam boolean overwrite,
+                                                                              @RequestParam(required = false) List<String> models) {
         String username = controllerUtil.retrieveUsername(request.getCookies());
         if (DEFAULT_USERNAME.equals(username)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        return ResponseEntity.ok(jpaService.getRandomRecommendations(getPortfolioType(username), count, overwrite, false));
+        List<AIClient> selectedClients = null == models
+                ? filterClients(clients, RandomMode.RANDOM)
+                : models.stream().map(clients::get).toList();
+        return ResponseEntity.ok(jpaService.getRandomRecommendations(getPortfolioType(username), count,
+                overwrite, false, null != models, selectedClients));
+    }
+
+    @GetMapping("/models")
+    public ResponseEntity<List<String>> getModels() {
+        return ResponseEntity.ok(clients.keySet().stream().sorted(String::compareTo).toList());
     }
 
     @DeleteMapping("/purge")

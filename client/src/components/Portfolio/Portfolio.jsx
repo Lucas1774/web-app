@@ -6,6 +6,7 @@ import { get, post } from "../../api";
 import commerceIcon from "../../assets/images/commerce.png";
 import * as constants from "../../constants";
 import useDebounce from "../../hooks/useDebounce";
+import MultiSelectDdl from "../../MultiSelectDdl";
 import LoginForm from "../LoginForm";
 import Spinner from "../Spinner";
 import { handleError } from "../errorHandler";
@@ -17,6 +18,9 @@ const Portfolio = () => {
 
     const [tableData, setTableData] = useState(null);
     const [displayData, setDisplayData] = useState([]);
+    const [models, setModels] = useState([]);
+    const [selectedModels, setSelectedModels] = useState([]);
+    const [selectedRandomModels, setSelectedRandomModels] = useState([]);
     const [selectedIds, setSelectedIds] = useState(new Set());
     const [filterValue, setFilterValue] = useState({});
     const [message, setMessage] = useState(null);
@@ -30,6 +34,9 @@ const Portfolio = () => {
     const [count, setCount] = useState("");
 
     const inputsRef = useRef({});
+    const overwriteRef = useRef(null);
+    const overwriteRandomRef = useRef(null);
+    const amountRef = useRef(null);
     const filterDebouncedValue = useDebounce(filterValue, constants.DEBOUNCE_DELAY);
 
     useEffect(() => {
@@ -43,11 +50,13 @@ const Portfolio = () => {
     }, [filterDebouncedValue]);
 
     useEffect(() => {
-        const checkAuth = async () => {
+        const init = async () => {
             setIsLoading(true);
             try {
                 await get("/authentication/check-auth");
                 await getData();
+                const res = await get("/recommendations/models");
+                setModels(res.data);
             } catch (error) {
                 if (error.response?.status === 403) {
                     setIsLoginFormVisible(true);
@@ -59,7 +68,7 @@ const Portfolio = () => {
             }
         };
 
-        checkAuth();
+        init();
     }, []);
 
     useEffect(() => {
@@ -203,7 +212,7 @@ const Portfolio = () => {
         }
     };
 
-    const getRecommendations = async (overwrite, count = undefined) => {
+    const getRecommendations = async (overwrite, selectedModels, count = undefined) => {
         let path;
         if (count !== undefined) {
             path = `/recommendations/random/${count}`
@@ -218,9 +227,10 @@ const Portfolio = () => {
             }
             path = `/recommendations/${ids}`;
         }
+        let modelsParam = selectedModels.length > 0 ? `&models=${selectedModels.join(',')}` : '';
         setIsLoading(true);
         try {
-            const resp = await get(`${path}?overwrite=${overwrite}`);
+            const resp = await get(`${path}?overwrite=${overwrite}${modelsParam}`);
             const data = new Map(
                 resp.data.map(item => [
                     item.symbol.id,
@@ -452,19 +462,21 @@ const Portfolio = () => {
                     <>
                         <Form onSubmit={(e) => {
                             e.preventDefault();
-                            getRecommendations(e.target[4].checked);
+                            getRecommendations(overwriteRef.current.checked, selectedModels);
                         }}>
                             <Button className="twenty-five-percent" type="submit" variant="success">Recommend</Button>
                             <Button className="twenty-five-percent" onClick={updateNews}>Fetch latest news</Button>
                             <Button className="twenty-five-percent" onClick={() => { getDataByRow(false); }}>Last close</Button>
                             <Button className="twenty-five-percent" onClick={() => { getDataByRow(true); }}>Real time</Button>
                             <div className="flex-div">
-                                <Form.Check type="checkbox" label="Overwrite" />
+                                <Form.Check ref={overwriteRef} type="checkbox" label="Overwrite" />
+                                <MultiSelectDdl title={"Models"} options={models} selectedOptions={selectedModels} setSelectedOptions={setSelectedModels} />
+                                <Form.Control style={{ visibility: "hidden" }} /> {/* Big hack to uniform style */}
                             </div>
                         </Form>
                         <Form onSubmit={(e) => {
                             e.preventDefault();
-                            const amount = e.target[4].value;
+                            const amount = amountRef.current.value;
                             if (!amount) {
                                 setMessage("Specify an amount");
                                 setTimeout(() => {
@@ -472,7 +484,7 @@ const Portfolio = () => {
                                 }, constants.TIMEOUT_DELAY);
                                 return;
                             }
-                            getRecommendations(e.target[3].checked, amount)
+                            getRecommendations(overwriteRandomRef.current.checked, selectedRandomModels, amount)
                         }}>
                             <Button className="thirty-percent" type="submit" variant="success">Random recommendations</Button>
                             <Button className="thirty-percent" onClick={() => { getData(!isShowAllData); }}>{
@@ -492,8 +504,9 @@ const Portfolio = () => {
 
                             }}>Clear filters</Button>
                             <div className="flex-div">
-                                <Form.Check type="checkbox" label="Overwrite" />
-                                <Form.Control type="number" placeholder="Amount" min="1" value={count} onChange={(e) => setCount(Number(e.target.value))} />
+                                <Form.Check ref={overwriteRandomRef} type="checkbox" label="Overwrite" />
+                                <MultiSelectDdl title={"Models"} options={models} selectedOptions={selectedRandomModels} setSelectedOptions={setSelectedRandomModels} />
+                                <Form.Control ref={amountRef} type="number" placeholder="Amount" min="1" value={count} onChange={(e) => setCount(Number(e.target.value))} />
                             </div>
                         </Form>
                         <Table striped bordered hover responsive>

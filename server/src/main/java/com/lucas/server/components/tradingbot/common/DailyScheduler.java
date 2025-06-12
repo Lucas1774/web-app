@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 import static com.lucas.server.common.Constants.*;
 
@@ -20,10 +21,12 @@ import static com.lucas.server.common.Constants.*;
 public class DailyScheduler {
 
     private final DataManager dataManager;
+    private final Map<String, AIClient> clients;
     private final Logger logger = LoggerFactory.getLogger(DailyScheduler.class);
 
-    public DailyScheduler(DataManager dataManager) {
+    public DailyScheduler(DataManager dataManager, Map<String, AIClient> clients) {
         this.dataManager = dataManager;
+        this.clients = clients;
     }
 
     @Scheduled(cron = "${scheduler.market-data-cron}", zone = "UTC")
@@ -63,7 +66,7 @@ public class DailyScheduler {
 
     private void getRandomRecommendations() {
         List<Recommendation> updatedRecommendations = dataManager.getRandomRecommendations(PortfolioType.REAL,
-                SCHEDULED_RECOMMENDATIONS_COUNT, false, true);
+                SCHEDULED_RECOMMENDATIONS_COUNT, false, true, false, filterClients(clients, RandomMode.RANDOM));
         logger.info(SCHEDULED_TASK_SUCCESS_INFO, "generated recommendations", updatedRecommendations.stream()
                 .map(Recommendation::getSymbol).toList());
     }
