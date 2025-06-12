@@ -36,6 +36,7 @@ services:
       DB_USERNAME: ${DB_USERNAME}
       
       GITHUB_KEY: ${GITHUB_KEY}
+      AI_FOUNDRY_KEY: ${AI_FOUNDRY_KEY}
       GITHUB_URL: ${GITHUB_URL}
 
       FINNHUB_KEY: ${FINNHUB_KEY}

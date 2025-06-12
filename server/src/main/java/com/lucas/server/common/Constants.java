@@ -93,6 +93,7 @@ public class Constants {
 
     protected enum Clients {
         GPT_4_1("gpt-4.1"),
+        GPT_4_1_2("gpt-4.1-2"),
         GPT_4_1_MINI("gpt-4.1-mini"),
         GPT_4_1_NANO("gpt-4.1-nano"),
         GPT_4O("gpt-4o"),
@@ -132,8 +133,8 @@ public class Constants {
         }
     }
 
-    private static final List<Clients> RECOMMENDATION_CLIENTS = List.of(GPT_4_1, GPT_4O, GROK_3, DEEPSEEK_V3, LLAMA_3_3_70B, LLAMA_3_1_405B);
-    private static final List<Clients> RANDOM_RECOMMENDATION_CLIENTS = List.of(GPT_4_1, GPT_4O, GROK_3, DEEPSEEK_V3, LLAMA_3_3_70B, LLAMA_3_1_405B);
+    private static final List<Clients> RECOMMENDATION_CLIENTS = List.of(GPT_4_1, GPT_4_1_2, GPT_4O, GROK_3, DEEPSEEK_V3, LLAMA_3_3_70B, LLAMA_3_1_405B);
+    private static final List<Clients> RANDOM_RECOMMENDATION_CLIENTS = List.of(GPT_4_1, GPT_4_1_2, GPT_4O, GROK_3, DEEPSEEK_V3, LLAMA_3_3_70B, LLAMA_3_1_405B);
     private static final Map<RandomMode, Set<String>> modeToClientNames = new EnumMap<>(Map.of(
             RandomMode.RANDOM, RANDOM_RECOMMENDATION_CLIENTS.stream().map(Clients::toString).collect(Collectors.toSet()),
             RandomMode.NOT_RANDOM, RECOMMENDATION_CLIENTS.stream().map(Clients::toString).collect(Collectors.toSet())

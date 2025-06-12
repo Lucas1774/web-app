@@ -10,7 +10,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 @Getter
@@ -40,7 +42,9 @@ public class PromptRepository {
             fewShot = objectMapper.readValue(fewShotReader, ObjectNode.class);
             fixMeMessage = objectMapper.readValue(fixMeReader, ObjectNode.class);
             context.put("content", context.get("content").asText().replace("{date}",
-                    LocalDate.now().getDayOfWeek() + ", " + LocalDate.now()));
+                    ZonedDateTime.now(ZoneId.of("America/New_York"))
+                            .format(DateTimeFormatter.ofPattern("EEEE, yyyy-MM-dd HH:mm:ss z"))));
+
         } catch (IOException e) {
             throw new ConfigurationException(e);
         }

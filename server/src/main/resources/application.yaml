@@ -30,6 +30,15 @@ ai:
       requests-per-minute: 5
       chunk-size: 5
       fix-me: false
+    - name: gpt-4.1-2
+      api-key: ${AI_FOUNDRY_KEY}
+      url: ${GITHUB_URL}
+      model: openai/gpt-4.1
+      temperature: 0
+      max-tokens: 8000
+      requests-per-minute: 5
+      chunk-size: 5
+      fix-me: false
     - name: gpt-4o
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
