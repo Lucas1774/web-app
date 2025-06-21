@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+import static com.lucas.server.common.Constants.DEFAULT_USERNAME;
+
 @RestController
 @RequestMapping("/shopping")
 public class ShoppingController {
@@ -55,7 +57,8 @@ public class ShoppingController {
 
     @PostMapping("/update-product")
     public ResponseEntity<Product> updateProduct(HttpServletRequest request, @RequestBody Product product) {
-        if (!controllerUtil.isAdmin(controllerUtil.retrieveUsername(request.getCookies()))) {
+        String username = controllerUtil.retrieveUsername(request.getCookies());
+        if (DEFAULT_USERNAME.equals(username)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         return ResponseEntity.ok(productService.updateProductCreateCategoryIfNecessary(product));
@@ -78,7 +81,8 @@ public class ShoppingController {
 
     @PostMapping("update-sortables")
     public <T extends Sortable> ResponseEntity<List<T>> updateSortable(HttpServletRequest request, @RequestBody List<T> elements) {
-        if (!controllerUtil.isAdmin(controllerUtil.retrieveUsername(request.getCookies()))) {
+        String username = controllerUtil.retrieveUsername(request.getCookies());
+        if (DEFAULT_USERNAME.equals(username)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         if (elements.isEmpty()) {

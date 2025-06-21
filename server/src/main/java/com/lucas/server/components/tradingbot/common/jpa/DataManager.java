@@ -103,19 +103,14 @@ public class DataManager {
     @Transactional
     public List<Recommendation> getRandomRecommendations(PortfolioType type, int count,
                                                          boolean overwrite, boolean onlyIfHasNews, boolean bailout, List<AIClient> clients) {
-        Set<Long> active = portfolioTypeToService.get(type)
-                .findActivePortfolio().stream()
-                .map(p -> p.getSymbol().getId())
-                .collect(Collectors.toSet());
         Set<Long> already = recommendationsService.findByDateBetween(LocalDate.now(), LocalDate.now().plusDays(1)).stream()
                 .map(r -> r.getSymbol().getId())
                 .collect(Collectors.toSet());
 
         Set<Long> candidates = symbolService.findAll().stream()
-                .filter(s -> SP500_SYMBOLS.contains(s.getName()) && !marketDataService.findBySymbolId(s.getId()).isEmpty())
+                .filter(s -> SP500_SYMBOLS.contains(s.getName()))
                 .map(Symbol::getId)
                 .collect(Collectors.toSet());
-        candidates.removeAll(active);
         candidates.removeAll(already);
 
         List<Long> finalList = new ArrayList<>();

@@ -35,7 +35,7 @@ public class RecommendationChatCompletionResponseMapper implements Mapper<JsonNo
                     .setDate(LocalDate.now())
                     .setAction(json.get("action").asText())
                     .setConfidence(new BigDecimal(json.get("confidence").asText()))
-                    .setRationale(StringUtils.left(json.get("rationale").asText(), 512));
+                    .setRationale(StringUtils.left(json.get("rationale").asText(), 1024));
         } catch (Exception e) {
             throw new JsonProcessingException(MessageFormat.format(JSON_MAPPING_ERROR, "recommendation"), e);
         }

@@ -23,6 +23,9 @@ import org.springframework.context.annotation.Import;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -74,6 +77,10 @@ class RecommendationChatCompletionClientTest {
 
         // given: insert 15 news items. Needs to be greater than the news per symbol and day
         List<News> articles = new ArrayList<>();
+        LocalDateTime todayDateTime = LocalDateTime.now()
+                .atZone(ZoneId.systemDefault())
+                .withZoneSameInstant(ZoneOffset.UTC)
+                .toLocalDateTime();
         for (int i = 1; i <= 15; i++) {
             News news = new News()
                     .addSymbol(symbol)
@@ -81,7 +88,7 @@ class RecommendationChatCompletionClientTest {
                     .setUrl("https://example.com/news/" + i)
                     .setHeadline("Headline " + i)
                     .setSummary("Summary " + i)
-                    .setDate(today.minusDays(i))
+                    .setDate(todayDateTime.minusDays(i - 1))
                     .setSentiment(i % 3 == 0 ? "positive" : i % 2 == 0 ? "neutral" : "negative")
                     .setSentimentConfidence(BigDecimal.valueOf((i * 6) % 100));
             articles.add(news);

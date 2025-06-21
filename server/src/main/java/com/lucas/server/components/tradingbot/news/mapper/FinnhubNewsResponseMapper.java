@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.text.MessageFormat;
 import java.time.Instant;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,10 +25,10 @@ public class FinnhubNewsResponseMapper implements Mapper<JsonNode, News> {
     public News map(JsonNode json) throws JsonProcessingException {
         try {
             long externalId = json.get("id").asLong();
-            LocalDate date = Instant
+            LocalDateTime date = Instant
                     .ofEpochSecond(json.get("datetime").asLong())
                     .atZone(ZoneOffset.UTC)
-                    .toLocalDate();
+                    .toLocalDateTime();
 
             return new News()
                     .setExternalId(externalId)

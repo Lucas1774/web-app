@@ -38,7 +38,7 @@
 |[[Akamai Technologies]]|| Information Technology || Internet Services & Infrastructure ||[[Cambridge, Massachusetts]]  || 2007-07-12 || 0001086222 || 1998
 |-
 |{{NyseSymbol|ALB}}
-|[[Albemarle Corporation]]|| Materials || Specialty Chemicals || [[Charlotte, North Carolina]] || 2016-07-01 || 0000915913 || 1994 
+|[[Albemarle Corporation]]|| Materials || Specialty Chemicals || [[Charlotte, North Carolina]] || 2016-07-01 || 0000915913 || 1994
 |-
 |{{NyseSymbol|ARE}}
 |[[Alexandria Real Estate Equities]]|| Real Estate || Office REITs || [[Pasadena, California]] || 2017-03-20 || 0001035443 || 1994
@@ -362,6 +362,9 @@
 |{{NasdaqSymbol|CTSH}}
 |[[Cognizant]]|| Information Technology || IT Consulting & Other Services || [[Teaneck, New Jersey]] || 2006-11-17 || 0001058290 || 1994
 |-
+|{{NasdaqSymbol|COIN}}
+|[[Coinbase]]|| Financials || Financial Exchanges & Data || [[New York City]], New York || 2025-05-19 || 0001679788 || 2012
+|-
 |{{NyseSymbol|CL}}
 |[[Colgate-Palmolive]]|| Consumer Staples || Household Products || [[New York City]], New York || 1957-03-04 || 0000021665 || 1806
 |-
@@ -458,10 +461,6 @@
 |-
 |{{NyseSymbol|DLR}}
 |[[Digital Realty]]|| Real Estate || Data Center REITs || [[Austin, Texas]] || 2016-05-18 || 0001297996 || 2004
-|-
-|{{NyseSymbol|DFS}}
-|[[Discover Financial]]|| Financials || Consumer Finance || [[Riverwoods, Illinois]] || 2007-07-02 || 0001393612
-| 1985
 |-
 |{{NyseSymbol|DG}}
 |[[Dollar General]]|| Consumer Staples || Consumer Staples Merchandise Retail || [[Goodlettsville, Tennessee]] || 2012-12-03 || 0000029534 || 1939
@@ -850,7 +849,7 @@
 |{{NyseSymbol|KEYS}}
 |[[Keysight Technologies]]||    Information Technology ||    Electronic Equipment & Instruments    || [[Santa Rosa, California]] || 2018-11-06 || 0001601046 || 2014 (1939)
 |-
-|{{NyseSymbol|KMB}}
+|{{NasdaqSymbol|KMB}}
 |[[Kimberly-Clark]]|| Consumer Staples || Household Products || [[Irving, Texas]] || 1957-03-04 || 0000055785 || 1872
 |-
 |{{NyseSymbol|KIM}}

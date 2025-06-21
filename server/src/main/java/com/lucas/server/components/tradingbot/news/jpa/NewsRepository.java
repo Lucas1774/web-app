@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -14,8 +15,8 @@ import java.util.Optional;
 public interface NewsRepository extends JpaRepository<News, Long> {
 
     Slice<News> findBySymbols_IdAndDateBetweenAndSentimentNotOrSymbols_IdAndDateBetweenAndSentimentIsNull(
-            Long symbolId1, LocalDate startDate1, LocalDate endDate1, String sentiment,
-            Long symbolId2, LocalDate startDate2, LocalDate endDate2, Pageable pageable
+            Long symbolId1, LocalDateTime startDate1, LocalDateTime endDate1, String sentiment,
+            Long symbolId2, LocalDateTime startDate2, LocalDateTime endDate2, Pageable pageable
     );
 
     Optional<News> findByExternalId(Long externalId);

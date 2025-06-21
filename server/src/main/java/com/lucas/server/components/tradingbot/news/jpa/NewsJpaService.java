@@ -13,9 +13,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.time.DayOfWeek;
-import java.time.LocalDate;
+import java.time.*;
 import java.util.List;
+
+import static com.lucas.server.common.Constants.*;
 
 @Service
 public class NewsJpaService implements JpaService<News> {
@@ -34,25 +35,38 @@ public class NewsJpaService implements JpaService<News> {
     }
 
     public List<News> getTopForSymbolId(Long symbolId, int limit) {
-        LocalDate today = LocalDate.now();
-        LocalDate lastMarketDay;
-        if (today.getDayOfWeek() == DayOfWeek.SUNDAY) {
-            lastMarketDay = today.minusDays(2);
-        } else if (today.getDayOfWeek() == DayOfWeek.MONDAY) {
-            lastMarketDay = today.minusDays(3);
-        } else {
-            lastMarketDay = today.minusDays(1);
-        }
+        ZonedDateTime easternTime = ZonedDateTime.now(NY_ZONE);
+
+        LocalDate lastDate = getLastDate(easternTime);
+        LocalTime close = !EARLY_CLOSE_DATES_2025.contains(lastDate) ? MARKET_CLOSE : EARLY_CLOSE;
+        LocalDateTime startUtc = ZonedDateTime.of(lastDate, close, NY_ZONE).withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime();
+        LocalDateTime endUtc = easternTime.withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime();
+
         Pageable pageRequest = PageRequest.of(
                 0, limit, Sort.by("date").descending()
-                        .and(Sort.by("sentimentConfidence").descending())
         );
 
         return this.repository.findBySymbols_IdAndDateBetweenAndSentimentNotOrSymbols_IdAndDateBetweenAndSentimentIsNull(
-                        symbolId, lastMarketDay, today, "neutral",
-                        symbolId, lastMarketDay, today, pageRequest
+                        symbolId, startUtc, endUtc, "neutral",
+                        symbolId, startUtc, endUtc, pageRequest
                 )
                 .getContent();
+    }
+
+    private static LocalDate getLastDate(ZonedDateTime easternTime) {
+        LocalDate lastDate = easternTime.toLocalDate();
+
+        if (easternTime.toLocalTime().isBefore(MARKET_CLOSE)) {
+            lastDate = lastDate.minusDays(1);
+        }
+
+        while (lastDate.getDayOfWeek() == DayOfWeek.SATURDAY
+                || lastDate.getDayOfWeek() == DayOfWeek.SUNDAY
+                || isHoliday(lastDate)) {
+            lastDate = lastDate.minusDays(1);
+        }
+
+        return lastDate;
     }
 
     public List<News> createOrUpdate(List<News> entities) {

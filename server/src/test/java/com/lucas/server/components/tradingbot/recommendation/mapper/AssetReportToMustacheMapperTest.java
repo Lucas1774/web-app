@@ -9,6 +9,8 @@ import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,8 +42,8 @@ class AssetReportToMustacheMapperTest {
                   • 14-day ATR: N/A
                   • 20-day OBV: N/A
                 • News Summaries (Top 2):
-                  • 2025-05-01: "Headline One" (Sentiment: N/A. Confidence: 54.4412%) Summary: First summary
-                  • 2025-05-02: "Headline Two" (Sentiment: N/A. Confidence: 54.4412%) Summary: Second summary
+                  • 2025-04-30 20:00:00 EDT: "Headline One" (Sentiment: N/A. Confidence: 54.4412%) Summary: First summary
+                  • 2025-05-01 20:00:00 EDT: "Headline Two" (Sentiment: N/A. Confidence: 54.4412%) Summary: Second summary
                 
                 """;
         assertThat(objectMapper.readTree(mapper.map(List.of(asset))).get("content").asText()).isEqualTo(expected);
@@ -69,8 +71,8 @@ class AssetReportToMustacheMapperTest {
                   • 14-day ATR: 15.68
                   • 20-day OBV: 15.69
                 • News Summaries (Top 2):
-                  • 2025-05-01: "Headline One" (Sentiment: positive. Confidence: 54.4412%) Summary: First summary
-                  • 2025-05-02: "Headline Two" (Sentiment: negative. Confidence: 54.4412%) Summary: Second summary
+                  • 2025-04-30 20:00:00 EDT: "Headline One" (Sentiment: positive. Confidence: 54.4412%) Summary: First summary
+                  • 2025-05-01 20:00:00 EDT: "Headline Two" (Sentiment: negative. Confidence: 54.4412%) Summary: Second summary
                 
                 """;
 
@@ -110,18 +112,18 @@ class AssetReportToMustacheMapperTest {
     private static List<NewsItemRaw> getNewsNullValues() {
         return List.of(
                 new NewsItemRaw("Headline One", null, BigDecimal.valueOf(54.4412),
-                        "First summary", LocalDate.of(2025, 5, 1)),
+                        "First summary", LocalDateTime.of(LocalDate.of(2025, 5, 1), LocalTime.MIDNIGHT)),
                 new NewsItemRaw("Headline Two", null, BigDecimal.valueOf(54.4412),
-                        "Second summary", LocalDate.of(2025, 5, 2))
+                        "Second summary", LocalDateTime.of(LocalDate.of(2025, 5, 2), LocalTime.MIDNIGHT))
         );
     }
 
     private static List<NewsItemRaw> getNewsAllValues() {
         return List.of(
                 new NewsItemRaw("Headline One", "positive", BigDecimal.valueOf(54.4412),
-                        "First summary", LocalDate.of(2025, 5, 1)),
+                        "First summary", LocalDateTime.of(LocalDate.of(2025, 5, 1), LocalTime.MIDNIGHT)),
                 new NewsItemRaw("Headline Two", "negative", BigDecimal.valueOf(54.4412),
-                        "Second summary", LocalDate.of(2025, 5, 2))
+                        "Second summary", LocalDateTime.of(LocalDate.of(2025, 5, 2), LocalTime.MIDNIGHT))
         );
     }
 }

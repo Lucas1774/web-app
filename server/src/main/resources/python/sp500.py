@@ -1,7 +1,7 @@
 import re
 
 def extract_sp500_symbols(wikicode):
-    pattern = r"\{\{(?:NyseSymbol|NasdaqSymbol)\|([^}]+)\}\}"
+    pattern = r"\{\{[^|}]+?\|([^}]+)\}\}"
     return re.findall(pattern, wikicode)
 
 # TODO: scrape and call from java code

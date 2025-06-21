@@ -12,7 +12,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -22,7 +22,6 @@ import java.util.Set;
 @Accessors(chain = true)
 @NoArgsConstructor
 @Entity
-@EntityListeners(NewsListener.class)
 @Table(name = "news")
 public class News implements JpaEntity {
 
@@ -40,7 +39,7 @@ public class News implements JpaEntity {
     private Set<Symbol> symbols = new HashSet<>();
 
     @Column(name = "publication_date", nullable = false)
-    private LocalDate date;
+    private LocalDateTime date;
 
     @Column(nullable = false, length = 512)
     private String headline;

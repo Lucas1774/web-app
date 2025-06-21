@@ -41,7 +41,7 @@ public class Recommendation implements JpaEntity {
     @Column(nullable = false, precision = 15, scale = 4)
     private BigDecimal confidence;
 
-    @Column(nullable = false, length = 512)
+    @Column(nullable = false, length = 1024)
     private String rationale;
 
     @Column(name = "recommendation_date", nullable = false)

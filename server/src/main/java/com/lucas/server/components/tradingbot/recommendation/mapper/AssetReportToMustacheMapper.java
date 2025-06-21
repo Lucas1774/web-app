@@ -17,12 +17,14 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import static com.lucas.server.common.Constants.JSON_MAPPING_ERROR;
-import static com.lucas.server.common.Constants.NA;
+import static com.lucas.server.common.Constants.*;
 
 @Component
 public class AssetReportToMustacheMapper implements Mapper<List<AssetReportRaw>, String> {
@@ -75,7 +77,7 @@ public class AssetReportToMustacheMapper implements Mapper<List<AssetReportRaw>,
             String sentiment,
             BigDecimal sentimentConfidence,
             String summary,
-            LocalDate date
+            LocalDateTime date
     ) {
     }
 
@@ -155,7 +157,10 @@ public class AssetReportToMustacheMapper implements Mapper<List<AssetReportRaw>,
                         news.sentiment != null ? news.sentiment : NA,
                         news.sentimentConfidence != null ? news.sentimentConfidence.stripTrailingZeros().toPlainString().concat("%") : NA,
                         news.summary,
-                        news.date.toString()
+                        news.date.atOffset(ZoneOffset.UTC)
+                                .toInstant()
+                                .atZone(NY_ZONE)
+                                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z"))
                 );
             }
         }

@@ -1,4 +1,4 @@
 {
   "role": "assistant",
-  "content": "{\"recommendations\":[{\"symbol\":\"MSFT\",\"action\":\"BUY\",\"confidence\":...,\"rationale\":\"...\"},{\"symbol\":\"AAPL\",\"action\":\"SELL\",\"confidence\":...,\"rationale\":\"...\"},{\"symbol\":\"GOOG\",\"action\":\"HOLD\",\"confidence\":...,\"rationale\":\"... are not good / bad enough to justify a buy / sell\"}],\"errors\":[\"Unrelated news\",\"News sentiment analysis seems off\",\"Important KPIs or data for the trader's profile is missing or unclear\",\"...\"]}"
+  "content": "{\"recommendations\":[{\"symbol\":\"MSFT\",\"action\":\"BUY\",\"confidence\":...,\"rationale\":\"...\"},{\"symbol\":\"AAPL\",\"action\":\"SELL\",\"confidence\":...,\"rationale\":\"...\"},{\"symbol\":\"GOOG\",\"action\":\"HOLD\",\"confidence\":...,\"rationale\":\"... are not good / bad enough to justify a buy / sell\"}],\"errors\":[\"Unrelated news\",\"Important KPIs or data for the trader's profile is missing or unclear\",\"...\"]}"
 }
