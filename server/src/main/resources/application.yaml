@@ -129,6 +129,51 @@ ai:
       requests-per-minute: 1
       chunk-size: 2
       fix-me: false
+    - name: grok-3-2
+      api-key: ${AI_FOUNDRY_KEY}
+      url: ${GITHUB_URL}
+      model: xai/grok-3
+      temperature: 0
+      max-tokens: 4000
+      requests-per-minute: 1
+      chunk-size: 2
+      fix-me: false
+    - name: grok-3-3
+      api-key: ${AI_FOUNDRY_KEY_2}
+      url: ${GITHUB_URL}
+      model: xai/grok-3
+      temperature: 0
+      max-tokens: 4000
+      requests-per-minute: 1
+      chunk-size: 2
+      fix-me: false
+    - name: grok-3-4
+      api-key: ${AI_FOUNDRY_KEY_3}
+      url: ${GITHUB_URL}
+      model: xai/grok-3
+      temperature: 0
+      max-tokens: 4000
+      requests-per-minute: 1
+      chunk-size: 2
+      fix-me: false
+    - name: grok-3-5
+      api-key: ${AI_FOUNDRY_KEY_4}
+      url: ${GITHUB_URL}
+      model: xai/grok-3
+      temperature: 0
+      max-tokens: 4000
+      requests-per-minute: 1
+      chunk-size: 2
+      fix-me: false
+    - name: grok-3-6
+      api-key: ${AI_FOUNDRY_KEY_5}
+      url: ${GITHUB_URL}
+      model: xai/grok-3
+      temperature: 0
+      max-tokens: 4000
+      requests-per-minute: 1
+      chunk-size: 2
+      fix-me: false
     - name: llama-3.3-70b
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}

@@ -1,12 +1,12 @@
 import chroma from "chroma-js";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button, Form, Table } from "react-bootstrap";
+import MultiSelectDdl from "../../MultiSelectDdl";
 import "../../Table.css";
 import { get, post } from "../../api";
 import commerceIcon from "../../assets/images/commerce.png";
 import * as constants from "../../constants";
 import useDebounce from "../../hooks/useDebounce";
-import MultiSelectDdl from "../../MultiSelectDdl";
 import LoginForm from "../LoginForm";
 import Spinner from "../Spinner";
 import { handleError } from "../errorHandler";
@@ -112,6 +112,19 @@ const Portfolio = () => {
         setDisplayData(ordered);
     }, [tableData, filters, order, selectedIds]);
 
+    const getModelName = (model) => {
+        if (!model) {
+            return "";
+        }
+        if (model === "gpt-4.1" || model.includes("gpt-4.1-")) {
+            return "gpt-4.1";
+        }
+        if (model === "grok-3" || model.includes("grok-3-")) {
+            return "grok-3";
+        }
+        return model;
+    }
+
     const getData = async (all = false) => {
         const url = all ? "/portfolio/stand/all" : "/portfolio/stand";
         setIsLoading(true);
@@ -131,7 +144,7 @@ const Portfolio = () => {
                     [constants.RECOMMENDATION_DATE_KEY]: newest ? new Date(newest.date) : null,
                     [constants.RECOMMENDATION_ACTION_KEY]: newest?.action,
                     [constants.RECOMMENDATION_CONFIDENCE_KEY]: newest?.confidence,
-                    [constants.RECOMMENDATION_MODEL_KEY]: newest?.model,
+                    [constants.RECOMMENDATION_MODEL_KEY]: getModelName(newest?.model),
                     [constants.PRICE_KEY]: item.price,
                     [constants.OPEN_KEY]: item.open,
                     [constants.HIGH_KEY]: item.high,
@@ -238,7 +251,7 @@ const Portfolio = () => {
                         [constants.RECOMMENDATION_DATE_KEY]: new Date(item.date),
                         [constants.RECOMMENDATION_ACTION_KEY]: item.action,
                         [constants.RECOMMENDATION_CONFIDENCE_KEY]: item.confidence,
-                        [constants.RECOMMENDATION_MODEL_KEY]: item.model,
+                        [constants.RECOMMENDATION_MODEL_KEY]: getModelName(item.model),
                         [constants.RECOMMENDATION_RATIONALE_KEY]: item.rationale,
                     }
                 ])
