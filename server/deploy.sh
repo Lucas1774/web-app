@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-# Deploys code to Azure VM and builds and runs docker image with it
-# Deploys also heartbeat script unless specified with --no-heart-beat
-# but does not attempt to set up a chron script
+# Deploys code to Oracle VM and builds and runs docker image with it
 
 # ——— Configuration ———
 VM_USER="ubuntu"
@@ -25,13 +23,10 @@ for f in "${COMPOSE_FILE}" "${ENV_FILE}" "${DOCKERFILE}"; do
   fi
 done
 
-# ——— Prepare remote directory ———
-echo "Creating remote directory ${REMOTE_DIR} on ${VM_CONN}..."
-ssh "${VM_CONN}" "mkdir -p ${REMOTE_DIR}"
-
 # ——— Transfer entire project to remote ———
 echo "Removing previous files..."
 ssh "${VM_CONN}" "sudo rm -rf ${REMOTE_DIR}/*"
+ssh "${VM_CONN}" "mkdir -p ${REMOTE_DIR}"
 echo "Archiving and transferring full project directory to VM..."
 tar czf - . | ssh "${VM_CONN}" "tar xzf - -C ${REMOTE_DIR}"
 echo "Transfer complete."
