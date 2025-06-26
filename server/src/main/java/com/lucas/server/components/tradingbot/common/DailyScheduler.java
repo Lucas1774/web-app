@@ -12,6 +12,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -39,6 +40,11 @@ public class DailyScheduler {
     public void morningTask() {
         updateNews();
         getRandomRecommendations();
+        LocalDate now = LocalDate.now();
+        List<Long> topRecommendedSymbols = new ArrayList<>(dataManager.getTopRecommendedSymbols(BUY, NEWS_FINE_GRAIN_THRESHOLD, now));
+        updateNewsForTopRecommendedSymbols(topRecommendedSymbols);
+        getRecommendations(topRecommendedSymbols, RecommendationMode.NOT_RANDOM);
+        getRecommendations(new ArrayList<>(dataManager.getTopRecommendedSymbols(BUY, GROK_FINE_GRAIN_THRESHOLD, now)), RecommendationMode.FINE_GRAIN);
         removeOldNews();
         removeOldRecommendations();
     }
@@ -66,7 +72,26 @@ public class DailyScheduler {
 
     private void getRandomRecommendations() {
         List<Recommendation> updatedRecommendations = dataManager.getRandomRecommendations(PortfolioType.REAL,
-                SCHEDULED_RECOMMENDATIONS_COUNT, false, true, false, filterClients(clients, RandomMode.RANDOM));
+                SCHEDULED_RECOMMENDATIONS_COUNT, false, true, false, filterClients(clients, RecommendationMode.RANDOM));
+        logger.info(SCHEDULED_TASK_SUCCESS_INFO, "generated recommendations", updatedRecommendations.stream()
+                .map(Recommendation::getSymbol).toList());
+    }
+
+    private void updateNewsForTopRecommendedSymbols(List<Long> topRecommendedSymbols) {
+        LocalDate to = LocalDate.now();
+        LocalDate from = to.minusDays(1);
+        try {
+            List<News> updatedNews = dataManager.retrieveNewsByDateRangeAndId(topRecommendedSymbols, from, to);
+            logger.info(SCHEDULED_TASK_SUCCESS_INFO, "fetched news", updatedNews.stream()
+                    .map(News::getHeadline).toList());
+        } catch (ClientException | JsonProcessingException e) {
+            logger.error(e.getMessage(), e);
+        }
+    }
+
+    private void getRecommendations(List<Long> topRecommendedSymbols, RecommendationMode mode) {
+        List<Recommendation> updatedRecommendations = dataManager.getRecommendationsById(topRecommendedSymbols, PortfolioType.REAL,
+                true, false, filterClients(clients, mode));
         logger.info(SCHEDULED_TASK_SUCCESS_INFO, "generated recommendations", updatedRecommendations.stream()
                 .map(Recommendation::getSymbol).toList());
     }

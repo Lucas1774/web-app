@@ -5,6 +5,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -19,4 +20,8 @@ public interface RecommendationsRepository extends JpaRepository<Recommendation,
     Slice<Recommendation> findBySymbol_Id(Long symbolId, PageRequest date);
 
     List<Recommendation> findBySymbol_Id(Long id);
+
+    List<Recommendation> findByActionAndConfidenceGreaterThanEqualAndDate(String action,
+                                                                BigDecimal confidenceThreshold,
+                                                                LocalDate recommendationDate);
 }

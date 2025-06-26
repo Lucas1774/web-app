@@ -93,6 +93,10 @@ public class DataManager {
     ) {
     }
 
+    public List<Long> getTopRecommendedSymbols(String action, BigDecimal confidenceThreshold, LocalDate recommendationDate) {
+        return recommendationsService.getTopRecommendedSymbols(action, confidenceThreshold, recommendationDate);
+    }
+
     @Transactional
     public List<Recommendation> getRecommendationsById(List<Long> symbolIds, PortfolioType type,
                                                        boolean overwrite, boolean bailout, List<AIClient> clients) {

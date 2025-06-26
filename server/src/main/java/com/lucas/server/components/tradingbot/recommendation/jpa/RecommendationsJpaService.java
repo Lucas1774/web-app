@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -59,5 +60,13 @@ public class RecommendationsJpaService implements JpaService<Recommendation> {
                         .setInput(newEntity.getInput())
                         .setErrors(newEntity.getErrors()),
                 entities);
+    }
+
+    public List<Long> getTopRecommendedSymbols(String action, BigDecimal confidenceThreshold, LocalDate recommendationDate) {
+        return repository.findByActionAndConfidenceGreaterThanEqualAndDate(action, confidenceThreshold, recommendationDate)
+                .stream()
+                .map(r -> r.getSymbol().getId())
+                .distinct()
+                .toList();
     }
 }

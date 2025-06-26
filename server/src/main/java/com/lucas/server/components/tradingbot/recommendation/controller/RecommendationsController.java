@@ -38,7 +38,7 @@ public class RecommendationsController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         List<AIClient> selectedClients = null == models
-                ? filterClients(clients, RandomMode.NOT_RANDOM)
+                ? filterClients(clients, RecommendationMode.NOT_RANDOM)
                 : models.stream().map(clients::get).toList();
         return ResponseEntity.ok(jpaService.getRecommendationsById(symbols, getPortfolioType(username),
                 overwrite, null != models, selectedClients));
@@ -54,7 +54,7 @@ public class RecommendationsController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         List<AIClient> selectedClients = null == models
-                ? filterClients(clients, RandomMode.RANDOM)
+                ? filterClients(clients, RecommendationMode.RANDOM)
                 : models.stream().map(clients::get).toList();
         return ResponseEntity.ok(jpaService.getRandomRecommendations(getPortfolioType(username), count,
                 overwrite, false, null != models, selectedClients));
