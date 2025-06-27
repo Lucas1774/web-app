@@ -22,10 +22,14 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.lucas.server.common.Constants.*;
 
@@ -33,7 +37,7 @@ import static com.lucas.server.common.Constants.*;
 public class RecommendationChatCompletionClient {
 
     private final ChatRequestMessage systemMessage;
-    private final ChatRequestMessage promptMessage;
+    private final ObjectNode context;
     private final ChatRequestMessage fewShotMessage;
     private final ChatRequestMessage fixMeMessage;
     private final AssetReportDataProvider assertReportDataProvider;
@@ -54,7 +58,7 @@ public class RecommendationChatCompletionClient {
             throws JsonProcessingException {
         fixMeMessage = generateMessageFromNode(promptRepository.getFixMeMessage());
         systemMessage = generateMessageFromNode(promptRepository.getSystem());
-        promptMessage = generateMessageFromNode(promptRepository.getContext());
+        context = promptRepository.getContext();
         fewShotMessage = generateMessageFromNode(promptRepository.getFewShot());
         this.assertReportDataProvider = assertReportDataProvider;
         this.assetReportToMustacheMapper = assetReportToMustacheMapper;
@@ -78,6 +82,8 @@ public class RecommendationChatCompletionClient {
                     .replace("{placeholder}", rawReportMessage.getContent().toObject(String.class)));
         }
         List<Symbol> symbols = payload.stream().map(DataManager.SymbolPayload::symbol).toList();
+        ChatRequestMessage contextMessage = generateMessageFromNode(context.deepCopy().put("content", context.get("content").asText().replace("{date}",
+                ZonedDateTime.now(NY_ZONE).format(DateTimeFormatter.ofPattern("EEEE, yyyy-MM-dd HH:mm:ss z", Locale.ENGLISH)))));
 
         logger.info(RETRIEVING_DATA_INFO, RECOMMENDATION, symbols);
         try {
@@ -85,14 +91,15 @@ public class RecommendationChatCompletionClient {
             rateLimiters.get(PER_MINUTE_RATE_LIMITER).acquirePermission();
             rateLimiters.get(PER_SECOND_RATE_LIMITER).acquirePermission();
             logger.info(PROMPTING_MODEL_INFO, client.getModelName());
+            List<ChatRequestMessage> prompt = List.of(systemMessage, contextMessage, fewShotMessage, reportMessage);
             return mapper.mapAll(payload,
-                    objectMapper.readTree(client.complete(List.of(systemMessage, promptMessage, fewShotMessage, reportMessage))
+                    objectMapper.readTree(client.complete(prompt)
                             .getChoice()
                             .getMessage()
                             .getContent()
                             .replace("```", "")
                             .replace("json", "")),
-                    reportMessage.getContent().toObject(String.class), client.getModelName());
+                    prompt.stream().map(this::getAsString).collect(Collectors.joining("\n\n\n")), client.getModelName());
         } catch (Exception e) {
             logger.warn(CLIENT_FAILED_BACKUP_WARN, client.getModelName(), PROMPT, e.getMessage());
             return new ArrayList<>();
@@ -105,5 +112,14 @@ public class RecommendationChatCompletionClient {
         } catch (Exception e) {
             throw new JsonProcessingException(MessageFormat.format(JSON_MAPPING_ERROR, PROMPT), e);
         }
+    }
+
+    private String getAsString(ChatRequestMessage message) {
+        return switch (message) {
+            case ChatRequestUserMessage m -> m.getContent().toObject(String.class);
+            case ChatRequestAssistantMessage m -> m.getContent();
+            case ChatRequestSystemMessage m -> m.getContent();
+            default -> throw new IllegalArgumentException();
+        };
     }
 }

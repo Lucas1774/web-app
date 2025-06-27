@@ -10,11 +10,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Objects;
-
-import static com.lucas.server.common.Constants.NY_ZONE;
 
 @Getter
 @Repository
@@ -42,9 +38,6 @@ public class PromptRepository {
             system = objectMapper.readValue(systemReader, ObjectNode.class);
             fewShot = objectMapper.readValue(fewShotReader, ObjectNode.class);
             fixMeMessage = objectMapper.readValue(fixMeReader, ObjectNode.class);
-            context.put("content", context.get("content").asText().replace("{date}",
-                    ZonedDateTime.now(NY_ZONE).format(DateTimeFormatter.ofPattern("EEEE, yyyy-MM-dd HH:mm:ss z"))));
-
         } catch (IOException e) {
             throw new ConfigurationException(e);
         }
