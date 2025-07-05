@@ -24,10 +24,16 @@ const TransactionPopup = ({ id: symbolId, name: symbolName, onPopupClose, onTran
             }, TIMEOUT_DELAY)
             return;
         }
-        const commissionParam = action === "buy" ? `&commission=${commission}` : "";
         setIsLoading(true);
         try {
-            await post(`/portfolio/${action}?symbolId=${symbolId}&price=${price}&quantity=${quantity}` + commissionParam, "");
+            const p = parseFloat(price);
+            const q = parseFloat(quantity);
+            const c = parseFloat(commission);
+            // IBKR idiosyncrasies
+            const priceWithCommission = p + (c / q);
+            const relativeCommission = c / (p * q);
+            const commissionParam = action === "buy" ? `&commission=${relativeCommission}` : "";
+            await post(`/portfolio/${action}?symbolId=${symbolId}&price=${priceWithCommission}&quantity=${q}` + commissionParam, "");
             setMessage(`${action} ${symbolName} successful`);
             setTimeout(() => {
                 setMessage(null);
@@ -75,7 +81,7 @@ const TransactionPopup = ({ id: symbolId, name: symbolName, onPopupClose, onTran
                         <Button type="submit" className="restart fifty-percent" onClick={() => setAction("sell")}>Sell</Button>
                         <Form.Control style={{ width: "100%", margin: "5px" }}
                             type="number"
-                            placeholder="Price"
+                            placeholder="Price (no commissions)"
                             min="0.01"
                             step="0.01"
                             value={price}
@@ -91,7 +97,7 @@ const TransactionPopup = ({ id: symbolId, name: symbolName, onPopupClose, onTran
                             required />
                         <Form.Control style={{ width: "100%", margin: "5px" }}
                             type="number"
-                            placeholder="Commission"
+                            placeholder="Commission (total, round-trip flat)"
                             step="0.0001"
                             value={commission}
                             onChange={(e) => setCommission(e.target.value)} />
