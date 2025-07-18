@@ -6,9 +6,6 @@ import com.azure.ai.inference.models.ChatCompletionsOptions;
 import com.azure.ai.inference.models.ChatRequestMessage;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.http.HttpClient;
-import com.azure.core.http.okhttp.OkHttpAsyncHttpClientBuilder;
-import com.azure.core.http.policy.ExponentialBackoffOptions;
-import com.azure.core.http.policy.RetryOptions;
 import com.azure.core.http.policy.RetryPolicy;
 import com.lucas.server.components.tradingbot.common.AIClient;
 import io.github.resilience4j.ratelimiter.RateLimiter;
@@ -17,29 +14,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.lucas.server.common.Constants.PER_MINUTE_RATE_LIMITER;
-import static com.lucas.server.common.Constants.PER_SECOND_RATE_LIMITER;
-
 @Configuration
 public class AIClientAutoconfig {
-
-    @Bean
-    public RetryPolicy retryPolicy() {
-        return new RetryPolicy(new RetryOptions(new ExponentialBackoffOptions().setMaxRetries(0)));
-    }
-
-    @Bean
-    public HttpClient httpClient() {
-        return new OkHttpAsyncHttpClientBuilder()
-                .responseTimeout(Duration.ofMinutes(10))
-                .build();
-    }
 
     @Bean
     public Map<String, AIClient> clients(HttpClient httpClient, RetryPolicy retryPolicy, AIProperties aiProps) {
@@ -59,30 +40,12 @@ public class AIClientAutoconfig {
                                             .setTemperature(config.temperature())
                                             .setMaxTokens(config.maxTokens());
                             RateLimiter rateLimiter = RateLimiter.of(config.model(), RateLimiterConfig.custom()
-                                    .limitRefreshPeriod(Duration.ofMinutes(1))
-                                    .limitForPeriod(config.requestsPerMinute())
+                                    .limitRefreshPeriod(Duration.ofMinutes(1).dividedBy(config.requestsPerMinute()))
+                                    .limitForPeriod(1)
                                     .timeoutDuration(Duration.ofMinutes(1))
                                     .build());
                             return new AIClient(client, optionsProvider, config.name(), config.chunkSize(), config.fixMe(), rateLimiter);
                         }
                 ));
-    }
-
-    @Bean
-    public Map<String, RateLimiter> rateLimiter() {
-        Map<String, RateLimiter> res = new HashMap<>();
-        res.put(PER_MINUTE_RATE_LIMITER,
-                RateLimiter.of(PER_MINUTE_RATE_LIMITER, RateLimiterConfig.custom()
-                        .limitRefreshPeriod(Duration.ofMinutes(1))
-                        .limitForPeriod(24)
-                        .timeoutDuration(Duration.ofMinutes(5))
-                        .build()));
-        res.put(PER_SECOND_RATE_LIMITER,
-                RateLimiter.of(PER_SECOND_RATE_LIMITER, RateLimiterConfig.custom()
-                        .limitRefreshPeriod(Duration.ofSeconds(2))
-                        .limitForPeriod(1)
-                        .timeoutDuration(Duration.ofMinutes(1))
-                        .build()));
-        return res;
     }
 }

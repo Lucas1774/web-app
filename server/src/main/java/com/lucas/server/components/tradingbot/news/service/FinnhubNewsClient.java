@@ -3,6 +3,7 @@ package com.lucas.server.components.tradingbot.news.service;
 import com.lucas.server.common.HttpRequestClient;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.common.exception.JsonProcessingException;
+import com.lucas.server.components.tradingbot.common.FinnhubRateLimiter;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.news.jpa.News;
 import com.lucas.server.components.tradingbot.news.mapper.FinnhubNewsResponseMapper;
@@ -25,20 +26,21 @@ public class FinnhubNewsClient {
 
     private final FinnhubNewsResponseMapper mapper;
     private final HttpRequestClient httpRequestClient;
+    private final FinnhubRateLimiter permissionProvider;
     private final String endpoint;
-    private final String apiKey;
     private static final Logger logger = LoggerFactory.getLogger(FinnhubNewsClient.class);
 
     public FinnhubNewsClient(FinnhubNewsResponseMapper mapper, HttpRequestClient httpRequestClient,
-                             @Value("${finnhub.endpoint}") String endpoint, @Value("${finnhub.api-key}") String apiKey) {
+                             FinnhubRateLimiter permissionProvider, @Value("${finnhub.endpoint}") String endpoint) {
         this.httpRequestClient = httpRequestClient;
         this.mapper = mapper;
+        this.permissionProvider = permissionProvider;
         this.endpoint = endpoint;
-        this.apiKey = apiKey;
     }
 
     private List<News> retrieveNewsByDateRange(Symbol symbol, LocalDate from, LocalDate to) throws JsonProcessingException, ClientException {
         logger.info(RETRIEVING_DATA_INFO, NEWS, symbol);
+        String apiKey = permissionProvider.acquirePermission();
         String url = UriComponentsBuilder.fromUriString(endpoint + COMPANY_NEWS)
                 .queryParam("symbol", symbol.getName())
                 .queryParam("from", from)
@@ -58,7 +60,6 @@ public class FinnhubNewsClient {
                         .computeIfAbsent(news.getExternalId(), id -> news)
                         .addSymbol(symbol);
             }
-            backOff(FINNHUB_BACKOFF_MILLIS);
         }
 
         return new ArrayList<>(newsByExternalId.values());

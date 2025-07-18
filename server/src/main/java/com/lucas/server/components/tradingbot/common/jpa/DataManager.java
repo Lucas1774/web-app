@@ -415,7 +415,6 @@ public class DataManager {
             } catch (ClientException | JsonProcessingException e) {
                 logger.warn(CLIENT_FAILED_BACKUP_WARN, twelveDataMarketDataClient.getClass().getSimpleName(), symbol, e.getMessage());
                 res.add(finnhubMarketDataClient.retrieveMarketData(symbol));
-                backOff(FINNHUB_BACKOFF_MILLIS);
             }
         }
         return res;

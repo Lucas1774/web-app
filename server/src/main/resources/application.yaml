@@ -356,7 +356,7 @@ ai:
       fix-me: false
 
 finnhub:
-  api-key: ${FINNHUB_KEY}
+  api-keys: ${FINNHUB_KEYS}
   endpoint: ${FINNHUB_ENDPOINT}
 
 twelve-data:

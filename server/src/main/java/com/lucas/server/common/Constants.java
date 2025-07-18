@@ -60,7 +60,6 @@ public class Constants {
     public static final BigDecimal GROK_FINE_GRAIN_THRESHOLD = BigDecimal.valueOf(0.75);
 
     public static final int RECOMMENDATION_W_BAILOUT_MAX_RETRIES = 6;
-    public static final int FINNHUB_BACKOFF_MILLIS = 1000;
     public static final int TWELVEDATA_BACKOFF_MILLIS = 7500;
 
     public static final String DEFAULT_USERNAME = "default";
@@ -80,8 +79,12 @@ public class Constants {
     public static final String PROMPT = "prompt";
     public static final String VOLATILITY = "volatility";
     public static final String OBV = "OBV";
-    public static final String PER_MINUTE_RATE_LIMITER = "perMinuteRateLimiter";
-    public static final String PER_SECOND_RATE_LIMITER = "perSecondRateLimiter";
+    public static final String AI_PER_MINUTE_RATE_LIMITER = "perMinuteRateLimiter";
+    public static final String AI_PER_SECOND_RATE_LIMITER = "perSecondRateLimiter";
+    private static final String FINNHUB_RATE_LIMITER = "finnhubRateLimiter";
+    private static final String FINNHUB_RATE_LIMITER_2 = "finnhubRateLimiter2";
+    private static final String FINNHUB_RATE_LIMITER_3 = "finnhubRateLimiter3";
+    public static final List<String> FINNHUB_RATE_LIMITERS = List.of(FINNHUB_RATE_LIMITER, FINNHUB_RATE_LIMITER_2, FINNHUB_RATE_LIMITER_3);
 
     public static final ZoneId NY_ZONE = ZoneId.of("America/New_York");
     public static final LocalTime MARKET_CLOSE = LocalTime.of(16, 0);

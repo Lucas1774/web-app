@@ -88,8 +88,8 @@ public class RecommendationChatCompletionClient {
         logger.info(RETRIEVING_DATA_INFO, RECOMMENDATION, symbols);
         try {
             client.getRateLimiter().acquirePermission();
-            rateLimiters.get(PER_MINUTE_RATE_LIMITER).acquirePermission();
-            rateLimiters.get(PER_SECOND_RATE_LIMITER).acquirePermission();
+            rateLimiters.get(AI_PER_MINUTE_RATE_LIMITER).acquirePermission();
+            rateLimiters.get(AI_PER_SECOND_RATE_LIMITER).acquirePermission();
             logger.info(PROMPTING_MODEL_INFO, client.getModelName());
             List<ChatRequestMessage> prompt = List.of(systemMessage, contextMessage, fewShotMessage, reportMessage);
             return mapper.mapAll(payload,

@@ -3,6 +3,7 @@ package com.lucas.server.components.tradingbot.marketdata.service;
 import com.lucas.server.common.HttpRequestClient;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.common.exception.JsonProcessingException;
+import com.lucas.server.components.tradingbot.common.FinnhubRateLimiter;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.marketdata.mapper.FinnhubMarketResponseMapper;
@@ -22,21 +23,21 @@ public class FinnhubMarketDataClient {
 
     private final FinnhubMarketResponseMapper mapper;
     private final HttpRequestClient httpRequestClient;
+    private final FinnhubRateLimiter finnhubRateLimiter;
     private final String endpoint;
-    private final String apiKey;
     private static final Logger logger = LoggerFactory.getLogger(FinnhubMarketDataClient.class);
 
     public FinnhubMarketDataClient(FinnhubMarketResponseMapper mapper, HttpRequestClient httpRequestClient,
-                                   @Value("${finnhub.endpoint}") String endpoint,
-                                   @Value("${finnhub.api-key}") String apiKey) {
+                                   FinnhubRateLimiter finnhubRateLimiter, @Value("${finnhub.endpoint}") String endpoint) {
         this.mapper = mapper;
         this.httpRequestClient = httpRequestClient;
+        this.finnhubRateLimiter = finnhubRateLimiter;
         this.endpoint = endpoint;
-        this.apiKey = apiKey;
     }
 
     public MarketData retrieveMarketData(Symbol symbol) throws JsonProcessingException, ClientException {
         logger.info(RETRIEVING_DATA_INFO, MARKET_DATA, symbol);
+        String apiKey = finnhubRateLimiter.acquirePermission();
         String url = UriComponentsBuilder.fromUriString(endpoint + QUOTE)
                 .queryParam("symbol", symbol.getName())
                 .queryParam("token", apiKey)
@@ -50,7 +51,6 @@ public class FinnhubMarketDataClient {
         List<MarketData> res = new ArrayList<>();
         for (Symbol symbol : symbols) {
             res.add(retrieveMarketData(symbol));
-            backOff(FINNHUB_BACKOFF_MILLIS);
         }
         return res;
     }
