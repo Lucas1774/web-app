@@ -7,6 +7,7 @@ import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.marketdata.mapper.TwelveDataMarketResponseMapper;
+import io.github.resilience4j.ratelimiter.RateLimiter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,6 +23,7 @@ import static com.lucas.server.common.Constants.*;
 public class TwelveDataMarketDataClient {
 
     private final HttpRequestClient httpRequestClient;
+    private final RateLimiter rateLimiter;
     private final String endpoint;
     private final String apiKey;
     private static final Logger logger = LoggerFactory.getLogger(TwelveDataMarketDataClient.class);
@@ -40,10 +42,12 @@ public class TwelveDataMarketDataClient {
         List<MarketData> apply(Symbol symbol, JsonNode jsonNode) throws JsonProcessingException;
     }
 
-    public TwelveDataMarketDataClient(HttpRequestClient httpRequestClient, TwelveDataMarketResponseMapper mapper,
+    public TwelveDataMarketDataClient(HttpRequestClient httpRequestClient, Map<String, RateLimiter> rateLimiters,
+                                      TwelveDataMarketResponseMapper mapper,
                                       @Value("${twelve-data.endpoint}") String endpoint,
                                       @Value("${twelve-data.api-key}") String apiKey) {
         this.httpRequestClient = httpRequestClient;
+        this.rateLimiter = rateLimiters.get(TWELVEDATA_RATE_LIMITER);
         this.endpoint = endpoint;
         this.apiKey = apiKey;
         typeToMapper = new EnumMap<>(Map.of(
@@ -56,6 +60,7 @@ public class TwelveDataMarketDataClient {
 
     private List<MarketData> retrieveMarketData(Symbol symbol, MarketDataType type) throws ClientException, JsonProcessingException {
         logger.info(RETRIEVING_DATA_INFO, MARKET_DATA, symbol);
+        rateLimiter.acquirePermission();
         String url = typeToBuilderCustomizer.get(type).apply(UriComponentsBuilder.fromUriString(endpoint + typeToEndpoint.get(type)))
                 .queryParam("symbol", symbol.getName())
                 .queryParam("apikey", apiKey)
@@ -69,7 +74,6 @@ public class TwelveDataMarketDataClient {
         List<MarketData> res = new ArrayList<>();
         for (Symbol symbol : symbols) {
             res.addAll(retrieveMarketData(symbol, type));
-            backOff(TWELVEDATA_BACKOFF_MILLIS);
         }
         return res;
     }

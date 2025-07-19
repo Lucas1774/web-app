@@ -26,21 +26,21 @@ public class FinnhubNewsClient {
 
     private final FinnhubNewsResponseMapper mapper;
     private final HttpRequestClient httpRequestClient;
-    private final FinnhubRateLimiter permissionProvider;
+    private final FinnhubRateLimiter finnhubRateLimiter;
     private final String endpoint;
     private static final Logger logger = LoggerFactory.getLogger(FinnhubNewsClient.class);
 
     public FinnhubNewsClient(FinnhubNewsResponseMapper mapper, HttpRequestClient httpRequestClient,
-                             FinnhubRateLimiter permissionProvider, @Value("${finnhub.endpoint}") String endpoint) {
+                             FinnhubRateLimiter finnhubRateLimiter, @Value("${finnhub.endpoint}") String endpoint) {
         this.httpRequestClient = httpRequestClient;
         this.mapper = mapper;
-        this.permissionProvider = permissionProvider;
+        this.finnhubRateLimiter = finnhubRateLimiter;
         this.endpoint = endpoint;
     }
 
     private List<News> retrieveNewsByDateRange(Symbol symbol, LocalDate from, LocalDate to) throws JsonProcessingException, ClientException {
         logger.info(RETRIEVING_DATA_INFO, NEWS, symbol);
-        String apiKey = permissionProvider.acquirePermission();
+        String apiKey = finnhubRateLimiter.acquirePermission();
         String url = UriComponentsBuilder.fromUriString(endpoint + COMPANY_NEWS)
                 .queryParam("symbol", symbol.getName())
                 .queryParam("from", from)

@@ -37,14 +37,6 @@ public class Constants {
                 .map(Map.Entry::getValue).toList();
     }
 
-    public static void backOff(long millis) {
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException ie) {
-            Thread.currentThread().interrupt();
-        }
-    }
-
     public static final int[] DIGITS = {1, 2, 3, 4, 5, 6, 7, 8, 9};
     public static final int SUDOKU_SIZE = 9;
     public static final int SUDOKU_NUMBER_OF_CELLS = 81;
@@ -81,6 +73,7 @@ public class Constants {
     public static final String OBV = "OBV";
     public static final String AI_PER_MINUTE_RATE_LIMITER = "perMinuteRateLimiter";
     public static final String AI_PER_SECOND_RATE_LIMITER = "perSecondRateLimiter";
+    public static final String TWELVEDATA_RATE_LIMITER = "twelveDataRateLimiter";
     private static final String FINNHUB_RATE_LIMITER = "finnhubRateLimiter";
     private static final String FINNHUB_RATE_LIMITER_2 = "finnhubRateLimiter2";
     private static final String FINNHUB_RATE_LIMITER_3 = "finnhubRateLimiter3";
