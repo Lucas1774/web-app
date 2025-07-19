@@ -1,4 +1,5 @@
-{|{{NyseSymbol|MMM}}
+{
+|{{NyseSymbol|MMM}}
 |[[3M]]|| Industrials || Industrial Conglomerates || [[Saint Paul, Minnesota]] || 1957-03-04 || 0000066740 || 1902
 |-
 |{{NyseSymbol|AOS}}
@@ -106,10 +107,6 @@
 |{{NasdaqSymbol|ADI}}
 |[[Analog Devices]]|| Information Technology || Semiconductors ||     [[Wilmington, Massachusetts]]  || 1999-10-12 || 0000006281
 |1965
-|-
-|{{NasdaqSymbol|ANSS}}
-|[[Ansys]]|| Information Technology     || Application Software ||     [[Canonsburg, Pennsylvania]]  || 2017-06-19 ||  0001013462
-|1969
 |-
 |{{NyseSymbol|AON}}
 |[[Aon (company)|Aon plc]]|| Financials  || Insurance Brokers ||  [[London]], United Kingdom   || 1996-04-23 || 0000315293 || 1982 (1919)
@@ -431,6 +428,9 @@
 |-
 |{{NyseSymbol|DRI}}
 |[[Darden Restaurants]]|| Consumer Discretionary || Restaurants || [[Orlando, Florida]] || 1995-05-31|| 0000940944 || 1938
+|-
+|{{NasdaqSymbol|DDOG}}
+|[[Datadog]]|| Information Technology || Application Software || [[New York City]], New York || 2025-07-09 || 0001561550 || 2010
 |-
 |{{NyseSymbol|DVA}}
 |[[DaVita]]|| Health Care || Health Care Services || [[Denver]], Colorado || 2008-07-31 || 0000927066 || 1979
@@ -830,9 +830,6 @@
 |{{NyseSymbol|JPM}}
 |[[JPMorgan Chase]]||    Financials ||    Diversified Banks    || [[New York City]], New York || 1975-06-30 || 0000019617
 | 2000 (1799 / 1871)
-|-
-|{{NyseSymbol|JNPR}}
-|[[Juniper Networks]]||    Information Technology ||    Communications Equipment    || [[Sunnyvale, California]] || 2006-06-02 || 0001043604 || 1996
 |-
 |{{NyseSymbol|K}}
 |[[Kellanova]]||    Consumer Staples ||    Packaged Foods & Meats    || [[Chicago]], Illinois || 1989-09-11 || 0000055067 || 1906
@@ -1392,6 +1389,9 @@
 |-
 |{{NyseSymbol|TKO}}
 |[[TKO Group Holdings]]|| Communication Services || Movies & Entertainment || [[New York City]], New York || 2025-03-24 || 0001973266 || 2023
+|-
+|{{NasdaqSymbol|TTD}}
+|[[The Trade Desk|Trade Desk (The)]]|| Communication Services || Advertising || [[Ventura, California]] || 2025-07-18 || 0001671933 || 2009
 |-
 |{{NasdaqSymbol|TSCO}}
 |[[Tractor Supply]]|| Consumer Discretionary || Other Specialty Retail || [[Brentwood, Tennessee]] || 2014-01-24 || 0000916365 || 1938
