@@ -29,6 +29,7 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 import static com.lucas.server.common.Constants.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -59,12 +60,12 @@ class RecommendationChatCompletionClientTest {
     @Transactional
     void testProvide() {
         // given: insert 34 days of market data. Needs to be at least 34 and greater than the history days
-        Symbol symbol = symbolService.getOrCreateByName("AAPL");
+        Symbol symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
         LocalDate today = LocalDate.now();
         List<MarketData> mds = new ArrayList<>();
         for (int i = 34; i >= 0; i--) {
             MarketData md = new MarketData()
-                    .setSymbol(symbolService.getOrCreateByName(symbol.getName()))
+                    .setSymbol(symbolService.getOrCreateByName(Set.of(symbol.getName())).stream().findFirst().orElseThrow())
                     .setDate(today.minusDays(i))
                     .setOpen(BigDecimal.valueOf(10 + i))
                     .setHigh(BigDecimal.valueOf(11 + i))
@@ -132,7 +133,7 @@ class RecommendationChatCompletionClientTest {
 
         // then: KPIs match the kpiGenerator calculations
         List<MarketData> mdHistory = marketDataService.getTopForSymbolId(
-                symbolService.findByName(symbol.getName()).orElseThrow().getId(), 100);
+                symbolService.getOrCreateByName(Set.of(symbol.getName())).stream().findFirst().orElseThrow().getId(), 100);
 
         BigDecimal expectedEma20 = kpiGenerator.computeEma(mdHistory, 20).orElseThrow();
         BigDecimal macdLine1226 = kpiGenerator.computeMacdLine(mdHistory, 12, 26).orElseThrow();

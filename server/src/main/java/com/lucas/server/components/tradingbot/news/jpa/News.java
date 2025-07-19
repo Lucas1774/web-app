@@ -91,11 +91,11 @@ public class News implements JpaEntity {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         News news = (News) o;
-        return Objects.equals(id, news.id) && Objects.equals(externalId, news.externalId);
+        return Objects.equals(externalId, news.externalId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, externalId);
+        return Objects.hash(externalId);
     }
 }

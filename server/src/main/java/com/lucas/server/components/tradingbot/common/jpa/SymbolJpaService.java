@@ -6,6 +6,7 @@ import com.lucas.server.common.jpa.UniqueConstraintWearyJpaServiceDelegate;
 import lombok.experimental.Delegate;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,16 +24,18 @@ public class SymbolJpaService implements JpaService<Symbol> {
         this.repository = repository;
     }
 
-    public Symbol getOrCreateByName(String name) {
-        return uniqueConstraintDelegate.getOrCreate(entity -> findByName(entity.getName()), new Symbol().setName(name));
+    public List<Symbol> getOrCreateByName(Collection<String> names) {
+        return uniqueConstraintDelegate.createOrUpdate(this::findUnique,
+                (oldEntity, newEntity) -> oldEntity,
+                names.stream().map(name -> new Symbol().setName(name)).toList());
     }
 
     public Optional<Symbol> findById(Long id) {
         return repository.findById(id);
     }
 
-    public Optional<Symbol> findByName(String name) {
-        return repository.findByName(name);
+    private Collection<Symbol> findUnique(Collection<Symbol> symbols) {
+        return repository.findByNameIn(symbols.stream().map(Symbol::getName).toList());
     }
 
     public List<Symbol> findAllById(List<Long> symbolIds) {

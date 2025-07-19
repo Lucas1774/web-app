@@ -9,8 +9,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class MarketDataJpaService implements JpaService<MarketData> {
@@ -26,16 +26,15 @@ public class MarketDataJpaService implements JpaService<MarketData> {
         this.repository = repository;
     }
 
-    public MarketData getOrCreate(MarketData entity) {
-        return uniqueConstraintDelegate.getOrCreate(this::findUnique, entity);
-    }
-
-    public List<MarketData> createIgnoringDuplicates(Iterable<MarketData> entities) {
+    public List<MarketData> createIgnoringDuplicates(Collection<MarketData> entities) {
         return uniqueConstraintDelegate.createIgnoringDuplicates(this::findUnique, entities);
     }
 
-    public Optional<MarketData> findUnique(MarketData entity) {
-        return repository.findBySymbol_IdAndDate(entity.getSymbol().getId(), entity.getDate());
+    private Collection<MarketData> findUnique(Collection<MarketData> marketData) {
+        return repository.findBySymbol_IdInAndDateIn(
+                marketData.stream().map(md -> md.getSymbol().getId()).toList(),
+                marketData.stream().map(MarketData::getDate).toList()
+        );
     }
 
     public List<MarketData> findTop14BySymbolIdAndDateBeforeOrderByDateDesc(Long id, LocalDate date) {

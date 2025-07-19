@@ -18,6 +18,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Set;
 
 import static com.lucas.server.common.Constants.JSON_MAPPING_ERROR;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -91,7 +92,7 @@ class FinnhubNewsResponseMapperTest {
                   { "id": %d, "datetime": %d, "headline": "H2", "summary": "S2", "url": "u2", "source": "src2", "category": "cat2", "image": "i2" }
                 ]
                 """, now, now, now + 60, now + 60);
-        Symbol symbol = symbolService.getOrCreateByName("SYM");
+        Symbol symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
 
         JsonNode arrayNode = objectMapper.readTree(jsonArray);
 
@@ -116,7 +117,7 @@ class FinnhubNewsResponseMapperTest {
         // given
         JsonNode emptyArray = objectMapper.createArrayNode();
         JsonNode objNode = objectMapper.createObjectNode();
-        Symbol symbol = symbolService.getOrCreateByName("SYM");
+        Symbol symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
 
         // when & then
         assertThat(mapper.mapAll(emptyArray, symbol)).isEmpty();
@@ -136,7 +137,7 @@ class FinnhubNewsResponseMapperTest {
         JsonNode arrayNode = objectMapper.readTree(jsonArray);
 
         // when & then
-        assertThatThrownBy(() -> mapper.mapAll(arrayNode, symbolService.getOrCreateByName("SYM")))
+        assertThatThrownBy(() -> mapper.mapAll(arrayNode, symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow()))
                 .isInstanceOf(JsonProcessingException.class)
                 .hasMessageContaining(MessageFormat.format(JSON_MAPPING_ERROR, "news"));
     }

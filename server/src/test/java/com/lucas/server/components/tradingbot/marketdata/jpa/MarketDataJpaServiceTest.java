@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Import;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -30,8 +31,8 @@ class MarketDataJpaServiceTest {
     @Transactional
     void createIgnoringDuplicates_shouldPersistOnlyNewRecords_andHandleTrailingZeros() {
         // given:
-        Symbol symbol = symbolService.getOrCreateByName("AAPL");
-        Symbol symbol2 = symbolService.getOrCreateByName("IBM");
+        Symbol symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
+        Symbol symbol2 = symbolService.getOrCreateByName(Set.of("IBM")).stream().findFirst().orElseThrow();
         LocalDate date1 = LocalDate.of(2023, 12, 15);
         LocalDate date2 = LocalDate.of(2023, 12, 16);
 
@@ -95,28 +96,5 @@ class MarketDataJpaServiceTest {
                         tuple(symbol, date2, 150.0),
                         tuple(symbol2, date2, 155.0)
                 );
-    }
-
-    @Test
-    @Transactional
-    void getOrCreate() {
-        // given:
-        Symbol symbol = symbolService.getOrCreateByName("AAPL");
-        MarketData md = new MarketData()
-                .setSymbol(symbol)
-                .setDate(LocalDate.of(2023, 12, 15))
-                .setPrice(BigDecimal.valueOf(150.00));
-
-        MarketData dup = new MarketData()
-                .setSymbol(symbol)
-                .setDate(LocalDate.of(2023, 12, 15))
-                .setPrice(BigDecimal.valueOf(200));
-
-        // when:
-        jpaService.getOrCreate(md);
-        MarketData result = jpaService.getOrCreate(dup);
-
-        // then:
-        assertThat(result.getPrice()).isEqualByComparingTo(md.getPrice());
     }
 }

@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 import static com.lucas.server.common.Constants.JSON_MAPPING_ERROR;
 import static com.lucas.server.common.Constants.MARKET_DATA;
@@ -77,7 +78,7 @@ class TwelveDataMarketResponseMapperTest {
                   "last_quote_at": 1631772000
                 }
                 """;
-        Symbol symbol = symbolService.getOrCreateByName("IBM");
+        Symbol symbol = symbolService.getOrCreateByName(Set.of("IBM")).stream().findFirst().orElseThrow();
 
         // when
         MarketData result = mapper.map(objectMapper.readTree(json), symbol);
@@ -103,7 +104,7 @@ class TwelveDataMarketResponseMapperTest {
         String invalidJson = "{}";
 
         // when & then
-        assertThatThrownBy(() -> mapper.map(objectMapper.readTree(invalidJson), symbolService.getOrCreateByName("AAPL"))).isInstanceOf(JsonProcessingException.class);
+        assertThatThrownBy(() -> mapper.map(objectMapper.readTree(invalidJson), symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow())).isInstanceOf(JsonProcessingException.class);
     }
 
     @Test
@@ -149,7 +150,7 @@ class TwelveDataMarketResponseMapperTest {
                 """;
 
         // when & then
-        assertThatThrownBy(() -> mapper.map(objectMapper.readTree(json), symbolService.getOrCreateByName("AAPL")))
+        assertThatThrownBy(() -> mapper.map(objectMapper.readTree(json), symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow()))
                 .isInstanceOf(JsonProcessingException.class)
                 .hasMessageContaining(MessageFormat.format(JSON_MAPPING_ERROR, MARKET_DATA));
     }
@@ -198,7 +199,7 @@ class TwelveDataMarketResponseMapperTest {
                 """;
 
         // when & then
-        assertThatThrownBy(() -> mapper.map(objectMapper.readTree(json), symbolService.getOrCreateByName("AAPL")))
+        assertThatThrownBy(() -> mapper.map(objectMapper.readTree(json), symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow()))
                 .isInstanceOf(JsonProcessingException.class)
                 .hasMessageContaining(MessageFormat.format(JSON_MAPPING_ERROR, MARKET_DATA));
     }
@@ -263,7 +264,7 @@ class TwelveDataMarketResponseMapperTest {
                   "status": "ok"
                 }
                 """;
-        Symbol symbol = symbolService.getOrCreateByName("AAPL");
+        Symbol symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
 
         // when
         List<MarketData> result = mapper.mapAll(objectMapper.readTree(json), symbol);
@@ -308,7 +309,7 @@ class TwelveDataMarketResponseMapperTest {
                   "status": "ok"
                 }
                 """;
-        Symbol symbol = symbolService.getOrCreateByName("AAPL");
+        Symbol symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
 
         // when
         List<MarketData> result = mapper.mapAll(objectMapper.readTree(json), symbol);

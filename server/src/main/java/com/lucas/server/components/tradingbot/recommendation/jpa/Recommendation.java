@@ -75,11 +75,11 @@ public class Recommendation implements JpaEntity {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Recommendation that = (Recommendation) o;
-        return Objects.equals(id, that.id) && Objects.equals(symbol, that.symbol) && Objects.equals(date, that.date);
+        return Objects.equals(symbol, that.symbol) && Objects.equals(date, that.date);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, symbol, date);
+        return Objects.hash(symbol, date);
     }
 }

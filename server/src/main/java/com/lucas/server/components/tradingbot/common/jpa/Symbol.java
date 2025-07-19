@@ -44,11 +44,11 @@ public class Symbol implements JpaEntity {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Symbol symbol = (Symbol) o;
-        return Objects.equals(id, symbol.id) && Objects.equals(name, symbol.name);
+        return Objects.equals(name, symbol.name);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name);
+        return Objects.hash(name);
     }
 }

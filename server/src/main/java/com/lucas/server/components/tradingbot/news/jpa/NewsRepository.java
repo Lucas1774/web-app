@@ -9,7 +9,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface NewsRepository extends JpaRepository<News, Long> {
@@ -19,7 +18,7 @@ public interface NewsRepository extends JpaRepository<News, Long> {
             Long symbolId2, LocalDateTime startDate2, LocalDateTime endDate2, Pageable pageable
     );
 
-    Optional<News> findByExternalId(Long externalId);
+    Collection<News> findByExternalIdIn(Collection<Long> externalIds);
 
     List<News> findAllBySymbols_IdInAndDateBetween(Collection<Long> symbolIds, LocalDate from, LocalDate to);
 

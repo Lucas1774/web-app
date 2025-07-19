@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Import;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.time.LocalDate;
+import java.util.Set;
 
 import static com.lucas.server.common.Constants.JSON_MAPPING_ERROR;
 import static com.lucas.server.common.Constants.MARKET_DATA;
@@ -50,7 +51,7 @@ class FinnhubMarketResponseMapperTest {
                   "t" : 1746820800
                 }
                 """;
-        Symbol symbol = symbolService.getOrCreateByName("IBM");
+        Symbol symbol = symbolService.getOrCreateByName(Set.of("IBM")).stream().findFirst().orElseThrow();
 
         // when
         MarketData result = mapper.map(objectMapper.readTree(json), symbol);
@@ -76,7 +77,7 @@ class FinnhubMarketResponseMapperTest {
         String invalidJson = "{}";
 
         // when & then
-        assertThatThrownBy(() -> mapper.map(objectMapper.readTree(invalidJson), symbolService.getOrCreateByName("AAPL"))).isInstanceOf(JsonProcessingException.class);
+        assertThatThrownBy(() -> mapper.map(objectMapper.readTree(invalidJson), symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow())).isInstanceOf(JsonProcessingException.class);
     }
 
     @Test
@@ -96,7 +97,7 @@ class FinnhubMarketResponseMapperTest {
                 """;
 
         // when & then
-        assertThatThrownBy(() -> mapper.map(objectMapper.readTree(json), symbolService.getOrCreateByName("AAPL")))
+        assertThatThrownBy(() -> mapper.map(objectMapper.readTree(json), symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow()))
                 .isInstanceOf(JsonProcessingException.class)
                 .hasMessageContaining(MessageFormat.format(JSON_MAPPING_ERROR, MARKET_DATA));
     }

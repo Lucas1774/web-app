@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 
 @Service
@@ -27,9 +28,15 @@ public class RecommendationsJpaService implements JpaService<Recommendation> {
         this.repository = repository;
     }
 
-    public List<Recommendation> createIgnoringDuplicates(Iterable<Recommendation> entities) {
-        return uniqueConstraintDelegate.createIgnoringDuplicates(
-                entity -> repository.findBySymbol_IdAndDate(entity.getSymbol().getId(), entity.getDate()), entities);
+    public List<Recommendation> createIgnoringDuplicates(Collection<Recommendation> entities) {
+        return uniqueConstraintDelegate.createIgnoringDuplicates(this::findUnique, entities);
+    }
+
+    private Collection<Recommendation> findUnique(Collection<Recommendation> recommendations) {
+        return repository.findBySymbol_IdInAndDateIn(
+                recommendations.stream().map(r -> r.getSymbol().getId()).toList(),
+                recommendations.stream().map(Recommendation::getDate).toList()
+        );
     }
 
     public List<Recommendation> findByDateBetween(LocalDate from, LocalDate to) {
@@ -50,7 +57,7 @@ public class RecommendationsJpaService implements JpaService<Recommendation> {
 
     @Transactional
     public List<Recommendation> createOrUpdate(List<Recommendation> entities) {
-        return uniqueConstraintDelegate.createOrUpdate(entity -> repository.findBySymbol_IdAndDate(entity.getSymbol().getId(), entity.getDate()),
+        return uniqueConstraintDelegate.createOrUpdate(this::findUnique,
                 (oldEntity, newEntity) -> oldEntity
                         .setModel(newEntity.getModel())
                         .setAction(newEntity.getAction())

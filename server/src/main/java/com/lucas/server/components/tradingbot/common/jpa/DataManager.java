@@ -235,7 +235,7 @@ public class DataManager {
     @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})
     public List<News> generateSentiment(List<String> symbolNames, LocalDate from, LocalDate to)
             throws ClientException, JsonProcessingException {
-        List<Symbol> symbols = symbolNames.stream().distinct().map(symbolService::getOrCreateByName).toList();
+        List<Symbol> symbols = symbolService.getOrCreateByName(symbolNames);
         logger.info(GENERATION_SUCCESSFUL_INFO, SENTIMENT);
         return newsService.generateSentiment(symbols.stream().map(Symbol::getId).toList(), from, to);
     }
@@ -250,7 +250,7 @@ public class DataManager {
     @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})
     public List<News> retrieveNewsByDateRangeAndName(List<String> symbolNames, LocalDate from,
                                                      LocalDate to) throws ClientException, JsonProcessingException {
-        List<Symbol> symbols = symbolNames.stream().distinct().map(symbolService::getOrCreateByName).toList();
+        List<Symbol> symbols = symbolService.getOrCreateByName(symbolNames);
         return retrieveNewsByDateRange(symbols, from, to);
     }
 
@@ -266,7 +266,7 @@ public class DataManager {
     @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})
     public List<MarketData> retrieveMarketData(List<String> symbolNames,
                                                MarketDataType type) throws ClientException, JsonProcessingException {
-        List<Symbol> symbols = symbolNames.stream().distinct().map(symbolService::getOrCreateByName).toList();
+        List<Symbol> symbols = symbolService.getOrCreateByName(symbolNames);
         List<MarketData> mds = typeToRunner.get(type).apply(symbols);
         logger.info(GENERATION_SUCCESSFUL_INFO, MARKET_DATA);
         marketDataService.createIgnoringDuplicates(mds);
@@ -310,7 +310,7 @@ public class DataManager {
 
     public List<PortfolioManager.SymbolStand> getAllAsPortfolioStand(List<String> symbolNames, PortfolioType type) {
         Set<String> namesSet = new HashSet<>(symbolNames);
-        List<Symbol> symbols = namesSet.stream().map(symbolService::getOrCreateByName).toList();
+        List<Symbol> symbols = symbolService.getOrCreateByName(namesSet);
         Map<Symbol, PortfolioBase> portfolioBySymbol = getService(type)
                 .findActivePortfolio().stream()
                 .filter(p -> namesSet.contains(p.getSymbol().getName()))

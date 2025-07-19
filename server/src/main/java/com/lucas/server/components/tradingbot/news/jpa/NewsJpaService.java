@@ -70,7 +70,9 @@ public class NewsJpaService implements JpaService<News> {
     }
 
     public List<News> createOrUpdate(List<News> entities) {
-        return uniqueConstraintDelegate.createOrUpdate(entity -> repository.findByExternalId(entity.getExternalId()),
+        return uniqueConstraintDelegate.createOrUpdate(allEntities -> repository.findByExternalIdIn(
+                        allEntities.stream().map(News::getExternalId).toList()
+                ),
                 (oldEntity, newEntity) -> {
                     for (Symbol symbol : newEntity.getSymbols()) {
                         oldEntity.getSymbols().add(symbol);

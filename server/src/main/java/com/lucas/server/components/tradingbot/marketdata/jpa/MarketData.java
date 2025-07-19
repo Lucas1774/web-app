@@ -12,6 +12,7 @@ import lombok.experimental.Accessors;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Getter
@@ -89,5 +90,17 @@ public class MarketData implements JpaEntity {
                 ", symbol='" + symbol + '\'' +
                 ", date=" + date +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        MarketData that = (MarketData) o;
+        return Objects.equals(symbol, that.symbol) && Objects.equals(date, that.date);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(symbol, date);
     }
 }

@@ -14,6 +14,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -37,7 +38,7 @@ class MarketDataListenerTest {
     @Transactional
     void whenSaveSomeMarketData_thenItIsUpdatedWithPreviousMarketData() {
         // given
-        Symbol symbol = symbolService.getOrCreateByName("AAPL");
+        Symbol symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
         MarketData previous = new MarketData()
                 .setSymbol(symbol)
                 .setDate(LocalDate.of(2024, 4, 20))

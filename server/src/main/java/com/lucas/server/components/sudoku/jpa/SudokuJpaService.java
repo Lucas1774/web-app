@@ -6,6 +6,7 @@ import com.lucas.server.common.jpa.UniqueConstraintWearyJpaServiceDelegate;
 import lombok.experimental.Delegate;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.List;
 
 @Service
@@ -23,7 +24,9 @@ public class SudokuJpaService implements JpaService<Sudoku> {
         this.repository = repository;
     }
 
-    public List<Sudoku> createIgnoringDuplicates(Iterable<Sudoku> entities) {
-        return uniqueConstraintDelegate.createIgnoringDuplicates(entity -> repository.findByState(entity.getState()), entities);
+    public List<Sudoku> createIgnoringDuplicates(Collection<Sudoku> entities) {
+        return uniqueConstraintDelegate.createIgnoringDuplicates(allEntities -> repository.findByStateIn(
+                allEntities.stream().map(Sudoku::getState).toList()
+        ), entities);
     }
 }

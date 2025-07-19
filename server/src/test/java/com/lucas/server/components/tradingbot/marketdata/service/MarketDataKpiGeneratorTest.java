@@ -18,6 +18,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import static com.lucas.server.common.Constants.KPI_RETURNED_ZERO_WARN;
@@ -67,7 +68,7 @@ class MarketDataKpiGeneratorTest {
     @Transactional
     void whenComputeDerivedFieldsOnCurrentMarketData_thenCorrectlyReflectsKPIs() {
         // given
-        Symbol symbol = symbolService.getOrCreateByName("AAPL");
+        Symbol symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
         LocalDate currentDate = LocalDate.of(2023, 12, 15);
         LocalDate previousDate = LocalDate.of(2023, 12, 14);
 
@@ -97,7 +98,7 @@ class MarketDataKpiGeneratorTest {
     void computeDerivedFieldsWithoutPreviousData_thenNothingHappens() {
         // given
         LocalDate currentDate = LocalDate.of(2023, 12, 15);
-        Symbol symbol = symbolService.getOrCreateByName("AAPL");
+        Symbol symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
 
         MarketData currentData = new MarketData()
                 .setSymbol(symbol)
@@ -119,8 +120,8 @@ class MarketDataKpiGeneratorTest {
     @Transactional
     void whenComputeDerivedFieldsWithZeroPreviousPrice_thenPercentageIsNull() {
         // given
-        Symbol symbol = symbolService.getOrCreateByName("AAPL");
-        symbolService.getOrCreateByName(symbol.getName());
+        Symbol symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
+        symbolService.getOrCreateByName(Set.of(symbol.getName()));
         LocalDate currentDate = LocalDate.of(2023, 12, 15);
         LocalDate previousDate = LocalDate.of(2023, 12, 14);
 

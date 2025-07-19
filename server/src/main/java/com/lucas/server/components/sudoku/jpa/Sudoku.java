@@ -9,6 +9,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 import static com.lucas.server.common.Constants.SUDOKU_NUMBER_OF_CELLS;
 import static com.lucas.server.common.Constants.SUDOKU_SIZE;
 
@@ -69,5 +72,17 @@ public class Sudoku implements JpaEntity {
         }
         sb.append("+-------+-------+-------+\n");
         return sb.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Sudoku sudoku = (Sudoku) o;
+        return Objects.deepEquals(state, sudoku.state);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(Arrays.hashCode(state));
     }
 }

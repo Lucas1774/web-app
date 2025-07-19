@@ -3,10 +3,10 @@ package com.lucas.server.components.sudoku.jpa;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
+import java.util.Collection;
 
 @Repository
 public interface SudokuRepository extends JpaRepository<Sudoku, Long> {
 
-    Optional<Sudoku> findByState(int[] state);
+    Collection<Sudoku> findByStateIn(Collection<int[]> states);
 }
