@@ -37,7 +37,7 @@ public class SudokuGenerator {
 
     public boolean doGenerate(Sudoku sudoku) {
         List<Integer> digits = new ArrayList<>();
-        for (int digit : DIGITS) {
+        for (int digit : getDigits()) {
             digits.add(digit);
         }
         for (int place = 0; place < SUDOKU_NUMBER_OF_CELLS; place++) {
@@ -64,7 +64,7 @@ public class SudokuGenerator {
         for (int i = 0; i < SUDOKU_NUMBER_OF_CELLS; i++) {
             possibleCells.add(i);
         }
-        int[] digits = DIGITS.clone();
+        int[] digits = getDigits();
         for (int i = 0; i < digits.length - 1; i++) {
             int digit = digits[i];
             possibleCells.remove(possibleCells.get(IntStream.range(0, possibleCells.size())

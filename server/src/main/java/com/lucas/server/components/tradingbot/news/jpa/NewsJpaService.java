@@ -14,6 +14,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.*;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import static com.lucas.server.common.Constants.*;
@@ -34,6 +35,7 @@ public class NewsJpaService implements JpaService<News> {
         this.sentimentClient = sentimentClient;
     }
 
+    // TODO: batch
     public List<News> getTopForSymbolId(Long symbolId, int limit) {
         ZonedDateTime easternTime = ZonedDateTime.now(NY_ZONE);
 
@@ -80,7 +82,7 @@ public class NewsJpaService implements JpaService<News> {
                     }
                     return oldEntity;
                 },
-                entities);
+                new LinkedHashSet<>(entities));
     }
 
     public List<News> generateSentiment(List<Long> list, LocalDate from, LocalDate to)

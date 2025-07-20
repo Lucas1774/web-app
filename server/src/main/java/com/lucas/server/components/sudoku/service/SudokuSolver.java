@@ -61,7 +61,7 @@ public class SudokuSolver {
         List<Integer> trivialCells = getTrivial(sudoku);
         if (!trivialCells.isEmpty()) {
             for (int trivialCell : trivialCells) {
-                for (int digit : DIGITS) {
+                for (int digit : getDigits()) {
                     if (acceptsNumberInPlace(sudoku, trivialCell, digit)) {
                         sudoku.set(trivialCell, digit);
                         break;
@@ -74,7 +74,7 @@ public class SudokuSolver {
             int promisingCell = getNextPromisingCell(sudoku, i);
             if (-1 != promisingCell) {
                 int count = 0;
-                for (int digit : DIGITS) {
+                for (int digit : getDigits()) {
                     if (acceptsNumberInPlace(sudoku, promisingCell, digit)) {
                         Sudoku copy = withValues(sudoku.getState());
                         copy.set(promisingCell, digit);
@@ -97,7 +97,7 @@ public class SudokuSolver {
         for (int place = 0; place < SUDOKU_NUMBER_OF_CELLS; place++) {
             if (0 == sudoku.getState()[place]) {
                 int count = 0;
-                for (int digit : DIGITS) {
+                for (int digit : getDigits()) {
                     if (acceptsNumberInPlace(sudoku, place, digit)) {
                         count++;
                         break;
@@ -116,7 +116,7 @@ public class SudokuSolver {
         for (int place = 0; place < SUDOKU_NUMBER_OF_CELLS; place++) {
             if (0 == sudoku.getState()[place]) {
                 int count = 0;
-                for (int digit : DIGITS) {
+                for (int digit : getDigits()) {
                     if (acceptsNumberInPlace(sudoku, place, digit)) {
                         count++;
                         if (count > 1) {
@@ -136,7 +136,7 @@ public class SudokuSolver {
         for (int place = 0; place < SUDOKU_NUMBER_OF_CELLS; place++) {
             if (0 == sudoku.getState()[place]) {
                 int count = 0;
-                for (int digit : DIGITS) {
+                for (int digit : getDigits()) {
                     if (acceptsNumberInPlace(sudoku, place, digit)) {
                         count++;
                         if (count > i) {

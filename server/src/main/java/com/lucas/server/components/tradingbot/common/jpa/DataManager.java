@@ -135,7 +135,7 @@ public class DataManager {
         IPortfolioJpaService<PortfolioBase> portfolioService = getService(type);
         Supplier<PortfolioBase> portfolioSupplier = portfolioTypeToNewPortfolio.get(type);
 
-        List<SymbolPayload> remainingPayload = symbols.stream()
+        List<SymbolPayload> remainingPayload = symbols.parallelStream()
                 .map(symbol -> {
                     List<MarketData> marketData = marketDataService.getTopForSymbolId(symbol.getId(), MARKET_DATA_RELEVANT_DAYS_COUNT);
                     if (marketData.isEmpty()) {
@@ -309,7 +309,7 @@ public class DataManager {
     }
 
     public List<PortfolioManager.SymbolStand> getAllAsPortfolioStand(List<String> symbolNames, PortfolioType type) {
-        Set<String> namesSet = new HashSet<>(symbolNames);
+        Set<String> namesSet = new LinkedHashSet<>(symbolNames);
         List<Symbol> symbols = symbolService.getOrCreateByName(namesSet);
         Map<Symbol, PortfolioBase> portfolioBySymbol = getService(type)
                 .findActivePortfolio().stream()

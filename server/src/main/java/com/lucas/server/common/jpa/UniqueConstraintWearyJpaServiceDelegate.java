@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
@@ -29,7 +30,7 @@ public class UniqueConstraintWearyJpaServiceDelegate<T extends JpaEntity> {
      * @param entities       entities
      * @return the newly saved entities
      */
-    public List<T> createIgnoringDuplicates(UnaryOperator<Collection<T>> existingFinder, Collection<T> entities) {
+    public List<T> createIgnoringDuplicates(UnaryOperator<Collection<T>> existingFinder, Set<T> entities) {
         Collection<T> existing = existingFinder.apply(entities);
         return repository.saveAll(entities.stream()
                 .filter(e -> !existing.contains(e))
@@ -43,7 +44,7 @@ public class UniqueConstraintWearyJpaServiceDelegate<T extends JpaEntity> {
      * @return the updated entities as well as the newly saved ones
      */
     public List<T> createOrUpdate(UnaryOperator<Collection<T>> existingFinder,
-                                  BinaryOperator<T> existingUpdater, Collection<T> entities) {
+                                  BinaryOperator<T> existingUpdater, Set<T> entities) {
         Collection<T> existing = existingFinder.apply(entities);
         Map<T, T> existingMap = existing.stream()
                 .collect(Collectors.toMap(Function.identity(), Function.identity()));

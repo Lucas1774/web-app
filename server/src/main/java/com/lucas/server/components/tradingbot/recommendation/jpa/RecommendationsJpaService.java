@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 @Service
@@ -29,7 +30,7 @@ public class RecommendationsJpaService implements JpaService<Recommendation> {
     }
 
     public List<Recommendation> createIgnoringDuplicates(Collection<Recommendation> entities) {
-        return uniqueConstraintDelegate.createIgnoringDuplicates(this::findUnique, entities);
+        return uniqueConstraintDelegate.createIgnoringDuplicates(this::findUnique, new LinkedHashSet<>(entities));
     }
 
     private Collection<Recommendation> findUnique(Collection<Recommendation> recommendations) {
@@ -47,6 +48,7 @@ public class RecommendationsJpaService implements JpaService<Recommendation> {
         repository.deleteAllInBatch(res);
     }
 
+    // TODO: batch
     public List<Recommendation> getTopForSymbolId(Long symbolId, int limit) {
         return repository.findBySymbol_Id(symbolId, PageRequest.of(0, limit, Sort.by("date").descending())).getContent();
     }
@@ -66,7 +68,7 @@ public class RecommendationsJpaService implements JpaService<Recommendation> {
                         .setMarketData(newEntity.getMarketData())
                         .setInput(newEntity.getInput())
                         .setErrors(newEntity.getErrors()),
-                entities);
+                new LinkedHashSet<>(entities));
     }
 
     public List<Long> getTopRecommendedSymbols(String action, BigDecimal confidenceThreshold, LocalDate recommendationDate) {

@@ -34,6 +34,7 @@ public class PortfolioJpaServiceDelegate<T extends PortfolioBase, R extends JpaR
         return repository.save(entity);
     }
 
+    // TODO: batch
     public Optional<T> findBySymbol(Symbol symbol) {
         return findLatestBySymbol.apply(symbol);
     }

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 @Service
@@ -27,7 +28,7 @@ public class MarketDataJpaService implements JpaService<MarketData> {
     }
 
     public List<MarketData> createIgnoringDuplicates(Collection<MarketData> entities) {
-        return uniqueConstraintDelegate.createIgnoringDuplicates(this::findUnique, entities);
+        return uniqueConstraintDelegate.createIgnoringDuplicates(this::findUnique, new LinkedHashSet<>(entities));
     }
 
     private Collection<MarketData> findUnique(Collection<MarketData> marketData) {
@@ -41,10 +42,12 @@ public class MarketDataJpaService implements JpaService<MarketData> {
         return repository.findTop14BySymbol_IdAndDateBeforeOrderByDateDesc(id, date);
     }
 
+    // TODO: batch
     public List<MarketData> getTopForSymbolId(Long symbolId, int limit) {
         return repository.findBySymbol_Id(symbolId, PageRequest.of(0, limit, Sort.by("date").descending())).getContent();
     }
 
+    // TODO: batch
     public List<MarketData> findBySymbolId(Long id) {
         return repository.findBySymbol_Id(id);
     }

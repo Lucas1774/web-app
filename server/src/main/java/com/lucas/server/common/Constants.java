@@ -37,7 +37,12 @@ public class Constants {
                 .map(Map.Entry::getValue).toList();
     }
 
-    public static final int[] DIGITS = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+    private static final int[] DIGITS = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+
+    public static int[] getDigits() {
+        return DIGITS;
+    }
+
     public static final int SUDOKU_SIZE = 9;
     public static final int SUDOKU_NUMBER_OF_CELLS = 81;
     public static final int MARKET_DATA_RELEVANT_DAYS_COUNT = 34;

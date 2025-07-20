@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class SymbolJpaService implements JpaService<Symbol> {
@@ -27,7 +28,7 @@ public class SymbolJpaService implements JpaService<Symbol> {
     public List<Symbol> getOrCreateByName(Collection<String> names) {
         return uniqueConstraintDelegate.createOrUpdate(this::findUnique,
                 (oldEntity, newEntity) -> oldEntity,
-                names.stream().map(name -> new Symbol().setName(name)).toList());
+                names.stream().map(name -> new Symbol().setName(name)).collect(Collectors.toSet()));
     }
 
     public Optional<Symbol> findById(Long id) {
