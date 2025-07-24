@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
-import java.util.Set;
+import java.util.Comparator;
 
 @Component
 public class PortfolioManager {
@@ -29,7 +29,7 @@ public class PortfolioManager {
             BigDecimal pnL,
             BigDecimal percentPnl,
             BigDecimal netRelativePosition,
-            Set<Recommendation> recommendation
+            Recommendation recommendation
     ) {
     }
 
@@ -66,9 +66,12 @@ public class PortfolioManager {
             }
         }
         BigDecimal percentDayChange = last.getPrice().subtract(last.getPreviousClose()).divide(last.getPreviousClose(), 8, RoundingMode.HALF_UP)
-                        .multiply(BigDecimal.valueOf(100)).setScale(4, RoundingMode.HALF_UP);
+                .multiply(BigDecimal.valueOf(100)).setScale(4, RoundingMode.HALF_UP);
 
         return new SymbolStand(portfolio.getSymbol(), last.getPrice(), last.getOpen(), last.getHigh(), last.getLow(), percentDayChange, last.getVolume(),
-                portfolio.getEffectiveTimestamp(), quantity, averageCost, positionValue, pnL, percentPnL, netRelativePosition, last.getRecommendations());
+                portfolio.getEffectiveTimestamp(), quantity, averageCost, positionValue, pnL, percentPnL, netRelativePosition,
+                last.getRecommendations().stream()
+                        .max(Comparator.comparing(Recommendation::getDate))
+                        .orElse(null));
     }
 }

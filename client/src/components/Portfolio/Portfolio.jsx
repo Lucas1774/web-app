@@ -131,20 +131,16 @@ const Portfolio = () => {
         try {
             const resp = await get(url);
             const data = resp.data.map((item) => {
-                const newest = item.recommendation.reduce(
-                    (best, curr) =>
-                        new Date(curr.date) > new Date(best.date) ? curr : best,
-                    item.recommendation[0]
-                );
+                const recommendation = item.recommendation;
                 return {
                     [constants.ID_KEY]: item.symbol.id,
                     [constants.REAL_TIME_KEY]: "N",
                     [constants.SYMBOL_NAME_KEY]: item.symbol.name,
                     [constants.LAST_MOVE_DATE_KEY]: item.lastMoveDate ? new Date(item.lastMoveDate) : null,
-                    [constants.RECOMMENDATION_DATE_KEY]: newest ? new Date(newest.date) : null,
-                    [constants.RECOMMENDATION_ACTION_KEY]: newest?.action,
-                    [constants.RECOMMENDATION_CONFIDENCE_KEY]: newest?.confidence,
-                    [constants.RECOMMENDATION_MODEL_KEY]: getModelName(newest?.model),
+                    [constants.RECOMMENDATION_DATE_KEY]: recommendation ? new Date(recommendation.date) : null,
+                    [constants.RECOMMENDATION_ACTION_KEY]: recommendation?.action,
+                    [constants.RECOMMENDATION_CONFIDENCE_KEY]: recommendation?.confidence,
+                    [constants.RECOMMENDATION_MODEL_KEY]: getModelName(recommendation?.model),
                     [constants.PRICE_KEY]: item.price,
                     [constants.OPEN_KEY]: item.open,
                     [constants.HIGH_KEY]: item.high,
@@ -157,7 +153,7 @@ const Portfolio = () => {
                     [constants.PNL_KEY]: item.pnL,
                     [constants.PERCENT_PNL_KEY]: item.percentPnl,
                     [constants.NET_RELATIVE_POSITION_KEY]: item.netRelativePosition,
-                    [constants.RECOMMENDATION_RATIONALE_KEY]: newest?.rationale,
+                    [constants.RECOMMENDATION_RATIONALE_KEY]: recommendation?.rationale,
                 };
             });
 
