@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface MarketDataRepository extends JpaRepository<MarketData, Long> {
@@ -19,4 +20,6 @@ public interface MarketDataRepository extends JpaRepository<MarketData, Long> {
     Collection<MarketData> findBySymbol_IdInAndDateIn(Collection<Long> symbolIds, Collection<LocalDate> dates);
 
     List<MarketData> findBySymbol_Id(Long id);
+
+    Optional<MarketData> findTopBySymbol_IdOrderByDateDesc(Long id);
 }

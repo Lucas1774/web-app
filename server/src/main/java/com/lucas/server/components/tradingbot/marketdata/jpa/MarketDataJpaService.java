@@ -12,6 +12,7 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class MarketDataJpaService implements JpaService<MarketData> {
@@ -50,6 +51,10 @@ public class MarketDataJpaService implements JpaService<MarketData> {
     // TODO: batch
     public List<MarketData> findBySymbolId(Long id) {
         return repository.findBySymbol_Id(id);
+    }
+
+    public Optional<MarketData> findLatestBySymbolId(Long id) {
+        return repository.findTopBySymbol_IdOrderByDateDesc(id);
     }
 
     public void deleteAll(List<MarketData> res) {

@@ -326,11 +326,10 @@ public class DataManager {
 
     private List<PortfolioManager.SymbolStand> getStand(List<PortfolioBase> portfolio) {
         return portfolio.stream()
-                .flatMap(p -> marketDataService.findBySymbolId(p.getSymbol().getId())
-                        .stream()
-                        .max(Comparator.comparing(MarketData::getDate))
+                .flatMap(p -> marketDataService.findLatestBySymbolId(p.getSymbol().getId())
                         .map(md -> portfolioManager.computeStand(p, md))
-                        .stream()).sorted(Comparator.comparing(
+                        .stream())
+                .sorted(Comparator.comparing(
                         PortfolioManager.SymbolStand::lastMoveDate,
                         Comparator.nullsFirst(Comparator.naturalOrder())
                 ).reversed())
@@ -343,9 +342,7 @@ public class DataManager {
                 .stream()
                 .collect(Collectors.toMap(md -> md.getSymbol().getName(), Function.identity()));
         return portfolio.stream()
-                .flatMap(p -> marketDataService.findBySymbolId(p.getSymbol().getId())
-                        .stream()
-                        .max(Comparator.comparing(MarketData::getDate))
+                .flatMap(p -> marketDataService.findLatestBySymbolId(p.getSymbol().getId())
                         .map(md -> portfolioManager.computeStand(p, symbolsWithData.get(md.getSymbol().getName())
                                 .setRecommendations(md.getRecommendations()))) // artificially link the recommendations to the volatile mds
                         .stream())
