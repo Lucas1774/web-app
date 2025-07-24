@@ -32,7 +32,7 @@ public class MarketData implements JpaEntity {
     @JoinColumn(name = "symbol_id", nullable = false)
     private Symbol symbol;
 
-    @OneToMany(mappedBy = "marketData", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "marketData", fetch = FetchType.EAGER)
     private Set<Recommendation> recommendations = new HashSet<>();
 
     @Column(precision = 15, scale = 4)
