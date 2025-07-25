@@ -30,18 +30,18 @@ class AssetReportToMustacheMapperTest {
                 --- Market Data & Features ---
                 [ASSET: FOO]
                 • Current Position:
-                  • N/A shares (N/A EUR)
-                  • Avg Entry Price: N/A EUR
-                  • Unrealized PnL: 0 EUR (0%)
+                  • N/A shares ($N/A)
+                  • Avg Entry Price: $N/A
+                  • Unrealized PnL: $0 (0%)
                 • Price History (last 1 days):
                   • 2025-05-01: O100 H110 L90 C105 VN/A
                 • Technical Indicators:
                   • 20-day EMA: N/A
                   • MACD(12,26,9): line=N/A,signal=N/A,hist=N/A
                   • 14-day RSI: N/A
-                  • 14-day ATR: N/A
+                  • 14-day ATR%: N/A%
                   • 20-day OBV: N/A
-                • News Summaries (Top 2):
+                • News Summaries (last 2):
                   • 2025-04-30 20:00:00 EDT: "Headline One" (Sentiment: N/A. Confidence: 54.4412%) Summary: First summary
                   • 2025-05-01 20:00:00 EDT: "Headline Two" (Sentiment: N/A. Confidence: 54.4412%) Summary: Second summary
                 
@@ -59,18 +59,18 @@ class AssetReportToMustacheMapperTest {
                 --- Market Data & Features ---
                 [ASSET: FOO]
                 • Current Position:
-                  • 10.2412 shares (101.4887 EUR)
-                  • Avg Entry Price: 11.5874 EUR
-                  • Unrealized PnL: 50 EUR (80%)
+                  • 10.2412 shares ($101.4887)
+                  • Avg Entry Price: $11.5874
+                  • Unrealized PnL: $50 (80%)
                 • Price History (last 1 days):
                   • 2025-05-01: O100 H110 L90 C105 V1234
                 • Technical Indicators:
                   • 20-day EMA: 105
                   • MACD(12,26,9): line=42.42,signal=1.23,hist=41.19
                   • 14-day RSI: 15.67
-                  • 14-day ATR: 15.68
+                  • 14-day ATR%: 15.68%
                   • 20-day OBV: 15.69
-                • News Summaries (Top 2):
+                • News Summaries (last 2):
                   • 2025-04-30 20:00:00 EDT: "Headline One" (Sentiment: positive. Confidence: 54.4412%) Summary: First summary
                   • 2025-05-01 20:00:00 EDT: "Headline Two" (Sentiment: negative. Confidence: 54.4412%) Summary: Second summary
                 

@@ -119,10 +119,7 @@ class RecommendationChatCompletionClientTest {
                 .extracting(PricePointRaw::date)
                 .containsExactly(today, today.minusDays(1), today.minusDays(2), today.minusDays(3),
                         today.minusDays(4), today.minusDays(5), today.minusDays(6), today.minusDays(7),
-                        today.minusDays(8), today.minusDays(9), today.minusDays(10),
-                        today.minusDays(11), today.minusDays(12), today.minusDays(13),
-                        today.minusDays(14), today.minusDays(15), today.minusDays(16),
-                        today.minusDays(17), today.minusDays(18), today.minusDays(19)
+                        today.minusDays(8), today.minusDays(9)
                 );
 
         assertThat(report.newsCount()).isEqualTo(1);
@@ -139,7 +136,7 @@ class RecommendationChatCompletionClientTest {
         BigDecimal macdLine1226 = kpiGenerator.computeMacdLine(mdHistory, 12, 26).orElseThrow();
         BigDecimal expectedMacdSignalLine9 = kpiGenerator.computeSignalLine(mdHistory, 9, 12, 26).orElseThrow();
         BigDecimal expectedRsi14 = kpiGenerator.computeRsi(mdHistory.getFirst());
-        BigDecimal expectedAtr14 = mdHistory.getFirst().getAtr();
+        BigDecimal expectedAtr14 = kpiGenerator.computeRelativeAtr(mdHistory.getFirst());
         BigDecimal expectedObv20 = kpiGenerator.computeObv(mdHistory, 20).orElseThrow();
 
         assertThat(report.ema20()).isEqualByComparingTo(expectedEma20);

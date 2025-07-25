@@ -248,6 +248,17 @@ public class MarketDataKpiGenerator {
         return Optional.of(atr.setScale(4, RoundingMode.HALF_UP));
     }
 
+    public BigDecimal computeRelativeAtr(MarketData md) {
+        BigDecimal atr = md.getAtr();
+        if (null == atr) {
+            return null;
+        }
+        return atr
+                .divide(md.getPrice(), 8, RoundingMode.HALF_UP)
+                .multiply(BigDecimal.valueOf(100))
+                .setScale(4, RoundingMode.HALF_UP);
+    }
+
     /**
      * @param history list of n consecutive MarketData entries. The previousClose param allows for not n + 1 needed.
      * @param n       size
