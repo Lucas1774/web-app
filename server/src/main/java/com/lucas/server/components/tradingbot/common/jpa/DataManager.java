@@ -23,8 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.text.MessageFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Function;
@@ -135,15 +134,30 @@ public class DataManager {
         IPortfolioJpaService<PortfolioBase> portfolioService = getService(type);
         Supplier<PortfolioBase> portfolioSupplier = portfolioTypeToNewPortfolio.get(type);
 
+        ZonedDateTime easternTime = ZonedDateTime.now(NY_ZONE);
+        LocalDate lastDate = easternTime.toLocalDate();
+
+        if (easternTime.toLocalTime().isBefore(MARKET_CLOSE)) {
+            lastDate = lastDate.minusDays(1);
+        }
+
+        while (lastDate.getDayOfWeek() == DayOfWeek.SATURDAY
+                || lastDate.getDayOfWeek() == DayOfWeek.SUNDAY
+                || isHoliday(lastDate)) {
+            lastDate = lastDate.minusDays(1);
+        }
+        LocalTime close = !EARLY_CLOSE_DATES_2025.contains(lastDate) ? MARKET_CLOSE : EARLY_CLOSE;
+        LocalDateTime startUtc = ZonedDateTime.of(lastDate, close, NY_ZONE).withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime();
+
         List<SymbolPayload> remainingPayload = symbols.parallelStream()
                 .map(symbol -> {
-                    List<MarketData> marketData = marketDataService.getTopForSymbolId(symbol.getId(), MARKET_DATA_RELEVANT_DAYS_COUNT);
-                    if (marketData.isEmpty()) {
+                    List<News> news = newsService.getTopForSymbolId(symbol.getId(), NEWS_COUNT);
+                    if (onlyIfHasNews && news.stream().noneMatch(n -> n.getDate().isAfter(startUtc))) {
                         return Optional.<SymbolPayload>empty();
                     }
 
-                    List<News> news = newsService.getTopForSymbolId(symbol.getId(), NEWS_COUNT);
-                    if (onlyIfHasNews && news.isEmpty()) {
+                    List<MarketData> marketData = marketDataService.getTopForSymbolId(symbol.getId(), MARKET_DATA_RELEVANT_DAYS_COUNT);
+                    if (marketData.isEmpty()) {
                         return Optional.<SymbolPayload>empty();
                     }
 
@@ -233,7 +247,7 @@ public class DataManager {
     }
 
     @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})
-    public List<News> generateSentiment(List<String> symbolNames, LocalDate from, LocalDate to)
+    public List<News> generateSentiment(List<String> symbolNames, LocalDateTime from, LocalDateTime to)
             throws ClientException, JsonProcessingException {
         List<Symbol> symbols = symbolService.getOrCreateByName(symbolNames);
         logger.info(GENERATION_SUCCESSFUL_INFO, SENTIMENT);

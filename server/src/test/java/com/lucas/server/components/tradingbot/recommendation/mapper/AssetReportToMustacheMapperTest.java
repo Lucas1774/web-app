@@ -39,11 +39,11 @@ class AssetReportToMustacheMapperTest {
                   • 20-day EMA: N/A
                   • MACD(12,26,9): line=N/A,signal=N/A,hist=N/A
                   • 14-day RSI: N/A
-                  • 14-day ATR%: N/A%
+                  • 14-day ATR%: N/A
                   • 20-day OBV: N/A
                 • News Summaries (last 2):
-                  • 2025-04-30 20:00:00 EDT: "Headline One" (Sentiment: N/A. Confidence: 54.4412%) Summary: First summary
-                  • 2025-05-01 20:00:00 EDT: "Headline Two" (Sentiment: N/A. Confidence: 54.4412%) Summary: Second summary
+                  • 2025-04-30 20:00:00 EDT: "Headline One" (Sentiment: N/A. Confidence: N/A) Summary: First summary
+                  • 2025-05-01 20:00:00 EDT: "Headline Two" (Sentiment: N/A. Confidence: N/A) Summary: Second summary
                 
                 """;
         assertThat(objectMapper.readTree(mapper.map(List.of(asset))).get("content").asText()).isEqualTo(expected);
@@ -111,9 +111,9 @@ class AssetReportToMustacheMapperTest {
 
     private static List<NewsItemRaw> getNewsNullValues() {
         return List.of(
-                new NewsItemRaw("Headline One", null, BigDecimal.valueOf(54.4412),
+                new NewsItemRaw("Headline One", null, null,
                         "First summary", LocalDateTime.of(LocalDate.of(2025, 5, 1), LocalTime.MIDNIGHT)),
-                new NewsItemRaw("Headline Two", null, BigDecimal.valueOf(54.4412),
+                new NewsItemRaw("Headline Two", null, null,
                         "Second summary", LocalDateTime.of(LocalDate.of(2025, 5, 2), LocalTime.MIDNIGHT))
         );
     }

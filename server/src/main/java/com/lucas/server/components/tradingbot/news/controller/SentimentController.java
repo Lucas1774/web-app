@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static com.lucas.server.common.Constants.DEFAULT_USERNAME;
@@ -38,9 +39,9 @@ public class SentimentController {
         if (DEFAULT_USERNAME.equals(username)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        LocalDate effectiveDate = from == null ? LocalDate.now().minusDays(1) : from;
+        LocalDateTime effectiveDate = from == null ? LocalDate.now().minusDays(1).atStartOfDay() : from.atStartOfDay();
         try {
-            return ResponseEntity.ok(jpaService.generateSentiment(SP500_SYMBOLS, effectiveDate, LocalDate.now()));
+            return ResponseEntity.ok(jpaService.generateSentiment(SP500_SYMBOLS, effectiveDate, LocalDate.now().plusDays(1).atStartOfDay()));
         } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -55,9 +56,9 @@ public class SentimentController {
         if (DEFAULT_USERNAME.equals(username)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        LocalDate effectiveDate = from == null ? LocalDate.now().minusDays(1) : from;
+        LocalDateTime effectiveDate = from == null ? LocalDate.now().minusDays(1).atStartOfDay() : from.atStartOfDay();
         try {
-            return ResponseEntity.ok(jpaService.generateSentiment(symbols, effectiveDate, LocalDate.now()));
+            return ResponseEntity.ok(jpaService.generateSentiment(symbols, effectiveDate, LocalDate.now().plusDays(1).atStartOfDay()));
         } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

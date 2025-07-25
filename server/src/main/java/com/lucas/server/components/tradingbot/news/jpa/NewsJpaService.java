@@ -9,15 +9,12 @@ import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.news.service.NewsSentimentClient;
 import lombok.experimental.Delegate;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.time.*;
+import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
 import java.util.List;
-
-import static com.lucas.server.common.Constants.*;
 
 @Service
 public class NewsJpaService implements JpaService<News> {
@@ -37,38 +34,11 @@ public class NewsJpaService implements JpaService<News> {
 
     // TODO: batch
     public List<News> getTopForSymbolId(Long symbolId, int limit) {
-        ZonedDateTime easternTime = ZonedDateTime.now(NY_ZONE);
-
-        LocalDate lastDate = getLastDate(easternTime);
-        LocalTime close = !EARLY_CLOSE_DATES_2025.contains(lastDate) ? MARKET_CLOSE : EARLY_CLOSE;
-        LocalDateTime startUtc = ZonedDateTime.of(lastDate, close, NY_ZONE).withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime();
-        LocalDateTime endUtc = easternTime.withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime();
-
-        Pageable pageRequest = PageRequest.of(
-                0, limit, Sort.by("date").descending()
-        );
-
-        return this.repository.findBySymbols_IdAndDateBetweenAndSentimentNotOrSymbols_IdAndDateBetweenAndSentimentIsNull(
-                        symbolId, startUtc, endUtc, "neutral",
-                        symbolId, startUtc, endUtc, pageRequest
+        return this.repository.findBySymbols_IdAndSentimentNotOrSymbols_IdAndSentimentIsNull(
+                symbolId, "neutral", symbolId, PageRequest.of(
+                        0, limit, Sort.by("date").descending()
                 )
-                .getContent();
-    }
-
-    private static LocalDate getLastDate(ZonedDateTime easternTime) {
-        LocalDate lastDate = easternTime.toLocalDate();
-
-        if (easternTime.toLocalTime().isBefore(MARKET_CLOSE)) {
-            lastDate = lastDate.minusDays(1);
-        }
-
-        while (lastDate.getDayOfWeek() == DayOfWeek.SATURDAY
-                || lastDate.getDayOfWeek() == DayOfWeek.SUNDAY
-                || isHoliday(lastDate)) {
-            lastDate = lastDate.minusDays(1);
-        }
-
-        return lastDate;
+        ).getContent();
     }
 
     public List<News> createOrUpdate(List<News> entities) {
@@ -85,7 +55,7 @@ public class NewsJpaService implements JpaService<News> {
                 new LinkedHashSet<>(entities));
     }
 
-    public List<News> generateSentiment(List<Long> list, LocalDate from, LocalDate to)
+    public List<News> generateSentiment(List<Long> list, LocalDateTime from, LocalDateTime to)
             throws ClientException, JsonProcessingException {
         List<News> news = repository.findAllBySymbols_IdInAndDateBetween(list, from, to);
         return sentimentClient.generateSentiment(news);

@@ -122,11 +122,12 @@ class RecommendationChatCompletionClientTest {
                         today.minusDays(8), today.minusDays(9)
                 );
 
-        assertThat(report.newsCount()).isEqualTo(1);
+        assertThat(report.newsCount()).isEqualTo(10); // 5 have neutral sentiment
         assertThat(report.news())
-                .hasSize(1)
+                .hasSize(10)
                 .extracting(NewsItemRaw::headline)
-                .containsExactly("Headline 1");
+                .containsExactly("Headline 1", "Headline 3", "Headline 5", "Headline 6", "Headline 7",
+                        "Headline 9", "Headline 11", "Headline 12", "Headline 13", "Headline 15");
 
         // then: KPIs match the kpiGenerator calculations
         List<MarketData> mdHistory = marketDataService.getTopForSymbolId(
