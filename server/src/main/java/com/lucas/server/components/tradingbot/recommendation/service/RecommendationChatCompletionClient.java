@@ -101,7 +101,7 @@ public class RecommendationChatCompletionClient {
                             .replace("json", "")),
                     prompt.stream().map(this::getAsString).collect(Collectors.joining("\n\n\n")), client.getModelName());
         } catch (Exception e) {
-            logger.warn(CLIENT_FAILED_BACKUP_WARN, client.getModelName(), PROMPT, e.getMessage());
+            logger.warn(CLIENT_FAILED_BACKUP_WARN, client.getModelName(), PROMPT, e);
             return new ArrayList<>();
         }
     }

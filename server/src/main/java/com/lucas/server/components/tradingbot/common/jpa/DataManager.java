@@ -410,7 +410,7 @@ public class DataManager {
             try {
                 res.add(twelveDataMarketDataClient.retrieveMarketData(List.of(symbol), MarketDataType.LAST).getFirst());
             } catch (ClientException | JsonProcessingException e) {
-                logger.warn(CLIENT_FAILED_BACKUP_WARN, twelveDataMarketDataClient.getClass().getSimpleName(), symbol, e.getMessage());
+                logger.warn(CLIENT_FAILED_BACKUP_WARN, twelveDataMarketDataClient.getClass().getSimpleName(), symbol, e);
                 res.add(finnhubMarketDataClient.retrieveMarketData(symbol));
             }
         }

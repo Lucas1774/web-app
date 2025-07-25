@@ -91,7 +91,7 @@ public class Constants {
     public static final String SUDOKU_IGNORED_MALFORMED_JSON_WARN = "Couldn't deserialize sudoku from raw data {}";
     public static final String KPI_RETURNED_ZERO_WARN = "Value is zero for {}, {}";
     public static final String NON_COMPUTABLE_KPI_WARN = "Error attempting to compute {} for {}";
-    public static final String CLIENT_FAILED_BACKUP_WARN = "{} failed when trying to process {}: {}";
+    public static final String CLIENT_FAILED_BACKUP_WARN = "{} failed when trying to process {}";
     public static final String MARKET_STILL_OPEN_WARN = "Market is still open!";
     public static final String RETRIEVAL_FAILED_WARN = "Error generating {} {}";
     public static final String SCHEDULED_TASK_SUCCESS_INFO = "Successfully {}: {}";
