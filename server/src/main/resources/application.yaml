@@ -363,5 +363,8 @@ twelve-data:
   api-key: ${TWELVE_DATA_KEY}
   endpoint: ${TWELVE_DATA_ENDPOINT}
 
+yahoo:
+  endpoint: ${YAHOO_ENDPOINT}
+
 sentiment:
   url: ${SENTIMENT_URL}

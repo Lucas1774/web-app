@@ -20,7 +20,7 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Set;
 
-import static com.lucas.server.common.Constants.JSON_MAPPING_ERROR;
+import static com.lucas.server.common.Constants.MAPPING_ERROR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
@@ -103,7 +103,9 @@ class FinnhubNewsResponseMapperTest {
         assertThat(list)
                 .isNotNull()
                 .hasSize(2)
-                .allSatisfy(n -> assertThat(n.getSymbols().toArray(Symbol[]::new)[0].getName()).isEqualTo(symbol.getName()))
+                .allSatisfy(n -> assertThat(n.getSymbols().stream().map(Symbol::getName))
+                        .hasSize(1)
+                        .containsExactly(symbol.getName()))
                 .extracting(News::getExternalId, News::getHeadline)
                 .containsExactly(
                         tuple(now, "H1"),
@@ -139,6 +141,6 @@ class FinnhubNewsResponseMapperTest {
         // when & then
         assertThatThrownBy(() -> mapper.mapAll(arrayNode, symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow()))
                 .isInstanceOf(JsonProcessingException.class)
-                .hasMessageContaining(MessageFormat.format(JSON_MAPPING_ERROR, "news"));
+                .hasMessageContaining(MessageFormat.format(MAPPING_ERROR, "news"));
     }
 }

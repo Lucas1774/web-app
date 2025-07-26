@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 import java.text.MessageFormat;
 
-import static com.lucas.server.common.Constants.JSON_MAPPING_ERROR;
+import static com.lucas.server.common.Constants.MAPPING_ERROR;
 import static com.lucas.server.common.Constants.SUDOKU_NUMBER_OF_CELLS;
 
 @Component
@@ -27,7 +27,7 @@ public class StringToSudokuMapper implements Mapper<String, Sudoku> {
             }
             return Sudoku.withValues(attributeConverter.convertToEntityAttribute(sudoku));
         } catch (Exception e) {
-            throw new JsonProcessingException(MessageFormat.format(JSON_MAPPING_ERROR, "sudoku"), e);
+            throw new JsonProcessingException(MessageFormat.format(MAPPING_ERROR, "sudoku"), e);
         }
     }
 }

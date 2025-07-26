@@ -268,7 +268,6 @@ public class DataManager {
         return retrieveNewsByDateRange(symbols, from, to);
     }
 
-    @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})
     private List<News> retrieveNewsByDateRange(List<Symbol> symbols, LocalDate from,
                                                LocalDate now) throws ClientException, JsonProcessingException {
         List<News> news = newsClient.retrieveNewsByDateRange(symbols, from, now);

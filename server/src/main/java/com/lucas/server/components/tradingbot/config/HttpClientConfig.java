@@ -52,6 +52,12 @@ public class HttpClientConfig {
                         .limitForPeriod(1)
                         .timeoutDuration(Duration.ofMinutes(1))
                         .build()));
+        res.put(YAHOO_FINANCE_RATE_LIMITER,
+                RateLimiter.of(YAHOO_FINANCE_RATE_LIMITER, RateLimiterConfig.custom()
+                        .limitRefreshPeriod(Duration.ofSeconds(1).dividedBy(4))
+                        .limitForPeriod(1)
+                        .timeoutDuration(Duration.ofMinutes(1))
+                        .build()));
         FINNHUB_RATE_LIMITERS.forEach(name -> res.put(name,
                 RateLimiter.of(name, RateLimiterConfig.custom()
                         .limitRefreshPeriod(Duration.ofSeconds(1))

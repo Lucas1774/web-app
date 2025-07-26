@@ -11,7 +11,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.lucas.server.common.Constants.JSON_MAPPING_ERROR;
+import static com.lucas.server.common.Constants.MAPPING_ERROR;
 import static com.lucas.server.common.Constants.SUDOKU_IGNORED_MALFORMED_JSON_WARN;
 
 @Component
@@ -39,7 +39,7 @@ public class SudokuFileToSudokuMapper implements Mapper<String, List<Sudoku>> {
         try {
             lines = content.split("\\\\r\\\\n|\\\\r|\\\\n");
         } catch (Exception e) {
-            throw new JsonProcessingException(MessageFormat.format(JSON_MAPPING_ERROR, "sudoku"), e);
+            throw new JsonProcessingException(MessageFormat.format(MAPPING_ERROR, "sudoku"), e);
         }
         String newRawData = "";
         for (int i = 1; i <= lines.length; i++) {

@@ -110,7 +110,7 @@ public class RecommendationChatCompletionClient {
         try {
             return messageFactory.get(data.get(ROLE).asText()).apply(data.get(CONTENT).asText());
         } catch (Exception e) {
-            throw new JsonProcessingException(MessageFormat.format(JSON_MAPPING_ERROR, PROMPT), e);
+            throw new JsonProcessingException(MessageFormat.format(MAPPING_ERROR, PROMPT), e);
         }
     }
 

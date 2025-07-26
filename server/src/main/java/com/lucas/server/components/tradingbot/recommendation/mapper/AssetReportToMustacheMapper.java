@@ -173,7 +173,7 @@ public class AssetReportToMustacheMapper implements Mapper<List<AssetReportRaw>,
             mustache.execute(out, Collections.singletonMap("assets", assets.stream().map(AssetReport::from).toList())).flush();
             return out.toString();
         } catch (Exception e) {
-            throw new JsonProcessingException(MessageFormat.format(JSON_MAPPING_ERROR, "asset report"), e);
+            throw new JsonProcessingException(MessageFormat.format(MAPPING_ERROR, "asset report"), e);
         }
     }
 }

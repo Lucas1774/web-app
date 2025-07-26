@@ -39,13 +39,13 @@ public class TwelveDataMarketResponseMapper implements Mapper<JsonNode, MarketDa
                     .setChange(new BigDecimal(json.get("change").asText()))
                     .setChangePercent(new BigDecimal(json.get("percent_change").asText()));
         } catch (Exception e) {
-            throw new JsonProcessingException(MessageFormat.format(JSON_MAPPING_ERROR, MARKET_DATA), e);
+            throw new JsonProcessingException(MessageFormat.format(MAPPING_ERROR, MARKET_DATA), e);
         }
     }
 
     public MarketData map(JsonNode json, Symbol symbol) throws JsonProcessingException {
         if (!symbol.getName().equals(json.path("symbol").asText(null))) {
-            throw new JsonProcessingException(MessageFormat.format(JSON_MAPPING_ERROR, MARKET_DATA));
+            throw new JsonProcessingException(MessageFormat.format(MAPPING_ERROR, MARKET_DATA));
         }
         return map(json).setSymbol(symbol);
     }
@@ -53,7 +53,7 @@ public class TwelveDataMarketResponseMapper implements Mapper<JsonNode, MarketDa
     public List<MarketData> mapAll(JsonNode json, Symbol symbol) throws JsonProcessingException {
         try {
             if (!symbol.getName().equals(json.at("/meta/symbol").asText(null))) {
-                throw new JsonProcessingException(MessageFormat.format(JSON_MAPPING_ERROR, MARKET_DATA));
+                throw new JsonProcessingException(MessageFormat.format(MAPPING_ERROR, MARKET_DATA));
             }
             JsonNode series = json.get("values");
 
@@ -73,7 +73,7 @@ public class TwelveDataMarketResponseMapper implements Mapper<JsonNode, MarketDa
 
             return history;
         } catch (Exception e) {
-            throw new JsonProcessingException(MessageFormat.format(JSON_MAPPING_ERROR, MARKET_DATA), e);
+            throw new JsonProcessingException(MessageFormat.format(MAPPING_ERROR, MARKET_DATA), e);
         }
     }
 }

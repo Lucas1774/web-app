@@ -17,7 +17,7 @@ import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.util.Set;
 
-import static com.lucas.server.common.Constants.JSON_MAPPING_ERROR;
+import static com.lucas.server.common.Constants.MAPPING_ERROR;
 import static com.lucas.server.common.Constants.MARKET_DATA;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -99,6 +99,6 @@ class FinnhubMarketResponseMapperTest {
         // when & then
         assertThatThrownBy(() -> mapper.map(objectMapper.readTree(json), symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow()))
                 .isInstanceOf(JsonProcessingException.class)
-                .hasMessageContaining(MessageFormat.format(JSON_MAPPING_ERROR, MARKET_DATA));
+                .hasMessageContaining(MessageFormat.format(MAPPING_ERROR, MARKET_DATA));
     }
 }
