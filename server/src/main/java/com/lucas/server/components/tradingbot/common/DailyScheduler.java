@@ -59,10 +59,8 @@ public class DailyScheduler {
     }
 
     private void updateNews() {
-        LocalDate to = LocalDate.now();
-        LocalDate from = to.minusDays(1);
         try {
-            List<News> updatedNews = dataManager.retrieveNewsByDateRangeAndName(SP500_SYMBOLS, from, to);
+            List<News> updatedNews = dataManager.retrieveNewsByName(SP500_SYMBOLS);
             logger.info(SCHEDULED_TASK_SUCCESS_INFO, "fetched news", updatedNews.stream()
                     .map(News::getHeadline).toList());
         } catch (ClientException | JsonProcessingException e) {
@@ -78,10 +76,8 @@ public class DailyScheduler {
     }
 
     private void updateNewsForTopRecommendedSymbols(List<Long> topRecommendedSymbols) {
-        LocalDate to = LocalDate.now();
-        LocalDate from = to.minusDays(1);
         try {
-            List<News> updatedNews = dataManager.retrieveNewsByDateRangeAndId(topRecommendedSymbols, from, to);
+            List<News> updatedNews = dataManager.retrieveNewsById(topRecommendedSymbols);
             logger.info(SCHEDULED_TASK_SUCCESS_INFO, "fetched news", updatedNews.stream()
                     .map(News::getHeadline).toList());
         } catch (ClientException | JsonProcessingException e) {

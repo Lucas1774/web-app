@@ -288,7 +288,7 @@ const Portfolio = () => {
         }
         setIsLoading(true);
         try {
-            const resp = await get(`/news/historic/${new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10)}/${ids}`);
+            const resp = await get(`/news/last/${ids}`);
             if (resp.data.length === 0) {
                 setMessage("No new news");
                 setTimeout(() => {

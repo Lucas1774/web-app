@@ -11,6 +11,7 @@ import com.lucas.server.components.tradingbot.marketdata.service.TwelveDataMarke
 import com.lucas.server.components.tradingbot.news.jpa.News;
 import com.lucas.server.components.tradingbot.news.jpa.NewsJpaService;
 import com.lucas.server.components.tradingbot.news.service.FinnhubNewsClient;
+import com.lucas.server.components.tradingbot.news.service.YahooFinanceNewsClient;
 import com.lucas.server.components.tradingbot.portfolio.jpa.*;
 import com.lucas.server.components.tradingbot.portfolio.service.PortfolioManager;
 import com.lucas.server.components.tradingbot.recommendation.jpa.Recommendation;
@@ -39,7 +40,8 @@ public class DataManager {
     private final MarketDataJpaService marketDataService;
     private final NewsJpaService newsService;
     private final RecommendationsJpaService recommendationsService;
-    private final FinnhubNewsClient newsClient;
+    private final YahooFinanceNewsClient yahooFinanceNewsClient;
+    private final FinnhubNewsClient finnhubNewsClient;
     private final PortfolioManager portfolioManager;
     private final RecommendationChatCompletionClient recommendationClient;
     private final Map<MarketDataType, TypeToMarketDataFunction> typeToRunner;
@@ -56,16 +58,17 @@ public class DataManager {
     }
 
     public DataManager(SymbolJpaService symbolService, MarketDataJpaService marketDataService, NewsJpaService newsService,
-                       RecommendationsJpaService recommendationsService, RecommendationChatCompletionClient recommendationClient,
-                       PortfolioJpaService portfolioService, PortfolioMockJpaService portfolioMockService,
-                       FinnhubNewsClient newsClient, PortfolioManager portfolioManager,
+                       RecommendationsJpaService recommendationsService, YahooFinanceNewsClient yahooFinanceNewsClient,
+                       RecommendationChatCompletionClient recommendationClient, PortfolioJpaService portfolioService,
+                       PortfolioMockJpaService portfolioMockService, FinnhubNewsClient newsClient, PortfolioManager portfolioManager,
                        TwelveDataMarketDataClient twelveDataMarketDataClient, FinnhubMarketDataClient finnhubMarketDataClient) {
         this.symbolService = symbolService;
         this.marketDataService = marketDataService;
         this.newsService = newsService;
         this.recommendationsService = recommendationsService;
+        this.yahooFinanceNewsClient = yahooFinanceNewsClient;
         this.recommendationClient = recommendationClient;
-        this.newsClient = newsClient;
+        this.finnhubNewsClient = newsClient;
         this.portfolioManager = portfolioManager;
         typeToRunner = new EnumMap<>(Map.of(
                 MarketDataType.LAST, symbols -> retrieveMarketDataWithBackupStrategy(symbols, twelveDataMarketDataClient, finnhubMarketDataClient),
@@ -255,6 +258,25 @@ public class DataManager {
     }
 
     @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})
+    public List<News> retrieveNewsByName(List<String> symbolNames) throws ClientException, JsonProcessingException {
+        List<Symbol> symbols = symbolService.getOrCreateByName(symbolNames);
+        return retrieveNews(symbols);
+    }
+
+    @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})
+    public List<News> retrieveNewsById(List<Long> symbolIds) throws ClientException, JsonProcessingException {
+        List<Symbol> symbols = symbolService.findAllById(symbolIds);
+        return retrieveNews(symbols);
+    }
+
+    private List<News> retrieveNews(List<Symbol> symbols) throws ClientException, JsonProcessingException {
+        List<News> news = yahooFinanceNewsClient.retrieveNews(symbols);
+        logger.info(GENERATION_SUCCESSFUL_INFO, NEWS);
+        newsService.createOrUpdate(news);
+        return news;
+    }
+
+    @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})
     public List<News> retrieveNewsByDateRangeAndId(List<Long> symbolIds, LocalDate from,
                                                    LocalDate to) throws ClientException, JsonProcessingException {
         List<Symbol> symbols = symbolService.findAllById(symbolIds);
@@ -270,7 +292,7 @@ public class DataManager {
 
     private List<News> retrieveNewsByDateRange(List<Symbol> symbols, LocalDate from,
                                                LocalDate now) throws ClientException, JsonProcessingException {
-        List<News> news = newsClient.retrieveNewsByDateRange(symbols, from, now);
+        List<News> news = finnhubNewsClient.retrieveNewsByDateRange(symbols, from, now);
         logger.info(GENERATION_SUCCESSFUL_INFO, NEWS);
         newsService.createOrUpdate(news);
         return news;

@@ -37,10 +37,8 @@ public class NewsController {
         if (DEFAULT_USERNAME.equals(username)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        LocalDate to = LocalDate.now();
-        LocalDate from = to.minusDays(1);
         try {
-            return ResponseEntity.ok(jpaService.retrieveNewsByDateRangeAndName(SP500_SYMBOLS, from, to));
+            return ResponseEntity.ok(jpaService.retrieveNewsByName(SP500_SYMBOLS));
         } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -53,10 +51,8 @@ public class NewsController {
         if (DEFAULT_USERNAME.equals(username)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        LocalDate to = LocalDate.now();
-        LocalDate from = to.minusDays(1);
         try {
-            return ResponseEntity.ok(jpaService.retrieveNewsByDateRangeAndId(symbols, from, to));
+            return ResponseEntity.ok(jpaService.retrieveNewsById(symbols));
         } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

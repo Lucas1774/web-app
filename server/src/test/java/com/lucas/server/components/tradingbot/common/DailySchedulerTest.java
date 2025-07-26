@@ -12,11 +12,9 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.Duration;
-import java.time.LocalDate;
 
 import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 
@@ -38,12 +36,10 @@ class DailySchedulerTest {
     @Test
     @Transactional
     void schedulerShouldInvokeClientRepeatedly() {
-        LocalDate to = LocalDate.now();
-        LocalDate from = to.minusDays(1);
         await().atMost(Duration.ofSeconds(10))
                 .untilAsserted(() -> {
                             verify(dataManager, atLeastOnce()).retrieveMarketData(any(), any());
-                            verify(dataManager, atLeastOnce()).retrieveNewsByDateRangeAndName(any(), eq(from), eq(to));
+                            verify(dataManager, atLeastOnce()).retrieveNewsByName(any());
                         }
                 );
     }
