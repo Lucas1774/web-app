@@ -41,7 +41,7 @@ public class RecommendationsController {
                 ? filterClients(clients, RecommendationMode.NOT_RANDOM)
                 : models.stream().map(clients::get).toList();
         return ResponseEntity.ok(jpaService.getRecommendationsById(symbols, getPortfolioType(username),
-                overwrite, null != models, selectedClients));
+                overwrite, selectedClients));
     }
 
     @GetMapping("/random/{count}")
@@ -57,7 +57,7 @@ public class RecommendationsController {
                 ? filterClients(clients, RecommendationMode.RANDOM)
                 : models.stream().map(clients::get).toList();
         return ResponseEntity.ok(jpaService.getRandomRecommendations(getPortfolioType(username), count,
-                overwrite, false, null != models, selectedClients));
+                overwrite, false, selectedClients));
     }
 
     @GetMapping("/models")

@@ -48,7 +48,7 @@ public class HttpClientConfig {
                         .build()));
         res.put(TWELVEDATA_RATE_LIMITER,
                 RateLimiter.of(TWELVEDATA_RATE_LIMITER, RateLimiterConfig.custom()
-                        .limitRefreshPeriod(Duration.ofMinutes(1).dividedBy(8))
+                        .limitRefreshPeriod(Duration.ofMinutes(1).dividedBy(7))
                         .limitForPeriod(1)
                         .timeoutDuration(Duration.ofMinutes(1))
                         .build()));

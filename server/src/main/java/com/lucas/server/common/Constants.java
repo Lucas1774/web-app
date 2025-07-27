@@ -3,6 +3,7 @@ package com.lucas.server.common;
 import com.lucas.server.components.tradingbot.common.AIClient;
 
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
@@ -46,8 +47,8 @@ public class Constants {
     public static final int SUDOKU_SIZE = 9;
     public static final int SUDOKU_NUMBER_OF_CELLS = 81;
     public static final int MARKET_DATA_RELEVANT_DAYS_COUNT = 34;
-    public static final int HISTORY_DAYS_COUNT = 10;
-    public static final int NEWS_COUNT = 12;
+    public static final int HISTORY_DAYS_COUNT = 5;
+    public static final int NEWS_COUNT = 10;
     public static final int DATABASE_NEWS_PER_SYMBOL = 20;
     public static final int DATABASE_MARKET_DATA_PER_SYMBOL = 100;
     public static final int DATABASE_RECOMMENDATIONS_PER_SYMBOL = 5;
@@ -56,10 +57,10 @@ public class Constants {
     public static final BigDecimal NEWS_FINE_GRAIN_THRESHOLD = BigDecimal.valueOf(0.75);
     public static final BigDecimal GROK_FINE_GRAIN_THRESHOLD = BigDecimal.valueOf(0.75);
 
-    public static final int RECOMMENDATION_W_BAILOUT_MAX_RETRIES = 6;
-    public static final int TWELVEDATA_BACKOFF_MILLIS = 7500;
+    public static final int RECOMMENDATION_MAX_RETRIES = 6;
 
     public static final String DEFAULT_USERNAME = "default";
+    public static final String EMPTY_STRING = "";
     public static final String NA = "N/A";
     public static final String INVALID_EXPRESSION = "Invalid expression";
     public static final String COMPANY_NEWS = "/company-news";
@@ -116,8 +117,11 @@ public class Constants {
             LocalDate.of(2025, 12, 25) // Christmas Day
     );
 
-    public static boolean isHoliday(LocalDate date) {
-        return MARKET_HOLIDAYS_2025.contains(date);
+    public static boolean isTradingDate(LocalDate date) {
+        DayOfWeek dayOfWeek = date.getDayOfWeek();
+        return dayOfWeek != DayOfWeek.SATURDAY
+                && dayOfWeek != DayOfWeek.SUNDAY
+                && !MARKET_HOLIDAYS_2025.contains(date);
     }
 
     public static final Set<LocalDate> EARLY_CLOSE_DATES_2025 = Set.of(

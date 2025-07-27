@@ -10,8 +10,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.time.Duration;
 import java.util.Random;
 
-import static com.lucas.server.common.Constants.TWELVEDATA_BACKOFF_MILLIS;
-
 @Configuration
 public class Config {
 
@@ -22,8 +20,8 @@ public class Config {
 
     @Bean
     public RestTemplate restTemplate(RestTemplateBuilder restTemplateBuilder) {
-        return restTemplateBuilder.connectTimeout(Duration.ofMillis(TWELVEDATA_BACKOFF_MILLIS))
-                .readTimeout(Duration.ofMillis(TWELVEDATA_BACKOFF_MILLIS))
+        return restTemplateBuilder.connectTimeout(Duration.ofSeconds(1))
+                .readTimeout(Duration.ofSeconds(10))
                 .build();
     }
 

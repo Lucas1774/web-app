@@ -101,14 +101,14 @@ public class DataManager {
 
     @Transactional
     public List<Recommendation> getRecommendationsById(List<Long> symbolIds, PortfolioType type,
-                                                       boolean overwrite, boolean bailout, List<AIClient> clients) {
+                                                       boolean overwrite, List<AIClient> clients) {
         List<Symbol> symbols = symbolService.findAllById(symbolIds);
-        return getRecommendationsInParallel(symbols, type, overwrite, clients, false, bailout);
+        return getRecommendationsInParallel(symbols, type, overwrite, clients, false);
     }
 
     @Transactional
     public List<Recommendation> getRandomRecommendations(PortfolioType type, int count,
-                                                         boolean overwrite, boolean onlyIfHasNews, boolean bailout, List<AIClient> clients) {
+                                                         boolean overwrite, boolean onlyIfHasNews, List<AIClient> clients) {
         Set<Long> already = recommendationsService.findByDateBetween(LocalDate.now(), LocalDate.now().plusDays(1)).stream()
                 .map(r -> r.getSymbol().getId())
                 .collect(Collectors.toSet());
@@ -127,30 +127,26 @@ public class DataManager {
         }
 
         return getRecommendationsInParallel(symbolService.findAllById(finalList), type, overwrite,
-                clients, onlyIfHasNews, bailout);
+                clients, onlyIfHasNews);
     }
 
     private List<Recommendation> getRecommendationsInParallel(List<Symbol> symbols, PortfolioType type, boolean overwrite,
-                                                              List<AIClient> clients, boolean onlyIfHasNews, boolean bailout) {
+                                                              List<AIClient> clients, boolean onlyIfHasNews) {
         List<Recommendation> res = new ArrayList<>();
         List<AIClient> mutableClients = new ArrayList<>(clients);
         IPortfolioJpaService<PortfolioBase> portfolioService = getService(type);
         Supplier<PortfolioBase> portfolioSupplier = portfolioTypeToNewPortfolio.get(type);
 
         ZonedDateTime easternTime = ZonedDateTime.now(NY_ZONE);
-        LocalDate lastDate = easternTime.toLocalDate();
-
+        LocalDate lastTradeFinishedDate = easternTime.toLocalDate();
         if (easternTime.toLocalTime().isBefore(MARKET_CLOSE)) {
-            lastDate = lastDate.minusDays(1);
+            lastTradeFinishedDate = lastTradeFinishedDate.minusDays(1);
         }
-
-        while (lastDate.getDayOfWeek() == DayOfWeek.SATURDAY
-                || lastDate.getDayOfWeek() == DayOfWeek.SUNDAY
-                || isHoliday(lastDate)) {
-            lastDate = lastDate.minusDays(1);
+        while (!isTradingDate(lastTradeFinishedDate)) {
+            lastTradeFinishedDate = lastTradeFinishedDate.minusDays(1);
         }
-        LocalTime close = !EARLY_CLOSE_DATES_2025.contains(lastDate) ? MARKET_CLOSE : EARLY_CLOSE;
-        LocalDateTime startUtc = ZonedDateTime.of(lastDate, close, NY_ZONE).withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime();
+        LocalTime close = !EARLY_CLOSE_DATES_2025.contains(lastTradeFinishedDate) ? MARKET_CLOSE : EARLY_CLOSE;
+        LocalDateTime startUtc = ZonedDateTime.of(lastTradeFinishedDate, close, NY_ZONE).withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime();
 
         List<SymbolPayload> remainingPayload = symbols.parallelStream()
                 .map(symbol -> {
@@ -175,8 +171,7 @@ public class DataManager {
         logger.info(RETRIEVING_DATA_INFO, RECOMMENDATION, remainingPayload.size());
         try (ExecutorService executor = Executors.newFixedThreadPool(clients.size() * 5)) {
             int retries = 0;
-            while (!remainingPayload.isEmpty() && (!bailout || retries < RECOMMENDATION_W_BAILOUT_MAX_RETRIES)) {
-                retries++;
+            while (!remainingPayload.isEmpty() && retries < RECOMMENDATION_MAX_RETRIES) {
                 List<Recommendation> fetched = doGetRecommendationsInParallel(executor, remainingPayload,
                         overwrite, mutableClients);
                 res.addAll(fetched);
@@ -186,9 +181,13 @@ public class DataManager {
                 remainingPayload = remainingPayload.stream()
                         .filter(p -> !fetchedSymbols.contains(p.symbol()))
                         .toList();
+                retries++;
             }
         }
 
+        if (!remainingPayload.isEmpty()) {
+            logger.warn(RETRIEVAL_FAILED_WARN, RECOMMENDATION, remainingPayload.stream().map(SymbolPayload::symbol).toList());
+        }
         return res;
     }
 

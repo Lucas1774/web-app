@@ -31,7 +31,7 @@ class AssetReportToMustacheMapperTest {
                 [ASSET: FOO]
                 • Current Position:
                   • N/A shares ($N/A)
-                  • Avg Entry Price: $N/A
+                  • Avg Entry Price: N/A
                   • Unrealized PnL: $0 (0%)
                 • Price History (last 1 days):
                   • 2025-05-01: O100 H110 L90 C105 VN/A
@@ -42,8 +42,8 @@ class AssetReportToMustacheMapperTest {
                   • 14-day ATR%: N/A
                   • 20-day OBV: N/A
                 • News Summaries (last 2):
-                  • 2025-04-30 20:00:00 EDT: "Headline One" (Sentiment: N/A. Confidence: N/A) Summary: First summary
-                  • 2025-05-01 20:00:00 EDT: "Headline Two" (Sentiment: N/A. Confidence: N/A) Summary: Second summary
+                  • 2025-04-30 20:00:00 EDT: Headline One: First summary
+                  • 2025-05-01 20:00:00 EDT: Headline Two: Second summary
                 
                 """;
         assertThat(objectMapper.readTree(mapper.map(List.of(asset))).get("content").asText()).isEqualTo(expected);
@@ -71,8 +71,8 @@ class AssetReportToMustacheMapperTest {
                   • 14-day ATR%: 15.68%
                   • 20-day OBV: 15.69
                 • News Summaries (last 2):
-                  • 2025-04-30 20:00:00 EDT: "Headline One" (Sentiment: positive. Confidence: 54.4412%) Summary: First summary
-                  • 2025-05-01 20:00:00 EDT: "Headline Two" (Sentiment: negative. Confidence: 54.4412%) Summary: Second summary
+                  • 2025-04-30 20:00:00 EDT: Sentiment: positive. Confidence: 54.4412%. Headline One: First summary
+                  • 2025-05-01 20:00:00 EDT: Sentiment: negative. Confidence: 54.4412%. Headline Two: Second summary
                 
                 """;
 

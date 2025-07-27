@@ -40,7 +40,7 @@ public class PortfolioManager {
      */
     public SymbolStand computeStand(PortfolioBase portfolio, MarketData last) {
         BigDecimal quantity = portfolio.getQuantity();
-        BigDecimal averageCost = portfolio.getAverageCost();
+        BigDecimal averageCost = quantity == null || quantity.signum() == 0 ? null : portfolio.getAverageCost();
         BigDecimal averageCommission = portfolio.getAverageCommission();
         BigDecimal positionValue;
         BigDecimal pnL;

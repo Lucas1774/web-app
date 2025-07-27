@@ -24,7 +24,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -79,8 +78,7 @@ class RecommendationChatCompletionClientTest {
         // given: insert 15 news items. Needs to be greater than the news per symbol and day
         List<News> articles = new ArrayList<>();
         LocalDateTime todayDateTime = LocalDateTime.now()
-                .atZone(ZoneId.systemDefault())
-                .withZoneSameInstant(ZoneOffset.UTC)
+                .atZone(ZoneOffset.UTC)
                 .toLocalDateTime();
         for (int i = 1; i <= 15; i++) {
             News news = new News()
@@ -117,9 +115,8 @@ class RecommendationChatCompletionClientTest {
         assertThat(report.priceHistory())
                 .hasSize(HISTORY_DAYS_COUNT)
                 .extracting(PricePointRaw::date)
-                .containsExactly(today, today.minusDays(1), today.minusDays(2), today.minusDays(3),
-                        today.minusDays(4), today.minusDays(5), today.minusDays(6), today.minusDays(7),
-                        today.minusDays(8), today.minusDays(9)
+                .containsExactly(today, today.minusDays(1), today.minusDays(2),
+                        today.minusDays(3), today.minusDays(4)
                 );
 
         assertThat(report.newsCount()).isEqualTo(10); // 5 have neutral sentiment

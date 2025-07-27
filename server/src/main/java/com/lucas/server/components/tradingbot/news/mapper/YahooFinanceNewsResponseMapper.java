@@ -26,27 +26,18 @@ public class YahooFinanceNewsResponseMapper implements Mapper<Element, News> {
     @Override
     public News map(Element item) throws JsonProcessingException {
         try {
-            String guid = item.getElementsByTagName("guid").item(0).getTextContent();
-            String title = item.getElementsByTagName("title").item(0).getTextContent();
-            String description = item.getElementsByTagName("description").item(0).getTextContent();
-            String link = item.getElementsByTagName("link").item(0).getTextContent();
-            LocalDateTime date = LocalDateTime.from(ZonedDateTime.parse(
-                    item.getElementsByTagName("pubDate").item(0).getTextContent(),
-                    DateTimeFormatter.RFC_1123_DATE_TIME
-            ));
-
-            long externalId = guid.hashCode();
             return new News()
-                    .setExternalId(externalId)
-                    .setDate(date)
-                    .setHeadline(title)
-                    .setSummary(StringUtils.left(description, 1024))
-                    .setUrl(link)
+                    .setExternalId((long) item.getElementsByTagName("guid").item(0).getTextContent().hashCode())
+                    .setDate(LocalDateTime.from(ZonedDateTime.parse(
+                            item.getElementsByTagName("pubDate").item(0).getTextContent(),
+                            DateTimeFormatter.RFC_1123_DATE_TIME
+                    )))
+                    .setHeadline(item.getElementsByTagName("title").item(0).getTextContent())
+                    .setSummary(StringUtils.left(item.getElementsByTagName("description").item(0).getTextContent(), 1024))
+                    .setUrl(item.getElementsByTagName("link").item(0).getTextContent())
                     .setSource("Yahoo Finance RSS");
-
         } catch (Exception e) {
-            throw new JsonProcessingException(MessageFormat.format(MAPPING_ERROR, "news"), e) {
-            };
+            throw new JsonProcessingException(MessageFormat.format(MAPPING_ERROR, "news"), e);
         }
     }
 

@@ -1,4 +1,4 @@
 {
   "role": "user",
-  "content": "• Current date: {date}\n• Low-volume trade (~$800/trade)\n• News- and technical-based morning entries, where timing is very important\n• Exit on profit if no further upside is clear; exit on bad news or cut-loss in the morning or near market close.\n\n"
+  "content": "• Current date: {date}\n• Low-volume (~$800/trade)\n• News- and technical-based morning entries\n• Exit on profit if no further upside is clear; exit on bad news or cut-loss.\n\n"
 }

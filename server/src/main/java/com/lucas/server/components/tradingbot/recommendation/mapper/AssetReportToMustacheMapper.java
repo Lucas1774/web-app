@@ -105,7 +105,7 @@ public class AssetReportToMustacheMapper implements Mapper<List<AssetReportRaw>,
                     report.symbol,
                     report.position != null ? report.position.stripTrailingZeros().toPlainString() : NA,
                     report.positionValue != null ? report.positionValue.stripTrailingZeros().toPlainString() : NA,
-                    report.entryPrice != null ? report.entryPrice.stripTrailingZeros().toPlainString() : NA,
+                    report.entryPrice != null ? "$".concat(report.entryPrice.stripTrailingZeros().toPlainString()) : NA,
                     report.unrealizedPnL != null ? report.unrealizedPnL.stripTrailingZeros().toPlainString() : "0",
                     report.unrealizedPercentPnL != null ? report.unrealizedPercentPnL.stripTrailingZeros().toPlainString().concat("%") : "0%",
                     String.valueOf(report.historyDays),
@@ -154,8 +154,8 @@ public class AssetReportToMustacheMapper implements Mapper<List<AssetReportRaw>,
             private static NewsItem from(NewsItemRaw news) {
                 return new NewsItem(
                         news.headline,
-                        news.sentiment != null ? news.sentiment : NA,
-                        news.sentimentConfidence != null ? news.sentimentConfidence.stripTrailingZeros().toPlainString().concat("%") : NA,
+                        news.sentiment != null ? "Sentiment: ".concat(news.sentiment).concat(". ") : EMPTY_STRING,
+                        news.sentimentConfidence != null ? "Confidence: ".concat(news.sentimentConfidence.stripTrailingZeros().toPlainString()).concat("%. ") : EMPTY_STRING,
                         news.summary,
                         news.date.atOffset(ZoneOffset.UTC)
                                 .toInstant()
