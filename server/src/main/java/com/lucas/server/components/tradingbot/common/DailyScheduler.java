@@ -12,6 +12,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -32,14 +33,26 @@ public class DailyScheduler {
 
     @Scheduled(cron = "${scheduler.market-data-cron}", zone = "UTC")
     public void midnightTask() {
-        updateMarketData();
+        if (shouldRun(LocalDate.now().minusDays(1))) {
+            doMidnightTask(SP500_SYMBOLS);
+        }
+    }
+
+    private void doMidnightTask(List<String> symbolNames) {
+        updateMarketData(symbolNames);
         removeOldMarketData();
     }
 
     @Scheduled(cron = "${scheduler.news-recommendations-cron}", zone = "America/New_York")
     public void morningTask() {
-        updateNews();
-        getRandomRecommendations();
+        if (shouldRun(ZonedDateTime.now(NY_ZONE).toLocalDate())) {
+            doMorningTask(SP500_SYMBOLS);
+        }
+    }
+
+    private void doMorningTask(List<String> symbolNames) {
+        updateNews(symbolNames);
+        getRandomRecommendations(symbolNames);
         LocalDate now = LocalDate.now();
         List<Long> topRecommendedSymbols = new ArrayList<>(dataManager.getTopRecommendedSymbols(BUY, NEWS_FINE_GRAIN_THRESHOLD, now));
         updateNewsForTopRecommendedSymbols(topRecommendedSymbols);
@@ -49,18 +62,18 @@ public class DailyScheduler {
         removeOldRecommendations();
     }
 
-    private void updateMarketData() {
+    private void updateMarketData(List<String> symbolNames) {
         try {
-            List<MarketData> updatedMds = dataManager.retrieveMarketData(SP500_SYMBOLS, MarketDataType.LAST);
+            List<MarketData> updatedMds = dataManager.retrieveMarketData(symbolNames, MarketDataType.LAST);
             logger.info(SCHEDULED_TASK_SUCCESS_INFO, "fetched market data", updatedMds);
         } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);
         }
     }
 
-    private void updateNews() {
+    private void updateNews(List<String> symbolNames) {
         try {
-            List<News> updatedNews = dataManager.retrieveNewsByName(SP500_SYMBOLS);
+            List<News> updatedNews = dataManager.retrieveNewsByName(symbolNames);
             logger.info(SCHEDULED_TASK_SUCCESS_INFO, "fetched news", updatedNews.stream()
                     .map(News::getHeadline).toList());
         } catch (ClientException | JsonProcessingException e) {
@@ -68,8 +81,8 @@ public class DailyScheduler {
         }
     }
 
-    private void getRandomRecommendations() {
-        List<Recommendation> updatedRecommendations = dataManager.getRandomRecommendations(PortfolioType.REAL,
+    private void getRandomRecommendations(List<String> symbolNames) {
+        List<Recommendation> updatedRecommendations = dataManager.getRandomRecommendations(symbolNames, PortfolioType.REAL,
                 SCHEDULED_RECOMMENDATIONS_COUNT, true, true, filterClients(clients, RecommendationMode.RANDOM));
         logger.info(SCHEDULED_TASK_SUCCESS_INFO, "generated recommendations", updatedRecommendations.stream()
                 .map(Recommendation::getSymbol).toList());
@@ -107,5 +120,15 @@ public class DailyScheduler {
         List<Recommendation> removedRecommendations = dataManager.removeOldRecommendations(DATABASE_RECOMMENDATIONS_PER_SYMBOL);
         logger.info(SCHEDULED_TASK_SUCCESS_INFO, "removed recommendations", removedRecommendations.stream()
                 .map(Recommendation::getSymbol).toList());
+    }
+
+    /**
+     * hack for testing purposes
+     *
+     * @param date date
+     * @return true if the scheduled task should run
+     */
+    public boolean shouldRun(LocalDate date) {
+        return isTradingDate(date);
     }
 }

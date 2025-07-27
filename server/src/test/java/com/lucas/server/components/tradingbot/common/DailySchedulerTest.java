@@ -10,17 +10,20 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import java.time.Duration;
 
 import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest(properties = {"scheduler.market-data-cron=* * * * * *", "scheduler.news-recommendations-cron=* * * * * *"})
 @Import(TestcontainersConfiguration.class)
 class DailySchedulerTest {
+
+    @MockitoSpyBean
+    DailyScheduler dailyScheduler;
 
     @MockitoBean
     DataManager dataManager;
@@ -36,6 +39,7 @@ class DailySchedulerTest {
     @Test
     @Transactional
     void schedulerShouldInvokeClientRepeatedly() {
+        doReturn(true).when(dailyScheduler).shouldRun(any());
         await().atMost(Duration.ofSeconds(10))
                 .untilAsserted(() -> {
                             verify(dataManager, atLeastOnce()).retrieveMarketData(any(), any());

@@ -56,7 +56,7 @@ public class RecommendationsController {
         List<AIClient> selectedClients = null == models
                 ? filterClients(clients, RecommendationMode.RANDOM)
                 : models.stream().map(clients::get).toList();
-        return ResponseEntity.ok(jpaService.getRandomRecommendations(getPortfolioType(username), count,
+        return ResponseEntity.ok(jpaService.getRandomRecommendations(SP500_SYMBOLS, getPortfolioType(username), count,
                 overwrite, false, selectedClients));
     }
 

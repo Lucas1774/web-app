@@ -107,14 +107,14 @@ public class DataManager {
     }
 
     @Transactional
-    public List<Recommendation> getRandomRecommendations(PortfolioType type, int count,
+    public List<Recommendation> getRandomRecommendations(List<String> symbolNames, PortfolioType type, int count,
                                                          boolean overwrite, boolean onlyIfHasNews, List<AIClient> clients) {
         Set<Long> already = recommendationsService.findByDateBetween(LocalDate.now(), LocalDate.now().plusDays(1)).stream()
                 .map(r -> r.getSymbol().getId())
                 .collect(Collectors.toSet());
 
         Set<Long> candidates = symbolService.findAll().stream()
-                .filter(s -> SP500_SYMBOLS.contains(s.getName()))
+                .filter(s -> symbolNames.contains(s.getName()))
                 .map(Symbol::getId)
                 .collect(Collectors.toSet());
         candidates.removeAll(already);
