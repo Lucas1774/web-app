@@ -74,6 +74,7 @@ public class Constants {
     public static final String NEWS = "news";
     public static final String SENTIMENT = "sentiment";
     public static final String RECOMMENDATION = "recommendation";
+    public static final String PREMARKET = "premarket";
     public static final String PROMPT = "prompt";
     public static final String VOLATILITY = "volatility";
     public static final String OBV = "OBV";

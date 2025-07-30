@@ -62,7 +62,7 @@ class RecommendationChatCompletionClientTest {
         Symbol symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
         LocalDate today = LocalDate.now();
         List<MarketData> mds = new ArrayList<>();
-        for (int i = 34; i >= 0; i--) {
+        for (int i = MARKET_DATA_RELEVANT_DAYS_COUNT; i >= 0; i--) {
             MarketData md = new MarketData()
                     .setSymbol(symbolService.getOrCreateByName(Set.of(symbol.getName())).stream().findFirst().orElseThrow())
                     .setDate(today.minusDays(i))
@@ -74,6 +74,13 @@ class RecommendationChatCompletionClientTest {
             mds.add(md);
         }
         marketDataService.createIgnoringDuplicates(mds.stream().sorted(Comparator.comparing(MarketData::getDate)).toList());
+        BigDecimal lastPrice = mds.getLast().getPrice();
+        MarketData premarket = new MarketData()
+                .setSymbol(symbol)
+                .setOpen(lastPrice)
+                .setHigh(lastPrice.add(BigDecimal.valueOf(1)))
+                .setLow(lastPrice.subtract(BigDecimal.valueOf(1)))
+                .setPrice(lastPrice.add(new BigDecimal("0.5")));
 
         // given: insert 15 news items. Needs to be greater than the news per symbol and day
         List<News> articles = new ArrayList<>();
@@ -107,10 +114,20 @@ class RecommendationChatCompletionClientTest {
         List<MarketData> filteredMds = marketDataService.getTopForSymbolId(symbol.getId(), MARKET_DATA_RELEVANT_DAYS_COUNT);
         List<News> filteredNews = newsService.getTopForSymbolId(symbol.getId(), NEWS_COUNT);
         Portfolio portfolioData = portfolioService.findBySymbol(symbol).orElseThrow();
-        AssetReportRaw report = provider.provide(new DataManager.SymbolPayload(symbol, filteredMds, filteredNews, portfolioData));
+        AssetReportRaw report = provider.provide(new DataManager.SymbolPayload(symbol, premarket, filteredMds, filteredNews, portfolioData));
 
-        // then: symbol & history size & news count
+        // then: symbol & premarket & history & news
         assertThat(report.symbol()).isEqualTo(symbol.getName());
+        assertThat(report.premarket()).isNotNull()
+                .satisfies(p -> {
+                    assertThat(p.open()).isEqualByComparingTo(premarket.getOpen());
+                    assertThat(p.high()).isEqualByComparingTo(premarket.getHigh());
+                    assertThat(p.low()).isEqualByComparingTo(premarket.getLow());
+                    assertThat(p.close()).isEqualByComparingTo(premarket.getPrice());
+                    assertThat(p.gap()).isEqualByComparingTo(premarket.getPrice().subtract(lastPrice)
+                            .divide(lastPrice, 4, RoundingMode.HALF_UP)
+                            .multiply(BigDecimal.valueOf(100)));
+                });
         assertThat(report.historyDays()).isEqualTo(HISTORY_DAYS_COUNT);
         assertThat(report.priceHistory())
                 .hasSize(HISTORY_DAYS_COUNT)

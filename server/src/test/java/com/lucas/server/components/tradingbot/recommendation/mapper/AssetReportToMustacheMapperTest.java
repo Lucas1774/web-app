@@ -62,6 +62,7 @@ class AssetReportToMustacheMapperTest {
                   • 10.2412 shares ($101.4887)
                   • Avg Entry Price: $11.5874
                   • Unrealized PnL: $50 (80%)
+                • Pre-market: O100 H110 L90 P105 Gap: 7.5%
                 • Price History (last 1 days):
                   • 2025-05-01: O100 H110 L90 C105 V1234
                 • Technical Indicators:
@@ -80,33 +81,30 @@ class AssetReportToMustacheMapperTest {
     }
 
     private static AssetReportRaw getAssetReportNullValues() {
-        List<PricePointRaw> pp = getPpNullValues();
+        PricePointRaw pp = getPpNullValues();
         List<NewsItemRaw> news = getNewsNullValues();
         return new AssetReportRaw("FOO", null, null, null, null, null,
-                pp.size(), pp, null, null, null, null, null, null, news.size(), news);
+                1, null, List.of(pp), null, null, null, null, null, null, news.size(), news);
     }
 
     private static AssetReportRaw getAssetReportAllValues() {
-        List<PricePointRaw> pp = getPpAllValues();
+        PricePointRaw pp = getPpAllValues();
         List<NewsItemRaw> news = getNewsAllValues();
         return new AssetReportRaw("FOO", new BigDecimal("10.2412"), new BigDecimal("101.4887"),
-                new BigDecimal("11.5874"), new BigDecimal("50"), new BigDecimal("80.00"), pp.size(), pp,
+                new BigDecimal("11.5874"), new BigDecimal("50"), new BigDecimal("80.00"), 1,
+                pp, List.of(pp),
                 new BigDecimal("105.00"), new BigDecimal("42.42"), new BigDecimal("1.23"),
                 new BigDecimal("15.67"), new BigDecimal("15.68"), new BigDecimal("15.69"), news.size(), news);
     }
 
-    private static List<PricePointRaw> getPpNullValues() {
-        return List.of(
-                new PricePointRaw(LocalDate.of(2025, 5, 1), new BigDecimal("100"),
-                        new BigDecimal("110"), new BigDecimal("90"), new BigDecimal("105"), null)
-        );
+    private static PricePointRaw getPpNullValues() {
+        return new PricePointRaw(LocalDate.of(2025, 5, 1), new BigDecimal("100"),
+                new BigDecimal("110"), new BigDecimal("90"), new BigDecimal("105"), null, null);
     }
 
-    private static List<PricePointRaw> getPpAllValues() {
-        return List.of(
-                new PricePointRaw(LocalDate.of(2025, 5, 1), new BigDecimal("100"),
-                        new BigDecimal("110"), new BigDecimal("90"), new BigDecimal("105"), 1234L)
-        );
+    private static PricePointRaw getPpAllValues() {
+        return new PricePointRaw(LocalDate.of(2025, 5, 1), new BigDecimal("100"),
+                new BigDecimal("110"), new BigDecimal("90"), new BigDecimal("105"), 1234L, new BigDecimal("7.5"));
     }
 
     private static List<NewsItemRaw> getNewsNullValues() {

@@ -37,8 +37,14 @@ public class AssetReportDataProvider {
         BigDecimal atr14 = kpiGenerator.computeRelativeAtr(current);
         BigDecimal obv20 = kpiGenerator.computeObv(mdHistory, 20).orElse(null);
 
+        MarketData pm = payload.premarket();
+        PricePointRaw premarket = null;
+        if (null != pm) {
+            kpiGenerator.computeChange(pm, current.getPrice());
+            premarket = new PricePointRaw(null, pm.getOpen(), pm.getHigh(), pm.getLow(), pm.getPrice(), null, pm.getChangePercent());
+        }
         List<PricePointRaw> priceHistory = mdHistory.subList(0, min(mdHistory.size(), HISTORY_DAYS_COUNT)).stream()
-                .map(md -> new PricePointRaw(md.getDate(), md.getOpen(), md.getHigh(), md.getLow(), md.getPrice(), md.getVolume()))
+                .map(md -> new PricePointRaw(md.getDate(), md.getOpen(), md.getHigh(), md.getLow(), md.getPrice(), md.getVolume(), null))
                 .toList();
         List<NewsItemRaw> news = payload.news().stream()
                 .map(a -> new NewsItemRaw(a.getHeadline(), a.getSentiment(), a.getSentimentConfidence(), a.getSummary(), a.getDate()))
@@ -46,6 +52,6 @@ public class AssetReportDataProvider {
 
         PortfolioManager.SymbolStand stand = portfolioManager.computeStand(payload.portfolio(), current);
         return new AssetReportRaw(payload.symbol().getName(), stand.quantity(), stand.positionValue(), stand.averageCost(), stand.pnL(), stand.percentPnl(),
-                priceHistory.size(), priceHistory, ema20, macdLine1226, macdSignalLine9, rsi14, atr14, obv20, news.size(), news);
+                priceHistory.size(), premarket, priceHistory, ema20, macdLine1226, macdSignalLine9, rsi14, atr14, obv20, news.size(), news);
     }
 }

@@ -364,7 +364,10 @@ twelve-data:
   endpoint: ${TWELVE_DATA_ENDPOINT}
 
 yahoo:
-  endpoint: ${YAHOO_ENDPOINT}
+  news:
+    endpoint: ${YAHOO_NEWS_ENDPOINT}
+  market:
+    endpoint: ${YAHOO_MARKET_ENDPOINT}
 
 sentiment:
   url: ${SENTIMENT_URL}

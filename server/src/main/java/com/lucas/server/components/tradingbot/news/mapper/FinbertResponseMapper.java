@@ -1,4 +1,4 @@
-package com.lucas.server.components.tradingbot.marketdata.mapper;
+package com.lucas.server.components.tradingbot.news.mapper;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.lucas.server.common.Mapper;

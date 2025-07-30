@@ -8,6 +8,7 @@ import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataJpaService;
 import com.lucas.server.components.tradingbot.marketdata.service.FinnhubMarketDataClient;
 import com.lucas.server.components.tradingbot.marketdata.service.TwelveDataMarketDataClient;
+import com.lucas.server.components.tradingbot.marketdata.service.YahooFinanceMarketDataClient;
 import com.lucas.server.components.tradingbot.news.jpa.News;
 import com.lucas.server.components.tradingbot.news.jpa.NewsJpaService;
 import com.lucas.server.components.tradingbot.news.service.FinnhubNewsClient;
@@ -41,6 +42,7 @@ public class DataManager {
     private final NewsJpaService newsService;
     private final RecommendationsJpaService recommendationsService;
     private final YahooFinanceNewsClient yahooFinanceNewsClient;
+    private final YahooFinanceMarketDataClient yahooFinanceMarketDataClient;
     private final FinnhubNewsClient finnhubNewsClient;
     private final PortfolioManager portfolioManager;
     private final RecommendationChatCompletionClient recommendationClient;
@@ -59,6 +61,7 @@ public class DataManager {
 
     public DataManager(SymbolJpaService symbolService, MarketDataJpaService marketDataService, NewsJpaService newsService,
                        RecommendationsJpaService recommendationsService, YahooFinanceNewsClient yahooFinanceNewsClient,
+                       YahooFinanceMarketDataClient yahooFinanceMarketDataClient,
                        RecommendationChatCompletionClient recommendationClient, PortfolioJpaService portfolioService,
                        PortfolioMockJpaService portfolioMockService, FinnhubNewsClient newsClient, PortfolioManager portfolioManager,
                        TwelveDataMarketDataClient twelveDataMarketDataClient, FinnhubMarketDataClient finnhubMarketDataClient) {
@@ -67,6 +70,7 @@ public class DataManager {
         this.newsService = newsService;
         this.recommendationsService = recommendationsService;
         this.yahooFinanceNewsClient = yahooFinanceNewsClient;
+        this.yahooFinanceMarketDataClient = yahooFinanceMarketDataClient;
         this.recommendationClient = recommendationClient;
         this.finnhubNewsClient = newsClient;
         this.portfolioManager = portfolioManager;
@@ -83,6 +87,7 @@ public class DataManager {
 
     public record SymbolPayload(
             Symbol symbol,
+            MarketData premarket,
             List<MarketData> marketData,
             List<News> news,
             PortfolioBase portfolio
@@ -101,14 +106,15 @@ public class DataManager {
 
     @Transactional
     public List<Recommendation> getRecommendationsById(List<Long> symbolIds, PortfolioType type,
-                                                       boolean overwrite, List<AIClient> clients) {
+                                                       boolean overwrite, boolean fetchPreMarket, List<AIClient> clients) {
         List<Symbol> symbols = symbolService.findAllById(symbolIds);
-        return getRecommendationsInParallel(symbols, type, overwrite, clients, false);
+        return getRecommendationsInParallel(symbols, type, overwrite, clients, false, fetchPreMarket);
     }
 
     @Transactional
     public List<Recommendation> getRandomRecommendations(List<String> symbolNames, PortfolioType type, int count,
-                                                         boolean overwrite, boolean onlyIfHasNews, List<AIClient> clients) {
+                                                         boolean overwrite, boolean onlyIfHasNews, boolean fetchPreMarket,
+                                                         List<AIClient> clients) {
         Set<Long> already = recommendationsService.findByDateBetween(LocalDate.now(), LocalDate.now().plusDays(1)).stream()
                 .map(r -> r.getSymbol().getId())
                 .collect(Collectors.toSet());
@@ -127,11 +133,11 @@ public class DataManager {
         }
 
         return getRecommendationsInParallel(symbolService.findAllById(finalList), type, overwrite,
-                clients, onlyIfHasNews);
+                clients, onlyIfHasNews, fetchPreMarket);
     }
 
     private List<Recommendation> getRecommendationsInParallel(List<Symbol> symbols, PortfolioType type, boolean overwrite,
-                                                              List<AIClient> clients, boolean onlyIfHasNews) {
+                                                              List<AIClient> clients, boolean onlyIfHasNews, boolean fetchPreMarket) {
         List<Recommendation> res = new ArrayList<>();
         List<AIClient> mutableClients = new ArrayList<>(clients);
         IPortfolioJpaService<PortfolioBase> portfolioService = getService(type);
@@ -163,7 +169,16 @@ public class DataManager {
                     PortfolioBase portfolio = portfolioService.findBySymbol(symbol)
                             .orElseGet(() -> portfolioSupplier.get().setSymbol(symbol));
 
-                    return Optional.of(new SymbolPayload(symbol, marketData, news, portfolio));
+                    MarketData premarket = null;
+                    if (fetchPreMarket) {
+                        try {
+                            premarket = yahooFinanceMarketDataClient.retrieveMarketData(symbol);
+                        } catch (JsonProcessingException | ClientException e) {
+                            logger.warn(RETRIEVAL_FAILED_WARN, PREMARKET, symbol, e);
+                        }
+                    }
+
+                    return Optional.of(new SymbolPayload(symbol, premarket, marketData, news, portfolio));
                 })
                 .flatMap(Optional::stream)
                 .toList();

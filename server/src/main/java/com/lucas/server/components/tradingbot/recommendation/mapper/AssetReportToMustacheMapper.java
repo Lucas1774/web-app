@@ -50,6 +50,7 @@ public class AssetReportToMustacheMapper implements Mapper<List<AssetReportRaw>,
             BigDecimal unrealizedPnL,
             BigDecimal unrealizedPercentPnL,
             int historyDays,
+            PricePointRaw premarket,
             List<PricePointRaw> priceHistory,
             BigDecimal ema20,
             BigDecimal macdLine1226,
@@ -68,7 +69,8 @@ public class AssetReportToMustacheMapper implements Mapper<List<AssetReportRaw>,
             BigDecimal high,
             BigDecimal low,
             BigDecimal close,
-            Long volume
+            Long volume,
+            BigDecimal gap
     ) {
     }
 
@@ -89,6 +91,7 @@ public class AssetReportToMustacheMapper implements Mapper<List<AssetReportRaw>,
             String unrealizedPnL,
             String unrealizedPercentPnl,
             String historyDays,
+            PricePoint premarket,
             List<PricePoint> priceHistory,
             String ema20,
             String macdLine1226,
@@ -109,6 +112,7 @@ public class AssetReportToMustacheMapper implements Mapper<List<AssetReportRaw>,
                     report.unrealizedPnL != null ? report.unrealizedPnL.stripTrailingZeros().toPlainString() : "0",
                     report.unrealizedPercentPnL != null ? report.unrealizedPercentPnL.stripTrailingZeros().toPlainString().concat("%") : "0%",
                     String.valueOf(report.historyDays),
+                    report.premarket != null ? PricePoint.from(report.premarket) : null,
                     report.priceHistory.stream().map(PricePoint::from).toList(),
                     report.ema20 != null ? report.ema20.stripTrailingZeros().toPlainString() : NA,
                     report.macdLine1226 != null ? report.macdLine1226.stripTrailingZeros().toPlainString() : NA,
@@ -130,16 +134,18 @@ public class AssetReportToMustacheMapper implements Mapper<List<AssetReportRaw>,
                 String high,
                 String low,
                 String close,
-                String volume
+                String volume,
+                String gap
         ) {
             private static PricePoint from(PricePointRaw point) {
                 return new PricePoint(
-                        point.date.toString(),
+                        point.date != null ? point.date.toString() : NA,
                         point.open.stripTrailingZeros().toPlainString(),
                         point.high.stripTrailingZeros().toPlainString(),
                         point.low.stripTrailingZeros().toPlainString(),
                         point.close.stripTrailingZeros().toPlainString(),
-                        point.volume != null ? point.volume.toString() : NA
+                        point.volume != null ? point.volume.toString() : NA,
+                        point.gap != null ? point.gap.stripTrailingZeros().toPlainString() : NA
                 );
             }
         }

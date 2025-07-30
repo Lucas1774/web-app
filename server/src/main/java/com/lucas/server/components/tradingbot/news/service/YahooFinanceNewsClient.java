@@ -30,7 +30,7 @@ public class YahooFinanceNewsClient {
     private static final Logger logger = LoggerFactory.getLogger(YahooFinanceNewsClient.class);
 
     public YahooFinanceNewsClient(YahooFinanceNewsResponseMapper mapper, HttpRequestClient httpRequestClient,
-                                  Map<String, RateLimiter> rateLimiters, @Value("${yahoo.endpoint}") String endpoint) {
+                                  Map<String, RateLimiter> rateLimiters, @Value("${yahoo.news.endpoint}") String endpoint) {
         this.mapper = mapper;
         this.httpRequestClient = httpRequestClient;
         this.rateLimiter = rateLimiters.get(YAHOO_FINANCE_RATE_LIMITER);

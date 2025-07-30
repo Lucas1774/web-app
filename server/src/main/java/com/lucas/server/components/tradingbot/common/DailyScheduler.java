@@ -83,7 +83,7 @@ public class DailyScheduler {
 
     private void getRandomRecommendations(List<String> symbolNames) {
         List<Recommendation> updatedRecommendations = dataManager.getRandomRecommendations(symbolNames, PortfolioType.REAL,
-                SCHEDULED_RECOMMENDATIONS_COUNT, true, true, filterClients(clients, RecommendationMode.RANDOM));
+                SCHEDULED_RECOMMENDATIONS_COUNT, true, true, true, filterClients(clients, RecommendationMode.RANDOM));
         logger.info(SCHEDULED_TASK_SUCCESS_INFO, "generated recommendations", updatedRecommendations.stream()
                 .map(Recommendation::getSymbol).toList());
     }
@@ -100,7 +100,7 @@ public class DailyScheduler {
 
     private void getRecommendations(List<Long> topRecommendedSymbols, RecommendationMode mode) {
         List<Recommendation> updatedRecommendations = dataManager.getRecommendationsById(topRecommendedSymbols, PortfolioType.REAL,
-                true, filterClients(clients, mode));
+                true, true, filterClients(clients, mode));
         logger.info(SCHEDULED_TASK_SUCCESS_INFO, "generated recommendations", updatedRecommendations.stream()
                 .map(Recommendation::getSymbol).toList());
     }

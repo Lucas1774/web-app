@@ -34,19 +34,7 @@ public class MarketDataKpiGenerator {
             return md;
         }
         MarketData previous = previous14.getFirst();
-        BigDecimal previousPrice = previous.getPrice();
-        computeIfAbsent(md::getPreviousClose, md::setPreviousClose, previousPrice);
-
-        BigDecimal change = md.getPrice().subtract(previousPrice);
-        computeIfAbsent(md::getChange, md::setChange, change);
-
-        if (previousPrice.compareTo(BigDecimal.ZERO) != 0) {
-            BigDecimal percentage = change
-                    .divide(previousPrice, 8, RoundingMode.HALF_UP)
-                    .multiply(BigDecimal.valueOf(100))
-                    .setScale(4, RoundingMode.HALF_UP);
-            computeIfAbsent(md::getChangePercent, md::setChangePercent, percentage);
-        }
+        computeChange(md, previous.getPrice());
 
         computeIfAbsent(md::getPreviousAtr, md::setPreviousAtr, previous.getAtr());
         computeIfAbsent(md::getPreviousAverageGain, md::setPreviousAverageGain, previous.getAverageGain());
@@ -62,6 +50,19 @@ public class MarketDataKpiGenerator {
         }
         computeIfAbsent(md::getAtr, md::setAtr, computeAtr(previous14).orElse(null));
         return md;
+    }
+
+    public void computeChange(MarketData md, BigDecimal previousPrice) {
+        computeIfAbsent(md::getPreviousClose, md::setPreviousClose, previousPrice);
+        BigDecimal change = md.getPrice().subtract(previousPrice);
+        computeIfAbsent(md::getChange, md::setChange, change);
+        if (previousPrice.compareTo(BigDecimal.ZERO) != 0) {
+            BigDecimal percentage = change
+                    .divide(previousPrice, 8, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100))
+                    .setScale(4, RoundingMode.HALF_UP);
+            computeIfAbsent(md::getChangePercent, md::setChangePercent, percentage);
+        }
     }
 
     private static <T> void computeIfAbsent(Supplier<T> getter, Consumer<T> setter, T value) {
