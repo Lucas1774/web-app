@@ -44,7 +44,7 @@ public class FinnhubMarketDataClient {
                 .build()
                 .toUriString();
 
-        return mapper.map(httpRequestClient.fetch(url), symbol);
+        return mapper.map(httpRequestClient.fetch(url, false), symbol);
     }
 
     public List<MarketData> retrieveMarketData(List<Symbol> symbols) throws JsonProcessingException, ClientException {

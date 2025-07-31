@@ -31,9 +31,10 @@ public class HttpRequestClient {
     }
 
     @Retryable(retryFor = ClientException.class, maxAttempts = REQUEST_MAX_ATTEMPTS)
-    public JsonNode fetch(String url) throws ClientException {
+    public JsonNode fetch(String url, boolean mockUserAgent) throws ClientException {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+        if (mockUserAgent) mockUserAgent(headers);
         HttpEntity<Void> request = new HttpEntity<>(headers);
         try {
             return restTemplate.exchange(url, HttpMethod.GET, request, JsonNode.class).getBody();
@@ -73,11 +74,7 @@ public class HttpRequestClient {
     public Document fetchXml(String url) throws ClientException {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(List.of(MediaType.APPLICATION_XML, MediaType.TEXT_XML));
-        headers.set(HttpHeaders.USER_AGENT,
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
-                        "AppleWebKit/537.36 (KHTML, like Gecko) " +
-                        "Chrome/115.0.0.0 Safari/537.36"
-        );
+        mockUserAgent(headers);
         HttpEntity<Void> request = new HttpEntity<>(headers);
         try {
             return documentBuilderFactory.newDocumentBuilder().parse(
@@ -88,5 +85,13 @@ public class HttpRequestClient {
         } catch (Exception e) {
             throw new ClientException(e);
         }
+    }
+
+    private static void mockUserAgent(HttpHeaders headers) {
+        headers.set(HttpHeaders.USER_AGENT,
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+                        "AppleWebKit/537.36 (KHTML, like Gecko) " +
+                        "Chrome/115.0.0.0 Safari/537.36"
+        );
     }
 }

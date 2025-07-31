@@ -48,7 +48,7 @@ public class FinnhubNewsClient {
                 .queryParam("token", apiKey)
                 .toUriString();
 
-        return mapper.mapAll(httpRequestClient.fetch(url), symbol);
+        return mapper.mapAll(httpRequestClient.fetch(url, false), symbol);
     }
 
     public List<News> retrieveNewsByDateRange(List<Symbol> symbols, LocalDate from, LocalDate to) throws ClientException, JsonProcessingException {

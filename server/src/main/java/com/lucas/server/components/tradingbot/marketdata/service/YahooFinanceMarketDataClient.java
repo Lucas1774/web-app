@@ -43,6 +43,6 @@ public class YahooFinanceMarketDataClient {
                 .build()
                 .toUriString();
 
-        return mapper.map(httpRequestClient.fetch(url), symbol);
+        return mapper.map(httpRequestClient.fetch(url, true), symbol);
     }
 }

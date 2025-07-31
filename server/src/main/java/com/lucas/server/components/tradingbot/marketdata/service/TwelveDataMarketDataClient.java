@@ -67,7 +67,7 @@ public class TwelveDataMarketDataClient {
                 .build()
                 .toUriString();
 
-        return typeToMapper.get(type).apply(symbol, httpRequestClient.fetch(url));
+        return typeToMapper.get(type).apply(symbol, httpRequestClient.fetch(url, false));
     }
 
     public List<MarketData> retrieveMarketData(List<Symbol> symbols, MarketDataType type) throws ClientException, JsonProcessingException {
