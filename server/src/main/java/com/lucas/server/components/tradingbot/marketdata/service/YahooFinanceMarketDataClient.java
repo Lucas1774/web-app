@@ -35,7 +35,7 @@ public class YahooFinanceMarketDataClient {
     }
 
     public MarketData retrieveMarketData(Symbol symbol) throws JsonProcessingException, ClientException {
-        logger.info(RETRIEVING_DATA_INFO, MARKET_DATA, symbol);
+        logger.info(RETRIEVING_DATA_INFO, PREMARKET, symbol);
         rateLimiter.acquirePermission();
         String url = UriComponentsBuilder.fromUriString(endpoint + "/" + symbol.getName())
                 .queryParam("interval", "1h")

@@ -215,7 +215,7 @@ public class DataManager {
             AIClient client = clients.getFirst();
             buffer.add(load);
 
-            if (buffer.size() == client.getChunkSize()) {
+            if (buffer.size() == client.getConfig().chunkSize()) {
                 submitChunk(overwrite, client, buffer, jobs, executor);
                 buffer.clear();
                 Collections.rotate(clients, -1);

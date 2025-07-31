@@ -1,10 +1,5 @@
 package com.lucas.server.components.tradingbot.config;
 
-import com.azure.core.http.HttpClient;
-import com.azure.core.http.okhttp.OkHttpAsyncHttpClientBuilder;
-import com.azure.core.http.policy.ExponentialBackoffOptions;
-import com.azure.core.http.policy.RetryOptions;
-import com.azure.core.http.policy.RetryPolicy;
 import io.github.resilience4j.ratelimiter.RateLimiter;
 import io.github.resilience4j.ratelimiter.RateLimiterConfig;
 import org.springframework.context.annotation.Bean;
@@ -18,18 +13,6 @@ import static com.lucas.server.common.Constants.*;
 
 @Configuration
 public class HttpClientConfig {
-
-    @Bean
-    public RetryPolicy retryPolicy() {
-        return new RetryPolicy(new RetryOptions(new ExponentialBackoffOptions().setMaxRetries(0)));
-    }
-
-    @Bean
-    public HttpClient httpClient() {
-        return new OkHttpAsyncHttpClientBuilder()
-                .responseTimeout(Duration.ofMinutes(10))
-                .build();
-    }
 
     @Bean
     public Map<String, RateLimiter> rateLimiter() {

@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
+import static com.lucas.server.common.Constants.CONTENT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class AssetReportToMustacheMapperTest {
@@ -46,7 +47,7 @@ class AssetReportToMustacheMapperTest {
                   • 2025-05-01 20:00:00 EDT: Headline Two: Second summary
                 
                 """;
-        assertThat(objectMapper.readTree(mapper.map(List.of(asset))).get("content").asText()).isEqualTo(expected);
+        assertThat(objectMapper.readTree(mapper.map(List.of(asset))).get(CONTENT).asText()).isEqualTo(expected);
     }
 
     @Test
@@ -77,7 +78,7 @@ class AssetReportToMustacheMapperTest {
                 
                 """;
 
-        assertThat(objectMapper.readTree(mapper.map(List.of(asset))).get("content").asText()).isEqualTo(expected);
+        assertThat(objectMapper.readTree(mapper.map(List.of(asset))).get(CONTENT).asText()).isEqualTo(expected);
     }
 
     private static AssetReportRaw getAssetReportNullValues() {
