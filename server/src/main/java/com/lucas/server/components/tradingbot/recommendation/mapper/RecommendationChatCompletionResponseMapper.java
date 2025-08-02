@@ -50,9 +50,9 @@ public class RecommendationChatCompletionResponseMapper implements Mapper<JsonNo
             Map<String, Symbol> symbolByName = new HashMap<>();
             Map<String, MarketData> latestMarketDataByName = new HashMap<>();
             for (DataManager.SymbolPayload p : payload) {
-                String name = p.symbol().getName();
-                symbolByName.put(name, p.symbol());
-                MarketData latest = p.marketData().stream().max(Comparator.comparing(MarketData::getDate)).orElseThrow();
+                String name = p.getSymbol().getName();
+                symbolByName.put(name, p.getSymbol());
+                MarketData latest = p.getMarketData().stream().max(Comparator.comparing(MarketData::getDate)).orElseThrow();
                 latestMarketDataByName.put(name, latest);
             }
             String errors = objectMapper.readerForListOf(String.class).readValue(jsonNode.get("errors")).toString();

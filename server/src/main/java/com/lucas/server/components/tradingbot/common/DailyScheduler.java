@@ -55,7 +55,6 @@ public class DailyScheduler {
         getRandomRecommendations(symbolNames);
         LocalDate now = LocalDate.now();
         List<Long> topRecommendedSymbols = new ArrayList<>(dataManager.getTopRecommendedSymbols(BUY, NEWS_FINE_GRAIN_THRESHOLD, now));
-        updateNewsForTopRecommendedSymbols(topRecommendedSymbols);
         getRecommendations(topRecommendedSymbols, RecommendationMode.NOT_RANDOM);
         getRecommendations(new ArrayList<>(dataManager.getTopRecommendedSymbols(BUY, GROK_FINE_GRAIN_THRESHOLD, now)), RecommendationMode.FINE_GRAIN);
         removeOldNews();
@@ -82,25 +81,15 @@ public class DailyScheduler {
     }
 
     private void getRandomRecommendations(List<String> symbolNames) {
-        List<Recommendation> updatedRecommendations = dataManager.getRandomRecommendations(symbolNames, PortfolioType.REAL,
-                SCHEDULED_RECOMMENDATIONS_COUNT, true, true, true, filterClients(clients, RecommendationMode.RANDOM));
+        List<Recommendation> updatedRecommendations = dataManager.getRandomRecommendations(symbolNames, filterClients(clients, RecommendationMode.RANDOM), PortfolioType.REAL,
+                SCHEDULED_RECOMMENDATIONS_COUNT, true, true, false, true);
         logger.info(SCHEDULED_TASK_SUCCESS_INFO, "generated recommendations", updatedRecommendations.stream()
                 .map(Recommendation::getSymbol).toList());
     }
 
-    private void updateNewsForTopRecommendedSymbols(List<Long> topRecommendedSymbols) {
-        try {
-            List<News> updatedNews = dataManager.retrieveNewsById(topRecommendedSymbols);
-            logger.info(SCHEDULED_TASK_SUCCESS_INFO, "fetched news", updatedNews.stream()
-                    .map(News::getHeadline).toList());
-        } catch (ClientException | JsonProcessingException e) {
-            logger.error(e.getMessage(), e);
-        }
-    }
-
     private void getRecommendations(List<Long> topRecommendedSymbols, RecommendationMode mode) {
-        List<Recommendation> updatedRecommendations = dataManager.getRecommendationsById(topRecommendedSymbols, PortfolioType.REAL,
-                true, true, filterClients(clients, mode));
+        List<Recommendation> updatedRecommendations = dataManager.getRecommendationsById(topRecommendedSymbols, filterClients(clients, mode), PortfolioType.REAL,
+                true, true, true);
         logger.info(SCHEDULED_TASK_SUCCESS_INFO, "generated recommendations", updatedRecommendations.stream()
                 .map(Recommendation::getSymbol).toList());
     }

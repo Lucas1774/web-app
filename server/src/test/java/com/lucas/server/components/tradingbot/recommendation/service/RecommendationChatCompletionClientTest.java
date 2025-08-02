@@ -114,7 +114,9 @@ class RecommendationChatCompletionClientTest {
         List<MarketData> filteredMds = marketDataService.getTopForSymbolId(symbol.getId(), MARKET_DATA_RELEVANT_DAYS_COUNT);
         List<News> filteredNews = newsService.getTopForSymbolId(symbol.getId(), NEWS_COUNT);
         Portfolio portfolioData = portfolioService.findBySymbol(symbol).orElseThrow();
-        AssetReportRaw report = provider.provide(new DataManager.SymbolPayload(symbol, premarket, filteredMds, filteredNews, portfolioData));
+        AssetReportRaw report = provider.provide(new DataManager.SymbolPayload(symbol, filteredMds, portfolioData)
+                .setNews(filteredNews)
+                .setPremarket(premarket));
 
         // then: symbol & premarket & history & news
         assertThat(report.symbol()).isEqualTo(symbol.getName());

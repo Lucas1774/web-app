@@ -19,6 +19,10 @@ import com.lucas.server.components.tradingbot.recommendation.jpa.Recommendation;
 import com.lucas.server.components.tradingbot.recommendation.jpa.RecommendationsJpaService;
 import com.lucas.server.components.tradingbot.recommendation.service.RecommendationChatCompletionClient;
 import jakarta.transaction.Transactional;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -85,13 +89,17 @@ public class DataManager {
         ));
     }
 
-    public record SymbolPayload(
-            Symbol symbol,
-            MarketData premarket,
-            List<MarketData> marketData,
-            List<News> news,
-            PortfolioBase portfolio
-    ) {
+    @RequiredArgsConstructor
+    @Getter
+    @Accessors(chain = true)
+    public static class SymbolPayload {
+        private final Symbol symbol;
+        @Setter
+        private MarketData premarket;
+        @Setter
+        private List<News> news;
+        private final List<MarketData> marketData;
+        private final PortfolioBase portfolio;
     }
 
     private record BatchJob(
@@ -105,16 +113,15 @@ public class DataManager {
     }
 
     @Transactional
-    public List<Recommendation> getRecommendationsById(List<Long> symbolIds, PortfolioType type,
-                                                       boolean overwrite, boolean fetchPreMarket, List<AIClient> clients) {
+    public List<Recommendation> getRecommendationsById(List<Long> symbolIds, List<AIClient> clients, PortfolioType type,
+                                                       boolean overwrite, boolean onTheFlyNews, boolean fetchPreMarket) {
         List<Symbol> symbols = symbolService.findAllById(symbolIds);
-        return getRecommendationsInParallel(symbols, type, overwrite, clients, false, fetchPreMarket);
+        return getRecommendationsInParallel(symbols, clients, type, overwrite, false, onTheFlyNews, fetchPreMarket);
     }
 
     @Transactional
-    public List<Recommendation> getRandomRecommendations(List<String> symbolNames, PortfolioType type, int count,
-                                                         boolean overwrite, boolean onlyIfHasNews, boolean fetchPreMarket,
-                                                         List<AIClient> clients) {
+    public List<Recommendation> getRandomRecommendations(List<String> symbolNames, List<AIClient> clients, PortfolioType type, int count,
+                                                         boolean overwrite, boolean onlyIfHasNews, boolean onTheFlyNews, boolean fetchPreMarket) {
         Set<Long> already = recommendationsService.findByDateBetween(LocalDate.now(), LocalDate.now().plusDays(1)).stream()
                 .map(r -> r.getSymbol().getId())
                 .collect(Collectors.toSet());
@@ -132,12 +139,12 @@ public class DataManager {
             finalList.addAll(pool.subList(0, Math.min(count, pool.size())));
         }
 
-        return getRecommendationsInParallel(symbolService.findAllById(finalList), type, overwrite,
-                clients, onlyIfHasNews, fetchPreMarket);
+        return getRecommendationsInParallel(symbolService.findAllById(finalList), clients, type, overwrite,
+                onlyIfHasNews, onTheFlyNews, fetchPreMarket);
     }
 
-    private List<Recommendation> getRecommendationsInParallel(List<Symbol> symbols, PortfolioType type, boolean overwrite,
-                                                              List<AIClient> clients, boolean onlyIfHasNews, boolean fetchPreMarket) {
+    private List<Recommendation> getRecommendationsInParallel(List<Symbol> symbols, List<AIClient> clients, PortfolioType type,
+                                                              boolean overwrite, boolean onlyIfHasNews, boolean onTheFlyNews, boolean fetchPreMarket) {
         List<Recommendation> res = new ArrayList<>();
         List<AIClient> mutableClients = new ArrayList<>(clients);
         IPortfolioJpaService<PortfolioBase> portfolioService = getService(type);
@@ -156,8 +163,8 @@ public class DataManager {
 
         List<SymbolPayload> remainingPayload = symbols.parallelStream()
                 .map(symbol -> {
-                    List<News> news = newsService.getTopForSymbolId(symbol.getId(), NEWS_COUNT);
-                    if (onlyIfHasNews && news.stream().noneMatch(n -> n.getDate().isAfter(startUtc))) {
+                    List<News> news = !onTheFlyNews ? newsService.getTopForSymbolId(symbol.getId(), NEWS_COUNT) : null;
+                    if (onlyIfHasNews && Objects.requireNonNull(news).stream().noneMatch(n -> n.getDate().isAfter(startUtc))) {
                         return Optional.<SymbolPayload>empty();
                     }
 
@@ -169,16 +176,7 @@ public class DataManager {
                     PortfolioBase portfolio = portfolioService.findBySymbol(symbol)
                             .orElseGet(() -> portfolioSupplier.get().setSymbol(symbol));
 
-                    MarketData premarket = null;
-                    if (fetchPreMarket) {
-                        try {
-                            premarket = yahooFinanceMarketDataClient.retrieveMarketData(symbol);
-                        } catch (JsonProcessingException | ClientException e) {
-                            logger.warn(RETRIEVAL_FAILED_WARN, PREMARKET, symbol, e);
-                        }
-                    }
-
-                    return Optional.of(new SymbolPayload(symbol, premarket, marketData, news, portfolio));
+                    return Optional.of(new SymbolPayload(symbol, marketData, portfolio).setNews(news));
                 })
                 .flatMap(Optional::stream)
                 .toList();
@@ -187,27 +185,27 @@ public class DataManager {
         try (ExecutorService executor = Executors.newFixedThreadPool(clients.size() * 5)) {
             int retries = 0;
             while (!remainingPayload.isEmpty() && retries < RECOMMENDATION_MAX_RETRIES) {
-                List<Recommendation> fetched = doGetRecommendationsInParallel(executor, remainingPayload,
-                        overwrite, mutableClients);
+                List<Recommendation> fetched = doGetRecommendationsInParallel(remainingPayload, mutableClients, executor,
+                        overwrite, onTheFlyNews, fetchPreMarket);
                 res.addAll(fetched);
                 Set<Symbol> fetchedSymbols = fetched.stream()
                         .map(Recommendation::getSymbol)
                         .collect(Collectors.toSet());
                 remainingPayload = remainingPayload.stream()
-                        .filter(p -> !fetchedSymbols.contains(p.symbol()))
+                        .filter(p -> !fetchedSymbols.contains(p.getSymbol()))
                         .toList();
                 retries++;
             }
         }
 
         if (!remainingPayload.isEmpty()) {
-            logger.warn(RETRIEVAL_FAILED_WARN, RECOMMENDATION, remainingPayload.stream().map(SymbolPayload::symbol).toList());
+            logger.warn(RETRIEVAL_FAILED_WARN, RECOMMENDATION, remainingPayload.stream().map(SymbolPayload::getSymbol).toList());
         }
         return res;
     }
 
-    private List<Recommendation> doGetRecommendationsInParallel(ExecutorService executor, List<SymbolPayload> payload,
-                                                                boolean overwrite, List<AIClient> clients) {
+    private List<Recommendation> doGetRecommendationsInParallel(List<SymbolPayload> payload, List<AIClient> clients, ExecutorService executor,
+                                                                boolean overwrite, boolean onTheFlyNews, boolean fetchPreMarket) {
         List<BatchJob> jobs = new ArrayList<>();
         List<SymbolPayload> buffer = new ArrayList<>();
 
@@ -216,7 +214,7 @@ public class DataManager {
             buffer.add(load);
 
             if (buffer.size() == client.getConfig().chunkSize()) {
-                submitChunk(overwrite, client, buffer, jobs, executor);
+                submitChunk(buffer, client, executor, jobs, overwrite, onTheFlyNews, fetchPreMarket);
                 buffer.clear();
                 Collections.rotate(clients, -1);
             }
@@ -224,7 +222,7 @@ public class DataManager {
 
         if (!buffer.isEmpty()) {
             AIClient client = clients.getFirst();
-            submitChunk(overwrite, client, buffer, jobs, executor);
+            submitChunk(buffer, client, executor, jobs, overwrite, onTheFlyNews, fetchPreMarket);
             Collections.rotate(clients, -1);
         }
 
@@ -243,11 +241,14 @@ public class DataManager {
         return res;
     }
 
-    private void submitChunk(boolean overwrite, AIClient client, List<SymbolPayload> buffer,
-                             List<BatchJob> jobs, ExecutorService executor) {
+    private void submitChunk(List<SymbolPayload> buffer, AIClient client, ExecutorService executor, List<BatchJob> jobs,
+                             boolean overwrite, boolean onTheFlyNews, boolean fetchPreMarket) {
         List<SymbolPayload> snapshot = new ArrayList<>(buffer);
         Callable<List<Recommendation>> task = () -> {
-            List<Recommendation> partialRecommendations = recommendationClient.getRecommendations(snapshot, client);
+            List<Recommendation> partialRecommendations = recommendationClient.getRecommendations(snapshot, client, onTheFlyNews, fetchPreMarket,
+                    yahooFinanceNewsClient::retrieveNews,
+                    newsService::getTopForSymbolId,
+                    yahooFinanceMarketDataClient::retrieveMarketData);
             if (partialRecommendations.isEmpty()) {
                 return partialRecommendations;
             }
@@ -260,7 +261,7 @@ public class DataManager {
             }
         };
 
-        jobs.add(new BatchJob(executor.submit(task), snapshot.stream().map(SymbolPayload::symbol).toList()));
+        jobs.add(new BatchJob(executor.submit(task), snapshot.stream().map(SymbolPayload::getSymbol).toList()));
     }
 
     @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})

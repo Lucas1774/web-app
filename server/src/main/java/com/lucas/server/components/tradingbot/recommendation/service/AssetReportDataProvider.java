@@ -27,7 +27,7 @@ public class AssetReportDataProvider {
     }
 
     public AssetReportRaw provide(DataManager.SymbolPayload payload) {
-        List<MarketData> mdHistory = payload.marketData();
+        List<MarketData> mdHistory = payload.getMarketData();
 
         BigDecimal ema20 = kpiGenerator.computeEma(mdHistory, 20).orElse(null);
         BigDecimal macdLine1226 = kpiGenerator.computeMacdLine(mdHistory, 12, 26).orElse(null);
@@ -37,7 +37,7 @@ public class AssetReportDataProvider {
         BigDecimal atr14 = kpiGenerator.computeRelativeAtr(current);
         BigDecimal obv20 = kpiGenerator.computeObv(mdHistory, 20).orElse(null);
 
-        MarketData pm = payload.premarket();
+        MarketData pm = payload.getPremarket();
         PricePointRaw premarket = null;
         if (null != pm) {
             kpiGenerator.computeChange(pm, current.getPrice());
@@ -46,12 +46,12 @@ public class AssetReportDataProvider {
         List<PricePointRaw> priceHistory = mdHistory.subList(0, min(mdHistory.size(), HISTORY_DAYS_COUNT)).stream()
                 .map(md -> new PricePointRaw(md.getDate(), md.getOpen(), md.getHigh(), md.getLow(), md.getPrice(), md.getVolume(), null))
                 .toList();
-        List<NewsItemRaw> news = payload.news().stream()
+        List<NewsItemRaw> news = payload.getNews().stream()
                 .map(a -> new NewsItemRaw(a.getHeadline(), a.getSentiment(), a.getSentimentConfidence(), a.getSummary(), a.getDate()))
                 .toList();
 
-        PortfolioManager.SymbolStand stand = portfolioManager.computeStand(payload.portfolio(), current);
-        return new AssetReportRaw(payload.symbol().getName(), stand.quantity(), stand.positionValue(), stand.averageCost(), stand.pnL(), stand.percentPnl(),
+        PortfolioManager.SymbolStand stand = portfolioManager.computeStand(payload.getPortfolio(), current);
+        return new AssetReportRaw(payload.getSymbol().getName(), stand.quantity(), stand.positionValue(), stand.averageCost(), stand.pnL(), stand.percentPnl(),
                 priceHistory.size(), premarket, priceHistory, ema20, macdLine1226, macdSignalLine9, rsi14, atr14, obv20, news.size(), news);
     }
 }
