@@ -19,8 +19,8 @@ import static com.lucas.server.common.Constants.SP500_SYMBOLS;
 @RequestMapping("/market")
 public class MarketDataController {
 
-    private final DataManager jpaService;
     private static final Logger logger = LoggerFactory.getLogger(MarketDataController.class);
+    private final DataManager jpaService;
 
     public MarketDataController(DataManager jpaService) {
         this.jpaService = jpaService;

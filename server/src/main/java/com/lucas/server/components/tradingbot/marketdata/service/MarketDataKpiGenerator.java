@@ -20,11 +20,17 @@ import static com.lucas.server.common.Constants.*;
 @Component
 public class MarketDataKpiGenerator {
 
-    private final MarketDataJpaService service;
     private static final Logger logger = LoggerFactory.getLogger(MarketDataKpiGenerator.class);
+    private final MarketDataJpaService service;
 
     public MarketDataKpiGenerator(MarketDataJpaService service) {
         this.service = service;
+    }
+
+    private static <T> void computeIfAbsent(Supplier<T> getter, Consumer<T> setter, T value) {
+        if (getter.get() == null) {
+            setter.accept(value);
+        }
     }
 
     public MarketData computeDerivedFields(MarketData md) {
@@ -62,12 +68,6 @@ public class MarketDataKpiGenerator {
                     .multiply(BigDecimal.valueOf(100))
                     .setScale(4, RoundingMode.HALF_UP);
             computeIfAbsent(md::getChangePercent, md::setChangePercent, percentage);
-        }
-    }
-
-    private static <T> void computeIfAbsent(Supplier<T> getter, Consumer<T> setter, T value) {
-        if (getter.get() == null) {
-            setter.accept(value);
         }
     }
 

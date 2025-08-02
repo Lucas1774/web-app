@@ -32,17 +32,17 @@ import static com.lucas.server.common.Constants.*;
 @Component
 public class RecommendationChatCompletionClient {
 
+    private static final Logger logger = LoggerFactory.getLogger(RecommendationChatCompletionClient.class);
     private final Object yahooApiLock = new Object();
-    private final JsonNode systemMessage;
+    private final ObjectNode systemMessage;
     private final ObjectNode context;
-    private final JsonNode fewShotMessage;
-    private final JsonNode fixMeMessage;
+    private final ObjectNode fewShotMessage;
+    private final ObjectNode fixMeMessage;
     private final AssetReportDataProvider assertReportDataProvider;
     private final AssetReportToMustacheMapper assetReportToMustacheMapper;
     private final ObjectMapper objectMapper;
     private final RecommendationChatCompletionResponseMapper mapper;
     private final Map<String, SlidingWindowRateLimiter> rateLimiters;
-    private static final Logger logger = LoggerFactory.getLogger(RecommendationChatCompletionClient.class);
 
     public RecommendationChatCompletionClient(PromptRepository promptRepository, AssetReportDataProvider assertReportDataProvider,
                                               AssetReportToMustacheMapper assetReportToMustacheMapper, ObjectMapper objectMapper,
@@ -56,16 +56,6 @@ public class RecommendationChatCompletionClient {
         this.objectMapper = objectMapper;
         this.mapper = mapper;
         this.rateLimiters = rateLimiters;
-    }
-
-    @FunctionalInterface
-    public interface NewsFetcher {
-        List<News> apply(List<Symbol> symbols) throws ClientException, JsonProcessingException;
-    }
-
-    @FunctionalInterface
-    public interface MarketDataFetcher {
-        MarketData apply(Symbol symbol) throws ClientException, JsonProcessingException;
     }
 
     public List<Recommendation> getRecommendations(List<DataManager.SymbolPayload> payload, AIClient client,
@@ -109,8 +99,8 @@ public class RecommendationChatCompletionClient {
         List<AssetReportRaw> reports = payload.stream()
                 .map(assertReportDataProvider::provide)
                 .toList();
-        JsonNode rawReportMessage = objectMapper.readValue(assetReportToMustacheMapper.map(reports), ObjectNode.class);
-        JsonNode reportMessage;
+        ObjectNode rawReportMessage = objectMapper.readValue(assetReportToMustacheMapper.map(reports), ObjectNode.class);
+        ObjectNode reportMessage;
         if (!client.getConfig().fixMe()) {
             reportMessage = rawReportMessage;
         } else {
@@ -118,13 +108,13 @@ public class RecommendationChatCompletionClient {
                     .replace("{placeholder}", rawReportMessage.get(CONTENT).asText()), ObjectNode.class);
         }
         List<Symbol> symbols = payload.stream().map(DataManager.SymbolPayload::getSymbol).toList();
-        JsonNode contextMessage = context.deepCopy().put(CONTENT, context.get(CONTENT).asText().replace("{date}",
+        ObjectNode contextMessage = context.deepCopy().put(CONTENT, context.get(CONTENT).asText().replace("{date}",
                 ZonedDateTime.now(NY_ZONE).format(DateTimeFormatter.ofPattern("EEEE, yyyy-MM-dd HH:mm:ss z", Locale.ENGLISH))));
 
         logger.info(RETRIEVING_DATA_INFO, RECOMMENDATION, symbols);
         try {
             client.getRateLimiter().acquirePermission();
-            rateLimiters.get(AI_PER_MINUTE_RATE_LIMITER).acquirePermission();
+            rateLimiters.get(client.getConfig().apiKey()).acquirePermission();
             rateLimiters.get(AI_PER_SECOND_RATE_LIMITER).acquirePermission();
             logger.info(PROMPTING_MODEL_INFO, client.getConfig().name());
             List<JsonNode> prompt = List.of(systemMessage, contextMessage, fewShotMessage, reportMessage);
@@ -135,5 +125,15 @@ public class RecommendationChatCompletionClient {
             logger.warn(CLIENT_FAILED_BACKUP_WARN, client.getConfig().name(), PROMPT, e);
             return new ArrayList<>();
         }
+    }
+
+    @FunctionalInterface
+    public interface NewsFetcher {
+        List<News> apply(List<Symbol> symbols) throws ClientException, JsonProcessingException;
+    }
+
+    @FunctionalInterface
+    public interface MarketDataFetcher {
+        MarketData apply(Symbol symbol) throws ClientException, JsonProcessingException;
     }
 }

@@ -24,11 +24,11 @@ import static com.lucas.server.common.Constants.*;
 @Component
 public class FinnhubNewsClient {
 
+    private static final Logger logger = LoggerFactory.getLogger(FinnhubNewsClient.class);
     private final FinnhubNewsResponseMapper mapper;
     private final HttpRequestClient httpRequestClient;
     private final FinnhubRateLimiter finnhubRateLimiter;
     private final String endpoint;
-    private static final Logger logger = LoggerFactory.getLogger(FinnhubNewsClient.class);
 
     public FinnhubNewsClient(FinnhubNewsResponseMapper mapper, HttpRequestClient httpRequestClient,
                              FinnhubRateLimiter finnhubRateLimiter, @Value("${finnhub.endpoint}") String endpoint) {
@@ -42,7 +42,7 @@ public class FinnhubNewsClient {
         String apiKey = finnhubRateLimiter.acquirePermission();
         logger.info(RETRIEVING_DATA_INFO, NEWS, symbol);
         String url = UriComponentsBuilder.fromUriString(endpoint + COMPANY_NEWS)
-                .queryParam("symbol", symbol.getName())
+                .queryParam(SYMBOL, symbol.getName())
                 .queryParam("from", from)
                 .queryParam("to", to)
                 .queryParam("token", apiKey)

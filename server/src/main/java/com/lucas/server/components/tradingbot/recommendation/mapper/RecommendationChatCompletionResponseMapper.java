@@ -16,15 +16,10 @@ import java.time.LocalDate;
 import java.util.*;
 
 import static com.lucas.server.common.Constants.MAPPING_ERROR;
+import static com.lucas.server.common.Constants.SYMBOL;
 
 @Component
 public class RecommendationChatCompletionResponseMapper implements Mapper<JsonNode, Recommendation> {
-
-    private final ObjectMapper objectMapper;
-
-    public RecommendationChatCompletionResponseMapper(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
 
     @Override
     public Recommendation map(JsonNode json) throws JsonProcessingException {
@@ -42,8 +37,6 @@ public class RecommendationChatCompletionResponseMapper implements Mapper<JsonNo
     public List<Recommendation> mapAll(List<DataManager.SymbolPayload> payload, JsonNode jsonNode, String message,
                                        String model) throws JsonProcessingException {
         try {
-            ArrayNode output = (ArrayNode) jsonNode.get("recommendations");
-
             List<Recommendation> recommendations = new ArrayList<>();
             Map<String, Symbol> symbolByName = new HashMap<>();
             Map<String, MarketData> latestMarketDataByName = new HashMap<>();
@@ -53,16 +46,24 @@ public class RecommendationChatCompletionResponseMapper implements Mapper<JsonNo
                 MarketData latest = p.getMarketData().stream().max(Comparator.comparing(MarketData::getDate)).orElseThrow();
                 latestMarketDataByName.put(name, latest);
             }
-            String errors = objectMapper.readerForListOf(String.class).readValue(jsonNode.get("errors")).toString();
 
-            for (int i = 0; i < output.size(); i++) {
-                JsonNode load = output.get(i);
+            if (jsonNode.isObject()) {
+                return List.of(map(jsonNode)
+                        .setModel(model)
+                        .setInput(message)
+                        .setErrors("")
+                        .setMarketData(latestMarketDataByName.get(jsonNode.get(SYMBOL).asText()))
+                        .setSymbol(symbolByName.get(jsonNode.get(SYMBOL).asText())));
+            }
+
+            for (int i = 0; i < jsonNode.size(); i++) {
+                JsonNode load = jsonNode.get(i);
                 recommendations.add(map(load)
                         .setModel(model)
                         .setInput(message)
-                        .setErrors(errors)
-                        .setMarketData(latestMarketDataByName.get(load.get("symbol").asText()))
-                        .setSymbol(symbolByName.get(load.get("symbol").asText())));
+                        .setErrors("")
+                        .setMarketData(latestMarketDataByName.get(load.get(SYMBOL).asText()))
+                        .setSymbol(symbolByName.get(load.get(SYMBOL).asText())));
             }
 
             return recommendations;

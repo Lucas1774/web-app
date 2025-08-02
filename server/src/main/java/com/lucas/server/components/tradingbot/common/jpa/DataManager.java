@@ -41,6 +41,11 @@ import static com.lucas.server.common.Constants.*;
 @Service
 public class DataManager {
 
+    private static final Logger logger = LoggerFactory.getLogger(DataManager.class);
+    private static final Map<PortfolioType, Supplier<PortfolioBase>> portfolioTypeToNewPortfolio = Map.of(
+            PortfolioType.REAL, Portfolio::new,
+            PortfolioType.MOCK, PortfolioMock::new
+    );
     private final SymbolJpaService symbolService;
     private final MarketDataJpaService marketDataService;
     private final NewsJpaService newsService;
@@ -52,16 +57,6 @@ public class DataManager {
     private final RecommendationChatCompletionClient recommendationClient;
     private final Map<MarketDataType, TypeToMarketDataFunction> typeToRunner;
     private final Map<PortfolioType, IPortfolioJpaService<?>> portfolioTypeToService;
-    private static final Logger logger = LoggerFactory.getLogger(DataManager.class);
-    private static final Map<PortfolioType, Supplier<PortfolioBase>> portfolioTypeToNewPortfolio = Map.of(
-            PortfolioType.REAL, Portfolio::new,
-            PortfolioType.MOCK, PortfolioMock::new
-    );
-
-    @FunctionalInterface
-    private interface TypeToMarketDataFunction {
-        List<MarketData> apply(List<Symbol> symbols) throws ClientException, JsonProcessingException;
-    }
 
     public DataManager(SymbolJpaService symbolService, MarketDataJpaService marketDataService, NewsJpaService newsService,
                        RecommendationsJpaService recommendationsService, YahooFinanceNewsClient yahooFinanceNewsClient,
@@ -87,25 +82,6 @@ public class DataManager {
                 PortfolioType.REAL, portfolioService,
                 PortfolioType.MOCK, portfolioMockService
         ));
-    }
-
-    @RequiredArgsConstructor
-    @Getter
-    @Accessors(chain = true)
-    public static class SymbolPayload {
-        private final Symbol symbol;
-        @Setter
-        private MarketData premarket;
-        @Setter
-        private List<News> news;
-        private final List<MarketData> marketData;
-        private final PortfolioBase portfolio;
-    }
-
-    private record BatchJob(
-            Future<List<Recommendation>> future,
-            List<Symbol> symbols
-    ) {
     }
 
     public List<Long> getTopRecommendedSymbols(String action, BigDecimal confidenceThreshold, LocalDate recommendationDate) {
@@ -470,5 +446,29 @@ public class DataManager {
     @SuppressWarnings("unchecked")
     private <T extends PortfolioBase> IPortfolioJpaService<T> getService(PortfolioType type) {
         return (IPortfolioJpaService<T>) portfolioTypeToService.get(type);
+    }
+
+    @FunctionalInterface
+    private interface TypeToMarketDataFunction {
+        List<MarketData> apply(List<Symbol> symbols) throws ClientException, JsonProcessingException;
+    }
+
+    @RequiredArgsConstructor
+    @Getter
+    @Accessors(chain = true)
+    public static class SymbolPayload {
+        private final Symbol symbol;
+        private final List<MarketData> marketData;
+        private final PortfolioBase portfolio;
+        @Setter
+        private MarketData premarket;
+        @Setter
+        private List<News> news;
+    }
+
+    private record BatchJob(
+            Future<List<Recommendation>> future,
+            List<Symbol> symbols
+    ) {
     }
 }

@@ -31,17 +31,7 @@ import static org.mockito.Mockito.verify;
 @Import(TestcontainersConfiguration.class)
 class MarketDataKpiGeneratorTest {
 
-    @MockitoSpyBean
-    MarketDataJpaService marketDataService;
-
-    @Autowired
-    SymbolJpaService symbolService;
-
-    @MockitoSpyBean
-    MarketDataKpiGenerator kpiGenerator;
-
     private static final LogCaptor logCaptor = LogCaptor.forClass(MarketDataKpiGenerator.class);
-
     private static final List<MarketData> mds = Arrays.asList(
             md(10, 9, 11, 9, 4),
             md(13, 11, 14, 12, 1),
@@ -49,6 +39,12 @@ class MarketDataKpiGeneratorTest {
             md(11, 12, 12, 10, 2),
             md(14, 13, 15, 13, 0)
     );
+    @MockitoSpyBean
+    MarketDataJpaService marketDataService;
+    @Autowired
+    SymbolJpaService symbolService;
+    @MockitoSpyBean
+    MarketDataKpiGenerator kpiGenerator;
 
     private static MarketData md(Integer price, Integer prevClose, Integer high, Integer low, Integer daysAgo) {
         return new MarketData()

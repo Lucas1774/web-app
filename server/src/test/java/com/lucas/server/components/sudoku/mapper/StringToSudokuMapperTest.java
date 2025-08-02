@@ -17,20 +17,6 @@ class StringToSudokuMapperTest {
     private final StringToSudokuMapper mapper = new StringToSudokuMapper(new SudokuAttributeConverter());
     private final SudokuSolver solver = new SudokuSolver();
 
-    @ParameterizedTest
-    @MethodSource("getSudoku")
-    void testMap(String value, boolean serializable, boolean isSolvable, boolean isActuallySolvable) throws JsonProcessingException {
-        if (!serializable) {
-            assertThatThrownBy(() -> mapper.map(value)).isInstanceOf(JsonProcessingException.class);
-        } else {
-            Sudoku sudoku = mapper.map(value);
-            assertEquals(isSolvable, solver.isValid(sudoku, -1));
-            if (isSolvable) {
-                assertEquals(isActuallySolvable, solver.solveWithTimeout(sudoku));
-            }
-        }
-    }
-
     private static Stream<Arguments> getSudoku() {
         return Stream.of(
                 Arguments.of("630000000000500008005674000000020000003401020000000345000007004080300902947100080",
@@ -58,5 +44,19 @@ class StringToSudokuMapperTest {
                 Arguments.of("111111111111111111111111111111111111111111111111111111111111111111111111111111110",
                         true, false, false) // unsolvable
         );
+    }
+
+    @ParameterizedTest
+    @MethodSource("getSudoku")
+    void testMap(String value, boolean serializable, boolean isSolvable, boolean isActuallySolvable) throws JsonProcessingException {
+        if (!serializable) {
+            assertThatThrownBy(() -> mapper.map(value)).isInstanceOf(JsonProcessingException.class);
+        } else {
+            Sudoku sudoku = mapper.map(value);
+            assertEquals(isSolvable, solver.isValid(sudoku, -1));
+            if (isSolvable) {
+                assertEquals(isActuallySolvable, solver.solveWithTimeout(sudoku));
+            }
+        }
     }
 }

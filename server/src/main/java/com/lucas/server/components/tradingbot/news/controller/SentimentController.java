@@ -23,9 +23,9 @@ import static com.lucas.server.common.Constants.SP500_SYMBOLS;
 @RequestMapping("/sentiment")
 public class SentimentController {
 
+    private static final Logger logger = LoggerFactory.getLogger(SentimentController.class);
     private final ControllerUtil controllerUtil;
     private final DataManager jpaService;
-    private static final Logger logger = LoggerFactory.getLogger(SentimentController.class);
 
     public SentimentController(ControllerUtil controllerUtil, DataManager jpaService) {
         this.controllerUtil = controllerUtil;
