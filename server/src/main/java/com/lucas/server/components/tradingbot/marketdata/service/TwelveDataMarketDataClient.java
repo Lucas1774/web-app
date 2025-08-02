@@ -22,12 +22,7 @@ import static com.lucas.server.common.Constants.*;
 @Component
 public class TwelveDataMarketDataClient {
 
-    private final HttpRequestClient httpRequestClient;
-    private final SlidingWindowRateLimiter rateLimiter;
-    private final String endpoint;
-    private final String apiKey;
     private static final Logger logger = LoggerFactory.getLogger(TwelveDataMarketDataClient.class);
-    private final Map<MarketDataType, TwelveDataMarketDataClient.JsonToMarketDataFunction> typeToMapper;
     private static final EnumMap<MarketDataType, String> typeToEndpoint = new EnumMap<>(Map.of(
             MarketDataType.LAST, QUOTE,
             MarketDataType.HISTORIC, TIME_SERIES
@@ -36,11 +31,11 @@ public class TwelveDataMarketDataClient {
             MarketDataType.LAST, builder -> builder,
             MarketDataType.HISTORIC, builder -> builder.queryParam("interval", "1day")
     ));
-
-    @FunctionalInterface
-    private interface JsonToMarketDataFunction {
-        List<MarketData> apply(Symbol symbol, JsonNode jsonNode) throws JsonProcessingException;
-    }
+    private final HttpRequestClient httpRequestClient;
+    private final SlidingWindowRateLimiter rateLimiter;
+    private final String endpoint;
+    private final String apiKey;
+    private final Map<MarketDataType, TwelveDataMarketDataClient.JsonToMarketDataFunction> typeToMapper;
 
     public TwelveDataMarketDataClient(HttpRequestClient httpRequestClient, Map<String, SlidingWindowRateLimiter> rateLimiters,
                                       TwelveDataMarketResponseMapper mapper,
@@ -62,7 +57,7 @@ public class TwelveDataMarketDataClient {
         rateLimiter.acquirePermission();
         logger.info(RETRIEVING_DATA_INFO, MARKET_DATA, symbol);
         String url = typeToBuilderCustomizer.get(type).apply(UriComponentsBuilder.fromUriString(endpoint + typeToEndpoint.get(type)))
-                .queryParam("symbol", symbol.getName())
+                .queryParam(SYMBOL, symbol.getName())
                 .queryParam("apikey", apiKey)
                 .build()
                 .toUriString();
@@ -76,5 +71,10 @@ public class TwelveDataMarketDataClient {
             res.addAll(retrieveMarketData(symbol, type));
         }
         return res;
+    }
+
+    @FunctionalInterface
+    private interface JsonToMarketDataFunction {
+        List<MarketData> apply(Symbol symbol, JsonNode jsonNode) throws JsonProcessingException;
     }
 }

@@ -22,9 +22,9 @@ import static com.lucas.server.common.Constants.SP500_SYMBOLS;
 @RequestMapping("/news")
 public class NewsController {
 
+    private static final Logger logger = LoggerFactory.getLogger(NewsController.class);
     private final ControllerUtil controllerUtil;
     private final DataManager jpaService;
-    private static final Logger logger = LoggerFactory.getLogger(NewsController.class);
 
     public NewsController(ControllerUtil controllerUtil, DataManager jpaService) {
         this.controllerUtil = controllerUtil;

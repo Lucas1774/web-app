@@ -23,35 +23,33 @@ import static com.lucas.server.common.Constants.SUDOKU_SIZE;
 @Table(name = "sudokus")
 public class Sudoku implements JpaEntity {
 
-    private Sudoku(int[] state) {
-        this.state = state.clone();
-    }
+    private static final int[] defaultData = new int[SUDOKU_NUMBER_OF_CELLS];
 
-    public static Sudoku withValues(int[] values) {
-        return new Sudoku(values);
-    }
-
-    public static Sudoku withZeros() {
-        int[] zeros = new int[SUDOKU_NUMBER_OF_CELLS];
-        return new Sudoku(zeros);
-    }
-
-    public static Sudoku withDefaultValues() {
-        int[] rawData = new int[SUDOKU_NUMBER_OF_CELLS];
+    static {
         for (int i = 0; i < SUDOKU_NUMBER_OF_CELLS; i++) {
-            rawData[i] = ((i % SUDOKU_SIZE) + 3 * (i / SUDOKU_SIZE) + (i / 27)) % SUDOKU_SIZE + 1;
+            defaultData[i] = ((i % SUDOKU_SIZE) + 3 * (i / SUDOKU_SIZE) + (i / 27)) % SUDOKU_SIZE + 1;
         }
-        return new Sudoku(rawData);
     }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JsonIgnore
     private Long id;
-
     @Column(nullable = false, unique = true, length = 81)
     @Convert(converter = SudokuAttributeConverter.class)
     private int[] state;
+
+    public static Sudoku withValues(int[] values) {
+        return new Sudoku().setState(values.clone());
+    }
+
+    public static Sudoku withZeros() {
+        return new Sudoku().setState(new int[SUDOKU_NUMBER_OF_CELLS]);
+    }
+
+    public static Sudoku withDefaultValues() {
+        return new Sudoku().setState(defaultData.clone());
+    }
 
     public void set(int place, int digit) {
         state[place] = digit;

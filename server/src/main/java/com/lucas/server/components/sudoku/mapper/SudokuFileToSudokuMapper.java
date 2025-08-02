@@ -17,8 +17,8 @@ import static com.lucas.server.common.Constants.SUDOKU_IGNORED_MALFORMED_JSON_WA
 @Component
 public class SudokuFileToSudokuMapper implements Mapper<String, List<Sudoku>> {
 
-    private final StringToSudokuMapper sudokuMapper;
     private static final Logger logger = LoggerFactory.getLogger(SudokuFileToSudokuMapper.class);
+    private final StringToSudokuMapper sudokuMapper;
 
     public SudokuFileToSudokuMapper(StringToSudokuMapper sudokuMapper) {
         this.sudokuMapper = sudokuMapper;

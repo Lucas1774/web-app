@@ -21,66 +21,6 @@ class AssetReportToMustacheMapperTest {
     private final AssetReportToMustacheMapper mapper = new AssetReportToMustacheMapper();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @Test
-    void map_injectsMandatoryFields_and_leavesNullsEmpty() throws IOException {
-        // given
-        AssetReportRaw asset = getAssetReportNullValues();
-
-        // when & then
-        String expected = """
-                --- Market Data & Features ---
-                [ASSET: FOO]
-                • Current Position:
-                  • N/A shares ($N/A)
-                  • Avg Entry Price: N/A
-                  • Unrealized PnL: $0 (0%)
-                • Price History (last 1 days):
-                  • 2025-05-01: O100 H110 L90 C105 VN/A
-                • Technical Indicators:
-                  • 20-day EMA: N/A
-                  • MACD(12,26,9): line=N/A,signal=N/A,hist=N/A
-                  • 14-day RSI: N/A
-                  • 14-day ATR%: N/A
-                  • 20-day OBV: N/A
-                • News Summaries (last 2):
-                  • 2025-04-30 20:00:00 EDT: Headline One: First summary
-                  • 2025-05-01 20:00:00 EDT: Headline Two: Second summary
-                
-                """;
-        assertThat(objectMapper.readTree(mapper.map(List.of(asset))).get(CONTENT).asText()).isEqualTo(expected);
-    }
-
-    @Test
-    void map_injectsAllField() throws IOException {
-        // given
-        AssetReportRaw asset = getAssetReportAllValues();
-
-        // when & then
-        String expected = """
-                --- Market Data & Features ---
-                [ASSET: FOO]
-                • Current Position:
-                  • 10.2412 shares ($101.4887)
-                  • Avg Entry Price: $11.5874
-                  • Unrealized PnL: $50 (80%)
-                • Pre-market: O100 H110 L90 P105 Gap: 7.5%
-                • Price History (last 1 days):
-                  • 2025-05-01: O100 H110 L90 C105 V1234
-                • Technical Indicators:
-                  • 20-day EMA: 105
-                  • MACD(12,26,9): line=42.42,signal=1.23,hist=41.19
-                  • 14-day RSI: 15.67
-                  • 14-day ATR%: 15.68%
-                  • 20-day OBV: 15.69
-                • News Summaries (last 2):
-                  • 2025-04-30 20:00:00 EDT: Sentiment: positive. Confidence: 54.4412%. Headline One: First summary
-                  • 2025-05-01 20:00:00 EDT: Sentiment: negative. Confidence: 54.4412%. Headline Two: Second summary
-                
-                """;
-
-        assertThat(objectMapper.readTree(mapper.map(List.of(asset))).get(CONTENT).asText()).isEqualTo(expected);
-    }
-
     private static AssetReportRaw getAssetReportNullValues() {
         PricePointRaw pp = getPpNullValues();
         List<NewsItemRaw> news = getNewsNullValues();
@@ -124,5 +64,65 @@ class AssetReportToMustacheMapperTest {
                 new NewsItemRaw("Headline Two", "negative", BigDecimal.valueOf(54.4412),
                         "Second summary", LocalDateTime.of(LocalDate.of(2025, 5, 2), LocalTime.MIDNIGHT))
         );
+    }
+
+    @Test
+    void map_injectsMandatoryFields_and_leavesNullsEmpty() throws IOException {
+        // given
+        AssetReportRaw asset = getAssetReportNullValues();
+
+        // when & then
+        String expected = """
+                --- Market Data & Features ---
+                [ASSET: FOO]
+                • Current Position:
+                  • N/A shares ($N/A)
+                  • Avg Entry Price: N/A
+                  • Unrealized PnL: $0 (0%)
+                • Price History (last 1 days):
+                  • 2025-05-01: O100 H110 L90 C105 VN/A
+                • Technical Indicators at last close:
+                  • 20-day EMA: N/A
+                  • MACD(12,26,9): line=N/A,signal=N/A,hist=N/A
+                  • 14-day RSI: N/A
+                  • 14-day ATR%: N/A
+                  • 20-day OBV: N/A
+                • News Summaries (last 2):
+                  • 2025-04-30 20:00:00 EDT: Headline One: First summary
+                  • 2025-05-01 20:00:00 EDT: Headline Two: Second summary
+                
+                """;
+        assertThat(objectMapper.readTree(mapper.map(List.of(asset))).get(CONTENT).asText()).isEqualTo(expected);
+    }
+
+    @Test
+    void map_injectsAllField() throws IOException {
+        // given
+        AssetReportRaw asset = getAssetReportAllValues();
+
+        // when & then
+        String expected = """
+                --- Market Data & Features ---
+                [ASSET: FOO]
+                • Current Position:
+                  • 10.2412 shares ($101.4887)
+                  • Avg Entry Price: $11.5874
+                  • Unrealized PnL: $50 (80%)
+                • Pre-market: O100 H110 L90 P105 Gap: 7.5%
+                • Price History (last 1 days):
+                  • 2025-05-01: O100 H110 L90 C105 V1234
+                • Technical Indicators at last close:
+                  • 20-day EMA: 105
+                  • MACD(12,26,9): line=42.42,signal=1.23,hist=41.19
+                  • 14-day RSI: 15.67
+                  • 14-day ATR%: 15.68%
+                  • 20-day OBV: 15.69
+                • News Summaries (last 2):
+                  • 2025-04-30 20:00:00 EDT: Sentiment: positive. Confidence: 54.4412%. Headline One: First summary
+                  • 2025-05-01 20:00:00 EDT: Sentiment: negative. Confidence: 54.4412%. Headline Two: Second summary
+                
+                """;
+
+        assertThat(objectMapper.readTree(mapper.map(List.of(asset))).get(CONTENT).asText()).isEqualTo(expected);
     }
 }

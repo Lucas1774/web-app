@@ -73,8 +73,7 @@ public class DailyScheduler {
     private void updateNews(List<String> symbolNames) {
         try {
             List<News> updatedNews = dataManager.retrieveNewsByName(symbolNames);
-            logger.info(SCHEDULED_TASK_SUCCESS_INFO, "fetched news", updatedNews.stream()
-                    .map(News::getHeadline).toList());
+            logger.info(SCHEDULED_TASK_SUCCESS_INFO, "fetched news", updatedNews.size());
         } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);
         }
@@ -82,22 +81,21 @@ public class DailyScheduler {
 
     private void getRandomRecommendations(List<String> symbolNames) {
         List<Recommendation> updatedRecommendations = dataManager.getRandomRecommendations(symbolNames, filterClients(clients, RecommendationMode.RANDOM), PortfolioType.REAL,
-                SCHEDULED_RECOMMENDATIONS_COUNT, true, true, false, true);
+                SCHEDULED_RECOMMENDATIONS_COUNT, true, true, false, false);
         logger.info(SCHEDULED_TASK_SUCCESS_INFO, "generated recommendations", updatedRecommendations.stream()
                 .map(Recommendation::getSymbol).toList());
     }
 
     private void getRecommendations(List<Long> topRecommendedSymbols, RecommendationMode mode) {
         List<Recommendation> updatedRecommendations = dataManager.getRecommendationsById(topRecommendedSymbols, filterClients(clients, mode), PortfolioType.REAL,
-                true, true, true);
+                true, true, false);
         logger.info(SCHEDULED_TASK_SUCCESS_INFO, "generated recommendations", updatedRecommendations.stream()
                 .map(Recommendation::getSymbol).toList());
     }
 
     private void removeOldNews() {
         List<News> removedNews = dataManager.removeOldNews(DATABASE_NEWS_PER_SYMBOL);
-        logger.info(SCHEDULED_TASK_SUCCESS_INFO, "removed news", removedNews.stream()
-                .map(News::getHeadline).toList());
+        logger.info(SCHEDULED_TASK_SUCCESS_INFO, "removed news", removedNews);
     }
 
     private void removeOldMarketData() {

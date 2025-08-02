@@ -32,6 +32,7 @@ import java.text.MessageFormat;
 import java.time.*;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -41,6 +42,11 @@ import static com.lucas.server.common.Constants.*;
 @Service
 public class DataManager {
 
+    private static final Logger logger = LoggerFactory.getLogger(DataManager.class);
+    private static final Map<PortfolioType, Supplier<PortfolioBase>> portfolioTypeToNewPortfolio = Map.of(
+            PortfolioType.REAL, Portfolio::new,
+            PortfolioType.MOCK, PortfolioMock::new
+    );
     private final SymbolJpaService symbolService;
     private final MarketDataJpaService marketDataService;
     private final NewsJpaService newsService;
@@ -52,16 +58,6 @@ public class DataManager {
     private final RecommendationChatCompletionClient recommendationClient;
     private final Map<MarketDataType, TypeToMarketDataFunction> typeToRunner;
     private final Map<PortfolioType, IPortfolioJpaService<?>> portfolioTypeToService;
-    private static final Logger logger = LoggerFactory.getLogger(DataManager.class);
-    private static final Map<PortfolioType, Supplier<PortfolioBase>> portfolioTypeToNewPortfolio = Map.of(
-            PortfolioType.REAL, Portfolio::new,
-            PortfolioType.MOCK, PortfolioMock::new
-    );
-
-    @FunctionalInterface
-    private interface TypeToMarketDataFunction {
-        List<MarketData> apply(List<Symbol> symbols) throws ClientException, JsonProcessingException;
-    }
 
     public DataManager(SymbolJpaService symbolService, MarketDataJpaService marketDataService, NewsJpaService newsService,
                        RecommendationsJpaService recommendationsService, YahooFinanceNewsClient yahooFinanceNewsClient,
@@ -87,25 +83,6 @@ public class DataManager {
                 PortfolioType.REAL, portfolioService,
                 PortfolioType.MOCK, portfolioMockService
         ));
-    }
-
-    @RequiredArgsConstructor
-    @Getter
-    @Accessors(chain = true)
-    public static class SymbolPayload {
-        private final Symbol symbol;
-        @Setter
-        private MarketData premarket;
-        @Setter
-        private List<News> news;
-        private final List<MarketData> marketData;
-        private final PortfolioBase portfolio;
-    }
-
-    private record BatchJob(
-            Future<List<Recommendation>> future,
-            List<Symbol> symbols
-    ) {
     }
 
     public List<Long> getTopRecommendedSymbols(String action, BigDecimal confidenceThreshold, LocalDate recommendationDate) {
@@ -163,8 +140,11 @@ public class DataManager {
 
         List<SymbolPayload> remainingPayload = symbols.parallelStream()
                 .map(symbol -> {
-                    List<News> news = !onTheFlyNews ? newsService.getTopForSymbolId(symbol.getId(), NEWS_COUNT) : null;
-                    if (onlyIfHasNews && Objects.requireNonNull(news).stream().noneMatch(n -> n.getDate().isAfter(startUtc))) {
+                    List<News> news = !onTheFlyNews
+                            ? newsService.getTopForSymbolId(symbol.getId(), NEWS_COUNT).stream()
+                            .filter(n -> n.getDate().isAfter(startUtc)).toList()
+                            : null;
+                    if (onlyIfHasNews && Objects.requireNonNull(news).isEmpty()) {
                         return Optional.<SymbolPayload>empty();
                     }
 
@@ -181,12 +161,22 @@ public class DataManager {
                 .flatMap(Optional::stream)
                 .toList();
 
+        RecommendationChatCompletionClient.NewsFetcher newsFetcher = onTheFlyNews
+                ? s -> yahooFinanceNewsClient.retrieveNews(s).stream()
+                .filter(n -> n.getDate().isAfter(startUtc)).toList()
+                : null;
+        BiFunction<Long, Integer, List<News>> backupNewsFetcher = (id, limit) -> newsService.getTopForSymbolId(id, limit).stream()
+                .filter(n -> n.getDate().isAfter(startUtc)).toList();
+        RecommendationChatCompletionClient.MarketDataFetcher marketDataFetcher = fetchPreMarket
+                ? yahooFinanceMarketDataClient::retrieveMarketData
+                : null;
+
         logger.info(RETRIEVING_DATA_INFO, RECOMMENDATION, remainingPayload.size());
         try (ExecutorService executor = Executors.newFixedThreadPool(clients.size() * 5)) {
             int retries = 0;
             while (!remainingPayload.isEmpty() && retries < RECOMMENDATION_MAX_RETRIES) {
                 List<Recommendation> fetched = doGetRecommendationsInParallel(remainingPayload, mutableClients, executor,
-                        overwrite, onTheFlyNews, fetchPreMarket);
+                        overwrite, newsFetcher, backupNewsFetcher, marketDataFetcher);
                 res.addAll(fetched);
                 Set<Symbol> fetchedSymbols = fetched.stream()
                         .map(Recommendation::getSymbol)
@@ -205,7 +195,9 @@ public class DataManager {
     }
 
     private List<Recommendation> doGetRecommendationsInParallel(List<SymbolPayload> payload, List<AIClient> clients, ExecutorService executor,
-                                                                boolean overwrite, boolean onTheFlyNews, boolean fetchPreMarket) {
+                                                                boolean overwrite, RecommendationChatCompletionClient.NewsFetcher newsFetcher,
+                                                                BiFunction<Long, Integer, List<News>> backupNewsFetcher,
+                                                                RecommendationChatCompletionClient.MarketDataFetcher marketDataFetcher) {
         List<BatchJob> jobs = new ArrayList<>();
         List<SymbolPayload> buffer = new ArrayList<>();
 
@@ -214,7 +206,7 @@ public class DataManager {
             buffer.add(load);
 
             if (buffer.size() == client.getConfig().chunkSize()) {
-                submitChunk(buffer, client, executor, jobs, overwrite, onTheFlyNews, fetchPreMarket);
+                submitChunk(buffer, client, executor, jobs, overwrite, newsFetcher, backupNewsFetcher, marketDataFetcher);
                 buffer.clear();
                 Collections.rotate(clients, -1);
             }
@@ -222,7 +214,7 @@ public class DataManager {
 
         if (!buffer.isEmpty()) {
             AIClient client = clients.getFirst();
-            submitChunk(buffer, client, executor, jobs, overwrite, onTheFlyNews, fetchPreMarket);
+            submitChunk(buffer, client, executor, jobs, overwrite, newsFetcher, backupNewsFetcher, marketDataFetcher);
             Collections.rotate(clients, -1);
         }
 
@@ -242,13 +234,16 @@ public class DataManager {
     }
 
     private void submitChunk(List<SymbolPayload> buffer, AIClient client, ExecutorService executor, List<BatchJob> jobs,
-                             boolean overwrite, boolean onTheFlyNews, boolean fetchPreMarket) {
+                             boolean overwrite, RecommendationChatCompletionClient.NewsFetcher newsFetcher,
+                             BiFunction<Long, Integer, List<News>> backupNewsFetcher,
+                             RecommendationChatCompletionClient.MarketDataFetcher marketDataFetcher) {
         List<SymbolPayload> snapshot = new ArrayList<>(buffer);
         Callable<List<Recommendation>> task = () -> {
-            List<Recommendation> partialRecommendations = recommendationClient.getRecommendations(snapshot, client, onTheFlyNews, fetchPreMarket,
-                    yahooFinanceNewsClient::retrieveNews,
-                    newsService::getTopForSymbolId,
-                    yahooFinanceMarketDataClient::retrieveMarketData);
+            List<Recommendation> partialRecommendations = recommendationClient.getRecommendations(snapshot,
+                    client,
+                    newsFetcher,
+                    backupNewsFetcher,
+                    marketDataFetcher);
             if (partialRecommendations.isEmpty()) {
                 return partialRecommendations;
             }
@@ -470,5 +465,29 @@ public class DataManager {
     @SuppressWarnings("unchecked")
     private <T extends PortfolioBase> IPortfolioJpaService<T> getService(PortfolioType type) {
         return (IPortfolioJpaService<T>) portfolioTypeToService.get(type);
+    }
+
+    @FunctionalInterface
+    private interface TypeToMarketDataFunction {
+        List<MarketData> apply(List<Symbol> symbols) throws ClientException, JsonProcessingException;
+    }
+
+    @RequiredArgsConstructor
+    @Getter
+    @Accessors(chain = true)
+    public static class SymbolPayload {
+        private final Symbol symbol;
+        private final List<MarketData> marketData;
+        private final PortfolioBase portfolio;
+        @Setter
+        private MarketData premarket;
+        @Setter
+        private List<News> news;
+    }
+
+    private record BatchJob(
+            Future<List<Recommendation>> future,
+            List<Symbol> symbols
+    ) {
     }
 }

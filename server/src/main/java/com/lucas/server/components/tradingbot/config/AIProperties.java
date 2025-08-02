@@ -12,6 +12,8 @@ import java.util.List;
 @ConfigurationProperties(prefix = "ai")
 public class AIProperties {
 
+    private List<DeploymentProperties> deployments;
+
     public record DeploymentProperties(
             String name,
             String apiKey,
@@ -24,6 +26,4 @@ public class AIProperties {
             boolean fixMe
     ) {
     }
-
-    private List<DeploymentProperties> deployments;
 }

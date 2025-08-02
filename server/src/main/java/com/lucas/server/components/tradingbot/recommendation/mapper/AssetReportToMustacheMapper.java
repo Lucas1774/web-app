@@ -42,6 +42,17 @@ public class AssetReportToMustacheMapper implements Mapper<List<AssetReportRaw>,
         }
     }
 
+    @Override
+    public String map(List<AssetReportRaw> assets) throws JsonProcessingException {
+        StringWriter out = new StringWriter();
+        try {
+            mustache.execute(out, Collections.singletonMap("assets", assets.stream().map(AssetReport::from).toList())).flush();
+            return out.toString();
+        } catch (Exception e) {
+            throw new JsonProcessingException(MessageFormat.format(MAPPING_ERROR, "asset report"), e);
+        }
+    }
+
     public record AssetReportRaw(
             String symbol,
             BigDecimal position,
@@ -169,17 +180,6 @@ public class AssetReportToMustacheMapper implements Mapper<List<AssetReportRaw>,
                                 .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z"))
                 );
             }
-        }
-    }
-
-    @Override
-    public String map(List<AssetReportRaw> assets) throws JsonProcessingException {
-        StringWriter out = new StringWriter();
-        try {
-            mustache.execute(out, Collections.singletonMap("assets", assets.stream().map(AssetReport::from).toList())).flush();
-            return out.toString();
-        } catch (Exception e) {
-            throw new JsonProcessingException(MessageFormat.format(MAPPING_ERROR, "asset report"), e);
         }
     }
 }

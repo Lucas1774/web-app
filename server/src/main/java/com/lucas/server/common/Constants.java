@@ -17,38 +17,11 @@ import static com.lucas.server.common.Constants.Clients.*;
 
 public class Constants {
 
-    private Constants() {
-    }
-
-    public enum MarketDataType {
-        LAST, HISTORIC, REAL_TIME
-    }
-
-    public enum PortfolioType {
-        REAL, MOCK
-    }
-
-    public enum RecommendationMode {
-        FINE_GRAIN, RANDOM, NOT_RANDOM
-    }
-
-    public static List<AIClient> filterClients(Map<String, AIClient> allClients, RecommendationMode recommendationMode) {
-        return allClients.entrySet().stream()
-                .filter(clientNameToClient -> modeToClientNames.get(recommendationMode).contains(clientNameToClient.getKey()))
-                .map(Map.Entry::getValue).toList();
-    }
-
-    private static final int[] DIGITS = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-
-    public static int[] getDigits() {
-        return DIGITS;
-    }
-
     public static final int SUDOKU_SIZE = 9;
     public static final int SUDOKU_NUMBER_OF_CELLS = 81;
     public static final int MARKET_DATA_RELEVANT_DAYS_COUNT = 34;
     public static final int HISTORY_DAYS_COUNT = 5;
-    public static final int NEWS_COUNT = 10;
+    public static final int NEWS_COUNT = 12;
     public static final int DATABASE_NEWS_PER_SYMBOL = 20;
     public static final int DATABASE_MARKET_DATA_PER_SYMBOL = 100;
     public static final int DATABASE_RECOMMENDATIONS_PER_SYMBOL = 5;
@@ -56,9 +29,7 @@ public class Constants {
     public static final int REQUEST_MAX_ATTEMPTS = 5;
     public static final BigDecimal NEWS_FINE_GRAIN_THRESHOLD = BigDecimal.valueOf(0.75);
     public static final BigDecimal GROK_FINE_GRAIN_THRESHOLD = BigDecimal.valueOf(0.75);
-
     public static final int RECOMMENDATION_MAX_RETRIES = 6;
-
     public static final String DEFAULT_USERNAME = "default";
     public static final String EMPTY_STRING = "";
     public static final String NA = "N/A";
@@ -67,6 +38,7 @@ public class Constants {
     public static final String QUOTE = "/quote";
     public static final String TIME_SERIES = "/time_series";
     public static final String ANALYZE = "/analyze";
+    public static final String SYMBOL = "symbol";
     public static final String CONTENT = "content";
     public static final String ROLE = "role";
     public static final String BUY = "BUY";
@@ -78,19 +50,12 @@ public class Constants {
     public static final String PROMPT = "prompt";
     public static final String VOLATILITY = "volatility";
     public static final String OBV = "OBV";
-    public static final String AI_PER_MINUTE_RATE_LIMITER = "perMinuteRateLimiter";
     public static final String AI_PER_SECOND_RATE_LIMITER = "perSecondRateLimiter";
     public static final String TWELVEDATA_RATE_LIMITER = "twelveDataRateLimiter";
     public static final String YAHOO_FINANCE_RATE_LIMITER = "yahooFinanceRateLimiter";
-    private static final String FINNHUB_RATE_LIMITER = "finnhubRateLimiter";
-    private static final String FINNHUB_RATE_LIMITER_2 = "finnhubRateLimiter2";
-    private static final String FINNHUB_RATE_LIMITER_3 = "finnhubRateLimiter3";
-    public static final List<String> FINNHUB_RATE_LIMITERS = List.of(FINNHUB_RATE_LIMITER, FINNHUB_RATE_LIMITER_2, FINNHUB_RATE_LIMITER_3);
-
     public static final ZoneId NY_ZONE = ZoneId.of("America/New_York");
     public static final LocalTime MARKET_CLOSE = LocalTime.of(16, 0);
     public static final LocalTime EARLY_CLOSE = LocalTime.of(13, 0);
-
     public static final String SUDOKU_IGNORED_MALFORMED_JSON_WARN = "Couldn't deserialize sudoku from raw data {}";
     public static final String KPI_RETURNED_ZERO_WARN = "Value is zero for {}, {}";
     public static final String NON_COMPUTABLE_KPI_WARN = "Error attempting to compute {} for {}";
@@ -104,7 +69,17 @@ public class Constants {
     public static final String MAPPING_ERROR = "Error mapping {0}";
     public static final String INSUFFICIENT_STOCK_ERROR = "{0}: Nothing to sell";
     public static final String SYMBOL_NOT_FOUND_ERROR = "{0}: Unknown symbol";
-
+    public static final Set<LocalDate> EARLY_CLOSE_DATES_2025 = Set.of(
+            LocalDate.of(2025, 7, 3), // Pre‑Independence Day
+            LocalDate.of(2025, 11, 28), // Day after Thanksgiving
+            LocalDate.of(2025, 12, 24) // Christmas Eve
+    );
+    public static final List<String> SP500_SYMBOLS = List.of("MMM", "AOS", "ABT", "ABBV", "ACN", "ADBE", "AMD", "AES", "AFL", "A", "APD", "ABNB", "AKAM", "ALB", "ARE", "ALGN", "ALLE", "LNT", "ALL", "GOOGL", "GOOG", "MO", "AMZN", "AMCR", "AEE", "AEP", "AXP", "AIG", "AMT", "AWK", "AMP", "AME", "AMGN", "APH", "ADI", "AON", "APA", "APO", "AAPL", "AMAT", "APTV", "ACGL", "ADM", "ANET", "AJG", "AIZ", "T", "ATO", "ADSK", "ADP", "AZO", "AVB", "AVY", "AXON", "BKR", "BALL", "BAC", "BAX", "BDX", "BRK.B", "BBY", "TECH", "BIIB", "BLK", "BX", "BK", "BA", "BKNG", "BSX", "BMY", "AVGO", "BR", "BRO", "BF.B", "BLDR", "BG", "BXP", "CHRW", "CDNS", "CZR", "CPT", "CPB", "COF", "CAH", "KMX", "CCL", "CARR", "CAT", "CBOE", "CBRE", "CDW", "COR", "CNC", "CNP", "CF", "CRL", "SCHW", "CHTR", "CVX", "CMG", "CB", "CHD", "CI", "CINF", "CTAS", "CSCO", "C", "CFG", "CLX", "CME", "CMS", "KO", "CTSH", "COIN", "CL", "CMCSA", "CAG", "COP", "ED", "STZ", "CEG", "COO", "CPRT", "GLW", "CPAY", "CTVA", "CSGP", "COST", "CTRA", "CRWD", "CCI", "CSX", "CMI", "CVS", "DHR", "DRI", "DDOG", "DVA", "DAY", "DECK", "DE", "DELL", "DAL", "DVN", "DXCM", "FANG", "DLR", "DG", "DLTR", "D", "DPZ", "DASH", "DOV", "DOW", "DHI", "DTE", "DUK", "DD", "EMN", "ETN", "EBAY", "ECL", "EIX", "EW", "EA", "ELV", "EMR", "ENPH", "ETR", "EOG", "EPAM", "EQT", "EFX", "EQIX", "EQR", "ERIE", "ESS", "EL", "EG", "EVRG", "ES", "EXC", "EXE", "EXPE", "EXPD", "EXR", "XOM", "FFIV", "FDS", "FICO", "FAST", "FRT", "FDX", "FIS", "FITB", "FSLR", "FE", "FI", "F", "FTNT", "FTV", "FOXA", "FOX", "BEN", "FCX", "GRMN", "IT", "GE", "GEHC", "GEV", "GEN", "GNRC", "GD", "GIS", "GM", "GPC", "GILD", "GPN", "GL", "GDDY", "GS", "HAL", "HIG", "HAS", "HCA", "DOC", "HSIC", "HSY", "HPE", "HLT", "HOLX", "HD", "HON", "HRL", "HST", "HWM", "HPQ", "HUBB", "HUM", "HBAN", "HII", "IBM", "IEX", "IDXX", "ITW", "INCY", "IR", "PODD", "INTC", "ICE", "IFF", "IP", "IPG", "INTU", "ISRG", "IVZ", "INVH", "IQV", "IRM", "JBHT", "JBL", "JKHY", "J", "JNJ", "JCI", "JPM", "K", "KVUE", "KDP", "KEY", "KEYS", "KMB", "KIM", "KMI", "KKR", "KLAC", "KHC", "KR", "LHX", "LH", "LRCX", "LW", "LVS", "LDOS", "LEN", "LII", "LLY", "LIN", "LYV", "LKQ", "LMT", "L", "LOW", "LULU", "LYB", "MTB", "MPC", "MKTX", "MAR", "MMC", "MLM", "MAS", "MA", "MTCH", "MKC", "MCD", "MCK", "MDT", "MRK", "META", "MET", "MTD", "MGM", "MCHP", "MU", "MSFT", "MAA", "MRNA", "MHK", "MOH", "TAP", "MDLZ", "MPWR", "MNST", "MCO", "MS", "MOS", "MSI", "MSCI", "NDAQ", "NTAP", "NFLX", "NEM", "NWSA", "NWS", "NEE", "NKE", "NI", "NDSN", "NSC", "NTRS", "NOC", "NCLH", "NRG", "NUE", "NVDA", "NVR", "NXPI", "ORLY", "OXY", "ODFL", "OMC", "ON", "OKE", "ORCL", "OTIS", "PCAR", "PKG", "PLTR", "PANW", "PARA", "PH", "PAYX", "PAYC", "PYPL", "PNR", "PEP", "PFE", "PCG", "PM", "PSX", "PNW", "PNC", "POOL", "PPG", "PPL", "PFG", "PG", "PGR", "PLD", "PRU", "PEG", "PTC", "PSA", "PHM", "PWR", "QCOM", "DGX", "RL", "RJF", "RTX", "O", "REG", "REGN", "RF", "RSG", "RMD", "RVTY", "ROK", "ROL", "ROP", "ROST", "RCL", "SPGI", "CRM", "SBAC", "SLB", "STX", "SRE", "NOW", "SHW", "SPG", "SWKS", "SJM", "SW", "SNA", "SOLV", "SO", "LUV", "SWK", "SBUX", "STT", "STLD", "STE", "SYK", "SMCI", "SYF", "SNPS", "SYY", "TMUS", "TROW", "TTWO", "TPR", "TRGP", "TGT", "TEL", "TDY", "TER", "TSLA", "TXN", "TPL", "TXT", "TMO", "TJX", "TKO", "TTD", "TSCO", "TT", "TDG", "TRV", "TRMB", "TFC", "TYL", "TSN", "USB", "UBER", "UDR", "ULTA", "UNP", "UAL", "UPS", "URI", "UNH", "UHS", "VLO", "VTR", "VLTO", "VRSN", "VRSK", "VZ", "VRTX", "VTRS", "VICI", "V", "VST", "VMC", "WRB", "GWW", "WAB", "WBA", "WMT", "DIS", "WBD", "WM", "WAT", "WEC", "WFC", "WELL", "WST", "WDC", "WY", "WSM", "WMB", "WTW", "WDAY", "WYNN", "XEL", "XYL", "XYZ", "YUM", "ZBRA", "ZBH", "ZTS");
+    private static final int[] DIGITS = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+    private static final String FINNHUB_RATE_LIMITER = "finnhubRateLimiter";
+    private static final String FINNHUB_RATE_LIMITER_2 = "finnhubRateLimiter2";
+    private static final String FINNHUB_RATE_LIMITER_3 = "finnhubRateLimiter3";
+    public static final List<String> FINNHUB_RATE_LIMITERS = List.of(FINNHUB_RATE_LIMITER, FINNHUB_RATE_LIMITER_2, FINNHUB_RATE_LIMITER_3);
     private static final Set<LocalDate> MARKET_HOLIDAYS_2025 = Set.of(
             LocalDate.of(2025, 1, 1), // New Year's Day
             LocalDate.of(2025, 1, 20), // Martin Luther King Jr. Day
@@ -117,6 +92,27 @@ public class Constants {
             LocalDate.of(2025, 11, 27), // Thanksgiving
             LocalDate.of(2025, 12, 25) // Christmas Day
     );
+    private static final List<Clients> FINE_GRAIN_CLIENTS = List.of(GROK_3, GROK_3_2, GROK_3_3, GROK_3_4, GROK_3_5, GROK_3_6);
+    private static final List<Clients> RECOMMENDATION_CLIENTS = List.of(GPT_4_1, GPT_4_1_2, GPT_4_1_3, GPT_4_1_4, GPT_4_1_5, GPT_4_1_6);
+    private static final List<Clients> RANDOM_RECOMMENDATION_CLIENTS = List.of(GPT_4_1, GPT_4_1_2, GPT_4_1_3, GPT_4_1_4, GPT_4_1_5, GPT_4_1_6);
+    private static final Map<RecommendationMode, Set<String>> modeToClientNames = new EnumMap<>(Map.of(
+            RecommendationMode.FINE_GRAIN, FINE_GRAIN_CLIENTS.stream().map(Clients::toString).collect(Collectors.toSet()),
+            RecommendationMode.RANDOM, RANDOM_RECOMMENDATION_CLIENTS.stream().map(Clients::toString).collect(Collectors.toSet()),
+            RecommendationMode.NOT_RANDOM, RECOMMENDATION_CLIENTS.stream().map(Clients::toString).collect(Collectors.toSet())
+    ));
+
+    private Constants() {
+    }
+
+    public static List<AIClient> filterClients(Map<String, AIClient> allClients, RecommendationMode recommendationMode) {
+        return allClients.entrySet().stream()
+                .filter(clientNameToClient -> modeToClientNames.get(recommendationMode).contains(clientNameToClient.getKey()))
+                .map(Map.Entry::getValue).toList();
+    }
+
+    public static int[] getDigits() {
+        return DIGITS;
+    }
 
     public static boolean isTradingDate(LocalDate date) {
         DayOfWeek dayOfWeek = date.getDayOfWeek();
@@ -125,11 +121,17 @@ public class Constants {
                 && !MARKET_HOLIDAYS_2025.contains(date);
     }
 
-    public static final Set<LocalDate> EARLY_CLOSE_DATES_2025 = Set.of(
-            LocalDate.of(2025, 7, 3), // Pre‑Independence Day
-            LocalDate.of(2025, 11, 28), // Day after Thanksgiving
-            LocalDate.of(2025, 12, 24) // Christmas Eve
-    );
+    public enum MarketDataType {
+        LAST, HISTORIC, REAL_TIME
+    }
+
+    public enum PortfolioType {
+        REAL, MOCK
+    }
+
+    public enum RecommendationMode {
+        FINE_GRAIN, RANDOM, NOT_RANDOM
+    }
 
     protected enum Clients {
         GPT_4_1("gpt-4.1"),
@@ -181,15 +183,4 @@ public class Constants {
             return label;
         }
     }
-
-    private static final List<Clients> FINE_GRAIN_CLIENTS = List.of(GROK_3, GROK_3_2, GROK_3_3, GROK_3_4, GROK_3_5, GROK_3_6);
-    private static final List<Clients> RECOMMENDATION_CLIENTS = List.of(GPT_4_1, GPT_4_1_2, GPT_4_1_3, GPT_4_1_4, GPT_4_1_5, GPT_4_1_6);
-    private static final List<Clients> RANDOM_RECOMMENDATION_CLIENTS = List.of(GPT_4_1, GPT_4_1_2, GPT_4_1_3, GPT_4_1_4, GPT_4_1_5, GPT_4_1_6);
-    private static final Map<RecommendationMode, Set<String>> modeToClientNames = new EnumMap<>(Map.of(
-            RecommendationMode.FINE_GRAIN, FINE_GRAIN_CLIENTS.stream().map(Clients::toString).collect(Collectors.toSet()),
-            RecommendationMode.RANDOM, RANDOM_RECOMMENDATION_CLIENTS.stream().map(Clients::toString).collect(Collectors.toSet()),
-            RecommendationMode.NOT_RANDOM, RECOMMENDATION_CLIENTS.stream().map(Clients::toString).collect(Collectors.toSet())
-    ));
-
-    public static final List<String> SP500_SYMBOLS = List.of("MMM", "AOS", "ABT", "ABBV", "ACN", "ADBE", "AMD", "AES", "AFL", "A", "APD", "ABNB", "AKAM", "ALB", "ARE", "ALGN", "ALLE", "LNT", "ALL", "GOOGL", "GOOG", "MO", "AMZN", "AMCR", "AEE", "AEP", "AXP", "AIG", "AMT", "AWK", "AMP", "AME", "AMGN", "APH", "ADI", "AON", "APA", "APO", "AAPL", "AMAT", "APTV", "ACGL", "ADM", "ANET", "AJG", "AIZ", "T", "ATO", "ADSK", "ADP", "AZO", "AVB", "AVY", "AXON", "BKR", "BALL", "BAC", "BAX", "BDX", "BRK.B", "BBY", "TECH", "BIIB", "BLK", "BX", "BK", "BA", "BKNG", "BSX", "BMY", "AVGO", "BR", "BRO", "BF.B", "BLDR", "BG", "BXP", "CHRW", "CDNS", "CZR", "CPT", "CPB", "COF", "CAH", "KMX", "CCL", "CARR", "CAT", "CBOE", "CBRE", "CDW", "COR", "CNC", "CNP", "CF", "CRL", "SCHW", "CHTR", "CVX", "CMG", "CB", "CHD", "CI", "CINF", "CTAS", "CSCO", "C", "CFG", "CLX", "CME", "CMS", "KO", "CTSH", "COIN", "CL", "CMCSA", "CAG", "COP", "ED", "STZ", "CEG", "COO", "CPRT", "GLW", "CPAY", "CTVA", "CSGP", "COST", "CTRA", "CRWD", "CCI", "CSX", "CMI", "CVS", "DHR", "DRI", "DDOG", "DVA", "DAY", "DECK", "DE", "DELL", "DAL", "DVN", "DXCM", "FANG", "DLR", "DG", "DLTR", "D", "DPZ", "DASH", "DOV", "DOW", "DHI", "DTE", "DUK", "DD", "EMN", "ETN", "EBAY", "ECL", "EIX", "EW", "EA", "ELV", "EMR", "ENPH", "ETR", "EOG", "EPAM", "EQT", "EFX", "EQIX", "EQR", "ERIE", "ESS", "EL", "EG", "EVRG", "ES", "EXC", "EXE", "EXPE", "EXPD", "EXR", "XOM", "FFIV", "FDS", "FICO", "FAST", "FRT", "FDX", "FIS", "FITB", "FSLR", "FE", "FI", "F", "FTNT", "FTV", "FOXA", "FOX", "BEN", "FCX", "GRMN", "IT", "GE", "GEHC", "GEV", "GEN", "GNRC", "GD", "GIS", "GM", "GPC", "GILD", "GPN", "GL", "GDDY", "GS", "HAL", "HIG", "HAS", "HCA", "DOC", "HSIC", "HSY", "HPE", "HLT", "HOLX", "HD", "HON", "HRL", "HST", "HWM", "HPQ", "HUBB", "HUM", "HBAN", "HII", "IBM", "IEX", "IDXX", "ITW", "INCY", "IR", "PODD", "INTC", "ICE", "IFF", "IP", "IPG", "INTU", "ISRG", "IVZ", "INVH", "IQV", "IRM", "JBHT", "JBL", "JKHY", "J", "JNJ", "JCI", "JPM", "K", "KVUE", "KDP", "KEY", "KEYS", "KMB", "KIM", "KMI", "KKR", "KLAC", "KHC", "KR", "LHX", "LH", "LRCX", "LW", "LVS", "LDOS", "LEN", "LII", "LLY", "LIN", "LYV", "LKQ", "LMT", "L", "LOW", "LULU", "LYB", "MTB", "MPC", "MKTX", "MAR", "MMC", "MLM", "MAS", "MA", "MTCH", "MKC", "MCD", "MCK", "MDT", "MRK", "META", "MET", "MTD", "MGM", "MCHP", "MU", "MSFT", "MAA", "MRNA", "MHK", "MOH", "TAP", "MDLZ", "MPWR", "MNST", "MCO", "MS", "MOS", "MSI", "MSCI", "NDAQ", "NTAP", "NFLX", "NEM", "NWSA", "NWS", "NEE", "NKE", "NI", "NDSN", "NSC", "NTRS", "NOC", "NCLH", "NRG", "NUE", "NVDA", "NVR", "NXPI", "ORLY", "OXY", "ODFL", "OMC", "ON", "OKE", "ORCL", "OTIS", "PCAR", "PKG", "PLTR", "PANW", "PARA", "PH", "PAYX", "PAYC", "PYPL", "PNR", "PEP", "PFE", "PCG", "PM", "PSX", "PNW", "PNC", "POOL", "PPG", "PPL", "PFG", "PG", "PGR", "PLD", "PRU", "PEG", "PTC", "PSA", "PHM", "PWR", "QCOM", "DGX", "RL", "RJF", "RTX", "O", "REG", "REGN", "RF", "RSG", "RMD", "RVTY", "ROK", "ROL", "ROP", "ROST", "RCL", "SPGI", "CRM", "SBAC", "SLB", "STX", "SRE", "NOW", "SHW", "SPG", "SWKS", "SJM", "SW", "SNA", "SOLV", "SO", "LUV", "SWK", "SBUX", "STT", "STLD", "STE", "SYK", "SMCI", "SYF", "SNPS", "SYY", "TMUS", "TROW", "TTWO", "TPR", "TRGP", "TGT", "TEL", "TDY", "TER", "TSLA", "TXN", "TPL", "TXT", "TMO", "TJX", "TKO", "TTD", "TSCO", "TT", "TDG", "TRV", "TRMB", "TFC", "TYL", "TSN", "USB", "UBER", "UDR", "ULTA", "UNP", "UAL", "UPS", "URI", "UNH", "UHS", "VLO", "VTR", "VLTO", "VRSN", "VRSK", "VZ", "VRTX", "VTRS", "VICI", "V", "VST", "VMC", "WRB", "GWW", "WAB", "WBA", "WMT", "DIS", "WBD", "WM", "WAT", "WEC", "WFC", "WELL", "WST", "WDC", "WY", "WSM", "WMB", "WTW", "WDAY", "WYNN", "XEL", "XYL", "XYZ", "YUM", "ZBRA", "ZBH", "ZTS");
 }

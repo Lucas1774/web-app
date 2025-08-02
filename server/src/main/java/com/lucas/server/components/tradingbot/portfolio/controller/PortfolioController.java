@@ -25,9 +25,9 @@ import static com.lucas.server.common.Constants.*;
 @RequestMapping("/portfolio")
 public class PortfolioController {
 
+    private static final Logger logger = LoggerFactory.getLogger(PortfolioController.class);
     private final ControllerUtil controllerUtil;
     private final DataManager jpaService;
-    private static final Logger logger = LoggerFactory.getLogger(PortfolioController.class);
 
     public PortfolioController(ControllerUtil controllerUtil, DataManager jpaService) {
         this.controllerUtil = controllerUtil;
