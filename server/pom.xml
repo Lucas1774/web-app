@@ -113,11 +113,6 @@
             <version>4.4.0</version>
         </dependency>
         <dependency>
-            <groupId>io.github.resilience4j</groupId>
-            <artifactId>resilience4j-ratelimiter</artifactId>
-            <version>2.3.0</version>
-        </dependency>
-        <dependency>
             <groupId>com.github.mjeanroy</groupId>
             <artifactId>springmvc-mustache-mustachejava</artifactId>
             <version>2.0.0</version>

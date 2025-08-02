@@ -1,8 +1,6 @@
 package com.lucas.server.components.tradingbot.recommendation.mapper;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.lucas.server.common.Mapper;
 import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;

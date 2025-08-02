@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lucas.server.common.HttpRequestClient;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.components.tradingbot.config.AIProperties;
-import io.github.resilience4j.ratelimiter.RateLimiter;
+import com.lucas.server.components.tradingbot.config.SlidingWindowRateLimiter;
 import lombok.Getter;
 
 import java.util.List;
@@ -19,11 +19,11 @@ public class AIClient {
     @Getter
     private final AIProperties.DeploymentProperties config;
     @Getter
-    private final RateLimiter rateLimiter;
+    private final SlidingWindowRateLimiter rateLimiter;
     private final ObjectMapper objectMapper;
     private final HttpRequestClient httpClient;
 
-    public AIClient(AIProperties.DeploymentProperties config, RateLimiter rateLimiter, ObjectMapper objectMapper, HttpRequestClient httpClient) {
+    public AIClient(AIProperties.DeploymentProperties config, SlidingWindowRateLimiter rateLimiter, ObjectMapper objectMapper, HttpRequestClient httpClient) {
         this.config = config;
         this.rateLimiter = rateLimiter;
         this.objectMapper = objectMapper;

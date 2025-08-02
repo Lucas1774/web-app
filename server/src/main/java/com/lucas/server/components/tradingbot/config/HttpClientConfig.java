@@ -1,7 +1,5 @@
 package com.lucas.server.components.tradingbot.config;
 
-import io.github.resilience4j.ratelimiter.RateLimiter;
-import io.github.resilience4j.ratelimiter.RateLimiterConfig;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -15,38 +13,15 @@ import static com.lucas.server.common.Constants.*;
 public class HttpClientConfig {
 
     @Bean
-    public Map<String, RateLimiter> rateLimiter() {
-        Map<String, RateLimiter> res = new HashMap<>();
-        res.put(AI_PER_MINUTE_RATE_LIMITER,
-                RateLimiter.of(AI_PER_MINUTE_RATE_LIMITER, RateLimiterConfig.custom()
-                        .limitRefreshPeriod(Duration.ofMinutes(1).dividedBy(24))
-                        .limitForPeriod(1)
-                        .timeoutDuration(Duration.ofMinutes(5))
-                        .build()));
-        res.put(AI_PER_SECOND_RATE_LIMITER,
-                RateLimiter.of(AI_PER_SECOND_RATE_LIMITER, RateLimiterConfig.custom()
-                        .limitRefreshPeriod(Duration.ofSeconds(2))
-                        .limitForPeriod(1)
-                        .timeoutDuration(Duration.ofMinutes(1))
-                        .build()));
-        res.put(TWELVEDATA_RATE_LIMITER,
-                RateLimiter.of(TWELVEDATA_RATE_LIMITER, RateLimiterConfig.custom()
-                        .limitRefreshPeriod(Duration.ofMinutes(1).dividedBy(7))
-                        .limitForPeriod(1)
-                        .timeoutDuration(Duration.ofMinutes(1))
-                        .build()));
-        res.put(YAHOO_FINANCE_RATE_LIMITER,
-                RateLimiter.of(YAHOO_FINANCE_RATE_LIMITER, RateLimiterConfig.custom()
-                        .limitRefreshPeriod(Duration.ofSeconds(1).dividedBy(4))
-                        .limitForPeriod(1)
-                        .timeoutDuration(Duration.ofMinutes(1))
-                        .build()));
+    public Map<String, SlidingWindowRateLimiter> rateLimiter() {
+        Map<String, SlidingWindowRateLimiter> res = new HashMap<>();
+        res.put(AI_PER_MINUTE_RATE_LIMITER, new SlidingWindowRateLimiter(24, Duration.ofMinutes(1)));
+        res.put(AI_PER_SECOND_RATE_LIMITER, new SlidingWindowRateLimiter(1, Duration.ofSeconds(1)));
+        res.put(TWELVEDATA_RATE_LIMITER, new SlidingWindowRateLimiter(8, Duration.ofMinutes(1)));
+        res.put(YAHOO_FINANCE_RATE_LIMITER, new SlidingWindowRateLimiter(1, Duration.ofSeconds(1).dividedBy(4)));
         FINNHUB_RATE_LIMITERS.forEach(name -> res.put(name,
-                RateLimiter.of(name, RateLimiterConfig.custom()
-                        .limitRefreshPeriod(Duration.ofSeconds(1))
-                        .limitForPeriod(1)
-                        .timeoutDuration(Duration.ofMinutes(1))
-                        .build())));
+                new SlidingWindowRateLimiter(60, Duration.ofMinutes(1), Duration.ofMinutes(1))));
+
         return res;
     }
 }

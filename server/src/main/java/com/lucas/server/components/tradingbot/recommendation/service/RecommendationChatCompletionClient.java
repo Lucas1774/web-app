@@ -16,7 +16,6 @@ import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportT
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.AssetReportRaw;
 import com.lucas.server.components.tradingbot.recommendation.mapper.RecommendationChatCompletionResponseMapper;
 import com.lucas.server.components.tradingbot.recommendation.prompt.PromptRepository;
-import io.github.resilience4j.ratelimiter.RateLimiter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -42,12 +41,12 @@ public class RecommendationChatCompletionClient {
     private final AssetReportToMustacheMapper assetReportToMustacheMapper;
     private final ObjectMapper objectMapper;
     private final RecommendationChatCompletionResponseMapper mapper;
-    private final Map<String, RateLimiter> rateLimiters;
+    private final Map<String, SlidingWindowRateLimiter> rateLimiters;
     private static final Logger logger = LoggerFactory.getLogger(RecommendationChatCompletionClient.class);
 
     public RecommendationChatCompletionClient(PromptRepository promptRepository, AssetReportDataProvider assertReportDataProvider,
                                               AssetReportToMustacheMapper assetReportToMustacheMapper, ObjectMapper objectMapper,
-                                              RecommendationChatCompletionResponseMapper mapper, Map<String, RateLimiter> rateLimiters) {
+                                              RecommendationChatCompletionResponseMapper mapper, Map<String, SlidingWindowRateLimiter> rateLimiters) {
         fixMeMessage = promptRepository.getFixMeMessage();
         systemMessage = promptRepository.getSystem();
         context = promptRepository.getContext();
