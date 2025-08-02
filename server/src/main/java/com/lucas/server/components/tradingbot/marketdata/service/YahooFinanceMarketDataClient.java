@@ -20,11 +20,11 @@ import static com.lucas.server.common.Constants.*;
 @Component
 public class YahooFinanceMarketDataClient {
 
+    private static final Logger logger = LoggerFactory.getLogger(YahooFinanceMarketDataClient.class);
     private final YahooFinanceMarketResponseMapper mapper;
     private final HttpRequestClient httpRequestClient;
     private final SlidingWindowRateLimiter rateLimiter;
     private final String endpoint;
-    private static final Logger logger = LoggerFactory.getLogger(YahooFinanceMarketDataClient.class);
 
     public YahooFinanceMarketDataClient(YahooFinanceMarketResponseMapper mapper, HttpRequestClient httpRequestClient,
                                         Map<String, SlidingWindowRateLimiter> rateLimiters, @Value("${yahoo.market.endpoint}") String endpoint) {

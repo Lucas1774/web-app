@@ -16,10 +16,10 @@ import static com.lucas.server.common.Constants.*;
 @Component
 public class RetryableNewsSentimentClientComponent {
 
+    private static final Logger logger = LoggerFactory.getLogger(RetryableNewsSentimentClientComponent.class);
     private final FinbertResponseMapper mapper;
     private final HttpRequestClient httpRequestClient;
     private final String url;
-    private static final Logger logger = LoggerFactory.getLogger(RetryableNewsSentimentClientComponent.class);
 
     public RetryableNewsSentimentClientComponent(FinbertResponseMapper mapper, HttpRequestClient httpRequestClient,
                                                  @Value("${sentiment.url}") String url) {

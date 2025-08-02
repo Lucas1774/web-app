@@ -73,8 +73,7 @@ public class DailyScheduler {
     private void updateNews(List<String> symbolNames) {
         try {
             List<News> updatedNews = dataManager.retrieveNewsByName(symbolNames);
-            logger.info(SCHEDULED_TASK_SUCCESS_INFO, "fetched news", updatedNews.stream()
-                    .map(News::getHeadline).toList());
+            logger.info(SCHEDULED_TASK_SUCCESS_INFO, "fetched news", updatedNews);
         } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);
         }
@@ -96,8 +95,7 @@ public class DailyScheduler {
 
     private void removeOldNews() {
         List<News> removedNews = dataManager.removeOldNews(DATABASE_NEWS_PER_SYMBOL);
-        logger.info(SCHEDULED_TASK_SUCCESS_INFO, "removed news", removedNews.stream()
-                .map(News::getHeadline).toList());
+        logger.info(SCHEDULED_TASK_SUCCESS_INFO, "removed news", removedNews);
     }
 
     private void removeOldMarketData() {

@@ -10,8 +10,7 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
 
-import static com.lucas.server.common.Constants.MAPPING_ERROR;
-import static com.lucas.server.common.Constants.MARKET_DATA;
+import static com.lucas.server.common.Constants.*;
 
 @Component
 public class YahooFinanceMarketResponseMapper implements Mapper<JsonNode, MarketData> {
@@ -50,7 +49,7 @@ public class YahooFinanceMarketResponseMapper implements Mapper<JsonNode, Market
     public MarketData map(JsonNode json, Symbol symbol) throws JsonProcessingException {
         try {
             JsonNode result = json.get("chart").get("result").get(0);
-            if (!symbol.getName().equals(result.get("meta").get("symbol").asText())) {
+            if (!symbol.getName().equals(result.get("meta").get(SYMBOL).asText())) {
                 throw new JsonProcessingException(MessageFormat.format(MAPPING_ERROR, MARKET_DATA));
             }
             return map(result).setSymbol(symbol);

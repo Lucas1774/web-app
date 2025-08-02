@@ -44,7 +44,7 @@ public class TwelveDataMarketResponseMapper implements Mapper<JsonNode, MarketDa
     }
 
     public MarketData map(JsonNode json, Symbol symbol) throws JsonProcessingException {
-        if (!symbol.getName().equals(json.path("symbol").asText(null))) {
+        if (!symbol.getName().equals(json.path(SYMBOL).asText(null))) {
             throw new JsonProcessingException(MessageFormat.format(MAPPING_ERROR, MARKET_DATA));
         }
         return map(json).setSymbol(symbol);

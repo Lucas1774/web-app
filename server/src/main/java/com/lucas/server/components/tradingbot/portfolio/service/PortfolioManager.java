@@ -14,25 +14,6 @@ import java.util.Comparator;
 @Component
 public class PortfolioManager {
 
-    public record SymbolStand(
-            Symbol symbol,
-            BigDecimal price,
-            BigDecimal open,
-            BigDecimal high,
-            BigDecimal low,
-            BigDecimal percentDayChange,
-            Long volume,
-            LocalDateTime lastMoveDate,
-            BigDecimal quantity,
-            BigDecimal averageCost,
-            BigDecimal positionValue,
-            BigDecimal pnL,
-            BigDecimal percentPnl,
-            BigDecimal netRelativePosition,
-            Recommendation recommendation
-    ) {
-    }
-
     /**
      * @param portfolio portfolio
      * @param last      last market data for the portfolio's symbol
@@ -73,5 +54,24 @@ public class PortfolioManager {
                 last.getRecommendations().stream()
                         .max(Comparator.comparing(Recommendation::getDate))
                         .orElse(null));
+    }
+
+    public record SymbolStand(
+            Symbol symbol,
+            BigDecimal price,
+            BigDecimal open,
+            BigDecimal high,
+            BigDecimal low,
+            BigDecimal percentDayChange,
+            Long volume,
+            LocalDateTime lastMoveDate,
+            BigDecimal quantity,
+            BigDecimal averageCost,
+            BigDecimal positionValue,
+            BigDecimal pnL,
+            BigDecimal percentPnl,
+            BigDecimal netRelativePosition,
+            Recommendation recommendation
+    ) {
     }
 }

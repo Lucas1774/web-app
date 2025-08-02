@@ -22,19 +22,19 @@ import static com.lucas.server.common.Constants.DEFAULT_USERNAME;
 @Component
 public class ControllerUtil {
 
+    private static final Logger logger = LoggerFactory.getLogger(ControllerUtil.class);
     private final List<String> admin;
     private final JWTVerifier verifier;
     private final Algorithm algorithm;
-    private static final Logger logger = LoggerFactory.getLogger(ControllerUtil.class);
-
-    public boolean isAdmin(String username) {
-        return admin.contains(username);
-    }
 
     public ControllerUtil(@Value("${spring.security.admin}") List<String> admin, @Value("${spring.security.jwt.secret}") String secretKey) {
         this.admin = admin;
         algorithm = Algorithm.HMAC256(secretKey);
         verifier = JWT.require(algorithm).build();
+    }
+
+    public boolean isAdmin(String username) {
+        return admin.contains(username);
     }
 
     public ResponseEntity<String> handleRequest(Callable<String> action) {
