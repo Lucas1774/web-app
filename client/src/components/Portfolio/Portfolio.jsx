@@ -1,5 +1,5 @@
 import chroma from "chroma-js";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button, Form, Table } from "react-bootstrap";
 import MultiSelectDdl from "../../MultiSelectDdl";
 import "../../Table.css";
@@ -35,7 +35,9 @@ const Portfolio = () => {
 
     const inputsRef = useRef({});
     const overwriteRef = useRef(null);
+    const afterHoursContextRef = useRef(null);
     const overwriteRandomRef = useRef(null);
+    const afterHoursContextRandomRef = useRef(null);
     const amountRef = useRef(null);
     const filterDebouncedValue = useDebounce(filterValue, constants.DEBOUNCE_DELAY);
 
@@ -48,28 +50,6 @@ const Portfolio = () => {
             });
         }
     }, [filterDebouncedValue]);
-
-    useEffect(() => {
-        const init = async () => {
-            setIsLoading(true);
-            try {
-                await get("/authentication/check-auth");
-                await getData();
-                const res = await get("/recommendations/models");
-                setModels(res.data);
-            } catch (error) {
-                if (error.response?.status === 403) {
-                    setIsLoginFormVisible(true);
-                } else {
-                    handleError("Error checking authentication", error);
-                }
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        init();
-    }, []);
 
     useEffect(() => {
         if (!tableData) return;
@@ -125,7 +105,7 @@ const Portfolio = () => {
         return model;
     }
 
-    const getData = async (all = false) => {
+    const getData = useCallback(async (all = false) => {
         const url = all ? "/portfolio/stand/all" : "/portfolio/stand";
         setIsLoading(true);
         try {
@@ -165,7 +145,29 @@ const Portfolio = () => {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        const init = async () => {
+            setIsLoading(true);
+            try {
+                await get("/authentication/check-auth");
+                await getData();
+                const res = await get("/recommendations/models");
+                setModels(res.data);
+            } catch (error) {
+                if (error.response?.status === 403) {
+                    setIsLoginFormVisible(true);
+                } else {
+                    handleError("Error checking authentication", error);
+                }
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        init();
+    }, [getData]);
 
     const getDataByRow = async (dynamic) => {
         const ids = visibleSelectedIds().join(',')
@@ -221,7 +223,7 @@ const Portfolio = () => {
         }
     };
 
-    const getRecommendations = async (overwrite, selectedModels, count = undefined) => {
+    const getRecommendations = async (overwrite, afterHoursContext, selectedModels, count = undefined) => {
         let path;
         if (count !== undefined) {
             path = `/recommendations/random/${count}`
@@ -239,7 +241,7 @@ const Portfolio = () => {
         let modelsParam = selectedModels.length > 0 ? `&models=${selectedModels.join(',')}` : '';
         setIsLoading(true);
         try {
-            const resp = await get(`${path}?overwrite=${overwrite}${modelsParam}`);
+            const resp = await get(`${path}?overwrite=${overwrite}&afterHoursContext=${afterHoursContext}${modelsParam}`);
             const data = new Map(
                 resp.data.map(item => [
                     item.symbol.id,
@@ -471,7 +473,7 @@ const Portfolio = () => {
                     <>
                         <Form onSubmit={(e) => {
                             e.preventDefault();
-                            getRecommendations(overwriteRef.current.checked, selectedModels);
+                            getRecommendations(overwriteRef.current.checked, afterHoursContextRef.current.checked, selectedModels);
                         }}>
                             <Button className="twenty-five-percent" type="submit" variant="success">Recommend</Button>
                             <Button className="twenty-five-percent" onClick={updateNews}>Fetch latest news</Button>
@@ -479,6 +481,7 @@ const Portfolio = () => {
                             <Button className="twenty-five-percent" onClick={() => { getDataByRow(true); }}>Real time</Button>
                             <div className="flex-div">
                                 <Form.Check ref={overwriteRef} type="checkbox" label="Overwrite" />
+                                <Form.Check ref={afterHoursContextRef} type="checkbox" label="After hours context" />
                                 <MultiSelectDdl title={"Models"} options={models} selectedOptions={selectedModels} setSelectedOptions={setSelectedModels} />
                                 <Form.Control style={{ visibility: "hidden" }} /> {/* Big hack to uniform style */}
                             </div>
@@ -493,7 +496,7 @@ const Portfolio = () => {
                                 }, constants.TIMEOUT_DELAY);
                                 return;
                             }
-                            getRecommendations(overwriteRandomRef.current.checked, selectedRandomModels, amount)
+                            getRecommendations(overwriteRandomRef.current.checked, afterHoursContextRandomRef.current.checked, selectedRandomModels, amount)
                         }}>
                             <Button className="thirty-percent" type="submit" variant="success">Random recommendations</Button>
                             <Button className="thirty-percent" onClick={() => { getData(!isShowAllData); }}>{
@@ -514,6 +517,7 @@ const Portfolio = () => {
                             }}>Clear filters</Button>
                             <div className="flex-div">
                                 <Form.Check ref={overwriteRandomRef} type="checkbox" label="Overwrite" />
+                                <Form.Check ref={afterHoursContextRandomRef} type="checkbox" label="After hours context" />
                                 <MultiSelectDdl title={"Models"} options={models} selectedOptions={selectedRandomModels} setSelectedOptions={setSelectedRandomModels} />
                                 <Form.Control ref={amountRef} type="number" placeholder="Amount" min="1" value={count} onChange={(e) => setCount(Number(e.target.value))} />
                             </div>
@@ -551,7 +555,7 @@ const Portfolio = () => {
                                                     defaultValue={constants.PORTFOLIO_META.DATATYPE[key] === constants.NUMBER && isNaN(filters[key]) ? "" : filters[key]}
                                                     onChange={(e) => setFilterValue({
                                                         column: key,
-                                                        value: constants.META.DATATYPE[key] === constants.NUMBER ? parseInt(e.target.value) : e.target.value
+                                                        value: constants.PORTFOLIO_META.DATATYPE[key] === constants.NUMBER ? parseInt(e.target.value) : e.target.value
                                                     })}
                                                     onClick={(e) => e.target.select()} />
                                             )}
