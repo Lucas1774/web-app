@@ -13,8 +13,8 @@
 }
 
 .app.portfolio .flex-div .form-control {
-    width: 49%;
     margin: 0;
+    margin-left: 2%;
     padding-top: 0;
     padding-bottom: 0;
 }
