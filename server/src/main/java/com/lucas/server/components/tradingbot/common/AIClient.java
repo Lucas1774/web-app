@@ -11,8 +11,7 @@ import lombok.Getter;
 import java.util.List;
 import java.util.Map;
 
-import static com.lucas.server.common.Constants.CONTENT;
-import static com.lucas.server.common.Constants.ROLE;
+import static com.lucas.server.common.Constants.*;
 
 public class AIClient {
 
@@ -37,7 +36,7 @@ public class AIClient {
                         "messages", prompt.stream()
                                 .map(m -> Map.of(
                                                 "role", m.get(ROLE).asText(),
-                                                CONTENT, m.get(CONTENT).asText()
+                                                CONTENT, sanitizeHtml(m.get(CONTENT).asText())
                                         )
                                 )
                                 .toList(),

@@ -101,7 +101,42 @@ public class Constants {
             RecommendationMode.NOT_RANDOM, RECOMMENDATION_CLIENTS.stream().map(Clients::toString).collect(Collectors.toSet())
     ));
 
+    private static final Map<String, String> ENTITY_MAP = Map.ofEntries(
+            Map.entry("&quot;", "\""),
+            Map.entry("&#39;", "'"),
+            Map.entry("&amp;", "&"),
+            Map.entry("&lt;", "<"),
+            Map.entry("&gt;", ">"),
+            Map.entry("&nbsp;", " "),
+            Map.entry("&cent;", "¢"),
+            Map.entry("&pound;", "£"),
+            Map.entry("&yen;", "¥"),
+            Map.entry("&euro;", "€"),
+            Map.entry("&copy;", "©"),
+            Map.entry("&reg;", "®"),
+            Map.entry("&trade;", "™"),
+            Map.entry("&bull;", "•"),
+            Map.entry("&mdash;", "—"),
+            Map.entry("&ndash;", "–"),
+            Map.entry("&hellip;", "…"),
+            Map.entry("&lsquo;", "‘"),
+            Map.entry("&rsquo;", "’"),
+            Map.entry("&ldquo;", "“"),
+            Map.entry("&rdquo;", "”")
+    );
+
     private Constants() {
+    }
+
+    public static String sanitizeHtml(String input) {
+        if (input == null) {
+            return null;
+        }
+        String result = input;
+        for (Map.Entry<String, String> e : ENTITY_MAP.entrySet()) {
+            result = result.replace(e.getKey(), e.getValue());
+        }
+        return result;
     }
 
     public static List<AIClient> filterClients(Map<String, AIClient> allClients, RecommendationMode recommendationMode) {
