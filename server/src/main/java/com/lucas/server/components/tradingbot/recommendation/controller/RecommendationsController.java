@@ -32,6 +32,7 @@ public class RecommendationsController {
     public ResponseEntity<List<Recommendation>> generateRecommendations(HttpServletRequest request,
                                                                         @PathVariable List<Long> symbols,
                                                                         @RequestParam boolean overwrite,
+                                                                        @RequestParam boolean afterHoursContext,
                                                                         @RequestParam(required = false) List<String> models) {
         String username = controllerUtil.retrieveUsername(request.getCookies());
         if (DEFAULT_USERNAME.equals(username)) {
@@ -41,13 +42,14 @@ public class RecommendationsController {
                 ? filterClients(clients, RecommendationMode.NOT_RANDOM)
                 : models.stream().map(clients::get).toList();
         return ResponseEntity.ok(jpaService.getRecommendationsById(symbols, selectedClients, getPortfolioType(username),
-                overwrite, false, false));
+                overwrite, false, afterHoursContext));
     }
 
     @GetMapping("/random/{count}")
     public ResponseEntity<List<Recommendation>> generateRandomRecommendations(HttpServletRequest request,
                                                                               @PathVariable int count,
                                                                               @RequestParam boolean overwrite,
+                                                                              @RequestParam boolean afterHoursContext,
                                                                               @RequestParam(required = false) List<String> models) {
         String username = controllerUtil.retrieveUsername(request.getCookies());
         if (DEFAULT_USERNAME.equals(username)) {
@@ -57,7 +59,7 @@ public class RecommendationsController {
                 ? filterClients(clients, RecommendationMode.RANDOM)
                 : models.stream().map(clients::get).toList();
         return ResponseEntity.ok(jpaService.getRandomRecommendations(SP500_SYMBOLS, selectedClients, getPortfolioType(username), count,
-                overwrite, false, false, false));
+                overwrite, false, false, afterHoursContext));
     }
 
     @GetMapping("/models")
