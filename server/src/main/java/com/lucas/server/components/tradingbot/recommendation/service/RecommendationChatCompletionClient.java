@@ -119,7 +119,7 @@ public class RecommendationChatCompletionClient {
             List<JsonNode> prompt = List.of(systemMessage, contextMessage, fewShotMessage, reportMessage);
             return mapper.mapAll(payload,
                     objectMapper.readTree(client.complete(prompt)),
-                    prompt.stream().map(p -> p.get(CONTENT).asText()).collect(Collectors.joining("\n\n\n")), client.getConfig().name());
+                    prompt.stream().map(p -> sanitizeHtml(p.get(CONTENT).asText())).collect(Collectors.joining("\n\n\n")), client.getConfig().name());
         } catch (Exception e) {
             logger.warn(CLIENT_FAILED_BACKUP_WARN, client.getConfig().name(), PROMPT, e);
             return new ArrayList<>();
