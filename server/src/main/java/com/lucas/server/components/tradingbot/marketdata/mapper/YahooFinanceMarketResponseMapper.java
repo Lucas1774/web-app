@@ -42,7 +42,7 @@ public class YahooFinanceMarketResponseMapper implements Mapper<JsonNode, Market
                     .setLow(minLow)
                     .setPrice(new BigDecimal(quote.get("close").get(quote.get("close").size() - 1).asText()));
         } catch (Exception e) {
-            throw new JsonProcessingException(MessageFormat.format(MAPPING_ERROR, MARKET_DATA), e);
+            throw new JsonProcessingException(MessageFormat.format(MAPPING_ERROR, PREMARKET), e);
         }
     }
 
@@ -50,11 +50,11 @@ public class YahooFinanceMarketResponseMapper implements Mapper<JsonNode, Market
         try {
             JsonNode result = json.get("chart").get("result").get(0);
             if (!symbol.getName().equals(result.get("meta").get(SYMBOL).asText())) {
-                throw new JsonProcessingException(MessageFormat.format(MAPPING_ERROR, MARKET_DATA));
+                throw new JsonProcessingException(MessageFormat.format(MAPPING_ERROR, PREMARKET));
             }
             return map(result).setSymbol(symbol);
         } catch (Exception e) {
-            throw new JsonProcessingException(MessageFormat.format(MAPPING_ERROR, MARKET_DATA), e);
+            throw new JsonProcessingException(MessageFormat.format(MAPPING_ERROR, PREMARKET), e);
         }
     }
 }

@@ -73,7 +73,7 @@ public class DailyScheduler {
     private void updateNews(List<String> symbolNames) {
         try {
             List<News> updatedNews = dataManager.retrieveNewsByName(symbolNames);
-            logger.info(SCHEDULED_TASK_SUCCESS_INFO, "fetched news", updatedNews);
+            logger.info(SCHEDULED_TASK_SUCCESS_INFO, "fetched news", updatedNews.size());
         } catch (ClientException | JsonProcessingException e) {
             logger.error(e.getMessage(), e);
         }

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -74,6 +75,7 @@ public class RecommendationsJpaService implements JpaService<Recommendation> {
     public List<Long> getTopRecommendedSymbols(String action, BigDecimal confidenceThreshold, LocalDate recommendationDate) {
         return repository.findByActionAndConfidenceGreaterThanEqualAndDate(action, confidenceThreshold, recommendationDate)
                 .stream()
+                .sorted(Comparator.comparing(Recommendation::getConfidence).reversed())
                 .map(r -> r.getSymbol().getId())
                 .distinct()
                 .toList();
