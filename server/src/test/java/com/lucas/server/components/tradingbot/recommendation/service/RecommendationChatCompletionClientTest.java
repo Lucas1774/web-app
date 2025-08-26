@@ -38,22 +38,22 @@ import static org.assertj.core.api.Assertions.assertThat;
 class RecommendationChatCompletionClientTest {
 
     @Autowired
-    MarketDataJpaService marketDataService;
+    private MarketDataJpaService marketDataService;
 
     @Autowired
-    NewsJpaService newsService;
+    private NewsJpaService newsService;
 
     @Autowired
-    PortfolioJpaService portfolioService;
+    private PortfolioJpaService portfolioService;
 
     @Autowired
-    SymbolJpaService symbolService;
+    private SymbolJpaService symbolService;
 
     @Autowired
-    MarketDataKpiGenerator kpiGenerator;
+    private MarketDataKpiGenerator kpiGenerator;
 
     @Autowired
-    AssetReportDataProvider provider;
+    private AssetReportDataProvider provider;
 
     @Test
     @Transactional

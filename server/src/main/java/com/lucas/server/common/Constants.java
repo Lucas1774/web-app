@@ -125,6 +125,7 @@ public class Constants {
             Map.entry("&rdquo;", "”")
     );
 
+    @SuppressWarnings("unused")
     private Constants() {
     }
 

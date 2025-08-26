@@ -185,12 +185,9 @@ public class SudokuSolver {
                 .filter(digit -> Arrays.stream(sudoku.getState()).anyMatch(cell -> cell == digit))
                 .count() >= 8;
         if (difficulty == -1) {
-            return clueCount >= 17
-                    && hasEightOrMoreUniqueDigits;
+            return clueCount >= 17 && hasEightOrMoreUniqueDigits;
         } else {
-            int expectedClues = 17 + ((9 - difficulty) * 6);
-            return clueCount == expectedClues
-                    && hasEightOrMoreUniqueDigits;
+            return hasEightOrMoreUniqueDigits && clueCount == 17 + ((9 - difficulty) * 6L);
         }
     }
 }

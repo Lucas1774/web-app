@@ -39,12 +39,15 @@ class MarketDataKpiGeneratorTest {
             md(11, 12, 12, 10, 2),
             md(14, 13, 15, 13, 0)
     );
+
     @MockitoSpyBean
-    MarketDataJpaService marketDataService;
+    private MarketDataJpaService marketDataService;
+
     @Autowired
-    SymbolJpaService symbolService;
+    private SymbolJpaService symbolService;
+
     @MockitoSpyBean
-    MarketDataKpiGenerator kpiGenerator;
+    private MarketDataKpiGenerator kpiGenerator;
 
     private static MarketData md(Integer price, Integer prevClose, Integer high, Integer low, Integer daysAgo) {
         return new MarketData()

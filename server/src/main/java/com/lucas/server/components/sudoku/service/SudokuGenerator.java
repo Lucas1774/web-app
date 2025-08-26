@@ -22,12 +22,6 @@ public class SudokuGenerator {
         this.random = random;
     }
 
-    public Sudoku generateDefault(int difficulty) {
-        Sudoku sudoku = Sudoku.withDefaultValues();
-        setDifficulty(sudoku, difficulty);
-        return sudoku;
-    }
-
     public Sudoku generate(int difficulty) {
         Sudoku sudoku = Sudoku.withZeros();
         doGenerate(sudoku);
@@ -42,7 +36,7 @@ public class SudokuGenerator {
         }
         for (int place = 0; place < SUDOKU_NUMBER_OF_CELLS; place++) {
             if (0 == sudoku.getState()[place]) {
-                Collections.shuffle(digits, random);
+                Collections.shuffle(digits);
                 for (int digit : digits) {
                     if (solver.acceptsNumberInPlace(sudoku, place, digit)) {
                         sudoku.set(place, digit);
@@ -72,10 +66,10 @@ public class SudokuGenerator {
                     .boxed()
                     .toList().get(random.nextInt(SUDOKU_SIZE))));
         }
+
+        Collections.shuffle(possibleCells);
         for (int i = 0; i < cellsToSetToZero; i++) {
-            int randomCellIndex = random.nextInt(possibleCells.size());
-            sudoku.set(possibleCells.get(randomCellIndex), 0);
-            possibleCells.remove(randomCellIndex);
+            sudoku.set(possibleCells.get(i), 0);
         }
     }
 }

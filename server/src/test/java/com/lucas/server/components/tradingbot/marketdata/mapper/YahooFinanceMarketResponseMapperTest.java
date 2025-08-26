@@ -26,13 +26,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class YahooFinanceMarketResponseMapperTest {
 
     @Autowired
-    SymbolJpaService symbolService;
+    private SymbolJpaService symbolService;
 
     @Autowired
-    YahooFinanceMarketResponseMapper mapper;
+    private YahooFinanceMarketResponseMapper mapper;
 
     @Autowired
-    ObjectMapper objectMapper;
+    private ObjectMapper objectMapper;
 
     @Test
     @Transactional

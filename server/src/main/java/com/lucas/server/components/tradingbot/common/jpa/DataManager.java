@@ -39,6 +39,7 @@ import java.util.stream.Collectors;
 
 import static com.lucas.server.common.Constants.*;
 
+@SuppressWarnings("LoggingSimilarMessage")
 @Service
 public class DataManager {
 

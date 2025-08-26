@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class CalculatorJpaServiceTest {
 
     @Autowired
-    CalculatorJpaService calculatorService;
+    private CalculatorJpaService calculatorService;
 
     @Test
     void testComputeAndSaveNumber() {

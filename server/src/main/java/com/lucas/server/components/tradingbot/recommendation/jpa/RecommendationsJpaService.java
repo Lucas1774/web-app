@@ -30,6 +30,7 @@ public class RecommendationsJpaService implements JpaService<Recommendation> {
         this.repository = repository;
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     public List<Recommendation> createIgnoringDuplicates(Collection<Recommendation> entities) {
         return uniqueConstraintDelegate.createIgnoringDuplicates(this::findUnique, new LinkedHashSet<>(entities));
     }

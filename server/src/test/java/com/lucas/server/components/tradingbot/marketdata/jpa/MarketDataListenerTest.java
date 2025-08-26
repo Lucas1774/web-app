@@ -26,13 +26,13 @@ import static org.mockito.Mockito.verify;
 class MarketDataListenerTest {
 
     @MockitoSpyBean
-    MarketDataKpiGenerator kpiGenerator;
+    private MarketDataKpiGenerator kpiGenerator;
 
     @Autowired
-    MarketDataJpaService jpaService;
+    private MarketDataJpaService jpaService;
 
     @Autowired
-    SymbolJpaService symbolService;
+    private SymbolJpaService symbolService;
 
     @Test
     @Transactional

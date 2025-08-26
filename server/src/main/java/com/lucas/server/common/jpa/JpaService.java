@@ -15,15 +15,12 @@ public interface JpaService<E extends JpaEntity> {
      * @param entities entities
      * @return the saved entities
      */
+    @SuppressWarnings("unused")
     List<E> createAll(List<E> entities);
-
-    /**
-     * Deletes all entities
-     */
-    void deleteAll();
 
     /**
      * @return all entities
      */
+    @SuppressWarnings("unused")
     List<E> findAll();
 }

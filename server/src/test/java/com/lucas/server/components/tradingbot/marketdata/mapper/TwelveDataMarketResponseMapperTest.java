@@ -28,13 +28,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class TwelveDataMarketResponseMapperTest {
 
     @Autowired
-    SymbolJpaService symbolService;
+    private SymbolJpaService symbolService;
 
     @Autowired
-    TwelveDataMarketResponseMapper mapper;
+    private TwelveDataMarketResponseMapper mapper;
 
     @Autowired
-    ObjectMapper objectMapper;
+    private ObjectMapper objectMapper;
 
     @Test
     @Transactional

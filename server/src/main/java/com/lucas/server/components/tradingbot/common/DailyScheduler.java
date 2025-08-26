@@ -19,6 +19,7 @@ import java.util.Map;
 
 import static com.lucas.server.common.Constants.*;
 
+@SuppressWarnings("LoggingSimilarMessage")
 @Component
 public class DailyScheduler {
 
@@ -38,6 +39,7 @@ public class DailyScheduler {
         }
     }
 
+    @SuppressWarnings("SameParameterValue")
     private void doMidnightTask(List<String> symbolNames) {
         updateMarketData(symbolNames);
         removeOldMarketData();
@@ -50,6 +52,7 @@ public class DailyScheduler {
         }
     }
 
+    @SuppressWarnings("SameParameterValue")
     private void doMorningTask(List<String> symbolNames) {
         updateNews(symbolNames);
         getRandomRecommendations(symbolNames);

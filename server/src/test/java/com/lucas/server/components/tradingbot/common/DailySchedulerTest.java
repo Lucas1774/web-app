@@ -15,7 +15,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import java.time.Duration;
 
 import static org.awaitility.Awaitility.await;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest(properties = {"scheduler.market-data-cron=* * * * * *", "scheduler.news-recommendations-cron=* * * * * *"})
@@ -23,13 +22,13 @@ import static org.mockito.Mockito.*;
 class DailySchedulerTest {
 
     @MockitoSpyBean
-    DailyScheduler dailyScheduler;
+    private DailyScheduler dailyScheduler;
 
     @MockitoBean
-    DataManager dataManager;
+    private DataManager dataManager;
 
     @Autowired
-    ThreadPoolTaskScheduler scheduler;
+    private ThreadPoolTaskScheduler scheduler;
 
     @AfterEach
     void tearDown() {

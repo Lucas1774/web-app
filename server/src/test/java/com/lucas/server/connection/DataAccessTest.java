@@ -28,19 +28,19 @@ import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 class DataAccessTest {
 
     @Autowired
-    ShoppingItemJpaService shoppingItemService;
+    private ShoppingItemJpaService shoppingItemService;
 
     @Autowired
-    CategoryJpaService categoryService;
+    private CategoryJpaService categoryService;
 
     @Autowired
-    ProductJpaService productService;
+    private ProductJpaService productService;
 
     @Autowired
-    SudokuJpaService sudokuService;
+    private SudokuJpaService sudokuService;
 
     @Autowired
-    NamedParameterJdbcTemplate jdbcTemplate;
+    private NamedParameterJdbcTemplate jdbcTemplate;
 
     @BeforeEach
     void cleanDatabase() {

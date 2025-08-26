@@ -28,4 +28,4 @@ scp "$VM_USER@$VM_URL:/home/ubuntu/keystore.jks" "$LOCAL_CERT_PATH/keystore.jks"
 
 echo "Keystore update completed successfully."
 echo "Press any key to exit."
-read -n 1
+read -n 1 -r

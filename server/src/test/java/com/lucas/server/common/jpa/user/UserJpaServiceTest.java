@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class UserJpaServiceTest {
 
     @Autowired
-    UserJpaService userService;
+    private UserJpaService userService;
 
     @Test
     @Transactional

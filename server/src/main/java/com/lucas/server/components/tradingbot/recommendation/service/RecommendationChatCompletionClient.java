@@ -133,6 +133,7 @@ public class RecommendationChatCompletionClient {
 
     @FunctionalInterface
     public interface MarketDataFetcher {
+        @SuppressWarnings("unused")
         MarketData apply(Symbol symbol) throws ClientException, JsonProcessingException;
     }
 }

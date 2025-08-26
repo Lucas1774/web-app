@@ -24,16 +24,16 @@ import static org.assertj.core.api.Assertions.*;
 class ProductJpaServiceTest {
 
     @Autowired
-    ShoppingItemJpaService shoppingItemService;
+    private ShoppingItemJpaService shoppingItemService;
 
     @Autowired
-    ProductJpaService productService;
+    private ProductJpaService productService;
 
     @Autowired
-    UserJpaService userService;
+    private UserJpaService userService;
 
     @Autowired
-    CategoryJpaService categoryService;
+    private CategoryJpaService categoryService;
 
     @Test
     @Transactional

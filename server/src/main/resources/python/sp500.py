@@ -1,11 +1,15 @@
+# noinspection PyUnresolvedReferences
 import re
+
 
 def extract_sp500_symbols(wikicode):
     pattern = r"\{\{[^|}]+?\|([^}]+)\}\}"
     return re.findall(pattern, wikicode)
 
+
 # TODO: scrape and call from java code
 def main():
+    # noinspection PyUnresolvedReferences
     import sys
     if len(sys.argv) < 2:
         print("Usage: python sp500.py <wikicode_file>")
@@ -16,6 +20,7 @@ def main():
 
     symbols = extract_sp500_symbols(wikicode)
     print(f"public static final List<String> SP500_SYMBOLS = List.of({', '.join(f'\"{s}\"' for s in symbols)});")
+
 
 if __name__ == "__main__":
     main()

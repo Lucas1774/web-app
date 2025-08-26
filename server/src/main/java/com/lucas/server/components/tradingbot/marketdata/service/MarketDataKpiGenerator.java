@@ -17,6 +17,7 @@ import java.util.stream.Stream;
 
 import static com.lucas.server.common.Constants.*;
 
+@SuppressWarnings("LoggingSimilarMessage")
 @Component
 public class MarketDataKpiGenerator {
 
@@ -33,6 +34,7 @@ public class MarketDataKpiGenerator {
         }
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     public MarketData computeDerivedFields(MarketData md) {
         List<MarketData> previous14 = service.findTop14BySymbolIdAndDateBeforeOrderByDateDesc(md.getSymbol().getId(), md.getDate());
         if (previous14.isEmpty()) {

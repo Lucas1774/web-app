@@ -39,6 +39,7 @@ public class PortfolioJpaServiceDelegate<T extends PortfolioBase, R extends JpaR
         return findLatestBySymbol.apply(symbol);
     }
 
+    @SuppressWarnings("unused")
     public T executePortfolioAction(Symbol symbol, BigDecimal price, BigDecimal quantity, BigDecimal commission,
                                     LocalDateTime timestamp, boolean isBuy) throws IllegalStateException {
         T last = findBySymbol(symbol)
@@ -82,6 +83,7 @@ public class PortfolioJpaServiceDelegate<T extends PortfolioBase, R extends JpaR
         return save(res);
     }
 
+    @SuppressWarnings("unused")
     public List<T> findActivePortfolio() {
         return repository.findAll().stream()
                 .collect(Collectors.toMap(

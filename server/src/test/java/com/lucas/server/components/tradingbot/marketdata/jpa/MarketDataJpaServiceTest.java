@@ -22,10 +22,10 @@ import static org.assertj.core.api.Assertions.tuple;
 class MarketDataJpaServiceTest {
 
     @Autowired
-    MarketDataJpaService jpaService;
+    private MarketDataJpaService jpaService;
 
     @Autowired
-    SymbolJpaService symbolService;
+    private SymbolJpaService symbolService;
 
     @Test
     @Transactional

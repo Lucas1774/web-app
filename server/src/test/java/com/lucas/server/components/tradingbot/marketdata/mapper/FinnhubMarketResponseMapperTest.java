@@ -27,13 +27,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class FinnhubMarketResponseMapperTest {
 
     @Autowired
-    SymbolJpaService symbolService;
+    private SymbolJpaService symbolService;
 
     @Autowired
-    FinnhubMarketResponseMapper mapper;
+    private FinnhubMarketResponseMapper mapper;
 
     @Autowired
-    ObjectMapper objectMapper;
+    private ObjectMapper objectMapper;
 
     @Test
     @Transactional

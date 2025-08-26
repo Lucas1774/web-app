@@ -41,6 +41,7 @@ public class NewsJpaService implements JpaService<News> {
         ).getContent();
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     public List<News> createOrUpdate(List<News> entities) {
         return uniqueConstraintDelegate.createOrUpdate(allEntities -> repository.findByExternalIdIn(
                         allEntities.stream().map(News::getExternalId).toList()

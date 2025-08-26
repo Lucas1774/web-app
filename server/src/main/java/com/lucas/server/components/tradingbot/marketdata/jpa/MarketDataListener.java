@@ -18,6 +18,7 @@ public class MarketDataListener implements ApplicationContextAware {
         beanFactory = applicationContext.getAutowireCapableBeanFactory();
     }
 
+    @SuppressWarnings("unused")
     @PrePersist
     @PreUpdate
     public void computeDerivedFields(MarketData md) {

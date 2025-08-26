@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.tuple;
 class CategoryJpaServiceTest {
 
     @Autowired
-    CategoryJpaService categoryService;
+    private CategoryJpaService categoryService;
 
     @Test
     @Transactional

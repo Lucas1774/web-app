@@ -36,16 +36,16 @@ class ManualRunTest {
     private static final LocalDate to = LocalDate.now(); // exclusive
 
     @Autowired
-    Map<String, AIClient> allClients;
+    private Map<String, AIClient> allClients;
 
     @Autowired
-    RecommendationsRepository recommendationsRepository;
+    private RecommendationsRepository recommendationsRepository;
 
     @Autowired
-    MarketDataRepository marketDataRepository;
+    private MarketDataRepository marketDataRepository;
 
     @Autowired
-    DailyScheduler dailyScheduler;
+    private DailyScheduler dailyScheduler;
 
     @Test
     @Transactional

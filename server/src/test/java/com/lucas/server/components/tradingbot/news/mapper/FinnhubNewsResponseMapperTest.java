@@ -30,13 +30,13 @@ import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 class FinnhubNewsResponseMapperTest {
 
     @Autowired
-    SymbolJpaService symbolService;
+    private SymbolJpaService symbolService;
 
     @Autowired
-    FinnhubNewsResponseMapper mapper;
+    private FinnhubNewsResponseMapper mapper;
 
     @Autowired
-    ObjectMapper objectMapper;
+    private ObjectMapper objectMapper;
 
     @Test
     @Transactional

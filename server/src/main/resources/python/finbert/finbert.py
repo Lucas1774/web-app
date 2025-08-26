@@ -1,4 +1,6 @@
+# noinspection PyUnresolvedReferences
 from fastapi import FastAPI, Body
+# noinspection PyUnresolvedReferences
 from transformers import pipeline
 
 app = FastAPI()
