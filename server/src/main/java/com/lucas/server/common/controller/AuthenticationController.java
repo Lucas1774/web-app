@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
+import static com.lucas.server.common.Constants.EMPTY_STRING;
+
 @RestController
 @RequestMapping("/authentication")
 public class AuthenticationController {
@@ -38,7 +40,7 @@ public class AuthenticationController {
         cookie.setPath("/");
         cookie.setMaxAge(31536000);
         cookie.setSecure(secure);
-        cookie.setAttribute("Partitioned", "");
+        cookie.setAttribute("Partitioned", EMPTY_STRING);
         if (secure) {
             cookie.setAttribute("SameSite", "None");
         }

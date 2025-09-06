@@ -16,7 +16,7 @@ public interface NewsRepository extends JpaRepository<News, Long> {
             Long symbolId1, String sentiment, Long symbolId2, Pageable pageable
     );
 
-    Collection<News> findByExternalIdIn(Collection<Long> externalIds);
+    List<News> findByExternalIdIn(Collection<Long> externalIds);
 
     List<News> findAllBySymbols_IdInAndDateBetween(Collection<Long> symbolIds, LocalDateTime from, LocalDateTime to);
 

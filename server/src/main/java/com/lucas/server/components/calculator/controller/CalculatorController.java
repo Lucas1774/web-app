@@ -7,6 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import static com.lucas.server.common.Constants.EMPTY_STRING;
+
 @RestController
 @RequestMapping("/calculator")
 public class CalculatorController {
@@ -25,7 +27,7 @@ public class CalculatorController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         } else {
             return controllerUtil.handleRequest(() -> calculatorService.computeAndSave(
-                    number.replace("\"", "")));
+                    number.replace("\"", EMPTY_STRING)));
         }
     }
 
