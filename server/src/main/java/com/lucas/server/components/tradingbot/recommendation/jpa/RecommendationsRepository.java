@@ -15,7 +15,7 @@ public interface RecommendationsRepository extends JpaRepository<Recommendation,
 
     List<Recommendation> findByDateBetween(LocalDate from, LocalDate to);
 
-    Collection<Recommendation> findBySymbol_IdInAndDateIn(Collection<Long> ids, Collection<LocalDate> dates);
+    List<Recommendation> findBySymbol_IdInAndDateIn(Collection<Long> ids, Collection<LocalDate> dates);
 
     Slice<Recommendation> findBySymbol_Id(Long symbolId, PageRequest date);
 

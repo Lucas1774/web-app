@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Random;
 
+import static com.lucas.server.common.Constants.EMPTY_STRING;
 import static com.lucas.server.common.Constants.SUDOKU_NUMBER_OF_CELLS;
 
 @RestController
@@ -42,7 +43,7 @@ public class SudokuController {
 
         List<Sudoku> sudoku;
         try {
-            sudoku = fromFileMapper.map(file.replace("\"", "")).stream()
+            sudoku = fromFileMapper.map(file.replace("\"", EMPTY_STRING)).stream()
                     .filter(s -> {
                         Sudoku copy = Sudoku.withValues(s.getState());
                         return solver.isValid(s, -1) && solver.solveWithTimeout(copy);

@@ -134,8 +134,9 @@ class RecommendationChatCompletionClientTest {
         assertThat(report.priceHistory())
                 .hasSize(HISTORY_DAYS_COUNT)
                 .extracting(PricePointRaw::date)
-                .containsExactly(today, today.minusDays(1), today.minusDays(2),
-                        today.minusDays(3), today.minusDays(4)
+                .containsExactly(today, today.minusDays(1), today.minusDays(2), today.minusDays(3),
+                        today.minusDays(4), today.minusDays(5), today.minusDays(6),
+                        today.minusDays(7), today.minusDays(8), today.minusDays(9)
                 );
 
         assertThat(report.newsCount()).isEqualTo(10); // 5 have neutral sentiment

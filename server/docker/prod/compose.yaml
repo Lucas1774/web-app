@@ -55,14 +55,5 @@ services:
 
     restart: on-failure
 
-  finbert:
-    build:
-      context: ../../src/main/resources/python/finbert/
-    depends_on:
-      - app
-    ports:
-      - "8082:80"
-    restart: on-failure
-
 volumes:
   postgres:

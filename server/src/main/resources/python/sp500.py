@@ -7,7 +7,7 @@ def extract_sp500_symbols(wikicode):
     return re.findall(pattern, wikicode)
 
 
-# TODO: scrape and call from java code
+# TODO: scrape and call from java code. In the meantime: https://en.wikipedia.org/w/index.php?title=List_of_S%26P_500_companies&action=edit&section=1
 def main():
     # noinspection PyUnresolvedReferences
     import sys

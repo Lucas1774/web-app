@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.lucas.server.common.Constants.DEFAULT_USERNAME;
+import static com.lucas.server.common.Constants.EMPTY_STRING;
 
 @RestController
 @RequestMapping("/shopping")
@@ -50,7 +51,7 @@ public class ShoppingController {
 
     @PostMapping("/new-product")
     public ResponseEntity<Product> postProduct(HttpServletRequest request, @RequestBody String name) {
-        return productService.createProductAndOrLinkToUser(name.replace("\"", ""), controllerUtil.retrieveUsername(request.getCookies()))
+        return productService.createProductAndOrLinkToUser(name.replace("\"", EMPTY_STRING), controllerUtil.retrieveUsername(request.getCookies()))
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.CONFLICT).build());
     }

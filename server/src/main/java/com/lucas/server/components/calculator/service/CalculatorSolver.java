@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 
+import static com.lucas.server.common.Constants.EMPTY_STRING;
 import static com.lucas.server.common.Constants.INVALID_EXPRESSION;
 
 @Component
@@ -15,7 +16,7 @@ public class CalculatorSolver {
             return new BigDecimal(expression).stripTrailingZeros().toPlainString();
         } catch (NumberFormatException e1) {
             try {
-                return BigDecimal.valueOf(new ExpressionBuilder(expression.replaceAll("\\s+", ""))
+                return BigDecimal.valueOf(new ExpressionBuilder(expression.replaceAll("\\s+", EMPTY_STRING))
                                 .build()
                                 .evaluate())
                         .stripTrailingZeros()
