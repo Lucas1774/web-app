@@ -35,7 +35,7 @@ public class AIClient {
                         "model", config.model(),
                         "messages", prompt.stream()
                                 .map(m -> Map.of(
-                                                "role", m.get(ROLE).asText(),
+                                                ROLE, m.get(ROLE).asText(),
                                                 CONTENT, sanitizeHtml(m.get(CONTENT).asText())
                                         )
                                 )
@@ -47,7 +47,7 @@ public class AIClient {
         );
 
         return httpClient.fetch(config.url(), config.apiKey(), body).get("choices").get(0).get("message").get(CONTENT).asText()
-                .replace("```", "")
-                .replace("json", "");
+                .replace("```", EMPTY_STRING)
+                .replace("json", EMPTY_STRING);
     }
 }

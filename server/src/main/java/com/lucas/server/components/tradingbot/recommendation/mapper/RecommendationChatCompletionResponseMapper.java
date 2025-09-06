@@ -15,8 +15,7 @@ import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.util.*;
 
-import static com.lucas.server.common.Constants.MAPPING_ERROR;
-import static com.lucas.server.common.Constants.SYMBOL;
+import static com.lucas.server.common.Constants.*;
 
 @Component
 public class RecommendationChatCompletionResponseMapper implements Mapper<JsonNode, Recommendation> {
@@ -51,7 +50,7 @@ public class RecommendationChatCompletionResponseMapper implements Mapper<JsonNo
                 return List.of(map(jsonNode)
                         .setModel(model)
                         .setInput(message)
-                        .setErrors("")
+                        .setErrors(EMPTY_STRING)
                         .setMarketData(latestMarketDataByName.get(jsonNode.get(SYMBOL).asText()))
                         .setSymbol(symbolByName.get(jsonNode.get(SYMBOL).asText())));
             }
@@ -61,7 +60,7 @@ public class RecommendationChatCompletionResponseMapper implements Mapper<JsonNo
                 recommendations.add(map(load)
                         .setModel(model)
                         .setInput(message)
-                        .setErrors("")
+                        .setErrors(EMPTY_STRING)
                         .setMarketData(latestMarketDataByName.get(load.get(SYMBOL).asText()))
                         .setSymbol(symbolByName.get(load.get(SYMBOL).asText())));
             }
