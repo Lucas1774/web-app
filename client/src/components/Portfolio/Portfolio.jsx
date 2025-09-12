@@ -121,6 +121,14 @@ const Portfolio = () => {
                     [constants.RECOMMENDATION_ACTION_KEY]: recommendation?.action,
                     [constants.RECOMMENDATION_CONFIDENCE_KEY]: recommendation?.confidence,
                     [constants.RECOMMENDATION_MODEL_KEY]: getModelName(recommendation?.model),
+                    [constants.RECOMMENDATION_NEWS_KEY]: recommendation?.news?.map(n => ({
+                        id: n.id,
+                        date: n.date,
+                        headline: n.headline,
+                        summary: n.summary,
+                        sentiment: n.sentiment,
+                        sentimentConfidence: n.sentimentConfidence
+                    })) ?? [],
                     [constants.PRICE_KEY]: item.price,
                     [constants.OPEN_KEY]: item.open,
                     [constants.HIGH_KEY]: item.high,
@@ -251,6 +259,14 @@ const Portfolio = () => {
                         [constants.RECOMMENDATION_CONFIDENCE_KEY]: item.confidence,
                         [constants.RECOMMENDATION_MODEL_KEY]: getModelName(item.model),
                         [constants.RECOMMENDATION_RATIONALE_KEY]: item.rationale,
+                        [constants.RECOMMENDATION_NEWS_KEY]: item.news?.map(n => ({
+                            id: n.id,
+                            date: n.date,
+                            headline: n.headline,
+                            summary: n.summary,
+                            sentiment: n.sentiment,
+                            sentimentConfidence: n.sentimentConfidence
+                        })) ?? []
                     }
                 ])
             );
@@ -407,7 +423,10 @@ const Portfolio = () => {
         if (key === constants.RECOMMENDATION_ACTION_KEY) {
             return <td key={key} onClick={(e) => {
                 e.preventDefault();
-                setPopupContent(row[constants.RECOMMENDATION_RATIONALE_KEY]);
+                setPopupContent({
+                    rationale: row[constants.RECOMMENDATION_RATIONALE_KEY],
+                    news: row[constants.RECOMMENDATION_NEWS_KEY]
+                });
             }}>{value}</td>;
         }
         if (key === constants.PERCENT_DAY_CHANGE_KEY || key === constants.PERCENT_PNL_KEY
