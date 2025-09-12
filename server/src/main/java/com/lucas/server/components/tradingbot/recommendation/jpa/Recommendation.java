@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.lucas.server.common.jpa.JpaEntity;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
+import com.lucas.server.components.tradingbot.news.jpa.News;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,7 +13,10 @@ import lombok.experimental.Accessors;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -35,6 +39,12 @@ public class Recommendation implements JpaEntity {
     @JsonIgnore
     private MarketData marketData;
 
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "recommendation_news",
+            joinColumns = @JoinColumn(name = "recommendation_id"),
+            inverseJoinColumns = @JoinColumn(name = "news_id"))
+    private Set<News> news = new HashSet<>();
+
     @Column(nullable = false, length = 4)
     private String action;
 
@@ -55,6 +65,11 @@ public class Recommendation implements JpaEntity {
 
     @Column(columnDefinition = "TEXT")
     private String errors;
+
+    public Recommendation addNews(Collection<News> news) {
+        this.news.addAll(news);
+        return this;
+    }
 
     public Recommendation setMarketData(MarketData marketData) {
         this.marketData = marketData;

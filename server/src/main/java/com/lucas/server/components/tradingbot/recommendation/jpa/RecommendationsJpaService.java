@@ -69,7 +69,8 @@ public class RecommendationsJpaService implements JpaService<Recommendation> {
                         .setRationale(newEntity.getRationale())
                         .setMarketData(newEntity.getMarketData())
                         .setInput(newEntity.getInput())
-                        .setErrors(newEntity.getErrors()),
+                        .setErrors(newEntity.getErrors())
+                        .setNews(newEntity.getNews()),
                 new LinkedHashSet<>(entities));
     }
 
