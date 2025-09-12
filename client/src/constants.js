@@ -43,6 +43,7 @@ export const STRING = "string";
 export const NUMBER = "number";
 export const DATE = "date";
 export const ICON = "icon";
+export const OBJECT = "object";
 export const REAL_TIME_KEY = "Real time";
 export const SYMBOL_NAME_KEY = "symbolName";
 export const LAST_MOVE_DATE_KEY = "lastMoveDate";
@@ -61,6 +62,7 @@ export const HIGH_KEY = "high"
 export const LOW_KEY = "low"
 export const VOLUME_KEY = "volume"
 export const RECOMMENDATION_RATIONALE_KEY = "recommendationRationale";
+export const RECOMMENDATION_NEWS_KEY = "recommendationNews";
 export const POSITION_VALUE_KEY = "positionValue";
 export const META = {
     KEYS: [ID_KEY, NAME_KEY, CATEGORY_KEY, QUANTITY_KEY, EDIT_KEY, REMOVE_KEY],
@@ -128,6 +130,7 @@ export const PORTFOLIO_META = {
         VOLUME_KEY,
         EDIT_KEY,
         RECOMMENDATION_RATIONALE_KEY,
+        RECOMMENDATION_NEWS_KEY,
         POSITION_VALUE_KEY
     ],
     DATATYPE: {
@@ -152,6 +155,7 @@ export const PORTFOLIO_META = {
         [VOLUME_KEY]: NUMBER,
         [EDIT_KEY]: ICON,
         [RECOMMENDATION_RATIONALE_KEY]: STRING,
+        [RECOMMENDATION_NEWS_KEY]: OBJECT,
         [POSITION_VALUE_KEY]: NUMBER
     },
     VISIBLE: {
@@ -176,6 +180,7 @@ export const PORTFOLIO_META = {
         [VOLUME_KEY]: true,
         [EDIT_KEY]: true,
         [RECOMMENDATION_RATIONALE_KEY]: false,
+        [RECOMMENDATION_NEWS_KEY]: false,
         [POSITION_VALUE_KEY]: false
     },
     DISPLAY_NAME: {
@@ -200,6 +205,7 @@ export const PORTFOLIO_META = {
         [VOLUME_KEY]: "Volume",
         [EDIT_KEY]: "",
         [RECOMMENDATION_RATIONALE_KEY]: "",
+        [RECOMMENDATION_NEWS_KEY]: "",
         [POSITION_VALUE_KEY]: ""
     },
     SORTABLE: {
@@ -224,6 +230,7 @@ export const PORTFOLIO_META = {
         [VOLUME_KEY]: true,
         [EDIT_KEY]: false,
         [RECOMMENDATION_RATIONALE_KEY]: false,
+        [RECOMMENDATION_NEWS_KEY]: false,
         [POSITION_VALUE_KEY]: false
     },
     FILTERABLE: {
@@ -248,6 +255,7 @@ export const PORTFOLIO_META = {
         [VOLUME_KEY]: false,
         [EDIT_KEY]: false,
         [RECOMMENDATION_RATIONALE_KEY]: false,
+        [RECOMMENDATION_NEWS_KEY]: false,
         [POSITION_VALUE_KEY]: false
     }
 }
