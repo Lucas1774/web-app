@@ -23,8 +23,11 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.function.BiFunction;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.function.LongFunction;
 import java.util.stream.Collectors;
 
 import static com.lucas.server.common.Constants.*;
@@ -59,40 +62,23 @@ public class RecommendationChatCompletionClient {
     }
 
     public List<Recommendation> getRecommendations(List<DataManager.SymbolPayload> payload, AIClient client, NewsFetcher newsFetcher,
-                                                   BiFunction<Long, Integer, List<News>> backupNewsFetcher,
+                                                   LongFunction<List<News>> backupNewsFetcher,
                                                    MarketDataFetcher marketDataFetcher) throws IOException {
         synchronized (yahooApiLock) {
-            if (null != newsFetcher) {
-                List<Symbol> symbols = payload.stream()
-                        .map(DataManager.SymbolPayload::getSymbol)
-                        .toList();
-                List<News> news;
+            payload.forEach(p -> {
                 try {
-                    news = newsFetcher.apply(symbols);
+                    p.setPremarket(marketDataFetcher.apply(p));
                 } catch (ClientException | JsonProcessingException e) {
-                    logger.warn(RETRIEVAL_FAILED_WARN, NEWS, symbols, e);
-                    news = payload.stream()
-                            .flatMap(p -> backupNewsFetcher.apply(p.getSymbol().getId(), NEWS_COUNT).stream())
-                            .distinct()
-                            .toList();
+                    logger.warn(RETRIEVAL_FAILED_WARN, PREMARKET, p.getSymbol(), e);
+                    p.setPremarket(null);
                 }
-                List<News> finalNews = news;
-                payload.forEach(p -> p.setNews(finalNews.stream()
-                        .filter(n -> n.getSymbols().contains(p.getSymbol()))
-                        .sorted(Comparator.comparing(News::getDate).reversed())
-                        .limit(NEWS_COUNT)
-                        .toList()));
-            }
-
-            if (null != marketDataFetcher) {
-                payload.forEach(p -> {
-                    try {
-                        p.setPremarket(marketDataFetcher.apply(p.getSymbol()));
-                    } catch (ClientException | JsonProcessingException e) {
-                        logger.warn(RETRIEVAL_FAILED_WARN, PREMARKET, p.getSymbol(), e);
-                    }
-                });
-            }
+                try {
+                    p.setNews(newsFetcher.apply(p));
+                } catch (ClientException | JsonProcessingException e) {
+                    logger.warn(RETRIEVAL_FAILED_WARN, NEWS, p.getSymbol(), e);
+                    p.setNews(backupNewsFetcher.apply(p.getSymbol().getId()));
+                }
+            });
         }
 
         List<AssetReportRaw> reports = payload.stream()
@@ -128,12 +114,12 @@ public class RecommendationChatCompletionClient {
 
     @FunctionalInterface
     public interface NewsFetcher {
-        List<News> apply(List<Symbol> symbols) throws ClientException, JsonProcessingException;
+        List<News> apply(DataManager.SymbolPayload payload) throws ClientException, JsonProcessingException;
     }
 
     @FunctionalInterface
     public interface MarketDataFetcher {
         @SuppressWarnings("unused")
-        MarketData apply(Symbol symbol) throws ClientException, JsonProcessingException;
+        MarketData apply(DataManager.SymbolPayload payload) throws ClientException, JsonProcessingException;
     }
 }
