@@ -32,8 +32,8 @@ import java.text.MessageFormat;
 import java.time.*;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.LongFunction;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -48,6 +48,7 @@ public class DataManager {
             PortfolioType.REAL, Portfolio::new,
             PortfolioType.MOCK, PortfolioMock::new
     );
+    private final Object newsPersistLock = new Object();
     private final SymbolJpaService symbolService;
     private final MarketDataJpaService marketDataService;
     private final NewsJpaService newsService;
@@ -163,14 +164,22 @@ public class DataManager {
                 .toList();
 
         RecommendationChatCompletionClient.NewsFetcher newsFetcher = onTheFlyNews
-                ? s -> yahooFinanceNewsClient.retrieveNews(s).stream()
-                .filter(n -> n.getDate().isAfter(startUtc)).toList()
-                : null;
-        BiFunction<Long, Integer, List<News>> backupNewsFetcher = (id, limit) -> newsService.getTopForSymbolId(id, limit).stream()
+                ? p -> {
+            List<News> news = yahooFinanceNewsClient.retrieveNews(List.of(p.getSymbol())).stream()
+                    .filter(n -> n.getDate().isAfter(startUtc))
+                    .sorted(Comparator.comparing(News::getDate).reversed())
+                    .limit(NEWS_COUNT)
+                    .toList();
+            synchronized (newsPersistLock) {
+                return newsService.createOrUpdate(news);
+            }
+        }
+                : SymbolPayload::getNews;
+        LongFunction<List<News>> backupNewsFetcher = id -> newsService.getTopForSymbolId(id, NEWS_COUNT).stream()
                 .filter(n -> n.getDate().isAfter(startUtc)).toList();
         RecommendationChatCompletionClient.MarketDataFetcher marketDataFetcher = fetchPreMarket
-                ? yahooFinanceMarketDataClient::retrieveMarketData
-                : null;
+                ? p -> yahooFinanceMarketDataClient.retrieveMarketData(p.getSymbol())
+                : SymbolPayload::getPremarket;
 
         logger.info(RETRIEVING_DATA_INFO, RECOMMENDATION, remainingPayload.size());
         try (ExecutorService executor = Executors.newFixedThreadPool(clients.size() * 5)) {
@@ -197,7 +206,7 @@ public class DataManager {
 
     private List<Recommendation> doGetRecommendationsInParallel(List<SymbolPayload> payload, List<AIClient> clients, ExecutorService executor,
                                                                 boolean overwrite, RecommendationChatCompletionClient.NewsFetcher newsFetcher,
-                                                                BiFunction<Long, Integer, List<News>> backupNewsFetcher,
+                                                                LongFunction<List<News>> backupNewsFetcher,
                                                                 RecommendationChatCompletionClient.MarketDataFetcher marketDataFetcher) {
         List<BatchJob> jobs = new ArrayList<>();
         List<SymbolPayload> buffer = new ArrayList<>();
@@ -236,7 +245,7 @@ public class DataManager {
 
     private void submitChunk(List<SymbolPayload> buffer, AIClient client, ExecutorService executor, List<BatchJob> jobs,
                              boolean overwrite, RecommendationChatCompletionClient.NewsFetcher newsFetcher,
-                             BiFunction<Long, Integer, List<News>> backupNewsFetcher,
+                             LongFunction<List<News>> backupNewsFetcher,
                              RecommendationChatCompletionClient.MarketDataFetcher marketDataFetcher) {
         List<SymbolPayload> snapshot = new ArrayList<>(buffer);
         Callable<List<Recommendation>> task = () -> {
