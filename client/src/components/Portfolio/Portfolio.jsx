@@ -574,7 +574,7 @@ const Portfolio = () => {
                                                     defaultValue={constants.PORTFOLIO_META.DATATYPE[key] === constants.NUMBER && isNaN(filters[key]) ? "" : filters[key]}
                                                     onChange={(e) => setFilterValue({
                                                         column: key,
-                                                        value: constants.PORTFOLIO_META.DATATYPE[key] === constants.NUMBER ? parseInt(e.target.value) : e.target.value
+                                                        value: constants.PORTFOLIO_META.DATATYPE[key] === constants.NUMBER ? Number(e.target.value) : e.target.value
                                                     })}
                                                     onClick={(e) => e.target.select()} />
                                             )}
