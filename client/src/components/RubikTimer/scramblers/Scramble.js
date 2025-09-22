@@ -1,5 +1,5 @@
 import { PropTypes } from "prop-types";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import * as constants from "../../../constants";
 import { generateRandomBetweenZeroAndX } from "../../../constants";
 import { Scramble as bldScrambler } from "./bldScrambler";

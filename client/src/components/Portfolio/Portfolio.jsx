@@ -39,6 +39,8 @@ const Portfolio = () => {
     const overwriteRandomRef = useRef(null);
     const afterHoursContextRandomRef = useRef(null);
     const amountRef = useRef(null);
+    const useOldNewsRef = useRef(null);
+    const useOldNewsRandomRef = useRef(null);
     const filterDebouncedValue = useDebounce(filterValue, constants.DEBOUNCE_DELAY);
 
     useEffect(() => {
@@ -231,7 +233,7 @@ const Portfolio = () => {
         }
     };
 
-    const getRecommendations = async (overwrite, afterHoursContext, selectedModels, count = undefined) => {
+    const getRecommendations = async (overwrite, afterHoursContext, useOldNews, selectedModels, count = undefined) => {
         let path;
         if (count !== undefined) {
             path = `/recommendations/random/${count}`
@@ -249,7 +251,7 @@ const Portfolio = () => {
         let modelsParam = selectedModels.length > 0 ? `&models=${selectedModels.join(',')}` : '';
         setIsLoading(true);
         try {
-            const resp = await get(`${path}?overwrite=${overwrite}&afterHoursContext=${afterHoursContext}${modelsParam}`);
+            const resp = await get(`${path}?overwrite=${overwrite}&afterHoursContext=${afterHoursContext}&useOldNews=${useOldNews}${modelsParam}`);
             const data = new Map(
                 resp.data.map(item => [
                     item.symbol.id,
@@ -492,7 +494,8 @@ const Portfolio = () => {
                     <>
                         <Form onSubmit={(e) => {
                             e.preventDefault();
-                            getRecommendations(overwriteRef.current.checked, afterHoursContextRef.current.checked, selectedModels);
+                            getRecommendations(overwriteRef.current.checked, afterHoursContextRef.current.checked,
+                                useOldNewsRef.current.checked, selectedModels);
                         }}>
                             <Button className="twenty-five-percent" type="submit" variant="success">Recommend</Button>
                             <Button className="twenty-five-percent" onClick={updateNews}>Fetch latest news</Button>
@@ -501,6 +504,7 @@ const Portfolio = () => {
                             <div className="flex-div">
                                 <Form.Check ref={overwriteRef} type="checkbox" label="Overwrite" />
                                 <Form.Check ref={afterHoursContextRef} type="checkbox" label="After hours context" />
+                                <Form.Check ref={useOldNewsRef} type="checkbox" label="Use old news" />
                                 <MultiSelectDdl title={"Models"} options={models} selectedOptions={selectedModels} setSelectedOptions={setSelectedModels} />
                                 <Form.Control style={{ visibility: "hidden" }} /> {/* Big hack to uniform style */}
                             </div>
@@ -515,7 +519,8 @@ const Portfolio = () => {
                                 }, constants.TIMEOUT_DELAY);
                                 return;
                             }
-                            getRecommendations(overwriteRandomRef.current.checked, afterHoursContextRandomRef.current.checked, selectedRandomModels, amount)
+                            getRecommendations(overwriteRandomRef.current.checked, afterHoursContextRandomRef.current.checked,
+                                useOldNewsRandomRef.current.checked, selectedRandomModels, amount)
                         }}>
                             <Button className="thirty-percent" type="submit" variant="success">Random recommendations</Button>
                             <Button className="thirty-percent" onClick={() => { getData(!isShowAllData); }}>{
@@ -537,6 +542,7 @@ const Portfolio = () => {
                             <div className="flex-div">
                                 <Form.Check ref={overwriteRandomRef} type="checkbox" label="Overwrite" />
                                 <Form.Check ref={afterHoursContextRandomRef} type="checkbox" label="After hours context" />
+                                <Form.Check ref={useOldNewsRandomRef} type="checkbox" label="Use old news" />
                                 <MultiSelectDdl title={"Models"} options={models} selectedOptions={selectedRandomModels} setSelectedOptions={setSelectedRandomModels} />
                                 <Form.Control ref={amountRef} type="number" placeholder="Amount" min="1" value={count} onChange={(e) => setCount(Number(e.target.value))} />
                             </div>
