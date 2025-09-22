@@ -93,14 +93,14 @@ public class DataManager {
 
     @Transactional
     public List<Recommendation> getRecommendationsById(List<Long> symbolIds, List<AIClient> clients, PortfolioType type,
-                                                       boolean overwrite, boolean onTheFlyNews, boolean fetchPreMarket) {
+                                                       boolean overwrite, boolean onTheFlyNews, boolean fetchPreMarket, boolean useOldNews) {
         List<Symbol> symbols = symbolService.findAllById(symbolIds);
-        return getRecommendationsInParallel(symbols, clients, type, overwrite, false, onTheFlyNews, fetchPreMarket);
+        return getRecommendationsInParallel(symbols, clients, type, overwrite, false, onTheFlyNews, fetchPreMarket, useOldNews);
     }
 
     @Transactional
     public List<Recommendation> getRandomRecommendations(List<String> symbolNames, List<AIClient> clients, PortfolioType type, int count,
-                                                         boolean overwrite, boolean onlyIfHasNews, boolean onTheFlyNews, boolean fetchPreMarket) {
+                                                         boolean overwrite, boolean onlyIfHasNews, boolean onTheFlyNews, boolean fetchPreMarket, boolean useOldNews) {
         Set<Long> already = recommendationsService.findByDateBetween(LocalDate.now(), LocalDate.now().plusDays(1)).stream()
                 .map(r -> r.getSymbol().getId())
                 .collect(Collectors.toSet());
@@ -119,11 +119,11 @@ public class DataManager {
         }
 
         return getRecommendationsInParallel(symbolService.findAllById(finalList), clients, type, overwrite,
-                onlyIfHasNews, onTheFlyNews, fetchPreMarket);
+                onlyIfHasNews, onTheFlyNews, fetchPreMarket, useOldNews);
     }
 
-    private List<Recommendation> getRecommendationsInParallel(List<Symbol> symbols, List<AIClient> clients, PortfolioType type,
-                                                              boolean overwrite, boolean onlyIfHasNews, boolean onTheFlyNews, boolean fetchPreMarket) {
+    private List<Recommendation> getRecommendationsInParallel(List<Symbol> symbols, List<AIClient> clients, PortfolioType type, boolean overwrite,
+                                                              boolean onlyIfHasNews, boolean onTheFlyNews, boolean fetchPreMarket, boolean useOldNews) {
         List<Recommendation> res = new ArrayList<>();
         List<AIClient> mutableClients = new ArrayList<>(clients);
         IPortfolioJpaService<PortfolioBase> portfolioService = getService(type);
@@ -142,10 +142,15 @@ public class DataManager {
 
         List<SymbolPayload> remainingPayload = symbols.parallelStream()
                 .map(symbol -> {
-                    List<News> news = !onTheFlyNews
-                            ? newsService.getTopForSymbolId(symbol.getId(), NEWS_COUNT).stream()
-                            .filter(n -> n.getDate().isAfter(startUtc)).toList()
-                            : null;
+                    List<News> news = null;
+                    if (!onTheFlyNews) {
+                        if (!useOldNews) {
+                            news = newsService.getTopForSymbolId(symbol.getId(), NEWS_COUNT).stream()
+                                    .filter(n -> n.getDate().isAfter(startUtc)).toList();
+                        } else {
+                            news = newsService.getTopForSymbolId(symbol.getId(), NEWS_COUNT);
+                        }
+                    }
                     if (onlyIfHasNews && Objects.requireNonNull(news).isEmpty()) {
                         return Optional.<SymbolPayload>empty();
                     }
@@ -163,18 +168,31 @@ public class DataManager {
                 .flatMap(Optional::stream)
                 .toList();
 
-        RecommendationChatCompletionClient.NewsFetcher newsFetcher = onTheFlyNews
-                ? p -> {
-            List<News> news = yahooFinanceNewsClient.retrieveNews(List.of(p.getSymbol())).stream()
-                    .filter(n -> n.getDate().isAfter(startUtc))
-                    .sorted(Comparator.comparing(News::getDate).reversed())
-                    .limit(NEWS_COUNT)
-                    .toList();
-            synchronized (newsPersistLock) {
-                return newsService.createOrUpdate(news);
+        RecommendationChatCompletionClient.NewsFetcher newsFetcher = SymbolPayload::getNews;
+        if (onTheFlyNews) {
+            if (!useOldNews) {
+                newsFetcher = p -> {
+                    List<News> news = yahooFinanceNewsClient.retrieveNews(List.of(p.getSymbol())).stream()
+                            .filter(n -> n.getDate().isAfter(startUtc))
+                            .sorted(Comparator.comparing(News::getDate).reversed())
+                            .limit(NEWS_COUNT)
+                            .toList();
+                    synchronized (newsPersistLock) {
+                        return newsService.createOrUpdate(news);
+                    }
+                };
+            } else {
+                newsFetcher = p -> {
+                    List<News> news = yahooFinanceNewsClient.retrieveNews(List.of(p.getSymbol())).stream()
+                            .sorted(Comparator.comparing(News::getDate).reversed())
+                            .limit(NEWS_COUNT)
+                            .toList();
+                    synchronized (newsPersistLock) {
+                        return newsService.createOrUpdate(news);
+                    }
+                };
             }
         }
-                : SymbolPayload::getNews;
         LongFunction<List<News>> backupNewsFetcher = id -> newsService.getTopForSymbolId(id, NEWS_COUNT).stream()
                 .filter(n -> n.getDate().isAfter(startUtc)).toList();
         RecommendationChatCompletionClient.MarketDataFetcher marketDataFetcher = fetchPreMarket

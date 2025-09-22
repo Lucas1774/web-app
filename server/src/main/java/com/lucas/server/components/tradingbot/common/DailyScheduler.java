@@ -84,14 +84,14 @@ public class DailyScheduler {
 
     private void getRandomRecommendations(List<String> symbolNames) {
         List<Recommendation> updatedRecommendations = dataManager.getRandomRecommendations(symbolNames, filterClients(clients, RecommendationMode.RANDOM), PortfolioType.REAL,
-                SCHEDULED_RECOMMENDATIONS_COUNT, true, true, false, false);
+                SCHEDULED_RECOMMENDATIONS_COUNT, true, true, false, false, false);
         logger.info(SCHEDULED_TASK_SUCCESS_INFO, "generated recommendations", updatedRecommendations.stream()
                 .map(Recommendation::getSymbol).toList());
     }
 
     private void getRecommendations(List<Long> topRecommendedSymbols, RecommendationMode mode) {
         List<Recommendation> updatedRecommendations = dataManager.getRecommendationsById(topRecommendedSymbols, filterClients(clients, mode), PortfolioType.REAL,
-                true, true, false);
+                true, true, false, false);
         logger.info(SCHEDULED_TASK_SUCCESS_INFO, "generated recommendations", updatedRecommendations.stream()
                 .map(Recommendation::getSymbol).toList());
     }
