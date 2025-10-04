@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button, Form, Table } from "react-bootstrap";
 import { get, post } from "../../api";
@@ -6,6 +7,7 @@ import editIcon from "../../assets/images/edit.png";
 import resetIcon from "../../assets/images/remove.png";
 import * as constants from "../../constants";
 import useDebounce from "../../hooks/useDebounce";
+import "../../Table.css";
 import DebounceableInput from "../DebounceableInput";
 import { handleError } from "../errorHandler";
 import LoginForm from "../LoginForm";
@@ -13,9 +15,8 @@ import Spinner from "../Spinner";
 import ConfirmProductRemovalPopup from "./ConfirmProductRemovalPopup";
 import EditProductPopup from "./EditProductPopup";
 import EditSortablesPopup from "./EditSortablesPopup";
-import "../../Table.css";
 
-const Shopping = () => {
+const Shopping = ({ onClose = () => { } }) => {
     const [tableData, setTableData] = useState(null);
     const [sortables, setSortables] = useState([]);
     const [sortablesType, setSortablesType] = useState(null);
@@ -407,8 +408,13 @@ const Shopping = () => {
     };
 
     return (
-        <><h1 id="shopping">Shopping</h1>
-            <div className="app custom-table"> {message ? <div>{message}</div> :
+        <div className="app custom-table">
+            {!isLoading && !message && <div className="flex-div" style={{ height: "0" }}>
+                <div></div>
+                <Button className="app restart popup-icon" onClick={onClose}>X</Button>
+            </div>}
+            <h1 id="shopping">Shopping</h1>
+            {message ? <div>{message}</div> :
                 isLoginFormVisible ? <LoginForm onSubmit={(e) => {
                     handleLoginSubmit(e)
                 }} /> :
@@ -529,8 +535,12 @@ const Shopping = () => {
                                     }}>Sort categories</Button>
                                 </div>
                             </>}</>
-            }</div></>
+            }</div>
     );
+};
+
+Shopping.propTypes = {
+    onClose: PropTypes.func,
 };
 
 export default Shopping;

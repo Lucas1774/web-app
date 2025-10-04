@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import PropTypes from "prop-types";
+import { useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { generateRandomBetweenZeroAndX, TIMEOUT_DELAY } from "../../constants";
 import "./SecretSanta.css";
 
-const SecretSanta = () => {
+const SecretSanta = ({ onClose = () => { } }) => {
     const [participantCounter, setParticipantCounter] = useState(1);
     const [participants, setParticipants] = useState([]);
     const [targets, setTargets] = useState([]);
@@ -157,25 +158,31 @@ const SecretSanta = () => {
     };
 
     return (
-        <>
+        <div className="app secretSanta">
+            {!isSavingVisible && !isCalculatingVisible && !isNoParticipantsVisible && !isChosenVisible && !isTargetVisible && <div className="flex-div" style={{ height: "0" }}>
+                <div></div>
+                <Button className="app restart popup-icon" onClick={onClose}>X</Button>
+            </div>}
             <h1 id="secretSanta">Secret Santa</h1>
-            <div className="app secretSanta">
-                {isFormVisible && renderForm()}
-                {isSavingVisible && (input === ""
-                    ? <div>Type a name</div> : participants.includes(input)
-                        ? <div>Player already registered</div> : <div></div>)}
-                {isCalculatingVisible && <div>Calculating...</div>}
-                {isNoParticipantsVisible && (
-                    <div>Not enough participants</div>
-                )}
-                {isChosenVisible && renderChosen()}
-                {isTargetVisible && renderTarget()}
-                {isRestartButtonVisible && <Button className="restart" onClick={() => { hideEverything(); restoreDefaults(); }}
-                >Restart</Button>}
-                {isParticipantListVisible && renderParticipantList()}
-            </div>
-        </>
+            {isFormVisible && renderForm()}
+            {isSavingVisible && (input === ""
+                ? <div>Type a name</div> : participants.includes(input)
+                    ? <div>Player already registered</div> : <div></div>)}
+            {isCalculatingVisible && <div>Calculating...</div>}
+            {isNoParticipantsVisible && (
+                <div>Not enough participants</div>
+            )}
+            {isChosenVisible && renderChosen()}
+            {isTargetVisible && renderTarget()}
+            {isRestartButtonVisible && <Button className="restart" onClick={() => { hideEverything(); restoreDefaults(); }}
+            >Restart</Button>}
+            {isParticipantListVisible && renderParticipantList()}
+        </div>
     );
+};
+
+SecretSanta.propTypes = {
+    onClose: PropTypes.func,
 };
 
 export default SecretSanta;

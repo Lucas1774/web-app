@@ -1,5 +1,6 @@
 .app.calculator {
   height: 600px;
+  width: 360px;
   padding: 0px 10px;
   background-color: #4e4e4e;
   border: 5px solid #cacacab4;

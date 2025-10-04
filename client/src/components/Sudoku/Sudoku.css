@@ -1,3 +1,7 @@
+.app.sudoku {
+    width: 360px;
+}
+
 .app.sudoku input[type=file] {
     position: relative;
     opacity: 0;

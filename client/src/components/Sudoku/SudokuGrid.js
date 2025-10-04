@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import React, { createRef, forwardRef, useEffect, useRef, useState } from "react";
+import { createRef, forwardRef, useEffect, useRef, useState } from "react";
 
 const SudokuGrid = forwardRef(({ sudokuString, onSudokuChange, solved }, ref) => {
     const [focusedIndex, setFocusedIndex] = useState(null);

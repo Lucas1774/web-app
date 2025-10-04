@@ -1,4 +1,5 @@
-import { Col, Row } from "react-bootstrap";
+import { useState } from "react";
+import { Button } from "react-bootstrap";
 import "./App.css";
 import Calculator from "./components/Calculator/Calculator";
 import Portfolio from "./components/Portfolio/Portfolio";
@@ -7,34 +8,35 @@ import SecretSanta from "./components/SecretSanta/SecretSanta";
 import Shopping from "./components/Shopping/Shopping";
 import Sudoku from "./components/Sudoku/Sudoku";
 
+const COMPONENTS = {
+  Portfolio,
+  Shopping,
+  RubikTimer,
+  Sudoku,
+  SecretSanta,
+  Calculator,
+};
+
 const App = () => {
+  const [program, setProgram] = useState("Portfolio");
+  const Current = program ? COMPONENTS[program] : null;
+
   return (
-    <>
-      <Row>
-        <Col>
-          <Portfolio />
-        </Col>
-      </Row>
-      <Row>
-        <Col>
-          <Shopping />
-        </Col>
-        <Col>
-          <RubikTimer />
-        </Col>
-        <Col>
-          <Sudoku />
-        </Col>
-      </Row>
-      <Row>
-        <Col>
-          <SecretSanta />
-        </Col>
-        <Col>
-          <Calculator />
-        </Col>
-      </Row>
-    </>
+    <div className="app-wrapper">
+      {!program ? (
+        <div className="app" style={{ width: "auto" }}>
+          {Object.keys(COMPONENTS).map((name) => (
+            <Button key={name} onClick={() => setProgram(name)}>
+              {name}
+            </Button>
+          ))}
+        </div>
+      ) : (
+        Current && (
+          <Current onClose={() => setProgram(null)} />
+        )
+      )}
+    </div>
   );
 }
 

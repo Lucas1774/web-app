@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import * as constants from "../../constants";
@@ -5,7 +6,7 @@ import Popup from "./Popup";
 import "./RubikTimer.css";
 import Scramble from "./scramblers/Scramble";
 import { formatTime, renderStats } from "./statsHelper";
-const RubikTimer = () => {
+const RubikTimer = ({ onClose = () => { } }) => {
     // IDENTIFIERS
     const isAndroid = /Android/i.test(navigator.userAgent);
 
@@ -378,70 +379,76 @@ const RubikTimer = () => {
     };
 
     return (
-        <>
-            <h1 id="rubikTimer">Rubik timer</h1>
-            <div className="app rubikTimer">
-                {isFormVisible && renderForm()}
-                {isSelectMultiLengthVisible && renderSelectMultiLength()}
-                {isMultiQuantityInvalidVisible && <h2>Enter a number between 1 and 200</h2>}
-                {isTimerVisible && renderStats({
-                    times: recentTimes,
-                    averageDisplay: !isTimerVisible || isTimerRunning || isTimerPrepared ? "none" : "grid",
-                    params: [
-                        { label: "session", align: "left" }]
-                })}
-                <div className="timerContainer">
-                    {isPopupVisible
-                        ? <>
-                            <Popup content={{ recentTimes: recentTimes, recentScrambles: recentScrambles }} onPopupClose={() => {
-                                setIsPopupVisible(false);
-                                setElapsedTime(recentTimes.length > 0
-                                    ? recentTimes[recentTimes.length - 1]
-                                    : 0);
-                                setScrambleDisplayMode("block");
-                                setIsTimerVisible(true);
-                                setIsShowMoreStatsVisible(true);
-                            }} />
-                            {renderScramble()}
-                        </>
-                        : <>
-                            {isTimerVisible && renderAverages()}
-                            {renderScramble()}
-                            {isTimerVisible && renderTimer()}
-                        </>
-                    }
-                </div>
-                <Button style={{ display: isShowMoreStatsVisible && isAndroid && selectedPuzzle.current === constants.MULTI ? "block" : "none" }} variant="success" onTouchStart={prepare}>Start</Button>
-                {isEditTimeVisible && <Popup content={{ recentTimes: recentTimes, recentScrambles: recentScrambles }} justEditLast={true} onPopupClose={() => {
-                    setIsEditTimeVisible(false);
-                    setElapsedTime(recentTimes.length > 0
-                        ? recentTimes[recentTimes.length - 1]
-                        : 0);
-                    setScrambleDisplayMode("block");
-                    setIsTimerVisible(true);
-                    setIsShowMoreStatsVisible(true);
-                }} />}
-                {isShowMoreStatsVisible && <Button onClick={(event) => {
-                    if (isAndroid && !isDragAllowed.current) {
-                        event.preventDefault();
-                        return;
-                    }
-                    setIsShowMoreStatsVisible(false);
-                    setIsTimerVisible(false);
-                    setScrambleDisplayMode("none");
-                    setIsPopupVisible(true);
-                }}>Session stats</Button>}
-                {isRestartButtonVisible && <Button className="restart" onClick={(event) => {
-                    if (isAndroid && !isDragAllowed.current) {
-                        event.preventDefault();
-                        return;
-                    }
-                    restoreDefaults();
-                }}
-                >Restart</Button>}
+        <div className="app rubikTimer">
+            <div className="flex-div" style={{ height: "0" }}>
+                <div></div>
+                <Button className="app restart popup-icon" onClick={onClose}>X</Button>
             </div>
-        </>
+            <h1 id="rubikTimer">Rubik timer</h1>
+            {isFormVisible && renderForm()}
+            {isSelectMultiLengthVisible && renderSelectMultiLength()}
+            {isMultiQuantityInvalidVisible && <h2>Enter a number between 1 and 200</h2>}
+            {isTimerVisible && renderStats({
+                times: recentTimes,
+                averageDisplay: !isTimerVisible || isTimerRunning || isTimerPrepared ? "none" : "grid",
+                params: [
+                    { label: "session", align: "left" }]
+            })}
+            <div className="timerContainer">
+                {isPopupVisible
+                    ? <>
+                        <Popup content={{ recentTimes: recentTimes, recentScrambles: recentScrambles }} onPopupClose={() => {
+                            setIsPopupVisible(false);
+                            setElapsedTime(recentTimes.length > 0
+                                ? recentTimes[recentTimes.length - 1]
+                                : 0);
+                            setScrambleDisplayMode("block");
+                            setIsTimerVisible(true);
+                            setIsShowMoreStatsVisible(true);
+                        }} />
+                        {renderScramble()}
+                    </>
+                    : <>
+                        {isTimerVisible && renderAverages()}
+                        {renderScramble()}
+                        {isTimerVisible && renderTimer()}
+                    </>
+                }
+            </div>
+            <Button style={{ display: isShowMoreStatsVisible && isAndroid && selectedPuzzle.current === constants.MULTI ? "block" : "none" }} variant="success" onTouchStart={prepare}>Start</Button>
+            {isEditTimeVisible && <Popup content={{ recentTimes: recentTimes, recentScrambles: recentScrambles }} justEditLast={true} onPopupClose={() => {
+                setIsEditTimeVisible(false);
+                setElapsedTime(recentTimes.length > 0
+                    ? recentTimes[recentTimes.length - 1]
+                    : 0);
+                setScrambleDisplayMode("block");
+                setIsTimerVisible(true);
+                setIsShowMoreStatsVisible(true);
+            }} />}
+            {isShowMoreStatsVisible && <Button onClick={(event) => {
+                if (isAndroid && !isDragAllowed.current) {
+                    event.preventDefault();
+                    return;
+                }
+                setIsShowMoreStatsVisible(false);
+                setIsTimerVisible(false);
+                setScrambleDisplayMode("none");
+                setIsPopupVisible(true);
+            }}>Session stats</Button>}
+            {isRestartButtonVisible && <Button className="restart" onClick={(event) => {
+                if (isAndroid && !isDragAllowed.current) {
+                    event.preventDefault();
+                    return;
+                }
+                restoreDefaults();
+            }}
+            >Restart</Button>}
+        </div>
     );
+};
+
+RubikTimer.propTypes = {
+    onClose: PropTypes.func,
 };
 
 export default RubikTimer;

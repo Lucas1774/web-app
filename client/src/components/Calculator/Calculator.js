@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import PropTypes from "prop-types";
+import { useState } from "react";
 import { Button, Form, Row } from "react-bootstrap";
 import { get, post } from "../../api";
 import Spinner from "../Spinner";
 import { handleError } from "../errorHandler";
 import "./Calculator.css";
 
-const Calculator = () => {
+const Calculator = ({ onClose = () => { } }) => {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -59,7 +60,12 @@ const Calculator = () => {
   };
 
   return (
-    <><h1 id="calculator">Calculator</h1>
+    <div className="app">
+      {!isLoading && <div className="flex-div" style={{ height: "0" }}>
+        <div></div>
+        <Button className="app restart popup-icon" onClick={onClose}>X</Button>
+      </div>}
+      <h1 id="calculator">Calculator</h1>
       <div className="app calculator">
         <Form onSubmit={(e) => handleSubmit(e, true)}>
           <Form.Control value={input} onChange={handleKeyDown} />
@@ -100,8 +106,13 @@ const Calculator = () => {
           <Button onClick={(e) => handleSubmit(e, false)}>Ans</Button>
           <Button type="submit" variant="success" onClick={(e) => { handleSubmit(e, true) }}>=</Button>
         </Row>
-      </div></>
+      </div>
+    </div>
   );
+};
+
+Calculator.propTypes = {
+  onClose: PropTypes.func,
 };
 
 export default Calculator;

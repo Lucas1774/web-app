@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import PropTypes from "prop-types";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { get, post } from "../../api";
 import { STATE_KEY, TIMEOUT_DELAY } from "../../constants";
@@ -8,7 +9,7 @@ import Spinner from "../Spinner";
 import "./Sudoku.css";
 import SudokuGrid from "./SudokuGrid";
 
-const Sudoku = () => {
+const Sudoku = ({ onClose = () => {} }) => {
     const [sudoku, setSudoku] = useState("");
     const [initialSudoku, setInitialSudoku] = useState("");
     const [difficulty, setDifficulty] = useState(1);
@@ -282,32 +283,38 @@ const Sudoku = () => {
     };
 
     return (
-        <>
+        <div className="app sudoku">
+            {!isLoading && !responseMessage.current && <div className="flex-div" style={{ height: "0" }}>
+                <div></div>
+                <Button className="app restart popup-icon" onClick={onClose}>X</Button>
+            </div>}
             <h1 id="sudoku">Sudoku</h1>
-            <div className="app sudoku">
-                {isGenerateOrImportVisible &&
-                    <>
-                        <Button variant="success" onClick={handleGenerate}>Generate</Button>
-                        <FileImporter onFileContentChange={sendFile} />
-                    </>}
-                {isUploadResponseVisible && <div>{responseMessage.current}</div>}
-                {isPickDifficultyVisible &&
-                    <Form>
-                        <Form.Label>Pick difficulty (only for generated sudoku):</Form.Label>
-                        <Form.Control inputMode="numeric" value={difficulty} onKeyDown={handleFormInputChange} ref={formRef} onChange={() => { }} />
-                        <Button id="generate" variant="success" onClick={(e) => generateOrFetch(e.target.id)}>Generate</Button>
-                        <Button id="fetch" onClick={(e) => generateOrFetch(e.target.id)}>Fetch</Button>
-                    </Form>}
-                {isSudokuVisible &&
-                    <><SudokuGrid ref={gridRef} sudokuString={sudoku} onSudokuChange={handleSudokuChange} solved={isSolved} />
-                        <Button type="submit" variant="success" onClick={solve}>Solve</Button>
-                        <Button onClick={check}>Check</Button></>
-                }
-                {isLoading && <Spinner />}
-                {isRestartButtonVisible && <Button className="restart" onClick={restoreDefaults}>Restart</Button>}
-            </div>
-        </>
+            {isGenerateOrImportVisible &&
+                <>
+                    <Button variant="success" onClick={handleGenerate}>Generate</Button>
+                    <FileImporter onFileContentChange={sendFile} />
+                </>}
+            {isUploadResponseVisible && <div>{responseMessage.current}</div>}
+            {isPickDifficultyVisible &&
+                <Form>
+                    <Form.Label>Pick difficulty (only for generated sudoku):</Form.Label>
+                    <Form.Control inputMode="numeric" value={difficulty} onKeyDown={handleFormInputChange} ref={formRef} onChange={() => { }} />
+                    <Button id="generate" variant="success" onClick={(e) => generateOrFetch(e.target.id)}>Generate</Button>
+                    <Button id="fetch" onClick={(e) => generateOrFetch(e.target.id)}>Fetch</Button>
+                </Form>}
+            {isSudokuVisible &&
+                <><SudokuGrid ref={gridRef} sudokuString={sudoku} onSudokuChange={handleSudokuChange} solved={isSolved} />
+                    <Button type="submit" variant="success" onClick={solve}>Solve</Button>
+                    <Button onClick={check}>Check</Button></>
+            }
+            {isLoading && <Spinner />}
+            {isRestartButtonVisible && <Button className="restart" onClick={restoreDefaults}>Restart</Button>}
+        </div>
     );
+};
+
+Sudoku.propTypes = {
+    onClose: PropTypes.func,
 };
 
 export default Sudoku;
