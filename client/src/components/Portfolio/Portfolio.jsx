@@ -1,4 +1,5 @@
 import chroma from "chroma-js";
+import PropTypes from "prop-types";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button, Form, Table } from "react-bootstrap";
 import MultiSelectDdl from "../../MultiSelectDdl";
@@ -14,7 +15,7 @@ import "./Portfolio.css";
 import RecommendationPopup from "./RecommendationPopup";
 import TransactionPopup from "./TransactionPopup";
 
-const Portfolio = () => {
+const Portfolio = ({ onClose = () => { } }) => {
 
     const [tableData, setTableData] = useState(null);
     const [displayData, setDisplayData] = useState([]);
@@ -487,146 +488,152 @@ const Portfolio = () => {
     }
 
     return (
-        <>
+        <div className="app custom-table portfolio">
+            {!isLoading && !message && <div className="flex-div" style={{ height: "0" }}>
+                <div></div>
+                <Button className="app restart popup-icon" onClick={onClose}>X</Button>
+            </div>}
             <h1 id="portfolio">Portfolio</h1>
-            <div className="app custom-table portfolio">
-                {tableData &&
-                    <>
-                        <Form onSubmit={(e) => {
-                            e.preventDefault();
-                            getRecommendations(overwriteRef.current.checked, afterHoursContextRef.current.checked,
-                                useOldNewsRef.current.checked, selectedModels);
-                        }}>
-                            <Button className="twenty-five-percent" type="submit" variant="success">Recommend</Button>
-                            <Button className="twenty-five-percent" onClick={updateNews}>Fetch latest news</Button>
-                            <Button className="twenty-five-percent" onClick={() => { getDataByRow(false); }}>Last close</Button>
-                            <Button className="twenty-five-percent" onClick={() => { getDataByRow(true); }}>Real time</Button>
-                            <div className="flex-div">
-                                <Form.Check ref={overwriteRef} type="checkbox" label="Overwrite" />
-                                <Form.Check ref={afterHoursContextRef} type="checkbox" label="After hours context" />
-                                <Form.Check ref={useOldNewsRef} type="checkbox" label="Use old news" />
-                                <MultiSelectDdl title={"Models"} options={models} selectedOptions={selectedModels} setSelectedOptions={setSelectedModels} />
-                                <Form.Control style={{ visibility: "hidden" }} /> {/* Big hack to uniform style */}
-                            </div>
-                        </Form>
-                        <Form onSubmit={(e) => {
-                            e.preventDefault();
-                            const amount = amountRef.current.value;
-                            if (!amount) {
-                                setMessage("Specify an amount");
-                                setTimeout(() => {
-                                    setMessage(null);
-                                }, constants.TIMEOUT_DELAY);
-                                return;
-                            }
-                            getRecommendations(overwriteRandomRef.current.checked, afterHoursContextRandomRef.current.checked,
-                                useOldNewsRandomRef.current.checked, selectedRandomModels, amount)
-                        }}>
-                            <Button className="thirty-percent" type="submit" variant="success">Random recommendations</Button>
-                            <Button className="thirty-percent" onClick={() => { getData(!isShowAllData); }}>{
-                                isShowAllData ? "Show active data" : "Show all data"
-                            }</Button>
-                            <Button className="thirty-percent" onClick={() => {
-                                Object.values(inputsRef.current).forEach((input) => {
-                                    if (input) {
-                                        if (!input.hasOwnProperty("checked")) {
-                                            input.value = ""
-                                        } else {
-                                            input.checked = false;
-                                        }
+            {tableData &&
+                <>
+                    <Form onSubmit={(e) => {
+                        e.preventDefault();
+                        getRecommendations(overwriteRef.current.checked, afterHoursContextRef.current.checked,
+                            useOldNewsRef.current.checked, selectedModels);
+                    }}>
+                        <Button className="twenty-five-percent" type="submit" variant="success">Recommend</Button>
+                        <Button className="twenty-five-percent" onClick={updateNews}>Fetch latest news</Button>
+                        <Button className="twenty-five-percent" onClick={() => { getDataByRow(false); }}>Last close</Button>
+                        <Button className="twenty-five-percent" onClick={() => { getDataByRow(true); }}>Real time</Button>
+                        <div className="flex-div">
+                            <Form.Check ref={overwriteRef} type="checkbox" label="Overwrite" />
+                            <Form.Check ref={afterHoursContextRef} type="checkbox" label="After hours context" />
+                            <Form.Check ref={useOldNewsRef} type="checkbox" label="Use old news" />
+                            <MultiSelectDdl title={"Models"} options={models} selectedOptions={selectedModels} setSelectedOptions={setSelectedModels} />
+                            <Form.Control style={{ visibility: "hidden" }} /> {/* Big hack to uniform style */}
+                        </div>
+                    </Form>
+                    <Form onSubmit={(e) => {
+                        e.preventDefault();
+                        const amount = amountRef.current.value;
+                        if (!amount) {
+                            setMessage("Specify an amount");
+                            setTimeout(() => {
+                                setMessage(null);
+                            }, constants.TIMEOUT_DELAY);
+                            return;
+                        }
+                        getRecommendations(overwriteRandomRef.current.checked, afterHoursContextRandomRef.current.checked,
+                            useOldNewsRandomRef.current.checked, selectedRandomModels, amount)
+                    }}>
+                        <Button className="thirty-percent" type="submit" variant="success">Random recommendations</Button>
+                        <Button className="thirty-percent" onClick={() => { getData(!isShowAllData); }}>{
+                            isShowAllData ? "Show active data" : "Show all data"
+                        }</Button>
+                        <Button className="thirty-percent" onClick={() => {
+                            Object.values(inputsRef.current).forEach((input) => {
+                                if (input) {
+                                    if (!input.hasOwnProperty("checked")) {
+                                        input.value = ""
+                                    } else {
+                                        input.checked = false;
                                     }
-                                });
-                                setFilters({});
+                                }
+                            });
+                            setFilters({});
 
-                            }}>Clear filters</Button>
-                            <div className="flex-div">
-                                <Form.Check ref={overwriteRandomRef} type="checkbox" label="Overwrite" />
-                                <Form.Check ref={afterHoursContextRandomRef} type="checkbox" label="After hours context" />
-                                <Form.Check ref={useOldNewsRandomRef} type="checkbox" label="Use old news" />
-                                <MultiSelectDdl title={"Models"} options={models} selectedOptions={selectedRandomModels} setSelectedOptions={setSelectedRandomModels} />
-                                <Form.Control ref={amountRef} type="number" placeholder="Amount" min="1" value={count} onChange={(e) => setCount(Number(e.target.value))} />
-                            </div>
-                        </Form>
-                        <Table striped bordered hover responsive>
-                            <thead>
-                                <tr>
-                                    <th>
-                                        <Form.Check
-                                            type="checkbox"
-                                            checked={isAllSelected()}
-                                            onChange={() => setSelectedIds(() => isAllSelected() ? new Set() : new Set(allIds()))}
-                                        /></th>
-                                    {constants.PORTFOLIO_META.KEYS.filter((key) => constants.PORTFOLIO_META.VISIBLE[key]).map((key) => (
-                                        <th key={key}>{constants.PORTFOLIO_META.DISPLAY_NAME[key]}</th>
-                                    ))}
-                                </tr>
-                                <tr>
-                                    <th key="select">
-                                        <Form.Check ref={(e) => inputsRef.current["select"] = e}
-                                            type="checkbox"
-                                            onChange={(e) => setFilterValue({
-                                                column: "select",
-                                                value: e.target.checked
-                                            })}
-                                        />
+                        }}>Clear filters</Button>
+                        <div className="flex-div">
+                            <Form.Check ref={overwriteRandomRef} type="checkbox" label="Overwrite" />
+                            <Form.Check ref={afterHoursContextRandomRef} type="checkbox" label="After hours context" />
+                            <Form.Check ref={useOldNewsRandomRef} type="checkbox" label="Use old news" />
+                            <MultiSelectDdl title={"Models"} options={models} selectedOptions={selectedRandomModels} setSelectedOptions={setSelectedRandomModels} />
+                            <Form.Control ref={amountRef} type="number" placeholder="Amount" min="1" value={count} onChange={(e) => setCount(Number(e.target.value))} />
+                        </div>
+                    </Form>
+                    <Table striped bordered hover responsive>
+                        <thead>
+                            <tr>
+                                <th>
+                                    <Form.Check
+                                        type="checkbox"
+                                        checked={isAllSelected()}
+                                        onChange={() => setSelectedIds(() => isAllSelected() ? new Set() : new Set(allIds()))}
+                                    /></th>
+                                {constants.PORTFOLIO_META.KEYS.filter((key) => constants.PORTFOLIO_META.VISIBLE[key]).map((key) => (
+                                    <th key={key}>{constants.PORTFOLIO_META.DISPLAY_NAME[key]}</th>
+                                ))}
+                            </tr>
+                            <tr>
+                                <th key="select">
+                                    <Form.Check ref={(e) => inputsRef.current["select"] = e}
+                                        type="checkbox"
+                                        onChange={(e) => setFilterValue({
+                                            column: "select",
+                                            value: e.target.checked
+                                        })}
+                                    />
+                                </th>
+                                {constants.PORTFOLIO_META.KEYS.filter((key) => constants.PORTFOLIO_META.VISIBLE[key]).map((key) => (
+                                    <th key={key}>
+                                        {constants.PORTFOLIO_META.FILTERABLE[key] && (
+                                            <Form.Control ref={(e) => inputsRef.current[key] = e}
+                                                type={constants.PORTFOLIO_META.DATATYPE[key] === constants.DATE ? "date" : "text"}
+                                                inputMode={constants.PORTFOLIO_META.DATATYPE[key] === constants.NUMBER ? "numeric" : "text"}
+                                                placeholder={constants.PORTFOLIO_META.DISPLAY_NAME[key]}
+                                                defaultValue={constants.PORTFOLIO_META.DATATYPE[key] === constants.NUMBER && isNaN(filters[key]) ? "" : filters[key]}
+                                                onChange={(e) => setFilterValue({
+                                                    column: key,
+                                                    value: constants.PORTFOLIO_META.DATATYPE[key] === constants.NUMBER ? Number(e.target.value) : e.target.value
+                                                })}
+                                                onClick={(e) => e.target.select()} />
+                                        )}
+                                        {constants.PORTFOLIO_META.SORTABLE[key] && (
+                                            <Button onClick={() => { handleOrderClick(key); }}>
+                                                {order.key === key
+                                                    ? order.order === constants.ASC ? '▲' : '▼' : 'Sort'}
+                                            </Button>
+                                        )}
                                     </th>
-                                    {constants.PORTFOLIO_META.KEYS.filter((key) => constants.PORTFOLIO_META.VISIBLE[key]).map((key) => (
-                                        <th key={key}>
-                                            {constants.PORTFOLIO_META.FILTERABLE[key] && (
-                                                <Form.Control ref={(e) => inputsRef.current[key] = e}
-                                                    type={constants.PORTFOLIO_META.DATATYPE[key] === constants.DATE ? "date" : "text"}
-                                                    inputMode={constants.PORTFOLIO_META.DATATYPE[key] === constants.NUMBER ? "numeric" : "text"}
-                                                    placeholder={constants.PORTFOLIO_META.DISPLAY_NAME[key]}
-                                                    defaultValue={constants.PORTFOLIO_META.DATATYPE[key] === constants.NUMBER && isNaN(filters[key]) ? "" : filters[key]}
-                                                    onChange={(e) => setFilterValue({
-                                                        column: key,
-                                                        value: constants.PORTFOLIO_META.DATATYPE[key] === constants.NUMBER ? Number(e.target.value) : e.target.value
-                                                    })}
-                                                    onClick={(e) => e.target.select()} />
-                                            )}
-                                            {constants.PORTFOLIO_META.SORTABLE[key] && (
-                                                <Button onClick={() => { handleOrderClick(key); }}>
-                                                    {order.key === key
-                                                        ? order.order === constants.ASC ? '▲' : '▼' : 'Sort'}
-                                                </Button>
-                                            )}
-                                        </th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {displayData.map((row) => {
-                                    const id = row[constants.ID_KEY];
-                                    return (
-                                        <tr key={id}>
-                                            <td>
-                                                <Form.Check
-                                                    type="checkbox"
-                                                    checked={selectedIds.has(id)}
-                                                    onChange={() => {
-                                                        setSelectedIds(prev => {
-                                                            const next = new Set(prev);
-                                                            if (next.has(id)) {
-                                                                next.delete(id);
-                                                            } else {
-                                                                next.add(id);
-                                                            }
-                                                            return next;
-                                                        });
-                                                    }} /></td>
-                                            {constants.PORTFOLIO_META.KEYS
-                                                .filter((key) => constants.PORTFOLIO_META.VISIBLE[key])
-                                                .map((key) => renderCell(key, row))}
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </Table>
-                    </>
-                }
-            </div>
-        </>
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {displayData.map((row) => {
+                                const id = row[constants.ID_KEY];
+                                return (
+                                    <tr key={id}>
+                                        <td>
+                                            <Form.Check
+                                                type="checkbox"
+                                                checked={selectedIds.has(id)}
+                                                onChange={() => {
+                                                    setSelectedIds(prev => {
+                                                        const next = new Set(prev);
+                                                        if (next.has(id)) {
+                                                            next.delete(id);
+                                                        } else {
+                                                            next.add(id);
+                                                        }
+                                                        return next;
+                                                    });
+                                                }} /></td>
+                                        {constants.PORTFOLIO_META.KEYS
+                                            .filter((key) => constants.PORTFOLIO_META.VISIBLE[key])
+                                            .map((key) => renderCell(key, row))}
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </Table>
+                </>
+            }
+        </div>
     );
 }
+
+Portfolio.propTypes = {
+    onClose: PropTypes.func,
+};
 
 export default Portfolio;

@@ -1,5 +1,5 @@
 import { PropTypes } from 'prop-types';
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Form from 'react-bootstrap/Form';
 import { DEBOUNCE_DELAY } from '../constants';
 import useDebounce from '../hooks/useDebounce';
