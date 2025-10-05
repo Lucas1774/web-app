@@ -82,4 +82,8 @@ public class RecommendationsJpaService implements JpaService<Recommendation> {
                 .distinct()
                 .toList();
     }
+
+    public List<Recommendation> getDailyRecommendations(BigDecimal confidenceThreshold, LocalDate date, String action, List<String> models) {
+        return repository.findByConfidenceGreaterThanEqualAndDateAndActionAndModelIn(confidenceThreshold, date, action, models);
+    }
 }

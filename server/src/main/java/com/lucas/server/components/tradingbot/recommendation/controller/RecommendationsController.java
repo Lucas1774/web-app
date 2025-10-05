@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -67,6 +69,19 @@ public class RecommendationsController {
     @GetMapping("/models")
     public ResponseEntity<List<String>> getModels() {
         return ResponseEntity.ok(clients.keySet().stream().sorted(String::compareTo).toList());
+    }
+
+    @GetMapping("/daily/{confidenceThreshold}")
+    public ResponseEntity<List<Recommendation>> getDailyRecommendations(@PathVariable BigDecimal confidenceThreshold,
+                                                                        @RequestParam(required = false) LocalDate date,
+                                                                        @RequestParam(required = false) String action,
+                                                                        @RequestParam(required = false) List<String> models) {
+        LocalDate selectedDate = null == date ? LocalDate.now() : date;
+        String selectedAction = null == action ? BUY : action;
+        List<String> selectedClients = null == models
+                ? filterClients(clients, RecommendationMode.FINE_GRAIN).stream().map(c -> c.getConfig().name()).toList()
+                : models;
+        return ResponseEntity.ok(jpaService.getDailyRecommendations(confidenceThreshold, selectedDate, selectedAction, selectedClients));
     }
 
     @DeleteMapping("/purge")

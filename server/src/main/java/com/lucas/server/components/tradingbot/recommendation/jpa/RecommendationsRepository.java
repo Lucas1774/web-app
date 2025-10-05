@@ -24,4 +24,9 @@ public interface RecommendationsRepository extends JpaRepository<Recommendation,
     List<Recommendation> findByActionAndConfidenceGreaterThanEqualAndDate(String action,
                                                                           BigDecimal confidenceThreshold,
                                                                           LocalDate recommendationDate);
+
+    List<Recommendation> findByConfidenceGreaterThanEqualAndDateAndActionAndModelIn(BigDecimal confidenceThreshold,
+                                                                                    LocalDate date,
+                                                                                    String action,
+                                                                                    List<String> models);
 }

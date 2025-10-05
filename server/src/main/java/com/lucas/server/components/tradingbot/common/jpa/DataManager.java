@@ -91,6 +91,10 @@ public class DataManager {
         return recommendationsService.getTopRecommendedSymbols(action, confidenceThreshold, recommendationDate);
     }
 
+    public List<Recommendation> getDailyRecommendations(BigDecimal confidenceThreshold, LocalDate date, String action, List<String> clients) {
+        return recommendationsService.getDailyRecommendations(confidenceThreshold, date, action, clients);
+    }
+
     @Transactional
     public List<Recommendation> getRecommendationsById(List<Long> symbolIds, List<AIClient> clients, PortfolioType type,
                                                        boolean overwrite, boolean onTheFlyNews, boolean fetchPreMarket, boolean useOldNews) {
