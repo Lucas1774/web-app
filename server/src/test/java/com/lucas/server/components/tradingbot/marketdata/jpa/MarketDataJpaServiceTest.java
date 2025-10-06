@@ -1,6 +1,6 @@
 package com.lucas.server.components.tradingbot.marketdata.jpa;
 
-import com.lucas.server.TestcontainersConfiguration;
+import com.lucas.server.TestConfiguration;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import jakarta.transaction.Transactional;
@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
 @SpringBootTest
-@Import(TestcontainersConfiguration.class)
+@Import(TestConfiguration.class)
 class MarketDataJpaServiceTest {
 
     @Autowired

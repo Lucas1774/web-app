@@ -25,3 +25,7 @@ V2_create_mock_user.sql
 .vscode/
 .idea/
 source.json
+server/docker/prod/mosquitto/
+server/docker/dev/mosquitto/config/passwords
+server/docker/dev/mosquitto/data/
+server/docker/dev/mosquitto/log/

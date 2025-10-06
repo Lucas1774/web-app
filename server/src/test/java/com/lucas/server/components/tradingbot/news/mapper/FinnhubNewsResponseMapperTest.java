@@ -2,7 +2,7 @@ package com.lucas.server.components.tradingbot.news.mapper;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lucas.server.TestcontainersConfiguration;
+import com.lucas.server.TestConfiguration;
 import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
@@ -26,7 +26,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
 @SpringBootTest
-@Import(TestcontainersConfiguration.class)
+@Import(TestConfiguration.class)
 class FinnhubNewsResponseMapperTest {
 
     @Autowired

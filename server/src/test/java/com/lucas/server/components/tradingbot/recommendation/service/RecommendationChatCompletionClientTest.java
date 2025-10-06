@@ -1,6 +1,6 @@
 package com.lucas.server.components.tradingbot.recommendation.service;
 
-import com.lucas.server.TestcontainersConfiguration;
+import com.lucas.server.TestConfiguration;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
@@ -34,7 +34,7 @@ import static com.lucas.server.common.Constants.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
-@Import(TestcontainersConfiguration.class)
+@Import(TestConfiguration.class)
 class RecommendationChatCompletionClientTest {
 
     @Autowired

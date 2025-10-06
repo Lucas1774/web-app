@@ -1,6 +1,6 @@
 package com.lucas.server.components.shopping.jpa.shopping;
 
-import com.lucas.server.TestcontainersConfiguration;
+import com.lucas.server.TestConfiguration;
 import com.lucas.server.common.jpa.user.UserJpaService;
 import com.lucas.server.components.shopping.jpa.category.Category;
 import com.lucas.server.components.shopping.jpa.category.CategoryJpaService;
@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
 @SpringBootTest
-@Import(TestcontainersConfiguration.class)
+@Import(TestConfiguration.class)
 class ShoppingItemJpaServiceTest {
 
     @Autowired

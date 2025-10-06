@@ -1,6 +1,6 @@
 package com.lucas.server.components.tradingbot.common;
 
-import com.lucas.server.TestcontainersConfiguration;
+import com.lucas.server.TestConfiguration;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.AfterEach;
@@ -18,7 +18,7 @@ import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest(properties = {"scheduler.market-data-cron=* * * * * *", "scheduler.news-recommendations-cron=* * * * * *"})
-@Import(TestcontainersConfiguration.class)
+@Import(TestConfiguration.class)
 class DailySchedulerTest {
 
     @MockitoSpyBean

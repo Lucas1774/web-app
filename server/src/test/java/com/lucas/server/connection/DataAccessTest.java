@@ -1,6 +1,6 @@
 package com.lucas.server.connection;
 
-import com.lucas.server.TestcontainersConfiguration;
+import com.lucas.server.TestConfiguration;
 import com.lucas.server.components.shopping.jpa.category.Category;
 import com.lucas.server.components.shopping.jpa.category.CategoryJpaService;
 import com.lucas.server.components.shopping.jpa.product.Product;
@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
 @SpringBootTest
-@Import(TestcontainersConfiguration.class)
+@Import(TestConfiguration.class)
 class DataAccessTest {
 
     @Autowired

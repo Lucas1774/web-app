@@ -1,5 +1,6 @@
 package com.lucas.server.components.tradingbot.common;
 
+import com.lucas.server.common.MqttPublisher;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;
@@ -25,11 +26,13 @@ public class DailyScheduler {
 
     private final DataManager dataManager;
     private final Map<String, AIClient> clients;
+    private final MqttPublisher publisher;
     private final Logger logger = LoggerFactory.getLogger(DailyScheduler.class);
 
-    public DailyScheduler(DataManager dataManager, Map<String, AIClient> clients) {
+    public DailyScheduler(DataManager dataManager, Map<String, AIClient> clients, MqttPublisher publisher) {
         this.dataManager = dataManager;
         this.clients = clients;
+        this.publisher = publisher;
     }
 
     @Scheduled(cron = "${scheduler.market-data-cron}", zone = "UTC")
@@ -83,6 +86,7 @@ public class DailyScheduler {
         List<Long> topRecommendedSymbols = new ArrayList<>(dataManager.getTopRecommendedSymbols(BUY, NEWS_FINE_GRAIN_THRESHOLD, now));
         getRecommendations(topRecommendedSymbols, RecommendationMode.NOT_RANDOM);
         getRecommendations(new ArrayList<>(dataManager.getTopRecommendedSymbols(BUY, GROK_FINE_GRAIN_THRESHOLD, now)), RecommendationMode.FINE_GRAIN);
+        publisher.publish("jobs", "job done");
 
         List<News> removedNews = dataManager.removeOldNews(DATABASE_NEWS_PER_SYMBOL);
         logger.info(SCHEDULED_TASK_SUCCESS_INFO, "removed news", removedNews);

@@ -3,7 +3,9 @@
 Override IBKR watchlist.
 
 Usage:
-  python create_watchlist.py --symbols-user USER --symbols-pass PASS
+  python create_watchlist.py --symbols-user USER --symbols-pass PASS \
+                             --mosquitto-user USER --mosquitto-pass PASS \
+                             [--mosquitto-topic TOPIC]
 
 Notes:
  - Must run on the same machine as the Client Portal Gateway.
@@ -11,16 +13,31 @@ Notes:
  - This version uses a simple conid cache file 'conids.json' in the script directory.
 """
 
+# noinspection PyUnresolvedReferences
 import argparse, requests, time, json, os, tempfile, urllib3, webbrowser, subprocess
+
+# noinspection PyUnresolvedReferences
+import paho.mqtt.client as mqtt
+
+# noinspection PyUnresolvedReferences
 from pathlib import Path
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+
+def on_message(message_client, _userdata, msg):
+    print(f"Received message on topic '{msg.topic}': {msg.payload.decode()}")
+    message_client.disconnect()
+
 
 CLIENT_PORTAL_PATH = Path.home() / "AppData" / "Local" / "ibkr" / "Client Portal"
 BASE = "https://localhost:5000/v1/api"
 SYMBOLS_URL = "https://ferafera.ddns.net/recommendations/daily/0.8"
 WATCHLIST = "dailyWatchlist"
 CONID_MAP_FILE = "conids.json"
+
+BROKER = "ferafera.ddns.net"
+PORT = 1883
 
 GATEWAY_AUTH_TIMEOUT = 90
 SECDEF_TIMEOUT = 10
@@ -35,10 +52,20 @@ webbrowser.open("https://localhost:5000")
 parser = argparse.ArgumentParser()
 parser.add_argument("--symbols-user", required=True, help="Basic auth user for symbols URL")
 parser.add_argument("--symbols-pass", required=True, help="Basic auth password for symbols URL")
+parser.add_argument("--mosquitto-user", required=True, help="Basic auth user for mosquitto broker")
+parser.add_argument("--mosquitto-pass", required=True, help="Basic auth password for mosquitto broker")
+parser.add_argument("--mosquitto-topic", required=False, default="jobs", help="Topic for mosquitto broker")
 args = parser.parse_args()
 
 s = requests.Session()
 s.verify = False
+
+# setup client
+client = mqtt.Client()
+client.username_pw_set(args.mosquitto_user, args.mosquitto_pass)
+client.on_message = on_message
+client.connect(BROKER, PORT)
+client.subscribe(args.mosquitto_topic, qos=1)
 
 # load conid cache (if present)
 symbol_to_conid = {}
@@ -77,8 +104,8 @@ while True:
         exit()
     time.sleep(2)
 
-# todo: block and wait for async signal
-# fetch symbols
+# wait for server go notification then fetch symbols
+client.loop_forever()
 try:
     auth = (args.symbols_user, args.symbols_pass)
     rr = requests.get(SYMBOLS_URL, timeout=SYMBOLS_FETCH_TIMEOUT, auth=auth)
@@ -88,6 +115,7 @@ try:
 except Exception as e:
     print(f"Failed to fetch symbols from {SYMBOLS_URL}: {e}")
     exit()
+# noinspection PyUnboundLocalVariable
 if not symbols:
     print("No symbols retrieved; exiting.")
     exit()
@@ -108,6 +136,7 @@ for sym in symbols:
         print(f"secdef/search {sym} -> HTTP {r.status_code}: {r.text[:200]}")
         continue
     hits = r.json()
+    # noinspection PyTypeChecker
     stocks = [h for h in hits if h.get("secType") == "STK" and int(h.get("conid", -1)) != -1]
     if not stocks:
         print(f"No matches returned for {sym}")
@@ -173,6 +202,7 @@ if found:
     except Exception as e:
         print(f"Failed to call DELETE {del_url}: {e}")
         exit()
+    # noinspection PyUnboundLocalVariable
     if dr.status_code not in (200, 204):
         print(f"Delete watchlist returned HTTP {dr.status_code}: {dr.text}")
         exit()
@@ -187,6 +217,7 @@ try:
 except Exception as e:
     print(f"Error creating watchlist: {e}")
     exit()
+# noinspection PyUnboundLocalVariable
 if cr.status_code in (200, 201):
     print(f"Watchlist '{WATCHLIST}' created/updated successfully.")
     try:

@@ -19,6 +19,13 @@ spring:
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
 
+mqtt:
+  broker: ${MQTT_BROKER}
+  username: ${MQTT_USER}
+  password: ${MQTT_PASSWORD}
+  topics:
+    jobs: jobs
+
 ai:
   deployments:
     - name: gpt-4.1

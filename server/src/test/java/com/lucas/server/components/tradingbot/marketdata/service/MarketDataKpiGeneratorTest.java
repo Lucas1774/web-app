@@ -1,6 +1,6 @@
 package com.lucas.server.components.tradingbot.marketdata.service;
 
-import com.lucas.server.TestcontainersConfiguration;
+import com.lucas.server.TestConfiguration;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
@@ -28,7 +28,7 @@ import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 
 @SpringBootTest
-@Import(TestcontainersConfiguration.class)
+@Import(TestConfiguration.class)
 class MarketDataKpiGeneratorTest {
 
     private static final LogCaptor logCaptor = LogCaptor.forClass(MarketDataKpiGenerator.class);

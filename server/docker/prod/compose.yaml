@@ -18,6 +18,7 @@ services:
       dockerfile: docker/prod/Dockerfile
     depends_on:
       - postgres
+      - mosquitto
     ports:
       - "443:443"
     environment:
@@ -34,6 +35,10 @@ services:
       DB_NAME: ${DB_NAME}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_USERNAME: ${DB_USERNAME}
+
+      MQTT_BROKER: ${MQTT_BROKER}
+      MQTT_USER: ${MQTT_USER}
+      MQTT_PASSWORD: ${MQTT_PASSWORD}
       
       GITHUB_KEY: ${GITHUB_KEY}
       AI_FOUNDRY_KEY: ${AI_FOUNDRY_KEY}
@@ -54,6 +59,27 @@ services:
       SENTIMENT_URL: ${SENTIMENT_URL}
 
     restart: on-failure
+
+  mosquitto:
+    image: eclipse-mosquitto
+    environment:
+      - MQTT_USER=${MQTT_USER}
+      - MQTT_PASSWORD=${MQTT_PASSWORD}
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mosquitto/config:/mosquitto/config:rw
+      - ./mosquitto/data:/mosquitto/data:rw
+    command: >
+      /bin/sh -c "
+        if [ ! -f /mosquitto/config/passwords ]; then
+          touch /mosquitto/config/passwords
+          mosquitto_passwd -b /mosquitto/config/passwords $MQTT_USER $MQTT_PASSWORD;
+          chmod 600 /mosquitto/config/passwords;
+        fi;
+        exec /usr/sbin/mosquitto -c /mosquitto/config/mosquitto.conf
+      "
 
 volumes:
   postgres:
