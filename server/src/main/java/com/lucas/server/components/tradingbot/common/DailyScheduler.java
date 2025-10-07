@@ -85,7 +85,8 @@ public class DailyScheduler {
         LocalDate now = LocalDate.now();
         List<Long> topRecommendedSymbols = new ArrayList<>(dataManager.getTopRecommendedSymbols(BUY, NEWS_FINE_GRAIN_THRESHOLD, now));
         getRecommendations(topRecommendedSymbols, RecommendationMode.NOT_RANDOM);
-        getRecommendations(new ArrayList<>(dataManager.getTopRecommendedSymbols(BUY, GROK_FINE_GRAIN_THRESHOLD, now)), RecommendationMode.FINE_GRAIN);
+        getRecommendations(new ArrayList<>(dataManager.getTopRecommendedSymbols(BUY, GROK_FINE_GRAIN_THRESHOLD, now)
+                .stream().limit(MAX_RECOMMENDATIONS_COUNT).toList()), RecommendationMode.FINE_GRAIN);
         publisher.publish("jobs", "job done");
 
         List<News> removedNews = dataManager.removeOldNews(DATABASE_NEWS_PER_SYMBOL);

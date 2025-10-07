@@ -32,9 +32,10 @@ def on_message(message_client, _userdata, msg):
 
 CLIENT_PORTAL_PATH = Path.home() / "AppData" / "Local" / "ibkr" / "Client Portal"
 BASE = "https://localhost:5000/v1/api"
-SYMBOLS_URL = "https://ferafera.ddns.net/recommendations/daily/0.8"
+SYMBOLS_URL = "https://ferafera.ddns.net/recommendations/daily/0.75"
 WATCHLIST = "dailyWatchlist"
-CONID_MAP_FILE = "conids.json"
+SCRIPT_DIR = Path(__file__).resolve().parent
+CONID_MAP_FILE = SCRIPT_DIR / "conids.json"
 
 BROKER = "ferafera.ddns.net"
 PORT = 1883
@@ -70,8 +71,8 @@ client.subscribe(args.mosquitto_topic, qos=1)
 # load conid cache (if present)
 symbol_to_conid = {}
 try:
-    if os.path.exists(CONID_MAP_FILE):
-        with open(CONID_MAP_FILE, "r", encoding="utf-8") as f:
+    if CONID_MAP_FILE.exists():
+        with CONID_MAP_FILE.open("r", encoding="utf-8") as f:
             raw = json.load(f)
         for k, v in raw.items():
             try:
@@ -111,7 +112,7 @@ try:
     rr = requests.get(SYMBOLS_URL, timeout=SYMBOLS_FETCH_TIMEOUT, auth=auth)
     rr.raise_for_status()
     data = rr.json()
-    symbols = [item["symbol"]["name"].strip().upper() for item in data if item.get("symbol") and item["symbol"].get("name")]
+    symbols = [item["symbol"]["name"].strip().replace('.', ' ').upper() for item in data if item.get("symbol") and item["symbol"].get("name")]
 except Exception as e:
     print(f"Failed to fetch symbols from {SYMBOLS_URL}: {e}")
     exit()
@@ -137,7 +138,11 @@ for sym in symbols:
         continue
     hits = r.json()
     # noinspection PyTypeChecker
-    stocks = [h for h in hits if h.get("secType") == "STK" and int(h.get("conid", -1)) != -1]
+    stocks = [
+        h
+        for h in hits
+        if h.get("secType") == "STK" and ("NYSE" in h.get("companyHeader") or "NASDAQ" in h.get("companyHeader")) and int(h.get("conid", -1)) != -1
+    ]
     if not stocks:
         print(f"No matches returned for {sym}")
         continue
@@ -156,10 +161,10 @@ for sym in symbols:
 # write updated conid cache back to disk
 if new_conids:
     try:
-        tmpfd, tmpname = tempfile.mkstemp(prefix="conids.", suffix=".tmp", dir=".")
+        tmpfd, tmpname = tempfile.mkstemp(prefix="conids.", suffix=".tmp", dir=str(SCRIPT_DIR))
         with os.fdopen(tmpfd, "w", encoding="utf-8") as tf:
             json.dump(symbol_to_conid, tf, indent=2, sort_keys=True)
-        os.replace(tmpname, CONID_MAP_FILE)
+        os.replace(tmpname, str(CONID_MAP_FILE))
         print(f"Wrote {len(new_conids)} new conids to {CONID_MAP_FILE}")
     except Exception as e:
         print(f"Failed to write conid cache to {CONID_MAP_FILE}: {e}")

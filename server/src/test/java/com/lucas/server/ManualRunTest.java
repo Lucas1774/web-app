@@ -142,13 +142,13 @@ class ManualRunTest {
         Map<Recommendation, MarketData> filtered = baselineMap.entrySet()
                 .stream()
                 .filter(e -> {
-                    if (!BUY.equals(e.getKey().getAction()) || e.getKey().getConfidence().compareTo(BigDecimal.valueOf(0.8)) < 0) {
+                    if (!BUY.equals(e.getKey().getAction()) || e.getKey().getConfidence().compareTo(BigDecimal.valueOf(0.75)) < 0) {
                         return false;
                     }
                     BigDecimal gapPct = e.getValue().getOpen()
                             .subtract(e.getValue().getPreviousClose())
                             .divide(e.getValue().getPreviousClose(), 10, RoundingMode.HALF_UP);
-                    return gapPct.compareTo(BigDecimal.ZERO) > 0;
+                    return gapPct.compareTo(BigDecimal.ZERO) > 0 && gapPct.compareTo(BigDecimal.valueOf(0.02)) < 0;
                 })
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
