@@ -27,8 +27,8 @@ public class Constants {
     public static final int DATABASE_RECOMMENDATIONS_PER_SYMBOL = 30;
     public static final int SCHEDULED_RECOMMENDATIONS_COUNT = 503;
     public static final int MAX_RECOMMENDATIONS_COUNT = 36;
-    public static final int REQUEST_MAX_ATTEMPTS = 5;
-    public static final int RECOMMENDATION_MAX_RETRIES = 5;
+    public static final int REQUEST_MAX_ATTEMPTS = 3;
+    public static final int RECOMMENDATION_MAX_ATTEMPTS = 5;
     public static final BigDecimal NEWS_FINE_GRAIN_THRESHOLD = BigDecimal.valueOf(0.75);
     public static final BigDecimal GROK_FINE_GRAIN_THRESHOLD = BigDecimal.valueOf(0.75);
     public static final String DEFAULT_USERNAME = "default";

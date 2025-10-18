@@ -1,30 +1,37 @@
 package com.lucas.server.components.tradingbot.news.service;
 
+import com.lucas.server.common.HttpRequestClient;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.news.jpa.News;
+import com.lucas.server.components.tradingbot.news.mapper.FinbertResponseMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
+import static com.lucas.server.common.Constants.*;
 
 @Component
 public class NewsSentimentClient {
 
-    private final RetryableNewsSentimentClientComponent retryableClient;
+    private static final Logger logger = LoggerFactory.getLogger(NewsSentimentClient.class);
+    private final FinbertResponseMapper mapper;
+    private final HttpRequestClient httpRequestClient;
+    private final String url;
 
-    public NewsSentimentClient(RetryableNewsSentimentClientComponent retryableClient) {
-        this.retryableClient = retryableClient;
+    public NewsSentimentClient(FinbertResponseMapper mapper, HttpRequestClient httpRequestClient,
+                               @Value("${sentiment.url}") String url) {
+        this.mapper = mapper;
+        this.httpRequestClient = httpRequestClient;
+        this.url = url;
     }
 
-    public List<News> generateSentiment(List<News> newsList) throws ClientException, JsonProcessingException {
-        List<News> res = new ArrayList<>(newsList.size());
-        for (News news : newsList) {
-            if (news.getSentiment() != null && news.getSentimentConfidence() != null) {
-                continue;
-            }
-            res.add(retryableClient.generateSentiment(news));
-        }
-        return res;
+    @SuppressWarnings("DefaultAnnotationParam")
+    @Retryable(retryFor = {ClientException.class, JsonProcessingException.class}, maxAttempts = REQUEST_MAX_ATTEMPTS)
+    public News generateSentiment(News news) throws ClientException, JsonProcessingException {
+        logger.info(RETRIEVING_DATA_INFO, SENTIMENT, news);
+        return mapper.map(httpRequestClient.fetch(url + ANALYZE, news.getHeadline() + " [SEP] " + news.getSummary()), news);
     }
 }

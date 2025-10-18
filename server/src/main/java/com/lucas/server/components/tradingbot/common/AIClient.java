@@ -46,7 +46,7 @@ public class AIClient {
 
         );
 
-        return httpClient.fetch(config.url(), config.apiKey(), body).get("choices").get(0).get("message").get(CONTENT).asText()
+        return httpClient.fetch(config.url(), config.apiKey(), body, true).get("choices").get(0).get("message").get(CONTENT).asText()
                 .replace("```", EMPTY_STRING)
                 .replace("json", EMPTY_STRING);
     }

@@ -13,6 +13,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -57,8 +58,15 @@ public class NewsJpaService implements JpaService<News> {
 
     public List<News> generateSentiment(List<Long> list, LocalDateTime from, LocalDateTime to)
             throws ClientException, JsonProcessingException {
-        List<News> news = repository.findAllBySymbols_IdInAndDateBetween(list, from, to);
-        return sentimentClient.generateSentiment(news);
+        List<News> newsList = repository.findAllBySymbols_IdInAndDateBetween(list, from, to);
+        List<News> res = new ArrayList<>(newsList.size());
+        for (News news : newsList) {
+            if (news.getSentiment() != null && news.getSentimentConfidence() != null) {
+                continue;
+            }
+            res.add(sentimentClient.generateSentiment(news));
+        }
+        return res;
     }
 
     public void removeOrphanedNews() {

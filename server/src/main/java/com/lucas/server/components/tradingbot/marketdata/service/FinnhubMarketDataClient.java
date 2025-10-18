@@ -10,11 +10,9 @@ import com.lucas.server.components.tradingbot.marketdata.mapper.FinnhubMarketRes
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static com.lucas.server.common.Constants.*;
 
@@ -35,7 +33,9 @@ public class FinnhubMarketDataClient {
         this.endpoint = endpoint;
     }
 
-    public MarketData retrieveMarketData(Symbol symbol) throws JsonProcessingException, ClientException {
+    @SuppressWarnings("DefaultAnnotationParam")
+    @Retryable(retryFor = {ClientException.class, JsonProcessingException.class}, maxAttempts = REQUEST_MAX_ATTEMPTS)
+    public MarketData retrieveMarketData(Symbol symbol) throws ClientException, JsonProcessingException {
         String apiKey = finnhubRateLimiter.acquirePermission();
         logger.info(RETRIEVING_DATA_INFO, MARKET_DATA, symbol);
         String url = UriComponentsBuilder.fromUriString(endpoint + QUOTE)
@@ -45,13 +45,5 @@ public class FinnhubMarketDataClient {
                 .toUriString();
 
         return mapper.map(httpRequestClient.fetch(url, false), symbol);
-    }
-
-    public List<MarketData> retrieveMarketData(List<Symbol> symbols) throws JsonProcessingException, ClientException {
-        List<MarketData> res = new ArrayList<>();
-        for (Symbol symbol : symbols) {
-            res.add(retrieveMarketData(symbol));
-        }
-        return res;
     }
 }

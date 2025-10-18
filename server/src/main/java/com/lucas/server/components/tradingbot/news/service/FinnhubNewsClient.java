@@ -10,14 +10,12 @@ import com.lucas.server.components.tradingbot.news.mapper.FinnhubNewsResponseMap
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static com.lucas.server.common.Constants.*;
 
@@ -38,7 +36,9 @@ public class FinnhubNewsClient {
         this.endpoint = endpoint;
     }
 
-    private List<News> retrieveNewsByDateRange(Symbol symbol, LocalDate from, LocalDate to) throws JsonProcessingException, ClientException {
+    @SuppressWarnings("DefaultAnnotationParam")
+    @Retryable(retryFor = {ClientException.class, JsonProcessingException.class}, maxAttempts = REQUEST_MAX_ATTEMPTS)
+    public List<News> retrieveNewsByDateRange(Symbol symbol, LocalDate from, LocalDate to) throws ClientException, JsonProcessingException {
         String apiKey = finnhubRateLimiter.acquirePermission();
         logger.info(RETRIEVING_DATA_INFO, NEWS, symbol);
         String url = UriComponentsBuilder.fromUriString(endpoint + COMPANY_NEWS)
@@ -49,19 +49,5 @@ public class FinnhubNewsClient {
                 .toUriString();
 
         return mapper.mapAll(httpRequestClient.fetch(url, false), symbol);
-    }
-
-    public List<News> retrieveNewsByDateRange(List<Symbol> symbols, LocalDate from, LocalDate to) throws ClientException, JsonProcessingException {
-        Map<Long, News> newsByExternalId = new HashMap<>();
-        for (Symbol symbol : symbols) {
-            List<News> updated = retrieveNewsByDateRange(symbol, from, to);
-            for (News news : updated) {
-                newsByExternalId
-                        .computeIfAbsent(news.getExternalId(), id -> news)
-                        .addSymbol(symbol);
-            }
-        }
-
-        return new ArrayList<>(newsByExternalId.values());
     }
 }

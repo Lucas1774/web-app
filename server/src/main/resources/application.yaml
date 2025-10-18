@@ -33,7 +33,7 @@ ai:
       url: ${GITHUB_URL}
       model: openai/gpt-4.1
       temperature: 0
-      max-tokens: 8000
+      max-tokens: 4000
       requests-per-minute: 4
       chunk-size: 5
       fix-me: false
@@ -42,7 +42,7 @@ ai:
       url: ${GITHUB_URL}
       model: openai/gpt-4.1
       temperature: 0
-      max-tokens: 8000
+      max-tokens: 4000
       requests-per-minute: 4
       chunk-size: 5
       fix-me: false
@@ -51,7 +51,7 @@ ai:
       url: ${GITHUB_URL}
       model: openai/gpt-4.1
       temperature: 0
-      max-tokens: 8000
+      max-tokens: 4000
       requests-per-minute: 4
       chunk-size: 5
       fix-me: false
@@ -60,7 +60,7 @@ ai:
       url: ${GITHUB_URL}
       model: openai/gpt-4.1
       temperature: 0
-      max-tokens: 8000
+      max-tokens: 4000
       requests-per-minute: 4
       chunk-size: 5
       fix-me: false
@@ -69,7 +69,7 @@ ai:
       url: ${GITHUB_URL}
       model: openai/gpt-4.1
       temperature: 0
-      max-tokens: 8000
+      max-tokens: 4000
       requests-per-minute: 4
       chunk-size: 5
       fix-me: false
@@ -78,7 +78,7 @@ ai:
       url: ${GITHUB_URL}
       model: openai/gpt-4.1
       temperature: 0
-      max-tokens: 8000
+      max-tokens: 4000
       requests-per-minute: 4
       chunk-size: 5
       fix-me: false
@@ -87,7 +87,7 @@ ai:
       url: ${GITHUB_URL}
       model: openai/gpt-4o
       temperature: 0
-      max-tokens: 8000
+      max-tokens: 4000
       requests-per-minute: 4
       chunk-size: 5
       fix-me: false
@@ -96,7 +96,7 @@ ai:
       url: ${GITHUB_URL}
       model: openai/gpt-4.1-mini
       temperature: 0
-      max-tokens: 8000
+      max-tokens: 4000
       requests-per-minute: 4
       chunk-size: 5
       fix-me: false
@@ -105,7 +105,7 @@ ai:
       url: ${GITHUB_URL}
       model: openai/gpt-4o-mini
       temperature: 0
-      max-tokens: 8000
+      max-tokens: 4000
       requests-per-minute: 4
       chunk-size: 5
       fix-me: false
@@ -114,7 +114,7 @@ ai:
       url: ${GITHUB_URL}
       model: openai/gpt-4.1-nano
       temperature: 0
-      max-tokens: 8000
+      max-tokens: 4000
       requests-per-minute: 4
       chunk-size: 5
       fix-me: false
@@ -186,7 +186,7 @@ ai:
       url: ${GITHUB_URL}
       model: meta/llama-3.3-70b-instruct
       temperature: 0
-      max-tokens: 8000
+      max-tokens: 4000
       requests-per-minute: 4
       chunk-size: 5
       fix-me: false
@@ -195,7 +195,7 @@ ai:
       url: ${GITHUB_URL}
       model: meta/meta-llama-3.1-405b-instruct
       temperature: 0
-      max-tokens: 8000
+      max-tokens: 4000
       requests-per-minute: 4
       chunk-size: 5
       fix-me: false
@@ -204,7 +204,7 @@ ai:
       url: ${GITHUB_URL}
       model: meta/meta-llama-3.1-70b-instruct
       temperature: 0
-      max-tokens: 8000
+      max-tokens: 4000
       requests-per-minute: 4
       chunk-size: 5
       fix-me: false
@@ -213,7 +213,7 @@ ai:
       url: ${GITHUB_URL}
       model: meta/meta-llama-3.1-8b-instruct
       temperature: 0
-      max-tokens: 8000
+      max-tokens: 4000
       requests-per-minute: 4
       chunk-size: 5
       fix-me: false
@@ -222,7 +222,7 @@ ai:
       url: ${GITHUB_URL}
       model: mistral-ai/mistral-large-2411
       temperature: 0
-      max-tokens: 8000
+      max-tokens: 4000
       requests-per-minute: 4
       chunk-size: 5
       fix-me: false
@@ -231,7 +231,7 @@ ai:
       url: ${GITHUB_URL}
       model: ai21-labs/ai21-jamba-1.5-large
       temperature: 0
-      max-tokens: 4096
+      max-tokens: 4000
       requests-per-minute: 4
       chunk-size: 2
       fix-me: false
@@ -240,7 +240,7 @@ ai:
       url: ${GITHUB_URL}
       model: cohere/cohere-command-r-plus-08-2024
       temperature: 0
-      max-tokens: 8000
+      max-tokens: 4000
       requests-per-minute: 4
       chunk-size: 5
       fix-me: false
@@ -249,7 +249,7 @@ ai:
       url: ${GITHUB_URL}
       model: mistral-ai/mistral-nemo
       temperature: 0
-      max-tokens: 8000
+      max-tokens: 4000
       requests-per-minute: 4
       chunk-size: 5
       fix-me: false
@@ -258,7 +258,7 @@ ai:
       url: ${GITHUB_URL}
       model: mistral-ai/ministral-3b
       temperature: 0
-      max-tokens: 8000
+      max-tokens: 4000
       requests-per-minute: 4
       chunk-size: 5
       fix-me: false
@@ -267,7 +267,7 @@ ai:
       url: ${GITHUB_URL}
       model: microsoft/phi-4
       temperature: 0
-      max-tokens: 8000
+      max-tokens: 4000
       requests-per-minute: 4
       chunk-size: 5
       fix-me: false
@@ -276,7 +276,7 @@ ai:
       url: ${GITHUB_URL}
       model: cohere/cohere-command-a
       temperature: 0
-      max-tokens: 8000
+      max-tokens: 4000
       requests-per-minute: 4
       chunk-size: 5
       fix-me: false
@@ -285,7 +285,7 @@ ai:
       url: ${GITHUB_URL}
       model: deepseek/deepseek-r1
       temperature: 0
-      max-tokens: 8000
+      max-tokens: 4000
       requests-per-minute: 1
       chunk-size: 5
       fix-me: false
@@ -294,7 +294,7 @@ ai:
       url: ${GITHUB_URL}
       model: deepseek/deepseek-r1-0528
       temperature: 0
-      max-tokens: 8000
+      max-tokens: 4000
       requests-per-minute: 1
       chunk-size: 5
       fix-me: false
@@ -303,7 +303,7 @@ ai:
       url: ${GITHUB_URL}
       model: cohere/cohere-command-r-plus
       temperature: 0
-      max-tokens: 8000
+      max-tokens: 4000
       requests-per-minute: 4
       chunk-size: 5
       fix-me: false
@@ -312,7 +312,7 @@ ai:
       url: ${GITHUB_URL}
       model: openai/o4-mini
       temperature: 0
-      max-tokens: 8000
+      max-tokens: 4000
       requests-per-minute: 4
       chunk-size: 5
       fix-me: false
@@ -321,7 +321,7 @@ ai:
       url: ${GITHUB_URL}
       model: openai/o3
       temperature: 0
-      max-tokens: 8000
+      max-tokens: 4000
       requests-per-minute: 4
       chunk-size: 5
       fix-me: false
@@ -330,7 +330,7 @@ ai:
       url: ${GITHUB_URL}
       model: openai/o3-mini
       temperature: 0
-      max-tokens: 8000
+      max-tokens: 4000
       requests-per-minute: 4
       chunk-size: 5
       fix-me: false
@@ -339,7 +339,7 @@ ai:
       url: ${GITHUB_URL}
       model: openai/o1
       temperature: 0
-      max-tokens: 8000
+      max-tokens: 4000
       requests-per-minute: 4
       chunk-size: 5
       fix-me: false
@@ -348,7 +348,7 @@ ai:
       url: ${GITHUB_URL}
       model: openai/o1-preview
       temperature: 0
-      max-tokens: 8000
+      max-tokens: 4000
       requests-per-minute: 4
       chunk-size: 5
       fix-me: false
@@ -357,7 +357,7 @@ ai:
       url: ${GITHUB_URL}
       model: openai/o1-mini
       temperature: 0
-      max-tokens: 8000
+      max-tokens: 4000
       requests-per-minute: 4
       chunk-size: 5
       fix-me: false

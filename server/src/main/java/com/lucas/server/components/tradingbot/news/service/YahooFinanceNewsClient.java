@@ -10,11 +10,10 @@ import com.lucas.server.components.tradingbot.news.mapper.YahooFinanceNewsRespon
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -37,7 +36,9 @@ public class YahooFinanceNewsClient {
         this.endpoint = endpoint;
     }
 
-    private List<News> retrieveNews(Symbol symbol) throws JsonProcessingException, ClientException {
+    @SuppressWarnings("DefaultAnnotationParam")
+    @Retryable(retryFor = {ClientException.class, JsonProcessingException.class}, maxAttempts = REQUEST_MAX_ATTEMPTS)
+    public List<News> retrieveNews(Symbol symbol) throws ClientException, JsonProcessingException {
         rateLimiter.acquirePermission();
         logger.info(RETRIEVING_DATA_INFO, NEWS, symbol);
         String url = UriComponentsBuilder.fromUriString(endpoint)
@@ -47,19 +48,5 @@ public class YahooFinanceNewsClient {
                 .toUriString();
 
         return mapper.mapAll(httpRequestClient.fetchXml(url), symbol);
-    }
-
-    public List<News> retrieveNews(List<Symbol> symbols) throws ClientException, JsonProcessingException {
-        Map<Long, News> newsByExternalId = new HashMap<>();
-        for (Symbol symbol : symbols) {
-            List<News> updated = retrieveNews(symbol);
-            for (News news : updated) {
-                newsByExternalId
-                        .computeIfAbsent(news.getExternalId(), id -> news)
-                        .addSymbol(symbol);
-            }
-        }
-
-        return new ArrayList<>(newsByExternalId.values());
     }
 }

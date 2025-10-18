@@ -11,10 +11,14 @@ import com.lucas.server.components.tradingbot.marketdata.mapper.TwelveDataMarket
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.UnaryOperator;
 
 import static com.lucas.server.common.Constants.*;
@@ -53,7 +57,9 @@ public class TwelveDataMarketDataClient {
         ));
     }
 
-    private List<MarketData> retrieveMarketData(Symbol symbol, MarketDataType type) throws ClientException, JsonProcessingException {
+    @SuppressWarnings("DefaultAnnotationParam")
+    @Retryable(retryFor = {ClientException.class, JsonProcessingException.class}, maxAttempts = REQUEST_MAX_ATTEMPTS)
+    public List<MarketData> retrieveMarketData(Symbol symbol, MarketDataType type) throws ClientException, JsonProcessingException {
         rateLimiter.acquirePermission();
         logger.info(RETRIEVING_DATA_INFO, MARKET_DATA, symbol);
         String url = typeToBuilderCustomizer.get(type).apply(UriComponentsBuilder.fromUriString(endpoint + typeToEndpoint.get(type)))
@@ -63,14 +69,6 @@ public class TwelveDataMarketDataClient {
                 .toUriString();
 
         return typeToMapper.get(type).apply(symbol, httpRequestClient.fetch(url, false));
-    }
-
-    public List<MarketData> retrieveMarketData(List<Symbol> symbols, MarketDataType type) throws ClientException, JsonProcessingException {
-        List<MarketData> res = new ArrayList<>();
-        for (Symbol symbol : symbols) {
-            res.addAll(retrieveMarketData(symbol, type));
-        }
-        return res;
     }
 
     @FunctionalInterface

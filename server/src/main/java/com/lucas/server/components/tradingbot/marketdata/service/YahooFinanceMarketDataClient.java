@@ -10,6 +10,7 @@ import com.lucas.server.components.tradingbot.marketdata.mapper.YahooFinanceMark
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -34,7 +35,9 @@ public class YahooFinanceMarketDataClient {
         this.endpoint = endpoint;
     }
 
-    public MarketData retrieveMarketData(Symbol symbol) throws JsonProcessingException, ClientException {
+    @SuppressWarnings("DefaultAnnotationParam")
+    @Retryable(retryFor = {ClientException.class, JsonProcessingException.class}, maxAttempts = REQUEST_MAX_ATTEMPTS)
+    public MarketData retrieveMarketData(Symbol symbol) throws ClientException, JsonProcessingException {
         rateLimiter.acquirePermission();
         logger.info(RETRIEVING_DATA_INFO, PREMARKET, symbol);
         String url = UriComponentsBuilder.fromUriString(endpoint + "/" + symbol.getName())

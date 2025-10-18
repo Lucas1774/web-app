@@ -56,6 +56,8 @@ public class DataManager {
     private final YahooFinanceNewsClient yahooFinanceNewsClient;
     private final YahooFinanceMarketDataClient yahooFinanceMarketDataClient;
     private final FinnhubNewsClient finnhubNewsClient;
+    private final FinnhubMarketDataClient finnhubMarketDataClient;
+    private final TwelveDataMarketDataClient twelveDataMarketDataClient;
     private final PortfolioManager portfolioManager;
     private final RecommendationChatCompletionClient recommendationClient;
     private final Map<MarketDataType, TypeToMarketDataFunction> typeToRunner;
@@ -63,23 +65,30 @@ public class DataManager {
 
     public DataManager(SymbolJpaService symbolService, MarketDataJpaService marketDataService, NewsJpaService newsService,
                        RecommendationsJpaService recommendationsService, YahooFinanceNewsClient yahooFinanceNewsClient,
-                       YahooFinanceMarketDataClient yahooFinanceMarketDataClient,
+                       YahooFinanceMarketDataClient yahooFinanceMarketDataClient, FinnhubMarketDataClient finnhubMarketDataClient, TwelveDataMarketDataClient twelveDataMarketDataClient,
                        RecommendationChatCompletionClient recommendationClient, PortfolioJpaService portfolioService,
-                       PortfolioMockJpaService portfolioMockService, FinnhubNewsClient newsClient, PortfolioManager portfolioManager,
-                       TwelveDataMarketDataClient twelveDataMarketDataClient, FinnhubMarketDataClient finnhubMarketDataClient) {
+                       PortfolioMockJpaService portfolioMockService, FinnhubNewsClient newsClient, PortfolioManager portfolioManager) {
         this.symbolService = symbolService;
         this.marketDataService = marketDataService;
         this.newsService = newsService;
         this.recommendationsService = recommendationsService;
         this.yahooFinanceNewsClient = yahooFinanceNewsClient;
         this.yahooFinanceMarketDataClient = yahooFinanceMarketDataClient;
+        this.finnhubMarketDataClient = finnhubMarketDataClient;
+        this.twelveDataMarketDataClient = twelveDataMarketDataClient;
         this.recommendationClient = recommendationClient;
         this.finnhubNewsClient = newsClient;
         this.portfolioManager = portfolioManager;
         typeToRunner = new EnumMap<>(Map.of(
-                MarketDataType.LAST, symbols -> retrieveMarketDataWithBackupStrategy(symbols, twelveDataMarketDataClient, finnhubMarketDataClient),
-                MarketDataType.HISTORIC, symbols -> twelveDataMarketDataClient.retrieveMarketData(symbols, MarketDataType.HISTORIC),
-                MarketDataType.REAL_TIME, finnhubMarketDataClient::retrieveMarketData
+                MarketDataType.LAST, this::retrieveMarketDataWithBackupStrategy,
+                MarketDataType.HISTORIC, this::retrieveTwelveDataMarketData,
+                MarketDataType.REAL_TIME, symbols -> {
+                    List<MarketData> res = new ArrayList<>();
+                    for (Symbol symbol : symbols) {
+                        res.add(finnhubMarketDataClient.retrieveMarketData(symbol));
+                    }
+                    return res;
+                }
         ));
         portfolioTypeToService = new EnumMap<>(Map.of(
                 PortfolioType.REAL, portfolioService,
@@ -172,11 +181,13 @@ public class DataManager {
                 .flatMap(Optional::stream)
                 .toList();
 
-        RecommendationChatCompletionClient.NewsFetcher newsFetcher = SymbolPayload::getNews;
-        if (onTheFlyNews) {
+        RecommendationChatCompletionClient.NewsFetcher newsFetcher;
+        if (!onTheFlyNews) {
+            newsFetcher = SymbolPayload::getNews;
+        } else {
             if (!useOldNews) {
                 newsFetcher = p -> {
-                    List<News> news = yahooFinanceNewsClient.retrieveNews(List.of(p.getSymbol())).stream()
+                    List<News> news = retrieveYahooNews(List.of(p.getSymbol())).stream()
                             .filter(n -> n.getDate().isAfter(startUtc))
                             .sorted(Comparator.comparing(News::getDate).reversed())
                             .limit(NEWS_COUNT)
@@ -187,7 +198,7 @@ public class DataManager {
                 };
             } else {
                 newsFetcher = p -> {
-                    List<News> news = yahooFinanceNewsClient.retrieveNews(List.of(p.getSymbol())).stream()
+                    List<News> news = retrieveYahooNews(List.of(p.getSymbol())).stream()
                             .sorted(Comparator.comparing(News::getDate).reversed())
                             .limit(NEWS_COUNT)
                             .toList();
@@ -204,9 +215,9 @@ public class DataManager {
                 : SymbolPayload::getPremarket;
 
         logger.info(RETRIEVING_DATA_INFO, RECOMMENDATION, remainingPayload.size());
-        try (ExecutorService executor = Executors.newFixedThreadPool(clients.size() * 5)) {
-            int retries = 0;
-            while (!remainingPayload.isEmpty() && retries < RECOMMENDATION_MAX_RETRIES) {
+        try (ExecutorService executor = Executors.newFixedThreadPool(clients.size())) {
+            int attempts = 0;
+            while (!remainingPayload.isEmpty() && attempts < RECOMMENDATION_MAX_ATTEMPTS) {
                 List<Recommendation> fetched = doGetRecommendationsInParallel(remainingPayload, mutableClients, executor,
                         overwrite, newsFetcher, backupNewsFetcher, marketDataFetcher);
                 res.addAll(fetched);
@@ -216,7 +227,7 @@ public class DataManager {
                 remainingPayload = remainingPayload.stream()
                         .filter(p -> !fetchedSymbols.contains(p.getSymbol()))
                         .toList();
-                retries++;
+                attempts++;
             }
         }
 
@@ -312,10 +323,24 @@ public class DataManager {
     }
 
     private List<News> retrieveNews(List<Symbol> symbols) throws ClientException, JsonProcessingException {
-        List<News> news = yahooFinanceNewsClient.retrieveNews(symbols);
+        List<News> news = retrieveYahooNews(symbols);
         logger.info(GENERATION_SUCCESSFUL_INFO, NEWS);
         newsService.createOrUpdate(news);
         return news;
+    }
+
+    private List<News> retrieveYahooNews(List<Symbol> symbols) throws ClientException, JsonProcessingException {
+        Map<Long, News> newsByExternalId = new HashMap<>();
+        for (Symbol symbol : symbols) {
+            List<News> updated = yahooFinanceNewsClient.retrieveNews(symbol);
+            for (News news : updated) {
+                newsByExternalId
+                        .computeIfAbsent(news.getExternalId(), id -> news)
+                        .addSymbol(symbol);
+            }
+        }
+
+        return new ArrayList<>(newsByExternalId.values());
     }
 
     @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})
@@ -333,11 +358,20 @@ public class DataManager {
     }
 
     private List<News> retrieveNewsByDateRange(List<Symbol> symbols, LocalDate from,
-                                               LocalDate now) throws ClientException, JsonProcessingException {
-        List<News> news = finnhubNewsClient.retrieveNewsByDateRange(symbols, from, now);
+                                               LocalDate to) throws ClientException, JsonProcessingException {
+        Map<Long, News> newsByExternalId = new HashMap<>();
+        for (Symbol symbol : symbols) {
+            List<News> updated = finnhubNewsClient.retrieveNewsByDateRange(symbol, from, to);
+            for (News news : updated) {
+                newsByExternalId
+                        .computeIfAbsent(news.getExternalId(), id -> news)
+                        .addSymbol(symbol);
+            }
+        }
+        ArrayList<News> res = new ArrayList<>(newsByExternalId.values());
         logger.info(GENERATION_SUCCESSFUL_INFO, NEWS);
-        newsService.createOrUpdate(news);
-        return news;
+        newsService.createOrUpdate(res);
+        return res;
     }
 
     @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})
@@ -479,17 +513,23 @@ public class DataManager {
         return res;
     }
 
-    private List<MarketData> retrieveMarketDataWithBackupStrategy(
-            List<Symbol> symbols, TwelveDataMarketDataClient twelveDataMarketDataClient, FinnhubMarketDataClient finnhubMarketDataClient
-    ) throws ClientException, JsonProcessingException {
+    private List<MarketData> retrieveMarketDataWithBackupStrategy(List<Symbol> symbols) throws ClientException, JsonProcessingException {
         List<MarketData> res = new ArrayList<>();
         for (Symbol symbol : symbols) {
             try {
-                res.add(twelveDataMarketDataClient.retrieveMarketData(List.of(symbol), MarketDataType.LAST).getFirst());
+                res.add(twelveDataMarketDataClient.retrieveMarketData(symbol, MarketDataType.LAST).getFirst());
             } catch (ClientException | JsonProcessingException e) {
                 logger.warn(CLIENT_FAILED_BACKUP_WARN, twelveDataMarketDataClient.getClass().getSimpleName(), symbol, e);
                 res.add(finnhubMarketDataClient.retrieveMarketData(symbol));
             }
+        }
+        return res;
+    }
+
+    private List<MarketData> retrieveTwelveDataMarketData(List<Symbol> symbols) throws ClientException, JsonProcessingException {
+        List<MarketData> res = new ArrayList<>();
+        for (Symbol symbol : symbols) {
+            res.addAll(twelveDataMarketDataClient.retrieveMarketData(symbol, MarketDataType.HISTORIC));
         }
         return res;
     }

@@ -6,7 +6,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.w3c.dom.Document;
@@ -16,8 +15,6 @@ import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
-
-import static com.lucas.server.common.Constants.REQUEST_MAX_ATTEMPTS;
 
 @Component
 public class HttpRequestClient {
@@ -38,11 +35,12 @@ public class HttpRequestClient {
         );
     }
 
-    @Retryable(retryFor = ClientException.class, maxAttempts = REQUEST_MAX_ATTEMPTS)
     public JsonNode fetch(String url, boolean mockUserAgent) throws ClientException {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
-        if (mockUserAgent) mockUserAgent(headers);
+        if (mockUserAgent) {
+            mockUserAgent(headers);
+        }
         HttpEntity<Void> request = new HttpEntity<>(headers);
         try {
             return restTemplate.exchange(url, HttpMethod.GET, request, JsonNode.class).getBody();
@@ -51,7 +49,6 @@ public class HttpRequestClient {
         }
     }
 
-    @Retryable(retryFor = ClientException.class, maxAttempts = REQUEST_MAX_ATTEMPTS)
     public JsonNode fetch(String url, String body) throws ClientException {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
@@ -64,12 +61,14 @@ public class HttpRequestClient {
         }
     }
 
-    @Retryable(retryFor = ClientException.class, maxAttempts = REQUEST_MAX_ATTEMPTS)
-    public JsonNode fetch(String url, String apiKey, JsonNode body) throws ClientException {
+    public JsonNode fetch(String url, String apiKey, JsonNode body, boolean mockUserAgent) throws ClientException {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(apiKey);
+        if (mockUserAgent) {
+            mockUserAgent(headers);
+        }
         HttpEntity<JsonNode> request = new HttpEntity<>(body, headers);
         try {
             return restTemplate.exchange(url, HttpMethod.POST, request, JsonNode.class).getBody();
@@ -78,7 +77,6 @@ public class HttpRequestClient {
         }
     }
 
-    @Retryable(retryFor = ClientException.class, maxAttempts = REQUEST_MAX_ATTEMPTS)
     public Document fetchXml(String url) throws ClientException {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(List.of(MediaType.APPLICATION_XML, MediaType.TEXT_XML));

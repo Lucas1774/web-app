@@ -18,6 +18,7 @@ import com.lucas.server.components.tradingbot.recommendation.mapper.Recommendati
 import com.lucas.server.components.tradingbot.recommendation.prompt.PromptRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.retry.annotation.Recover;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -63,7 +64,7 @@ public class RecommendationChatCompletionClient {
 
     public List<Recommendation> getRecommendations(List<DataManager.SymbolPayload> payload, AIClient client, NewsFetcher newsFetcher,
                                                    LongFunction<List<News>> backupNewsFetcher,
-                                                   MarketDataFetcher marketDataFetcher) throws IOException {
+                                                   MarketDataFetcher marketDataFetcher) throws IOException, ClientException {
         synchronized (yahooApiLock) {
             payload.forEach(p -> {
                 try {
@@ -107,9 +108,16 @@ public class RecommendationChatCompletionClient {
                     objectMapper.readTree(client.complete(prompt)),
                     prompt.stream().map(p -> sanitizeHtml(p.get(CONTENT).asText())).collect(Collectors.joining("\n\n\n")), client.getConfig().name());
         } catch (Exception e) {
-            logger.warn(CLIENT_FAILED_BACKUP_WARN, client.getConfig().name(), PROMPT, e);
-            return new ArrayList<>();
+            throw new ClientException(e);
         }
+    }
+
+    @SuppressWarnings("unused")
+    @Recover
+    public List<Recommendation> recover(ClientException e, List<DataManager.SymbolPayload> payload, AIClient client, NewsFetcher newsFetcher,
+                                        LongFunction<List<News>> backupNewsFetcher, MarketDataFetcher marketDataFetcher) {
+        logger.warn(CLIENT_FAILED_BACKUP_WARN, client.getConfig().name(), PROMPT, e);
+        return new ArrayList<>();
     }
 
     @FunctionalInterface
