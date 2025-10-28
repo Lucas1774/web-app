@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Set;
 
 import static com.lucas.server.common.Constants.MAPPING_ERROR;
+import static com.lucas.server.common.Constants.NEWS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
@@ -141,6 +142,6 @@ class FinnhubNewsResponseMapperTest {
         // when & then
         assertThatThrownBy(() -> mapper.mapAll(arrayNode, symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow()))
                 .isInstanceOf(JsonProcessingException.class)
-                .hasMessageContaining(MessageFormat.format(MAPPING_ERROR, "news"));
+                .hasMessageContaining(MessageFormat.format(MAPPING_ERROR, NEWS));
     }
 }

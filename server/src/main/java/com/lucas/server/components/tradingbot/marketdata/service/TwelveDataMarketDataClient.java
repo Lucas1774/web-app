@@ -46,7 +46,7 @@ public class TwelveDataMarketDataClient {
                                       @Value("${twelve-data.endpoint}") String endpoint,
                                       @Value("${twelve-data.api-key}") String apiKey) {
         this.httpRequestClient = httpRequestClient;
-        this.rateLimiter = rateLimiters.get(TWELVEDATA_RATE_LIMITER);
+        rateLimiter = rateLimiters.get(TWELVEDATA_RATE_LIMITER);
         this.endpoint = endpoint;
         this.apiKey = apiKey;
         typeToMapper = new EnumMap<>(Map.of(

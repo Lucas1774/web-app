@@ -34,7 +34,7 @@ public class SudokuGenerator {
         for (int digit : getDigits()) {
             digits.add(digit);
         }
-        for (int place = 0; place < SUDOKU_NUMBER_OF_CELLS; place++) {
+        for (int place = 0; SUDOKU_NUMBER_OF_CELLS > place; place++) {
             if (0 == sudoku.getState()[place]) {
                 Collections.shuffle(digits);
                 for (int digit : digits) {
@@ -55,7 +55,7 @@ public class SudokuGenerator {
     private void setDifficulty(Sudoku sudoku, int difficulty) {
         int cellsToSetToZero = (SUDOKU_NUMBER_OF_CELLS - (17 + ((9 - difficulty) * 6)));
         List<Integer> possibleCells = new ArrayList<>();
-        for (int i = 0; i < SUDOKU_NUMBER_OF_CELLS; i++) {
+        for (int i = 0; SUDOKU_NUMBER_OF_CELLS > i; i++) {
             possibleCells.add(i);
         }
         int[] digits = getDigits();

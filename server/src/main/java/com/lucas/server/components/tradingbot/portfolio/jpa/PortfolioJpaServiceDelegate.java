@@ -54,7 +54,7 @@ public class PortfolioJpaServiceDelegate<T extends PortfolioBase, R extends JpaR
                 });
         BigDecimal oldQuantity = last.getQuantity();
         BigDecimal newQuantity = oldQuantity.add(isBuy ? quantity : quantity.negate());
-        if (newQuantity.compareTo(BigDecimal.ZERO) < 0) {
+        if (0 > newQuantity.compareTo(BigDecimal.ZERO)) {
             throw new IllegalStateException(MessageFormat.format(INSUFFICIENT_STOCK_ERROR, symbol.getName()));
         }
 
@@ -63,13 +63,13 @@ public class PortfolioJpaServiceDelegate<T extends PortfolioBase, R extends JpaR
         if (isBuy) {
             BigDecimal totalCost = last.getAverageCost().multiply(oldQuantity)
                     .add(price.multiply(quantity));
-            newAverageCost = newQuantity.compareTo(BigDecimal.ZERO) > 0
+            newAverageCost = 0 < newQuantity.compareTo(BigDecimal.ZERO)
                     ? totalCost.divide(newQuantity, 4, RoundingMode.HALF_UP)
                     : BigDecimal.ZERO;
 
             BigDecimal totalCommissionWeighted = last.getAverageCommission().multiply(oldQuantity)
                     .add(commission.multiply(quantity));
-            newAverageCommission = newQuantity.compareTo(BigDecimal.ZERO) > 0
+            newAverageCommission = 0 < newQuantity.compareTo(BigDecimal.ZERO)
                     ? totalCommissionWeighted.divide(newQuantity, 4, RoundingMode.HALF_UP)
                     : BigDecimal.ZERO;
         }
@@ -93,7 +93,7 @@ public class PortfolioJpaServiceDelegate<T extends PortfolioBase, R extends JpaR
                 ))
                 .values()
                 .stream()
-                .filter(p -> p.getQuantity().compareTo(BigDecimal.ZERO) > 0)
+                .filter(p -> 0 < p.getQuantity().compareTo(BigDecimal.ZERO))
                 .toList();
     }
 }

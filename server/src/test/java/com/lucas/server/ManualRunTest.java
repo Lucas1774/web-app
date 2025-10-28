@@ -65,7 +65,7 @@ class ManualRunTest {
     }
 
     private static String summaryOf(Stats s, String label) {
-        if (s == null || s.count == 0) return label + ": (no data)";
+        if (null == s || 0 == s.count) return label + ": (no data)";
         BigDecimal cnt = BigDecimal.valueOf(s.count);
         BigDecimal avgClose = s.sumClose.divide(cnt, 8, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
         BigDecimal avgHigh = s.sumHigh.divide(cnt, 8, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
@@ -142,13 +142,13 @@ class ManualRunTest {
         Map<Recommendation, MarketData> filtered = baselineMap.entrySet()
                 .stream()
                 .filter(e -> {
-                    if (!BUY.equals(e.getKey().getAction()) || e.getKey().getConfidence().compareTo(BigDecimal.valueOf(0.75)) < 0) {
+                    if (!BUY.equals(e.getKey().getAction()) || 0 > e.getKey().getConfidence().compareTo(BigDecimal.valueOf(0.75))) {
                         return false;
                     }
                     BigDecimal gapPct = e.getValue().getOpen()
                             .subtract(e.getValue().getPreviousClose())
                             .divide(e.getValue().getPreviousClose(), 10, RoundingMode.HALF_UP);
-                    return gapPct.compareTo(BigDecimal.ZERO) > 0 && gapPct.compareTo(BigDecimal.valueOf(0.02)) < 0;
+                    return 0 < gapPct.compareTo(BigDecimal.ZERO) && 0 > gapPct.compareTo(BigDecimal.valueOf(0.02));
                 })
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
@@ -160,14 +160,14 @@ class ManualRunTest {
         System.out.println(summaryOf(baselineStats, "BASELINE"));
         System.out.println(summaryOf(allStats, "ALL"));
 
-        if (filteredStats != null && filteredStats.count > 0 && baselineStats != null && baselineStats.count > 0) {
+        if (null != filteredStats && 0 < filteredStats.count && null != baselineStats && 0 < baselineStats.count) {
 
             BigDecimal filteredAverageClose = filteredStats.sumClose.divide(BigDecimal.valueOf(filteredStats.count), 8, RoundingMode.HALF_UP);
             BigDecimal baselineAverageClose = baselineStats.sumClose.divide(BigDecimal.valueOf(baselineStats.count), 8, RoundingMode.HALF_UP);
 
             BigDecimal absDiff = filteredAverageClose.subtract(baselineAverageClose).multiply(BigDecimal.valueOf(100));
             BigDecimal denominator = filteredAverageClose.abs().max(baselineAverageClose.abs());
-            BigDecimal relDiff = denominator.compareTo(BigDecimal.ZERO) == 0
+            BigDecimal relDiff = 0 == denominator.compareTo(BigDecimal.ZERO)
                     ? BigDecimal.ZERO
                     : filteredAverageClose.subtract(baselineAverageClose)
                     .divide(denominator, 8, RoundingMode.HALF_UP)
@@ -184,32 +184,32 @@ class ManualRunTest {
 
         long profitableCount = filtered.values().stream()
                 .map(md -> md.getHigh().subtract(md.getOpen()).divide(md.getOpen(), 8, RoundingMode.HALF_UP))
-                .filter(pct -> pct.compareTo(onePct) > 0)
+                .filter(pct -> 0 < pct.compareTo(onePct))
                 .count();
 
         long safeCount = filtered.values().stream()
                 .map(md -> md.getLow().subtract(md.getOpen()).divide(md.getOpen(), 8, RoundingMode.HALF_UP))
-                .filter(pct -> pct.compareTo(minusOnePct) > 0)
+                .filter(pct -> 0 < pct.compareTo(minusOnePct))
                 .count();
 
         long baselineProfitableCount = baselineMap.values().stream()
                 .map(md -> md.getHigh().subtract(md.getOpen()).divide(md.getOpen(), 8, RoundingMode.HALF_UP))
-                .filter(pct -> pct.compareTo(onePct) > 0)
+                .filter(pct -> 0 < pct.compareTo(onePct))
                 .count();
 
         long baselineSafeCount = baselineMap.values().stream()
                 .map(md -> md.getLow().subtract(md.getOpen()).divide(md.getOpen(), 8, RoundingMode.HALF_UP))
-                .filter(pct -> pct.compareTo(minusOnePct) > 0)
+                .filter(pct -> 0 < pct.compareTo(minusOnePct))
                 .count();
 
         long allProfitableCount = mdByKey.values().stream()
                 .map(md -> md.getHigh().subtract(md.getOpen()).divide(md.getOpen(), 8, RoundingMode.HALF_UP))
-                .filter(pct -> pct.compareTo(onePct) > 0)
+                .filter(pct -> 0 < pct.compareTo(onePct))
                 .count();
 
         long allSafeCount = mdByKey.values().stream()
                 .map(md -> md.getLow().subtract(md.getOpen()).divide(md.getOpen(), 8, RoundingMode.HALF_UP))
-                .filter(pct -> pct.compareTo(minusOnePct) > 0)
+                .filter(pct -> 0 < pct.compareTo(minusOnePct))
                 .count();
 
         long totalFiltered = filtered.size();

@@ -37,7 +37,7 @@ public class SudokuController {
 
     @PostMapping("/upload/sudokus")
     public ResponseEntity<List<Sudoku>> handleFileUpload(@RequestBody String file) {
-        if (file.length() > 10000) {
+        if (10000 < file.length()) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
@@ -95,8 +95,8 @@ public class SudokuController {
 
         int[] currentState = s.getState();
         int[] initialState = sudoku.get(1).getState();
-        for (int i = 0; i < SUDOKU_NUMBER_OF_CELLS; i++) {
-            if (initialState[i] != 0 && currentState[i] != initialState[i]) {
+        for (int i = 0; SUDOKU_NUMBER_OF_CELLS > i; i++) {
+            if (0 != initialState[i] && currentState[i] != initialState[i]) {
                 return ResponseEntity.ok(false);
             }
         }

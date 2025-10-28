@@ -42,7 +42,7 @@ public class Symbol implements JpaEntity {
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
+        if (null == o || getClass() != o.getClass()) return false;
         Symbol symbol = (Symbol) o;
         return Objects.equals(name, symbol.name);
     }

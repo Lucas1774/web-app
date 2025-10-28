@@ -19,7 +19,7 @@ public class MqttPublisher implements AutoCloseable {
     private final Logger logger = org.slf4j.LoggerFactory.getLogger(MqttPublisher.class);
 
     public MqttPublisher(MqttProperties props) {
-        this.topics = props.getTopics();
+        topics = props.getTopics();
         try {
             client = new MqttClient(props.getBroker(), MqttClient.generateClientId());
             MqttConnectOptions options = new MqttConnectOptions();
@@ -49,7 +49,7 @@ public class MqttPublisher implements AutoCloseable {
     @SuppressWarnings("RedundantThrows")
     @Override
     public void close() throws Exception {
-        if (client != null) {
+        if (null != client) {
             try {
                 client.disconnect();
                 client.close();

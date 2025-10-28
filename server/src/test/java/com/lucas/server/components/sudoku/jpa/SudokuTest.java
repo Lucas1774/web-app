@@ -19,7 +19,7 @@ class SudokuTest {
 
     @Test
     void solve() {
-        for (int i = 0; i < NUM_RUNS; i++) {
+        for (int i = 0; NUM_RUNS > i; i++) {
             Sudoku sudoku = generator.generate(random.nextInt(SUDOKU_SIZE) + 1);
             solver.solve(sudoku);
             assertTrue(solver.isSolved(sudoku));
@@ -31,7 +31,7 @@ class SudokuTest {
         assertTrue(true); // useless assertion so Sonar doesn't cry
         double totalGenerationDuration = 0;
         double totalDuration = 0;
-        for (int i = 0; i < NUM_RUNS; i++) {
+        for (int i = 0; NUM_RUNS > i; i++) {
             int difficulty = random.nextInt(SUDOKU_SIZE) + 1;
             long generationStartTime = System.nanoTime();
             Sudoku sudoku = generator.generate(difficulty);

@@ -26,7 +26,7 @@ public class Constants {
     public static final int DATABASE_MARKET_DATA_PER_SYMBOL = 100;
     public static final int DATABASE_RECOMMENDATIONS_PER_SYMBOL = 30;
     public static final int SCHEDULED_RECOMMENDATIONS_COUNT = 503;
-    public static final int MAX_RECOMMENDATIONS_COUNT = 36;
+    public static final int MAX_RECOMMENDATIONS_COUNT = 30;
     public static final int REQUEST_MAX_ATTEMPTS = 3;
     public static final int RECOMMENDATION_MAX_ATTEMPTS = 5;
     public static final BigDecimal NEWS_FINE_GRAIN_THRESHOLD = BigDecimal.valueOf(0.75);
@@ -92,7 +92,7 @@ public class Constants {
             LocalDate.of(2025, 11, 27), // Thanksgiving
             LocalDate.of(2025, 12, 25) // Christmas Day
     );
-    private static final List<Clients> FINE_GRAIN_CLIENTS = List.of(GROK_3, GROK_3_2, GROK_3_3, GROK_3_4, GROK_3_5, GROK_3_6);
+    private static final List<Clients> FINE_GRAIN_CLIENTS = List.of(GPT_4_1, GPT_4_1_2, GPT_4_1_3, GPT_4_1_4, GPT_4_1_5, GPT_4_1_6);
     private static final List<Clients> RECOMMENDATION_CLIENTS = List.of(GPT_4_1, GPT_4_1_2, GPT_4_1_3, GPT_4_1_4, GPT_4_1_5, GPT_4_1_6);
     private static final List<Clients> RANDOM_RECOMMENDATION_CLIENTS = List.of(GPT_4_1, GPT_4_1_2, GPT_4_1_3, GPT_4_1_4, GPT_4_1_5, GPT_4_1_6);
     private static final Map<RecommendationMode, Set<String>> modeToClientNames = new EnumMap<>(Map.of(
@@ -130,7 +130,7 @@ public class Constants {
     }
 
     public static String sanitizeHtml(String input) {
-        if (input == null) {
+        if (null == input) {
             return null;
         }
         String result = input;
@@ -152,8 +152,8 @@ public class Constants {
 
     public static boolean isTradingDate(LocalDate date) {
         DayOfWeek dayOfWeek = date.getDayOfWeek();
-        return dayOfWeek != DayOfWeek.SATURDAY
-                && dayOfWeek != DayOfWeek.SUNDAY
+        return DayOfWeek.SATURDAY != dayOfWeek
+                && DayOfWeek.SUNDAY != dayOfWeek
                 && !MARKET_HOLIDAYS_2025.contains(date);
     }
 

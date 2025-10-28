@@ -118,23 +118,23 @@ public class AssetReportToMustacheMapper implements Mapper<List<AssetReportRaw>,
         private static AssetReport from(AssetReportRaw report) {
             return new AssetReport(
                     report.symbol,
-                    report.position != null ? report.position.stripTrailingZeros().toPlainString() : NA,
-                    report.positionValue != null ? report.positionValue.stripTrailingZeros().toPlainString() : NA,
-                    report.entryPrice != null ? "$".concat(report.entryPrice.stripTrailingZeros().toPlainString()) : NA,
-                    report.unrealizedPnL != null ? report.unrealizedPnL.stripTrailingZeros().toPlainString() : "0",
-                    report.unrealizedPercentPnL != null ? report.unrealizedPercentPnL.stripTrailingZeros().toPlainString().concat("%") : "0%",
+                    null != report.position ? report.position.stripTrailingZeros().toPlainString() : NA,
+                    null != report.positionValue ? report.positionValue.stripTrailingZeros().toPlainString() : NA,
+                    null != report.entryPrice ? "$".concat(report.entryPrice.stripTrailingZeros().toPlainString()) : NA,
+                    null != report.unrealizedPnL ? report.unrealizedPnL.stripTrailingZeros().toPlainString() : "0",
+                    null != report.unrealizedPercentPnL ? report.unrealizedPercentPnL.stripTrailingZeros().toPlainString().concat("%") : "0%",
                     String.valueOf(report.historyDays),
-                    report.premarket != null ? PricePoint.from(report.premarket) : null,
+                    null != report.premarket ? PricePoint.from(report.premarket) : null,
                     report.priceHistory.stream().map(PricePoint::from).toList(),
-                    report.ema20 != null ? report.ema20.stripTrailingZeros().toPlainString() : NA,
-                    report.macdLine1226 != null ? report.macdLine1226.stripTrailingZeros().toPlainString() : NA,
-                    report.macdSignalLine9 != null ? report.macdSignalLine9.stripTrailingZeros().toPlainString() : NA,
-                    report.macdLine1226 != null && report.macdSignalLine9 != null
+                    null != report.ema20 ? report.ema20.stripTrailingZeros().toPlainString() : NA,
+                    null != report.macdLine1226 ? report.macdLine1226.stripTrailingZeros().toPlainString() : NA,
+                    null != report.macdSignalLine9 ? report.macdSignalLine9.stripTrailingZeros().toPlainString() : NA,
+                    null != report.macdLine1226 && null != report.macdSignalLine9
                             ? report.macdLine1226.subtract(report.macdSignalLine9).stripTrailingZeros().toPlainString()
                             : NA,
-                    report.rsi14 != null ? report.rsi14.stripTrailingZeros().toPlainString() : NA,
-                    report.atr14 != null ? report.atr14.stripTrailingZeros().toPlainString().concat("%") : NA,
-                    report.obv20 != null ? report.obv20.stripTrailingZeros().toPlainString() : NA,
+                    null != report.rsi14 ? report.rsi14.stripTrailingZeros().toPlainString() : NA,
+                    null != report.atr14 ? report.atr14.stripTrailingZeros().toPlainString().concat("%") : NA,
+                    null != report.obv20 ? report.obv20.stripTrailingZeros().toPlainString() : NA,
                     String.valueOf(report.newsCount),
                     report.news.stream().map(NewsItem::from).toList()
             );
@@ -151,13 +151,13 @@ public class AssetReportToMustacheMapper implements Mapper<List<AssetReportRaw>,
         ) {
             private static PricePoint from(PricePointRaw point) {
                 return new PricePoint(
-                        point.date != null ? point.date.toString() : NA,
+                        null != point.date ? point.date.toString() : NA,
                         point.open.stripTrailingZeros().toPlainString(),
                         point.high.stripTrailingZeros().toPlainString(),
                         point.low.stripTrailingZeros().toPlainString(),
                         point.close.stripTrailingZeros().toPlainString(),
-                        point.volume != null ? point.volume.toString() : NA,
-                        point.gap != null ? point.gap.stripTrailingZeros().toPlainString() : NA
+                        null != point.volume ? point.volume.toString() : NA,
+                        null != point.gap ? point.gap.stripTrailingZeros().toPlainString() : NA
                 );
             }
         }
@@ -172,8 +172,8 @@ public class AssetReportToMustacheMapper implements Mapper<List<AssetReportRaw>,
             private static NewsItem from(NewsItemRaw news) {
                 return new NewsItem(
                         news.headline,
-                        news.sentiment != null ? "Sentiment: ".concat(news.sentiment).concat(". ") : EMPTY_STRING,
-                        news.sentimentConfidence != null ? "Confidence: ".concat(news.sentimentConfidence.stripTrailingZeros().toPlainString()).concat("%. ") : EMPTY_STRING,
+                        null != news.sentiment ? "Sentiment: ".concat(news.sentiment).concat(". ") : EMPTY_STRING,
+                        null != news.sentimentConfidence ? "Confidence: ".concat(news.sentimentConfidence.stripTrailingZeros().toPlainString()).concat("%. ") : EMPTY_STRING,
                         news.summary,
                         news.date.atOffset(ZoneOffset.UTC)
                                 .toInstant()

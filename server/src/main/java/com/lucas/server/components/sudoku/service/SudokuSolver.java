@@ -16,7 +16,7 @@ public class SudokuSolver {
 
     public boolean isSolved(Sudoku sudoku) {
         for (int value : sudoku.getState()) {
-            if (value == 0) {
+            if (0 == value) {
                 return false;
             }
         }
@@ -34,7 +34,7 @@ public class SudokuSolver {
     public boolean solveWithTimeout(Sudoku sudoku) {
         int maxRisk = 3;
         long now = System.nanoTime();
-        while (!isSolved(sudoku) && System.nanoTime() - now < 100000000) {
+        while (!isSolved(sudoku) && 100000000 > System.nanoTime() - now) {
             doSolve(sudoku, maxRisk);
             maxRisk++;
         }
@@ -70,7 +70,7 @@ public class SudokuSolver {
             }
             return doSolve(sudoku, maxRisk);
         }
-        for (int i = 2; i <= SUDOKU_SIZE; i++) {
+        for (int i = 2; SUDOKU_SIZE >= i; i++) {
             int promisingCell = getNextPromisingCell(sudoku, i);
             if (-1 != promisingCell) {
                 int count = 0;
@@ -83,7 +83,7 @@ public class SudokuSolver {
                             sudoku.setState(copy.getState());
                             return true;
                         }
-                        if (count == i || maxRisk == 0) {
+                        if (count == i || 0 == maxRisk) {
                             return false;
                         }
                     }
@@ -94,7 +94,7 @@ public class SudokuSolver {
     }
 
     private boolean isSolvable(Sudoku sudoku) {
-        for (int place = 0; place < SUDOKU_NUMBER_OF_CELLS; place++) {
+        for (int place = 0; SUDOKU_NUMBER_OF_CELLS > place; place++) {
             if (0 == sudoku.getState()[place]) {
                 int count = 0;
                 for (int digit : getDigits()) {
@@ -103,7 +103,7 @@ public class SudokuSolver {
                         break;
                     }
                 }
-                if (count == 0) {
+                if (0 == count) {
                     return false;
                 }
             }
@@ -113,18 +113,18 @@ public class SudokuSolver {
 
     private List<Integer> getTrivial(Sudoku sudoku) {
         List<Integer> promisingCells = new ArrayList<>();
-        for (int place = 0; place < SUDOKU_NUMBER_OF_CELLS; place++) {
+        for (int place = 0; SUDOKU_NUMBER_OF_CELLS > place; place++) {
             if (0 == sudoku.getState()[place]) {
                 int count = 0;
                 for (int digit : getDigits()) {
                     if (acceptsNumberInPlace(sudoku, place, digit)) {
                         count++;
-                        if (count > 1) {
+                        if (1 < count) {
                             break;
                         }
                     }
                 }
-                if (count == 1) {
+                if (1 == count) {
                     promisingCells.add(place);
                 }
             }
@@ -133,7 +133,7 @@ public class SudokuSolver {
     }
 
     private int getNextPromisingCell(Sudoku sudoku, int i) {
-        for (int place = 0; place < SUDOKU_NUMBER_OF_CELLS; place++) {
+        for (int place = 0; SUDOKU_NUMBER_OF_CELLS > place; place++) {
             if (0 == sudoku.getState()[place]) {
                 int count = 0;
                 for (int digit : getDigits()) {
@@ -159,16 +159,16 @@ public class SudokuSolver {
     public boolean acceptsNumberInPlace(Sudoku sudoku, int place, int digit) {
         int rowIndexOffset = place / SUDOKU_SIZE * SUDOKU_SIZE;
         int columnIndex = place % SUDOKU_SIZE;
-        for (int i = 0; i < SUDOKU_SIZE; i++) {
+        for (int i = 0; SUDOKU_SIZE > i; i++) {
             if (sudoku.getState()[rowIndexOffset + i] == digit || sudoku.getState()[columnIndex + i * SUDOKU_SIZE] == digit) {
                 return false;
             }
         }
         int blockFirstRow = place / (3 * SUDOKU_SIZE) * 3;
         int blockFirstColumn = columnIndex / 3 * 3;
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; 3 > i; i++) {
             int rowInBlockOffset = (blockFirstRow + i) * SUDOKU_SIZE;
-            for (int j = 0; j < 3; j++) {
+            for (int j = 0; 3 > j; j++) {
                 if (sudoku.getState()[rowInBlockOffset + blockFirstColumn + j] == digit) {
                     return false;
                 }
@@ -179,13 +179,13 @@ public class SudokuSolver {
 
     public boolean isValid(Sudoku sudoku, int difficulty) {
         long clueCount = Arrays.stream(sudoku.getState())
-                .filter(cell -> cell != 0)
+                .filter(cell -> 0 != cell)
                 .count();
-        boolean hasEightOrMoreUniqueDigits = IntStream.rangeClosed(1, 9)
+        boolean hasEightOrMoreUniqueDigits = 8 <= IntStream.rangeClosed(1, 9)
                 .filter(digit -> Arrays.stream(sudoku.getState()).anyMatch(cell -> cell == digit))
-                .count() >= 8;
-        if (difficulty == -1) {
-            return clueCount >= 17 && hasEightOrMoreUniqueDigits;
+                .count();
+        if (-1 == difficulty) {
+            return 17 <= clueCount && hasEightOrMoreUniqueDigits;
         } else {
             return hasEightOrMoreUniqueDigits && clueCount == 17 + ((9 - difficulty) * 6L);
         }

@@ -31,7 +31,7 @@ public class YahooFinanceMarketDataClient {
                                         Map<String, SlidingWindowRateLimiter> rateLimiters, @Value("${yahoo.market.endpoint}") String endpoint) {
         this.mapper = mapper;
         this.httpRequestClient = httpRequestClient;
-        this.rateLimiter = rateLimiters.get(YAHOO_FINANCE_RATE_LIMITER);
+        rateLimiter = rateLimiters.get(YAHOO_FINANCE_RATE_LIMITER);
         this.endpoint = endpoint;
     }
 

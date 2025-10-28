@@ -18,7 +18,7 @@ public class FinnhubRateLimiter {
     private final AtomicInteger pointer = new AtomicInteger();
 
     public FinnhubRateLimiter(@Value("${finnhub.api-keys}") List<String> apiKeys, Map<String, SlidingWindowRateLimiter> allRateLimiters) {
-        this.keyToLimiterEntries = new ArrayList<>(apiKeys.size());
+        keyToLimiterEntries = new ArrayList<>(apiKeys.size());
         for (int i = 0; i < apiKeys.size(); i++) {
             String apiKey = apiKeys.get(i);
             String limiterKey = FINNHUB_RATE_LIMITERS.get(i);

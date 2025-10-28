@@ -62,7 +62,7 @@ class RecommendationChatCompletionClientTest {
         Symbol symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
         LocalDate today = LocalDate.now();
         List<MarketData> mds = new ArrayList<>();
-        for (int i = MARKET_DATA_RELEVANT_DAYS_COUNT; i >= 0; i--) {
+        for (int i = MARKET_DATA_RELEVANT_DAYS_COUNT; 0 <= i; i--) {
             MarketData md = new MarketData()
                     .setSymbol(symbolService.getOrCreateByName(Set.of(symbol.getName())).stream().findFirst().orElseThrow())
                     .setDate(today.minusDays(i))
@@ -87,7 +87,7 @@ class RecommendationChatCompletionClientTest {
         LocalDateTime todayDateTime = LocalDateTime.now()
                 .atZone(ZoneOffset.UTC)
                 .toLocalDateTime();
-        for (int i = 1; i <= 15; i++) {
+        for (int i = 1; 15 >= i; i++) {
             News news = new News()
                     .addSymbol(symbol)
                     .setExternalId((long) i)
@@ -95,7 +95,7 @@ class RecommendationChatCompletionClientTest {
                     .setHeadline("Headline " + i)
                     .setSummary("Summary " + i)
                     .setDate(todayDateTime.minusDays(i - 1))
-                    .setSentiment(i % 3 == 0 ? "positive" : i % 2 == 0 ? "neutral" : "negative")
+                    .setSentiment(0 == i % 3 ? "positive" : 0 == i % 2 ? "neutral" : "negative")
                     .setSentimentConfidence(BigDecimal.valueOf((i * 6) % 100));
             articles.add(news);
         }

@@ -39,7 +39,7 @@ public class SentimentController {
         if (DEFAULT_USERNAME.equals(username)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        LocalDateTime effectiveDate = from == null ? LocalDate.now().minusDays(1).atStartOfDay() : from.atStartOfDay();
+        LocalDateTime effectiveDate = null == from ? LocalDate.now().minusDays(1).atStartOfDay() : from.atStartOfDay();
         try {
             return ResponseEntity.ok(jpaService.generateSentiment(SP500_SYMBOLS, effectiveDate, LocalDate.now().plusDays(1).atStartOfDay()));
         } catch (ClientException | JsonProcessingException e) {
@@ -56,7 +56,7 @@ public class SentimentController {
         if (DEFAULT_USERNAME.equals(username)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        LocalDateTime effectiveDate = from == null ? LocalDate.now().minusDays(1).atStartOfDay() : from.atStartOfDay();
+        LocalDateTime effectiveDate = null == from ? LocalDate.now().minusDays(1).atStartOfDay() : from.atStartOfDay();
         try {
             return ResponseEntity.ok(jpaService.generateSentiment(symbols, effectiveDate, LocalDate.now().plusDays(1).atStartOfDay()));
         } catch (ClientException | JsonProcessingException e) {

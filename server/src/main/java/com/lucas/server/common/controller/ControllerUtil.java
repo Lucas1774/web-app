@@ -62,7 +62,7 @@ public class ControllerUtil {
     }
 
     public Optional<String> retrieveAuthCookie(Cookie[] cookies) {
-        if (cookies == null) {
+        if (null == cookies) {
             return Optional.empty();
         }
         return Arrays.stream(cookies)

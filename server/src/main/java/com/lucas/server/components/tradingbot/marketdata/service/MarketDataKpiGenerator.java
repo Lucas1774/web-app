@@ -40,7 +40,7 @@ public class MarketDataKpiGenerator {
         computeIfAbsent(md::getPreviousAtr, md::setPreviousAtr, previous::getAtr);
         computeIfAbsent(md::getPreviousAverageGain, md::setPreviousAverageGain, previous::getAverageGain);
         computeIfAbsent(md::getPreviousAverageLoss, md::setPreviousAverageLoss, previous::getAverageLoss);
-        if (previous14.size() < 14) {
+        if (14 > previous14.size()) {
             logger.warn(NON_COMPUTABLE_KPI_WARN, "RSI, ATR", previous14);
             return md;
         }
@@ -57,7 +57,7 @@ public class MarketDataKpiGenerator {
         computeIfAbsent(md::getPreviousClose, md::setPreviousClose, () -> previousPrice);
         BigDecimal change = md.getPrice().subtract(previousPrice);
         computeIfAbsent(md::getChange, md::setChange, () -> change);
-        if (previousPrice.compareTo(BigDecimal.ZERO) != 0) {
+        if (0 != previousPrice.compareTo(BigDecimal.ZERO)) {
             BigDecimal percentage = change
                     .divide(previousPrice, 8, RoundingMode.HALF_UP)
                     .multiply(BigDecimal.valueOf(100))
@@ -79,7 +79,7 @@ public class MarketDataKpiGenerator {
         List<MarketData> cropped = history.subList(0, n);
         BigDecimal average = computeMean(cropped.stream().map(MarketData::getPrice).toList());
 
-        if (average.compareTo(BigDecimal.ZERO) == 0) {
+        if (0 == average.compareTo(BigDecimal.ZERO)) {
             logger.warn(KPI_RETURNED_ZERO_WARN, "moving average", cropped);
         }
         return Optional.of(average);
@@ -98,7 +98,7 @@ public class MarketDataKpiGenerator {
         List<MarketData> cropped = history.subList(0, n).reversed();
         BigDecimal ema = computeEma(cropped.stream().map(MarketData::getPrice).toList());
 
-        if (ema.compareTo(BigDecimal.ZERO) == 0) {
+        if (0 == ema.compareTo(BigDecimal.ZERO)) {
             logger.warn(KPI_RETURNED_ZERO_WARN, "exponential moving average", cropped);
         }
         return Optional.of(ema.setScale(4, RoundingMode.HALF_UP));
@@ -154,10 +154,10 @@ public class MarketDataKpiGenerator {
         BigDecimal averageGain;
         BigDecimal averageLoss;
 
-        if (previousAvgGain != null && previousAvgLoss != null) {
+        if (null != previousAvgGain && null != previousAvgLoss) {
             BigDecimal change = current.getChange();
-            BigDecimal gain = change.signum() > 0 ? change : BigDecimal.ZERO;
-            BigDecimal loss = change.signum() < 0 ? change.abs() : BigDecimal.ZERO;
+            BigDecimal gain = 0 < change.signum() ? change : BigDecimal.ZERO;
+            BigDecimal loss = 0 > change.signum() ? change.abs() : BigDecimal.ZERO;
 
             averageGain = previousAvgGain.multiply(BigDecimal.valueOf(13))
                     .add(gain)
@@ -171,7 +171,7 @@ public class MarketDataKpiGenerator {
             BigDecimal totalLosses = BigDecimal.ZERO;
 
             for (BigDecimal change : changes) {
-                if (change.signum() > 0) {
+                if (0 < change.signum()) {
                     totalGains = totalGains.add(change);
                 } else {
                     totalLosses = totalLosses.add(change.abs());
@@ -188,12 +188,12 @@ public class MarketDataKpiGenerator {
         BigDecimal averageGain = md.getAverageGain();
         BigDecimal averageLoss = md.getAverageLoss();
 
-        if (averageGain == null || averageLoss == null) {
+        if (null == averageGain || null == averageLoss) {
             return null;
         }
 
-        if (averageLoss.compareTo(BigDecimal.ZERO) == 0) {
-            if (averageGain.compareTo(BigDecimal.ZERO) == 0) {
+        if (0 == averageLoss.compareTo(BigDecimal.ZERO)) {
+            if (0 == averageGain.compareTo(BigDecimal.ZERO)) {
                 logger.warn(KPI_RETURNED_ZERO_WARN, "RSI", md);
             }
             return BigDecimal.valueOf(100).setScale(4, RoundingMode.HALF_UP);
@@ -213,7 +213,7 @@ public class MarketDataKpiGenerator {
         BigDecimal previousAtr = current.getPreviousAtr();
         BigDecimal atr;
 
-        if (previousAtr != null) {
+        if (null != previousAtr) {
             BigDecimal highLow = current.getHigh().subtract(current.getLow());
             BigDecimal highPrevClose = current.getHigh().subtract(current.getPreviousClose());
             BigDecimal lowPrevClose = current.getLow().subtract(current.getPreviousClose());
@@ -238,7 +238,7 @@ public class MarketDataKpiGenerator {
                     .divide(BigDecimal.valueOf(14), 8, RoundingMode.HALF_UP);
         }
 
-        if (atr.compareTo(BigDecimal.ZERO) == 0) {
+        if (0 == atr.compareTo(BigDecimal.ZERO)) {
             logger.warn(KPI_RETURNED_ZERO_WARN, "ATR", history);
         }
         return Optional.of(atr.setScale(4, RoundingMode.HALF_UP));
@@ -266,7 +266,7 @@ public class MarketDataKpiGenerator {
             return Optional.empty();
         }
         List<MarketData> cropped = history.subList(0, n).reversed();
-        if (!cropped.stream().allMatch(md -> md.getPreviousClose() != null)) {
+        if (!cropped.stream().allMatch(md -> null != md.getPreviousClose())) {
             logger.warn(NON_COMPUTABLE_KPI_WARN, VOLATILITY, cropped);
             return Optional.empty();
         }
@@ -286,7 +286,7 @@ public class MarketDataKpiGenerator {
                 .divide(BigDecimal.valueOf(dailyReturns.size()), 8, RoundingMode.HALF_UP);
         BigDecimal standardDeviation = BigDecimal.valueOf(Math.sqrt(variance.doubleValue()));
 
-        if (standardDeviation.compareTo(BigDecimal.ZERO) == 0) {
+        if (0 == standardDeviation.compareTo(BigDecimal.ZERO)) {
             logger.warn(KPI_RETURNED_ZERO_WARN, VOLATILITY, cropped);
         }
         return Optional.of(standardDeviation.multiply(BigDecimal.valueOf(Math.sqrt(252)))
@@ -304,7 +304,7 @@ public class MarketDataKpiGenerator {
             return Optional.empty();
         }
         List<MarketData> cropped = history.subList(0, n).reversed();
-        if (!cropped.stream().allMatch(md -> md.getPreviousClose() != null)) {
+        if (!cropped.stream().allMatch(md -> null != md.getPreviousClose())) {
             logger.warn(NON_COMPUTABLE_KPI_WARN, OBV, cropped);
             return Optional.empty();
         }
@@ -316,15 +316,15 @@ public class MarketDataKpiGenerator {
                 BigDecimal prev = md.getPreviousClose();
                 BigDecimal vol = BigDecimal.valueOf(md.getVolume());
 
-                if (price.compareTo(prev) > 0) {
+                if (0 < price.compareTo(prev)) {
                     obv = obv.add(vol);
-                } else if (price.compareTo(prev) < 0) {
+                } else if (0 > price.compareTo(prev)) {
                     obv = obv.subtract(vol);
                 }
             }
         }
 
-        if (obv.compareTo(BigDecimal.ZERO) == 0) {
+        if (0 == obv.compareTo(BigDecimal.ZERO)) {
             logger.warn(KPI_RETURNED_ZERO_WARN, OBV, cropped);
         }
         return Optional.of(obv);

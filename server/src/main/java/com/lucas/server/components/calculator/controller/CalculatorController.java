@@ -23,7 +23,7 @@ public class CalculatorController {
 
     @PostMapping("/ans")
     public ResponseEntity<String> post(@RequestBody String number) {
-        if (number.length() > 200) {
+        if (200 < number.length()) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         } else {
             return controllerUtil.handleRequest(() -> calculatorService.computeAndSave(

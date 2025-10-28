@@ -77,7 +77,7 @@ public class DataManager {
         this.finnhubMarketDataClient = finnhubMarketDataClient;
         this.twelveDataMarketDataClient = twelveDataMarketDataClient;
         this.recommendationClient = recommendationClient;
-        this.finnhubNewsClient = newsClient;
+        finnhubNewsClient = newsClient;
         this.portfolioManager = portfolioManager;
         typeToRunner = new EnumMap<>(Map.of(
                 MarketDataType.LAST, this::retrieveMarketDataWithBackupStrategy,
@@ -125,7 +125,7 @@ public class DataManager {
         candidates.removeAll(already);
 
         List<Long> finalList = new ArrayList<>();
-        if (count > 0 && !candidates.isEmpty()) {
+        if (0 < count && !candidates.isEmpty()) {
             List<Long> pool = new ArrayList<>(candidates);
             Collections.shuffle(pool);
             finalList.addAll(pool.subList(0, Math.min(count, pool.size())));
@@ -217,7 +217,7 @@ public class DataManager {
         logger.info(RETRIEVING_DATA_INFO, RECOMMENDATION, remainingPayload.size());
         try (ExecutorService executor = Executors.newFixedThreadPool(clients.size())) {
             int attempts = 0;
-            while (!remainingPayload.isEmpty() && attempts < RECOMMENDATION_MAX_ATTEMPTS) {
+            while (!remainingPayload.isEmpty() && RECOMMENDATION_MAX_ATTEMPTS > attempts) {
                 List<Recommendation> fetched = doGetRecommendationsInParallel(remainingPayload, mutableClients, executor,
                         overwrite, newsFetcher, backupNewsFetcher, marketDataFetcher);
                 res.addAll(fetched);

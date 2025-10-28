@@ -16,8 +16,7 @@ import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.util.*;
 
-import static com.lucas.server.common.Constants.MAPPING_ERROR;
-import static com.lucas.server.common.Constants.SYMBOL;
+import static com.lucas.server.common.Constants.*;
 import static com.lucas.utils.Utils.EMPTY_STRING;
 
 @Component
@@ -32,7 +31,7 @@ public class RecommendationChatCompletionResponseMapper implements Mapper<JsonNo
                     .setConfidence(new BigDecimal(json.get("confidence").asText()))
                     .setRationale(StringUtils.left(json.get("rationale").asText(), 1024));
         } catch (Exception e) {
-            throw new JsonProcessingException(MessageFormat.format(MAPPING_ERROR, "recommendation"), e);
+            throw new JsonProcessingException(MessageFormat.format(MAPPING_ERROR, RECOMMENDATION), e);
         }
     }
 

@@ -45,7 +45,7 @@ public class PortfolioController {
         if (DEFAULT_USERNAME.equals(username)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        LocalDateTime effectiveDate = date == null ? LocalDateTime.now() : date.atStartOfDay();
+        LocalDateTime effectiveDate = null == date ? LocalDateTime.now() : date.atStartOfDay();
         try {
             return ResponseEntity.ok(jpaService.executePortfolioAction(getPortfolioType(username), symbolId, price,
                     quantity, commission, effectiveDate, true));
@@ -65,7 +65,7 @@ public class PortfolioController {
         if (DEFAULT_USERNAME.equals(username)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        LocalDateTime effectiveDate = date == null ? LocalDateTime.now() : date.atStartOfDay();
+        LocalDateTime effectiveDate = null == date ? LocalDateTime.now() : date.atStartOfDay();
         try {
             return ResponseEntity.ok(jpaService.executePortfolioAction(getPortfolioType(username), symbolId, price,
                     quantity, null, effectiveDate, false));

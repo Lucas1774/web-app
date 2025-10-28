@@ -19,7 +19,7 @@ class SudokuGeneratorTest {
 
     @Test
     void generationConstraints() {
-        for (int i = 0; i < NUM_RUNS; i++) {
+        for (int i = 0; NUM_RUNS > i; i++) {
             int difficulty = random.nextInt(SUDOKU_SIZE) + 1;
             Sudoku sudoku = generator.generate(difficulty);
             assertTrue(solver.isValid(sudoku, difficulty) && solver.solveWithTimeout(sudoku));

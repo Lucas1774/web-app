@@ -192,11 +192,11 @@ class DataAccessTest {
         productService.createProductAndOrLinkToUser("p2", "eve");
         // set non-zero quantities
         List<ShoppingItem> updatedItems = shoppingItemService.updateAllShoppingItemQuantities("eve", 7);
-        assertThat(updatedItems).isNotEmpty().allMatch(i -> i.getQuantity() == 7);
+        assertThat(updatedItems).isNotEmpty().allMatch(i -> 7 == i.getQuantity());
 
         // call updateAllProductQuantity
         shoppingItemService.updateAllShoppingItemQuantities("eve", 0);
         List<ShoppingItem> reset = shoppingItemService.findAllByUsername("eve");
-        assertThat(reset).isNotEmpty().allMatch(i -> i.getQuantity() == 0);
+        assertThat(reset).isNotEmpty().allMatch(i -> 0 == i.getQuantity());
     }
 }

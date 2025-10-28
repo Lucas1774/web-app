@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static com.lucas.server.common.Constants.MAPPING_ERROR;
+import static com.lucas.server.common.Constants.NEWS;
 
 @Component
 public class YahooFinanceNewsResponseMapper implements Mapper<Element, News> {
@@ -37,14 +38,14 @@ public class YahooFinanceNewsResponseMapper implements Mapper<Element, News> {
                     .setUrl(item.getElementsByTagName("link").item(0).getTextContent())
                     .setSource("Yahoo Finance RSS");
         } catch (Exception e) {
-            throw new JsonProcessingException(MessageFormat.format(MAPPING_ERROR, "news"), e);
+            throw new JsonProcessingException(MessageFormat.format(MAPPING_ERROR, NEWS), e);
         }
     }
 
     public List<News> mapAll(Document document, Symbol symbol) throws JsonProcessingException {
         try {
             NodeList items = document.getElementsByTagName("item");
-            if (items == null || items.getLength() == 0) {
+            if (null == items || 0 == items.getLength()) {
                 return Collections.emptyList();
             }
 
@@ -54,7 +55,7 @@ public class YahooFinanceNewsResponseMapper implements Mapper<Element, News> {
             }
             return newsList;
         } catch (Exception e) {
-            throw new JsonProcessingException(MessageFormat.format(MAPPING_ERROR, "news"), e);
+            throw new JsonProcessingException(MessageFormat.format(MAPPING_ERROR, NEWS), e);
         }
     }
 }

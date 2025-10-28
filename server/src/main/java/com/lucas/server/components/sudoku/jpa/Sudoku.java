@@ -26,7 +26,7 @@ public class Sudoku implements JpaEntity {
     private static final int[] defaultData = new int[SUDOKU_NUMBER_OF_CELLS];
 
     static {
-        for (int i = 0; i < SUDOKU_NUMBER_OF_CELLS; i++) {
+        for (int i = 0; SUDOKU_NUMBER_OF_CELLS > i; i++) {
             defaultData[i] = ((i % SUDOKU_SIZE) + 3 * (i / SUDOKU_SIZE) + (i / 27)) % SUDOKU_SIZE + 1;
         }
     }
@@ -58,11 +58,11 @@ public class Sudoku implements JpaEntity {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < SUDOKU_SIZE; i++) {
-            if (i % 3 == 0)
+        for (int i = 0; SUDOKU_SIZE > i; i++) {
+            if (0 == i % 3)
                 sb.append("+-------+-------+-------+\n");
-            for (int j = 0; j < SUDOKU_SIZE; j++) {
-                if (j % 3 == 0)
+            for (int j = 0; SUDOKU_SIZE > j; j++) {
+                if (0 == j % 3)
                     sb.append("| ");
                 sb.append(state[i * SUDOKU_SIZE + j]).append(' ');
             }
@@ -74,7 +74,7 @@ public class Sudoku implements JpaEntity {
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
+        if (null == o || getClass() != o.getClass()) return false;
         Sudoku sudoku = (Sudoku) o;
         return Objects.deepEquals(state, sudoku.state);
     }

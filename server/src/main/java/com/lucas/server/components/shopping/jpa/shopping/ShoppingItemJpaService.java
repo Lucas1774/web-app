@@ -48,7 +48,7 @@ public class ShoppingItemJpaService implements JpaService<ShoppingItem> {
         repository.delete(shoppingItem);
         Long prodId = shoppingItem.getProduct().getId();
         long count = repository.countByProduct_Id(prodId);
-        if (count == 0) {
+        if (0 == count) {
             productRepository.deleteById(prodId);
         }
         return shoppingItem;

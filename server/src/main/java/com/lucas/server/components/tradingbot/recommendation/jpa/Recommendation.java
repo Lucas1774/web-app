@@ -88,7 +88,7 @@ public class Recommendation implements JpaEntity {
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
+        if (null == o || getClass() != o.getClass()) return false;
         Recommendation that = (Recommendation) o;
         return Objects.equals(symbol, that.symbol) && Objects.equals(date, that.date);
     }

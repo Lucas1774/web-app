@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static com.lucas.server.common.Constants.MAPPING_ERROR;
+import static com.lucas.server.common.Constants.NEWS;
 
 @Component
 public class FinnhubNewsResponseMapper implements Mapper<JsonNode, News> {
@@ -36,7 +37,7 @@ public class FinnhubNewsResponseMapper implements Mapper<JsonNode, News> {
                     .setCategory(json.get("category").asText())
                     .setImage(json.get("image").asText());
         } catch (Exception e) {
-            throw new JsonProcessingException(MessageFormat.format(MAPPING_ERROR, "news"), e);
+            throw new JsonProcessingException(MessageFormat.format(MAPPING_ERROR, NEWS), e);
         }
     }
 

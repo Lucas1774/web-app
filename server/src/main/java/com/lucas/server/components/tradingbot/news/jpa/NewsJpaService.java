@@ -35,7 +35,7 @@ public class NewsJpaService implements JpaService<News> {
 
     // TODO: batch
     public List<News> getTopForSymbolId(Long symbolId, int limit) {
-        return this.repository.findBySymbols_IdAndSentimentNotOrSymbols_IdAndSentimentIsNull(
+        return repository.findBySymbols_IdAndSentimentNotOrSymbols_IdAndSentimentIsNull(
                 symbolId, "neutral", symbolId, PageRequest.of(
                         0, limit, Sort.by("date").descending()
                 )
@@ -61,7 +61,7 @@ public class NewsJpaService implements JpaService<News> {
         List<News> newsList = repository.findAllBySymbols_IdInAndDateBetween(list, from, to);
         List<News> res = new ArrayList<>(newsList.size());
         for (News news : newsList) {
-            if (news.getSentiment() != null && news.getSentimentConfidence() != null) {
+            if (null != news.getSentiment() && null != news.getSentimentConfidence()) {
                 continue;
             }
             res.add(sentimentClient.generateSentiment(news));

@@ -21,8 +21,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import static com.lucas.server.common.Constants.KPI_RETURNED_ZERO_WARN;
-import static com.lucas.server.common.Constants.NON_COMPUTABLE_KPI_WARN;
+import static com.lucas.server.common.Constants.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
@@ -51,11 +50,11 @@ class MarketDataKpiGeneratorTest {
 
     private static MarketData md(Integer price, Integer prevClose, Integer high, Integer low, Integer daysAgo) {
         return new MarketData()
-                .setPrice(price != null ? BigDecimal.valueOf(price) : null)
-                .setPreviousClose(prevClose != null ? BigDecimal.valueOf(prevClose) : null)
-                .setHigh(high != null ? BigDecimal.valueOf(high) : null)
-                .setLow(low != null ? BigDecimal.valueOf(low) : null)
-                .setDate(LocalDate.now().minusDays(daysAgo != null ? daysAgo : 0));
+                .setPrice(null != price ? BigDecimal.valueOf(price) : null)
+                .setPreviousClose(null != prevClose ? BigDecimal.valueOf(prevClose) : null)
+                .setHigh(null != high ? BigDecimal.valueOf(high) : null)
+                .setLow(null != low ? BigDecimal.valueOf(low) : null)
+                .setDate(LocalDate.now().minusDays(null != daysAgo ? daysAgo : 0));
     }
 
     @BeforeEach
@@ -187,7 +186,7 @@ class MarketDataKpiGeneratorTest {
                 .hasSize(1)
                 .allSatisfy(log -> assertThat(log)
                         .contains(marketDataList.getFirst().toString())
-                        .contains(KPI_RETURNED_ZERO_WARN.replaceFirst(Pattern.quote("{}"), "volatility")
+                        .contains(KPI_RETURNED_ZERO_WARN.replaceFirst(Pattern.quote("{}"), VOLATILITY)
                                 .replaceFirst(Pattern.quote("{}"), marketDataList.reversed().toString())));
     }
 
@@ -205,7 +204,7 @@ class MarketDataKpiGeneratorTest {
                 .hasSize(1)
                 .allSatisfy(log -> assertThat(log)
                         .contains(marketDataList.getFirst().toString())
-                        .contains(NON_COMPUTABLE_KPI_WARN.replaceFirst(Pattern.quote("{}"), "volatility")
+                        .contains(NON_COMPUTABLE_KPI_WARN.replaceFirst(Pattern.quote("{}"), VOLATILITY)
                                 .replaceFirst(Pattern.quote("{}"), marketDataList.reversed().toString())));
     }
 }

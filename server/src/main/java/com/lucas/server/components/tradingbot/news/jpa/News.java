@@ -86,7 +86,7 @@ public class News implements JpaEntity {
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
+        if (null == o || getClass() != o.getClass()) return false;
         News news = (News) o;
         return Objects.equals(externalId, news.externalId);
     }

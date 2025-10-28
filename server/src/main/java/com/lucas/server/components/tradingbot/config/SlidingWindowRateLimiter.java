@@ -13,19 +13,19 @@ public class SlidingWindowRateLimiter {
 
     public SlidingWindowRateLimiter(int maxRequests, Duration window) {
         this.maxRequests = maxRequests;
-        this.windowNanos = window.toNanos();
-        this.timeout = 0;
+        windowNanos = window.toNanos();
+        timeout = 0;
     }
 
     public SlidingWindowRateLimiter(int maxRequests, Duration window, Duration timeout) {
         this.maxRequests = maxRequests;
-        this.windowNanos = window.toNanos();
+        windowNanos = window.toNanos();
         this.timeout = timeout.toNanos();
     }
 
 
     public synchronized boolean acquirePermission() {
-        long deadline = timeout > 0 ? System.nanoTime() + timeout : Long.MAX_VALUE;
+        long deadline = 0 < timeout ? System.nanoTime() + timeout : Long.MAX_VALUE;
         while (true) {
             long now = System.nanoTime();
             if (now >= deadline) {
@@ -44,11 +44,11 @@ public class SlidingWindowRateLimiter {
                 return true;
             }
             Long oldest = timestamps.peekFirst();
-            if (oldest == null) {
+            if (null == oldest) {
                 continue;
             }
             long waitTime = (oldest + windowNanos) - now;
-            if (waitTime > 0) {
+            if (0 < waitTime) {
                 try {
                     wait(waitTime / 1_000_000L, (int) (waitTime % 1_000_000L));
                 } catch (InterruptedException e) {

@@ -30,7 +30,7 @@ public class RequestPerSecondLimitFilter implements RateLimitFilter {
         synchronized (requestTimestamps) {
             List<Long> clientRequests = requestTimestamps.computeIfAbsent(clientIP, k -> new ArrayList<>());
             clientRequests.removeIf(timestamp -> timestamp < now - 1);
-            if (clientRequests.size() >= MAX_REQUESTS_PER_SECOND) {
+            if (MAX_REQUESTS_PER_SECOND <= clientRequests.size()) {
                 response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
                 response.getWriter().write("Too many requests from this IP.");
                 return;

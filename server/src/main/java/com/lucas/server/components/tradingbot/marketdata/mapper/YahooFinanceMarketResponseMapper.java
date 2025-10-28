@@ -23,7 +23,7 @@ public class YahooFinanceMarketResponseMapper implements Mapper<JsonNode, Market
             BigDecimal maxHigh = new BigDecimal(quote.get("high").get(0).asText());
             for (JsonNode node : quote.get("high")) {
                 BigDecimal value = new BigDecimal(node.asText());
-                if (value.compareTo(maxHigh) > 0) {
+                if (0 < value.compareTo(maxHigh)) {
                     maxHigh = value;
                 }
             }
@@ -31,7 +31,7 @@ public class YahooFinanceMarketResponseMapper implements Mapper<JsonNode, Market
             BigDecimal minLow = new BigDecimal(quote.get("low").get(0).asText());
             for (JsonNode node : quote.get("high")) {
                 BigDecimal value = new BigDecimal(node.asText());
-                if (value.compareTo(minLow) < 0) {
+                if (0 > value.compareTo(minLow)) {
                     minLow = value;
                 }
             }

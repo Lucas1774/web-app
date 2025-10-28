@@ -24,7 +24,7 @@ public class SudokuAttributeConverter implements AttributeConverter<int[], Strin
         int[] rawData = new int[SUDOKU_NUMBER_OF_CELLS];
         for (int i = 0; i < sudoku.length(); i++) {
             char c = sudoku.charAt(i);
-            if (c < '0' || c > '9') {
+            if ('0' > c || '9' < c) {
                 throw new NumberFormatException();
             }
             rawData[i] = Character.getNumericValue(sudoku.charAt(i));
