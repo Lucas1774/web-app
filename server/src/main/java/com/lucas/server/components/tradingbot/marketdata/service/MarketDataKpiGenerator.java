@@ -10,12 +10,11 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static com.lucas.server.common.Constants.*;
+import static com.lucas.utils.Utils.computeIfAbsent;
 
 @SuppressWarnings("LoggingSimilarMessage")
 @Component
@@ -28,12 +27,6 @@ public class MarketDataKpiGenerator {
         this.service = service;
     }
 
-    private static <T> void computeIfAbsent(Supplier<T> getter, Consumer<T> setter, T value) {
-        if (getter.get() == null) {
-            setter.accept(value);
-        }
-    }
-
     @SuppressWarnings("UnusedReturnValue")
     public MarketData computeDerivedFields(MarketData md) {
         List<MarketData> previous14 = service.findTop14BySymbolIdAndDateBeforeOrderByDateDesc(md.getSymbol().getId(), md.getDate());
@@ -44,9 +37,9 @@ public class MarketDataKpiGenerator {
         MarketData previous = previous14.getFirst();
         computeChange(md, previous.getPrice());
 
-        computeIfAbsent(md::getPreviousAtr, md::setPreviousAtr, previous.getAtr());
-        computeIfAbsent(md::getPreviousAverageGain, md::setPreviousAverageGain, previous.getAverageGain());
-        computeIfAbsent(md::getPreviousAverageLoss, md::setPreviousAverageLoss, previous.getAverageLoss());
+        computeIfAbsent(md::getPreviousAtr, md::setPreviousAtr, previous::getAtr);
+        computeIfAbsent(md::getPreviousAverageGain, md::setPreviousAverageGain, previous::getAverageGain);
+        computeIfAbsent(md::getPreviousAverageLoss, md::setPreviousAverageLoss, previous::getAverageLoss);
         if (previous14.size() < 14) {
             logger.warn(NON_COMPUTABLE_KPI_WARN, "RSI, ATR", previous14);
             return md;
@@ -56,20 +49,20 @@ public class MarketDataKpiGenerator {
         if (null == md.getAverageGain() || null == md.getAverageLoss()) {
             computeGainsAndLoses(previous14);
         }
-        computeIfAbsent(md::getAtr, md::setAtr, computeAtr(previous14).orElse(null));
+        computeIfAbsent(md::getAtr, md::setAtr, () -> computeAtr(previous14).orElse(null));
         return md;
     }
 
     public void computeChange(MarketData md, BigDecimal previousPrice) {
-        computeIfAbsent(md::getPreviousClose, md::setPreviousClose, previousPrice);
+        computeIfAbsent(md::getPreviousClose, md::setPreviousClose, () -> previousPrice);
         BigDecimal change = md.getPrice().subtract(previousPrice);
-        computeIfAbsent(md::getChange, md::setChange, change);
+        computeIfAbsent(md::getChange, md::setChange, () -> change);
         if (previousPrice.compareTo(BigDecimal.ZERO) != 0) {
             BigDecimal percentage = change
                     .divide(previousPrice, 8, RoundingMode.HALF_UP)
                     .multiply(BigDecimal.valueOf(100))
                     .setScale(4, RoundingMode.HALF_UP);
-            computeIfAbsent(md::getChangePercent, md::setChangePercent, percentage);
+            computeIfAbsent(md::getChangePercent, md::setChangePercent, () -> percentage);
         }
     }
 

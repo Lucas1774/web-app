@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.lucas.server.common.Constants.*;
+import static com.lucas.utils.Utils.EMPTY_STRING;
 
 public class AIClient {
 

@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.lucas.server.common.Constants.DEFAULT_USERNAME;
-import static com.lucas.server.common.Constants.EMPTY_STRING;
+import static com.lucas.utils.Utils.EMPTY_STRING;
 
 @RestController
 @RequestMapping("/shopping")

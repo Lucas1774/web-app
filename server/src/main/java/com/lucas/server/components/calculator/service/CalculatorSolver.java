@@ -5,8 +5,8 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 
-import static com.lucas.server.common.Constants.EMPTY_STRING;
 import static com.lucas.server.common.Constants.INVALID_EXPRESSION;
+import static com.lucas.utils.Utils.EMPTY_STRING;
 
 @Component
 public class CalculatorSolver {

@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import static com.lucas.server.common.Constants.EMPTY_STRING;
+import static com.lucas.utils.Utils.EMPTY_STRING;
 
 @RestController
 @RequestMapping("/calculator")

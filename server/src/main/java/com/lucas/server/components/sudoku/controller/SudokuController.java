@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Random;
 
-import static com.lucas.server.common.Constants.EMPTY_STRING;
 import static com.lucas.server.common.Constants.SUDOKU_NUMBER_OF_CELLS;
+import static com.lucas.utils.Utils.EMPTY_STRING;
 
 @RestController
 @RequestMapping("/sudoku")

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
-import static com.lucas.server.common.Constants.EMPTY_STRING;
+import static com.lucas.utils.Utils.EMPTY_STRING;
 
 @RestController
 @RequestMapping("/authentication")

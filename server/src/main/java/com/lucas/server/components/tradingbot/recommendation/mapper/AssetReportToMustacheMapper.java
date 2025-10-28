@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Objects;
 
 import static com.lucas.server.common.Constants.*;
+import static com.lucas.utils.Utils.EMPTY_STRING;
 
 @Component
 public class AssetReportToMustacheMapper implements Mapper<List<AssetReportRaw>, String> {

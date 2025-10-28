@@ -7,6 +7,7 @@ import com.lucas.server.components.tradingbot.common.jpa.DataManager;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.news.jpa.News;
 import com.lucas.server.components.tradingbot.recommendation.jpa.Recommendation;
+import com.lucas.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -118,11 +119,6 @@ public class DailyScheduler {
      * Abstraction for testing purposes
      */
     public void sleep() {
-        try {
-            Thread.sleep(120_000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            logger.error(e.getMessage(), e);
-        }
+        Utils.sleep(120_000, e -> logger.error(e.getMessage(), e));
     }
 }

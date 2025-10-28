@@ -11,7 +11,9 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.lucas.server.common.Constants.*;
+import static com.lucas.server.common.Constants.MAPPING_ERROR;
+import static com.lucas.server.common.Constants.SUDOKU_IGNORED_MALFORMED_JSON_WARN;
+import static com.lucas.utils.Utils.EMPTY_STRING;
 
 @Component
 public class SudokuFileToSudokuMapper implements Mapper<String, List<Sudoku>> {
