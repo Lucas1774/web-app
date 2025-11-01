@@ -3,10 +3,10 @@ package com.lucas.server.components.tradingbot.recommendation.mapper;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
-import com.lucas.server.common.Mapper;
 import com.lucas.server.common.exception.ConfigurationException;
-import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.AssetReportRaw;
+import com.lucas.utils.Mapper;
+import com.lucas.utils.exception.MappingException;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -44,13 +44,13 @@ public class AssetReportToMustacheMapper implements Mapper<List<AssetReportRaw>,
     }
 
     @Override
-    public String map(List<AssetReportRaw> assets) throws JsonProcessingException {
+    public String map(List<AssetReportRaw> assets) throws MappingException {
         StringWriter out = new StringWriter();
         try {
             mustache.execute(out, Collections.singletonMap("assets", assets.stream().map(AssetReport::from).toList())).flush();
             return out.toString();
         } catch (Exception e) {
-            throw new JsonProcessingException(MessageFormat.format(MAPPING_ERROR, "asset report"), e);
+            throw new MappingException(MessageFormat.format(MAPPING_ERROR, "asset report"), e);
         }
     }
 

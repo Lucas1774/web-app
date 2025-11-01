@@ -2,12 +2,12 @@ package com.lucas.server.components.tradingbot.common;
 
 import com.lucas.server.common.MqttPublisher;
 import com.lucas.server.common.exception.ClientException;
-import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.news.jpa.News;
 import com.lucas.server.components.tradingbot.recommendation.jpa.Recommendation;
 import com.lucas.utils.Utils;
+import com.lucas.utils.exception.MappingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -48,7 +48,7 @@ public class DailyScheduler {
         try {
             List<MarketData> updatedMds = dataManager.retrieveMarketData(symbolNames, MarketDataType.LAST);
             logger.info(SCHEDULED_TASK_SUCCESS_INFO, "fetched market data", updatedMds);
-        } catch (ClientException | JsonProcessingException e) {
+        } catch (ClientException | MappingException e) {
             logger.error(e.getMessage(), e);
         }
 
@@ -72,7 +72,7 @@ public class DailyScheduler {
         try {
             List<News> updatedNews = dataManager.retrieveNewsByName(symbolNames);
             logger.info(SCHEDULED_TASK_SUCCESS_INFO, "fetched news", updatedNews.size());
-        } catch (ClientException | JsonProcessingException e) {
+        } catch (ClientException | MappingException e) {
             logger.error(e.getMessage(), e);
         }
 

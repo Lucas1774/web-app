@@ -1,10 +1,10 @@
 package com.lucas.server.components.tradingbot.news.mapper;
 
 import com.lucas.server.TestConfiguration;
-import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.news.jpa.News;
+import com.lucas.utils.exception.MappingException;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -323,7 +323,7 @@ class YahooFinanceNewsResponseMapperTest {
 
         // when & then
         assertThatThrownBy(() -> mapper.mapAll(doc, symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow()))
-                .isInstanceOf(JsonProcessingException.class)
+                .isInstanceOf(MappingException.class)
                 .hasMessageContaining(MessageFormat.format(MAPPING_ERROR, NEWS));
     }
 

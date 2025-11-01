@@ -3,6 +3,7 @@ package com.lucas.server.components.tradingbot.recommendation.mapper;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.AssetReportRaw;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.NewsItemRaw;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.PricePointRaw;
+import com.lucas.utils.exception.MappingException;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -67,7 +68,7 @@ class AssetReportToMustacheMapperTest {
     }
 
     @Test
-    void map_injectsMandatoryFields_and_leavesNullsEmpty() throws IOException {
+    void map_injectsMandatoryFields_and_leavesNullsEmpty() throws MappingException, IOException {
         // given
         AssetReportRaw asset = getAssetReportNullValues();
 
@@ -96,7 +97,7 @@ class AssetReportToMustacheMapperTest {
     }
 
     @Test
-    void map_injectsAllField() throws IOException {
+    void map_injectsAllField() throws IOException, MappingException {
         // given
         AssetReportRaw asset = getAssetReportAllValues();
 

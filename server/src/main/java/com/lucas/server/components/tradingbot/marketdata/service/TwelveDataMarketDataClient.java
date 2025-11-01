@@ -3,11 +3,11 @@ package com.lucas.server.components.tradingbot.marketdata.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.lucas.server.common.HttpRequestClient;
 import com.lucas.server.common.exception.ClientException;
-import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
-import com.lucas.server.components.tradingbot.config.SlidingWindowRateLimiter;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.marketdata.mapper.TwelveDataMarketResponseMapper;
+import com.lucas.utils.SlidingWindowRateLimiter;
+import com.lucas.utils.exception.MappingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -58,8 +58,8 @@ public class TwelveDataMarketDataClient {
     }
 
     @SuppressWarnings("DefaultAnnotationParam")
-    @Retryable(retryFor = {ClientException.class, JsonProcessingException.class}, maxAttempts = REQUEST_MAX_ATTEMPTS)
-    public List<MarketData> retrieveMarketData(Symbol symbol, MarketDataType type) throws ClientException, JsonProcessingException {
+    @Retryable(retryFor = {ClientException.class, MappingException.class}, maxAttempts = REQUEST_MAX_ATTEMPTS)
+    public List<MarketData> retrieveMarketData(Symbol symbol, MarketDataType type) throws ClientException, MappingException {
         rateLimiter.acquirePermission();
         logger.info(RETRIEVING_DATA_INFO, MARKET_DATA, symbol);
         String url = typeToBuilderCustomizer.get(type).apply(UriComponentsBuilder.fromUriString(endpoint + typeToEndpoint.get(type)))
@@ -73,6 +73,6 @@ public class TwelveDataMarketDataClient {
 
     @FunctionalInterface
     private interface JsonToMarketDataFunction {
-        List<MarketData> apply(Symbol symbol, JsonNode jsonNode) throws JsonProcessingException;
+        List<MarketData> apply(Symbol symbol, JsonNode jsonNode) throws MappingException;
     }
 }

@@ -1,9 +1,9 @@
 package com.lucas.server.components.tradingbot.marketdata.controller;
 
 import com.lucas.server.common.exception.ClientException;
-import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
+import com.lucas.utils.exception.MappingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -30,7 +30,7 @@ public class MarketDataController {
     public ResponseEntity<List<MarketData>> fetchAndSaveAll() {
         try {
             return ResponseEntity.ok(jpaService.retrieveMarketData(SP500_SYMBOLS, MarketDataType.LAST));
-        } catch (ClientException | JsonProcessingException e) {
+        } catch (ClientException | MappingException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -40,7 +40,7 @@ public class MarketDataController {
     public ResponseEntity<List<MarketData>> fetchAndSaveSome(@PathVariable List<String> symbols) {
         try {
             return ResponseEntity.ok(jpaService.retrieveMarketData(symbols, MarketDataType.LAST));
-        } catch (ClientException | JsonProcessingException e) {
+        } catch (ClientException | MappingException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -50,7 +50,7 @@ public class MarketDataController {
     public ResponseEntity<List<MarketData>> fetchAndSaveHistoricAll() {
         try {
             return ResponseEntity.ok(jpaService.retrieveMarketData(SP500_SYMBOLS, MarketDataType.HISTORIC));
-        } catch (JsonProcessingException | ClientException e) {
+        } catch (MappingException | ClientException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -60,7 +60,7 @@ public class MarketDataController {
     public ResponseEntity<List<MarketData>> fetchAndSaveHistoricSome(@PathVariable List<String> symbols) {
         try {
             return ResponseEntity.ok(jpaService.retrieveMarketData(symbols, MarketDataType.HISTORIC));
-        } catch (JsonProcessingException | ClientException e) {
+        } catch (MappingException | ClientException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }

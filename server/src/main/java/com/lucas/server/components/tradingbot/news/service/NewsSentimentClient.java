@@ -2,9 +2,9 @@ package com.lucas.server.components.tradingbot.news.service;
 
 import com.lucas.server.common.HttpRequestClient;
 import com.lucas.server.common.exception.ClientException;
-import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.news.jpa.News;
 import com.lucas.server.components.tradingbot.news.mapper.FinbertResponseMapper;
+import com.lucas.utils.exception.MappingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,8 +29,8 @@ public class NewsSentimentClient {
     }
 
     @SuppressWarnings("DefaultAnnotationParam")
-    @Retryable(retryFor = {ClientException.class, JsonProcessingException.class}, maxAttempts = REQUEST_MAX_ATTEMPTS)
-    public News generateSentiment(News news) throws ClientException, JsonProcessingException {
+    @Retryable(retryFor = {ClientException.class, MappingException.class}, maxAttempts = REQUEST_MAX_ATTEMPTS)
+    public News generateSentiment(News news) throws ClientException, MappingException {
         logger.info(RETRIEVING_DATA_INFO, SENTIMENT, news);
         return mapper.map(httpRequestClient.fetch(url + ANALYZE, news.getHeadline() + " [SEP] " + news.getSummary()), news);
     }

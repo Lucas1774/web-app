@@ -1,8 +1,8 @@
 package com.lucas.server.components.sudoku.mapper;
 
-import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.sudoku.jpa.Sudoku;
 import com.lucas.server.components.sudoku.service.SudokuSolver;
+import com.lucas.utils.exception.MappingException;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -48,9 +48,9 @@ class StringToSudokuMapperTest {
 
     @ParameterizedTest
     @MethodSource("getSudoku")
-    void testMap(String value, boolean serializable, boolean isSolvable, boolean isActuallySolvable) throws JsonProcessingException {
+    void testMap(String value, boolean serializable, boolean isSolvable, boolean isActuallySolvable) throws MappingException {
         if (!serializable) {
-            assertThatThrownBy(() -> mapper.map(value)).isInstanceOf(JsonProcessingException.class);
+            assertThatThrownBy(() -> mapper.map(value)).isInstanceOf(MappingException.class);
         } else {
             Sudoku sudoku = mapper.map(value);
             assertEquals(isSolvable, solver.isValid(sudoku, -1));

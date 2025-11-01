@@ -1,11 +1,12 @@
 package com.lucas.server.components.tradingbot.marketdata.mapper;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lucas.server.TestConfiguration;
-import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
+import com.lucas.utils.exception.MappingException;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +38,7 @@ class FinnhubMarketResponseMapperTest {
 
     @Test
     @Transactional
-    void whenMapValidJson_thenReturnMarketData() throws JsonProcessingException, com.fasterxml.jackson.core.JsonProcessingException {
+    void whenMapValidJson_thenReturnMarketData() throws MappingException, JsonProcessingException {
         // given
         String json = """
                 {
@@ -77,7 +78,7 @@ class FinnhubMarketResponseMapperTest {
         String invalidJson = "{}";
 
         // when & then
-        assertThatThrownBy(() -> mapper.map(objectMapper.readTree(invalidJson), symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow())).isInstanceOf(JsonProcessingException.class);
+        assertThatThrownBy(() -> mapper.map(objectMapper.readTree(invalidJson), symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow())).isInstanceOf(MappingException.class);
     }
 
     @Test
@@ -98,7 +99,7 @@ class FinnhubMarketResponseMapperTest {
 
         // when & then
         assertThatThrownBy(() -> mapper.map(objectMapper.readTree(json), symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow()))
-                .isInstanceOf(JsonProcessingException.class)
+                .isInstanceOf(MappingException.class)
                 .hasMessageContaining(MessageFormat.format(MAPPING_ERROR, MARKET_DATA));
     }
 }

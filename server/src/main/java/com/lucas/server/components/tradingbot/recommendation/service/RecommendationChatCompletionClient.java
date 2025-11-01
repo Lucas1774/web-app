@@ -4,11 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.lucas.server.common.exception.ClientException;
-import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.AIClient;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
-import com.lucas.server.components.tradingbot.config.SlidingWindowRateLimiter;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.news.jpa.News;
 import com.lucas.server.components.tradingbot.recommendation.jpa.Recommendation;
@@ -16,6 +14,8 @@ import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportT
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.AssetReportRaw;
 import com.lucas.server.components.tradingbot.recommendation.mapper.RecommendationChatCompletionResponseMapper;
 import com.lucas.server.components.tradingbot.recommendation.prompt.PromptRepository;
+import com.lucas.utils.SlidingWindowRateLimiter;
+import com.lucas.utils.exception.MappingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.retry.annotation.Recover;
@@ -64,18 +64,18 @@ public class RecommendationChatCompletionClient {
 
     public List<Recommendation> getRecommendations(List<DataManager.SymbolPayload> payload, AIClient client, NewsFetcher newsFetcher,
                                                    LongFunction<List<News>> backupNewsFetcher,
-                                                   MarketDataFetcher marketDataFetcher) throws IOException, ClientException {
+                                                   MarketDataFetcher marketDataFetcher) throws IOException, ClientException, MappingException {
         synchronized (yahooApiLock) {
             payload.forEach(p -> {
                 try {
                     p.setPremarket(marketDataFetcher.apply(p));
-                } catch (ClientException | JsonProcessingException e) {
+                } catch (ClientException | MappingException e) {
                     logger.warn(RETRIEVAL_FAILED_WARN, PREMARKET, p.getSymbol(), e);
                     p.setPremarket(null);
                 }
                 try {
                     p.setNews(newsFetcher.apply(p));
-                } catch (ClientException | JsonProcessingException e) {
+                } catch (ClientException | MappingException e) {
                     logger.warn(RETRIEVAL_FAILED_WARN, NEWS, p.getSymbol(), e);
                     p.setNews(backupNewsFetcher.apply(p.getSymbol().getId()));
                 }
@@ -122,12 +122,12 @@ public class RecommendationChatCompletionClient {
 
     @FunctionalInterface
     public interface NewsFetcher {
-        List<News> apply(DataManager.SymbolPayload payload) throws ClientException, JsonProcessingException;
+        List<News> apply(DataManager.SymbolPayload payload) throws ClientException, MappingException;
     }
 
     @FunctionalInterface
     public interface MarketDataFetcher {
         @SuppressWarnings("unused")
-        MarketData apply(DataManager.SymbolPayload payload) throws ClientException, JsonProcessingException;
+        MarketData apply(DataManager.SymbolPayload payload) throws ClientException, MappingException;
     }
 }

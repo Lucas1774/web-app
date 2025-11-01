@@ -1,8 +1,8 @@
 package com.lucas.server.components.sudoku.mapper;
 
-import com.lucas.server.common.Mapper;
-import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.sudoku.jpa.Sudoku;
+import com.lucas.utils.Mapper;
+import com.lucas.utils.exception.MappingException;
 import org.springframework.stereotype.Component;
 
 import java.text.MessageFormat;
@@ -20,14 +20,14 @@ public class StringToSudokuMapper implements Mapper<String, Sudoku> {
     }
 
     @Override
-    public Sudoku map(String sudoku) throws JsonProcessingException {
+    public Sudoku map(String sudoku) throws MappingException {
         try {
             if (SUDOKU_NUMBER_OF_CELLS != sudoku.length()) {
                 throw new NumberFormatException();
             }
             return Sudoku.withValues(attributeConverter.convertToEntityAttribute(sudoku));
         } catch (Exception e) {
-            throw new JsonProcessingException(MessageFormat.format(MAPPING_ERROR, "sudoku"), e);
+            throw new MappingException(MessageFormat.format(MAPPING_ERROR, "sudoku"), e);
         }
     }
 }

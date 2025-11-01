@@ -3,6 +3,7 @@ package com.lucas.server.components.tradingbot.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lucas.server.common.HttpRequestClient;
 import com.lucas.server.components.tradingbot.common.AIClient;
+import com.lucas.utils.SlidingWindowRateLimiter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

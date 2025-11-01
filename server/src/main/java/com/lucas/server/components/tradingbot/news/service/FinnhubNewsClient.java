@@ -2,11 +2,11 @@ package com.lucas.server.components.tradingbot.news.service;
 
 import com.lucas.server.common.HttpRequestClient;
 import com.lucas.server.common.exception.ClientException;
-import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.FinnhubRateLimiter;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.news.jpa.News;
 import com.lucas.server.components.tradingbot.news.mapper.FinnhubNewsResponseMapper;
+import com.lucas.utils.exception.MappingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,8 +37,8 @@ public class FinnhubNewsClient {
     }
 
     @SuppressWarnings("DefaultAnnotationParam")
-    @Retryable(retryFor = {ClientException.class, JsonProcessingException.class}, maxAttempts = REQUEST_MAX_ATTEMPTS)
-    public List<News> retrieveNewsByDateRange(Symbol symbol, LocalDate from, LocalDate to) throws ClientException, JsonProcessingException {
+    @Retryable(retryFor = {ClientException.class, MappingException.class}, maxAttempts = REQUEST_MAX_ATTEMPTS)
+    public List<News> retrieveNewsByDateRange(Symbol symbol, LocalDate from, LocalDate to) throws ClientException, MappingException {
         String apiKey = finnhubRateLimiter.acquirePermission();
         logger.info(RETRIEVING_DATA_INFO, NEWS, symbol);
         String url = UriComponentsBuilder.fromUriString(endpoint + COMPANY_NEWS)

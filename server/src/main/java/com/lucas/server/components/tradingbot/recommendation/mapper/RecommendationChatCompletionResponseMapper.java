@@ -1,13 +1,13 @@
 package com.lucas.server.components.tradingbot.recommendation.mapper;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.lucas.server.common.Mapper;
-import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.news.jpa.News;
 import com.lucas.server.components.tradingbot.recommendation.jpa.Recommendation;
+import com.lucas.utils.Mapper;
+import com.lucas.utils.exception.MappingException;
 import org.flywaydb.core.internal.util.StringUtils;
 import org.springframework.stereotype.Component;
 
@@ -23,7 +23,7 @@ import static com.lucas.utils.Utils.EMPTY_STRING;
 public class RecommendationChatCompletionResponseMapper implements Mapper<JsonNode, Recommendation> {
 
     @Override
-    public Recommendation map(JsonNode json) throws JsonProcessingException {
+    public Recommendation map(JsonNode json) throws MappingException {
         try {
             return new Recommendation()
                     .setDate(LocalDate.now())
@@ -31,12 +31,12 @@ public class RecommendationChatCompletionResponseMapper implements Mapper<JsonNo
                     .setConfidence(new BigDecimal(json.get("confidence").asText()))
                     .setRationale(StringUtils.left(json.get("rationale").asText(), 1024));
         } catch (Exception e) {
-            throw new JsonProcessingException(MessageFormat.format(MAPPING_ERROR, RECOMMENDATION), e);
+            throw new MappingException(MessageFormat.format(MAPPING_ERROR, RECOMMENDATION), e);
         }
     }
 
     public List<Recommendation> mapAll(List<DataManager.SymbolPayload> payload, JsonNode jsonNode, String message,
-                                       String model) throws JsonProcessingException {
+                                       String model) throws MappingException {
         try {
             List<Recommendation> recommendations = new ArrayList<>();
             Map<String, Symbol> symbolByName = new HashMap<>();
@@ -75,7 +75,7 @@ public class RecommendationChatCompletionResponseMapper implements Mapper<JsonNo
 
             return recommendations;
         } catch (Exception e) {
-            throw new JsonProcessingException(MessageFormat.format(MAPPING_ERROR, "recommendations"), e);
+            throw new MappingException(MessageFormat.format(MAPPING_ERROR, "recommendations"), e);
         }
     }
 }

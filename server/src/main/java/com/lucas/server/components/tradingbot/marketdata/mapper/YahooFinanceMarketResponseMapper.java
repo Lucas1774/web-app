@@ -1,10 +1,10 @@
 package com.lucas.server.components.tradingbot.marketdata.mapper;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.lucas.server.common.Mapper;
-import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
+import com.lucas.utils.Mapper;
+import com.lucas.utils.exception.MappingException;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -16,7 +16,7 @@ import static com.lucas.server.common.Constants.*;
 public class YahooFinanceMarketResponseMapper implements Mapper<JsonNode, MarketData> {
 
     @Override
-    public MarketData map(JsonNode json) throws JsonProcessingException {
+    public MarketData map(JsonNode json) throws MappingException {
         try {
             JsonNode quote = json.get("indicators").get("quote").get(0);
 
@@ -42,19 +42,19 @@ public class YahooFinanceMarketResponseMapper implements Mapper<JsonNode, Market
                     .setLow(minLow)
                     .setPrice(new BigDecimal(quote.get("close").get(quote.get("close").size() - 1).asText()));
         } catch (Exception e) {
-            throw new JsonProcessingException(MessageFormat.format(MAPPING_ERROR, PREMARKET), e);
+            throw new MappingException(MessageFormat.format(MAPPING_ERROR, PREMARKET), e);
         }
     }
 
-    public MarketData map(JsonNode json, Symbol symbol) throws JsonProcessingException {
+    public MarketData map(JsonNode json, Symbol symbol) throws MappingException {
         try {
             JsonNode result = json.get("chart").get("result").get(0);
             if (!symbol.getName().equals(result.get("meta").get(SYMBOL).asText())) {
-                throw new JsonProcessingException(MessageFormat.format(MAPPING_ERROR, PREMARKET));
+                throw new MappingException(MessageFormat.format(MAPPING_ERROR, PREMARKET));
             }
             return map(result).setSymbol(symbol);
         } catch (Exception e) {
-            throw new JsonProcessingException(MessageFormat.format(MAPPING_ERROR, PREMARKET), e);
+            throw new MappingException(MessageFormat.format(MAPPING_ERROR, PREMARKET), e);
         }
     }
 }

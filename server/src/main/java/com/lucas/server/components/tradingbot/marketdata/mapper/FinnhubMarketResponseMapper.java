@@ -1,10 +1,10 @@
 package com.lucas.server.components.tradingbot.marketdata.mapper;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.lucas.server.common.Mapper;
-import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
+import com.lucas.utils.Mapper;
+import com.lucas.utils.exception.MappingException;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -19,7 +19,7 @@ import static com.lucas.server.common.Constants.MARKET_DATA;
 public class FinnhubMarketResponseMapper implements Mapper<JsonNode, MarketData> {
 
     @Override
-    public MarketData map(JsonNode json) throws JsonProcessingException {
+    public MarketData map(JsonNode json) throws MappingException {
         try {
             return new MarketData()
                     .setOpen(new BigDecimal(json.get("o").asText()))
@@ -33,11 +33,11 @@ public class FinnhubMarketResponseMapper implements Mapper<JsonNode, MarketData>
                     .setChange(new BigDecimal(json.get("d").asText()))
                     .setChangePercent(new BigDecimal(json.get("dp").asText()));
         } catch (Exception e) {
-            throw new JsonProcessingException(MessageFormat.format(MAPPING_ERROR, MARKET_DATA), e);
+            throw new MappingException(MessageFormat.format(MAPPING_ERROR, MARKET_DATA), e);
         }
     }
 
-    public MarketData map(JsonNode json, Symbol symbol) throws JsonProcessingException {
+    public MarketData map(JsonNode json, Symbol symbol) throws MappingException {
         return map(json).setSymbol(symbol);
     }
 }

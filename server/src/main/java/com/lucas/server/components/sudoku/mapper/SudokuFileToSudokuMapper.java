@@ -1,8 +1,8 @@
 package com.lucas.server.components.sudoku.mapper;
 
-import com.lucas.server.common.Mapper;
-import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.sudoku.jpa.Sudoku;
+import com.lucas.utils.Mapper;
+import com.lucas.utils.exception.MappingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -34,20 +34,20 @@ public class SudokuFileToSudokuMapper implements Mapper<String, List<Sudoku>> {
      * @param content the string to parse
      */
     @Override
-    public List<Sudoku> map(String content) throws JsonProcessingException {
+    public List<Sudoku> map(String content) throws MappingException {
         List<Sudoku> sudoku = new ArrayList<>();
         String[] lines;
         try {
             lines = content.split("\\\\r\\\\n|\\\\r|\\\\n");
         } catch (Exception e) {
-            throw new JsonProcessingException(MessageFormat.format(MAPPING_ERROR, "sudoku"), e);
+            throw new MappingException(MessageFormat.format(MAPPING_ERROR, "sudoku"), e);
         }
         String newRawData = EMPTY_STRING;
         for (int i = 1; i <= lines.length; i++) {
             if (0 == i % 10) {
                 try {
                     sudoku.add(sudokuMapper.map(newRawData));
-                } catch (JsonProcessingException e) {
+                } catch (MappingException e) {
                     logger.warn(SUDOKU_IGNORED_MALFORMED_JSON_WARN, newRawData, e);
                 }
                 newRawData = EMPTY_STRING;

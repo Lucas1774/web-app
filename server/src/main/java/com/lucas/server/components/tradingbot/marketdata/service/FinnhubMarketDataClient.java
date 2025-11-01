@@ -2,11 +2,11 @@ package com.lucas.server.components.tradingbot.marketdata.service;
 
 import com.lucas.server.common.HttpRequestClient;
 import com.lucas.server.common.exception.ClientException;
-import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.FinnhubRateLimiter;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.marketdata.mapper.FinnhubMarketResponseMapper;
+import com.lucas.utils.exception.MappingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,8 +34,8 @@ public class FinnhubMarketDataClient {
     }
 
     @SuppressWarnings("DefaultAnnotationParam")
-    @Retryable(retryFor = {ClientException.class, JsonProcessingException.class}, maxAttempts = REQUEST_MAX_ATTEMPTS)
-    public MarketData retrieveMarketData(Symbol symbol) throws ClientException, JsonProcessingException {
+    @Retryable(retryFor = {ClientException.class, MappingException.class}, maxAttempts = REQUEST_MAX_ATTEMPTS)
+    public MarketData retrieveMarketData(Symbol symbol) throws ClientException, MappingException {
         String apiKey = finnhubRateLimiter.acquirePermission();
         logger.info(RETRIEVING_DATA_INFO, MARKET_DATA, symbol);
         String url = UriComponentsBuilder.fromUriString(endpoint + QUOTE)

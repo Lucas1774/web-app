@@ -1,10 +1,10 @@
 package com.lucas.server.components.tradingbot.news.mapper;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.lucas.server.common.Mapper;
-import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.news.jpa.News;
+import com.lucas.utils.Mapper;
+import com.lucas.utils.exception.MappingException;
 import org.flywaydb.core.internal.util.StringUtils;
 import org.springframework.stereotype.Component;
 
@@ -22,7 +22,7 @@ import static com.lucas.server.common.Constants.NEWS;
 public class FinnhubNewsResponseMapper implements Mapper<JsonNode, News> {
 
     @Override
-    public News map(JsonNode json) throws JsonProcessingException {
+    public News map(JsonNode json) throws MappingException {
         try {
             return new News()
                     .setExternalId(json.get("id").asLong())
@@ -37,11 +37,11 @@ public class FinnhubNewsResponseMapper implements Mapper<JsonNode, News> {
                     .setCategory(json.get("category").asText())
                     .setImage(json.get("image").asText());
         } catch (Exception e) {
-            throw new JsonProcessingException(MessageFormat.format(MAPPING_ERROR, NEWS), e);
+            throw new MappingException(MessageFormat.format(MAPPING_ERROR, NEWS), e);
         }
     }
 
-    public List<News> mapAll(JsonNode json, Symbol symbol) throws JsonProcessingException {
+    public List<News> mapAll(JsonNode json, Symbol symbol) throws MappingException {
         if (!json.isArray()) {
             return Collections.emptyList();
         }

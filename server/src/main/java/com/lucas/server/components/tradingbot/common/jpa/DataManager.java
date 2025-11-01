@@ -2,7 +2,6 @@ package com.lucas.server.components.tradingbot.common.jpa;
 
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.common.exception.IllegalStateException;
-import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.AIClient;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataJpaService;
@@ -18,6 +17,7 @@ import com.lucas.server.components.tradingbot.portfolio.service.PortfolioManager
 import com.lucas.server.components.tradingbot.recommendation.jpa.Recommendation;
 import com.lucas.server.components.tradingbot.recommendation.jpa.RecommendationsJpaService;
 import com.lucas.server.components.tradingbot.recommendation.service.RecommendationChatCompletionClient;
+import com.lucas.utils.exception.MappingException;
 import jakarta.transaction.Transactional;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -302,34 +302,34 @@ public class DataManager {
         jobs.add(new BatchJob(executor.submit(task), snapshot.stream().map(SymbolPayload::getSymbol).toList()));
     }
 
-    @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})
+    @Transactional(rollbackOn = {ClientException.class, MappingException.class})
     public List<News> generateSentiment(List<String> symbolNames, LocalDateTime from, LocalDateTime to)
-            throws ClientException, JsonProcessingException {
+            throws ClientException, MappingException {
         List<Symbol> symbols = symbolService.getOrCreateByName(symbolNames);
         logger.info(GENERATION_SUCCESSFUL_INFO, SENTIMENT);
         return newsService.generateSentiment(symbols.stream().map(Symbol::getId).toList(), from, to);
     }
 
-    @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})
-    public List<News> retrieveNewsByName(List<String> symbolNames) throws ClientException, JsonProcessingException {
+    @Transactional(rollbackOn = {ClientException.class, MappingException.class})
+    public List<News> retrieveNewsByName(List<String> symbolNames) throws ClientException, MappingException {
         List<Symbol> symbols = symbolService.getOrCreateByName(symbolNames);
         return retrieveNews(symbols);
     }
 
-    @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})
-    public List<News> retrieveNewsById(List<Long> symbolIds) throws ClientException, JsonProcessingException {
+    @Transactional(rollbackOn = {ClientException.class, MappingException.class})
+    public List<News> retrieveNewsById(List<Long> symbolIds) throws ClientException, MappingException {
         List<Symbol> symbols = symbolService.findAllById(symbolIds);
         return retrieveNews(symbols);
     }
 
-    private List<News> retrieveNews(List<Symbol> symbols) throws ClientException, JsonProcessingException {
+    private List<News> retrieveNews(List<Symbol> symbols) throws ClientException, MappingException {
         List<News> news = retrieveYahooNews(symbols);
         logger.info(GENERATION_SUCCESSFUL_INFO, NEWS);
         newsService.createOrUpdate(news);
         return news;
     }
 
-    private List<News> retrieveYahooNews(List<Symbol> symbols) throws ClientException, JsonProcessingException {
+    private List<News> retrieveYahooNews(List<Symbol> symbols) throws ClientException, MappingException {
         Map<Long, News> newsByExternalId = new HashMap<>();
         for (Symbol symbol : symbols) {
             List<News> updated = yahooFinanceNewsClient.retrieveNews(symbol);
@@ -343,22 +343,22 @@ public class DataManager {
         return new ArrayList<>(newsByExternalId.values());
     }
 
-    @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})
+    @Transactional(rollbackOn = {ClientException.class, MappingException.class})
     public List<News> retrieveNewsByDateRangeAndId(List<Long> symbolIds, LocalDate from,
-                                                   LocalDate to) throws ClientException, JsonProcessingException {
+                                                   LocalDate to) throws ClientException, MappingException {
         List<Symbol> symbols = symbolService.findAllById(symbolIds);
         return retrieveNewsByDateRange(symbols, from, to);
     }
 
-    @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})
+    @Transactional(rollbackOn = {ClientException.class, MappingException.class})
     public List<News> retrieveNewsByDateRangeAndName(List<String> symbolNames, LocalDate from,
-                                                     LocalDate to) throws ClientException, JsonProcessingException {
+                                                     LocalDate to) throws ClientException, MappingException {
         List<Symbol> symbols = symbolService.getOrCreateByName(symbolNames);
         return retrieveNewsByDateRange(symbols, from, to);
     }
 
     private List<News> retrieveNewsByDateRange(List<Symbol> symbols, LocalDate from,
-                                               LocalDate to) throws ClientException, JsonProcessingException {
+                                               LocalDate to) throws ClientException, MappingException {
         Map<Long, News> newsByExternalId = new HashMap<>();
         for (Symbol symbol : symbols) {
             List<News> updated = finnhubNewsClient.retrieveNewsByDateRange(symbol, from, to);
@@ -374,9 +374,9 @@ public class DataManager {
         return res;
     }
 
-    @Transactional(rollbackOn = {ClientException.class, JsonProcessingException.class})
+    @Transactional(rollbackOn = {ClientException.class, MappingException.class})
     public List<MarketData> retrieveMarketData(List<String> symbolNames,
-                                               MarketDataType type) throws ClientException, JsonProcessingException {
+                                               MarketDataType type) throws ClientException, MappingException {
         List<Symbol> symbols = symbolService.getOrCreateByName(symbolNames);
         List<MarketData> mds = typeToRunner.get(type).apply(symbols);
         logger.info(GENERATION_SUCCESSFUL_INFO, MARKET_DATA);
@@ -404,7 +404,7 @@ public class DataManager {
     }
 
     public List<PortfolioManager.SymbolStand> getAllAsPortfolioStandById(List<Long> symbolIds, PortfolioType type,
-                                                                         boolean dynamic) throws ClientException, JsonProcessingException {
+                                                                         boolean dynamic) throws ClientException, MappingException {
         List<Symbol> symbols = symbolService.findAllById(symbolIds);
         Map<Symbol, PortfolioBase> portfolioBySymbol = getService(type)
                 .findActivePortfolio().stream()
@@ -447,7 +447,7 @@ public class DataManager {
                 .toList();
     }
 
-    private List<PortfolioManager.SymbolStand> getStandDynamically(List<PortfolioBase> portfolio) throws ClientException, JsonProcessingException {
+    private List<PortfolioManager.SymbolStand> getStandDynamically(List<PortfolioBase> portfolio) throws ClientException, MappingException {
         Map<String, MarketData> symbolsWithData = typeToRunner.get(MarketDataType.REAL_TIME)
                 .apply(portfolio.stream().map(PortfolioBase::getSymbol).toList())
                 .stream()
@@ -513,12 +513,12 @@ public class DataManager {
         return res;
     }
 
-    private List<MarketData> retrieveMarketDataWithBackupStrategy(List<Symbol> symbols) throws ClientException, JsonProcessingException {
+    private List<MarketData> retrieveMarketDataWithBackupStrategy(List<Symbol> symbols) throws ClientException, MappingException {
         List<MarketData> res = new ArrayList<>();
         for (Symbol symbol : symbols) {
             try {
                 res.add(twelveDataMarketDataClient.retrieveMarketData(symbol, MarketDataType.LAST).getFirst());
-            } catch (ClientException | JsonProcessingException e) {
+            } catch (ClientException | MappingException e) {
                 logger.warn(CLIENT_FAILED_BACKUP_WARN, twelveDataMarketDataClient.getClass().getSimpleName(), symbol, e);
                 res.add(finnhubMarketDataClient.retrieveMarketData(symbol));
             }
@@ -526,7 +526,7 @@ public class DataManager {
         return res;
     }
 
-    private List<MarketData> retrieveTwelveDataMarketData(List<Symbol> symbols) throws ClientException, JsonProcessingException {
+    private List<MarketData> retrieveTwelveDataMarketData(List<Symbol> symbols) throws ClientException, MappingException {
         List<MarketData> res = new ArrayList<>();
         for (Symbol symbol : symbols) {
             res.addAll(twelveDataMarketDataClient.retrieveMarketData(symbol, MarketDataType.HISTORIC));
@@ -541,7 +541,7 @@ public class DataManager {
 
     @FunctionalInterface
     private interface TypeToMarketDataFunction {
-        List<MarketData> apply(List<Symbol> symbols) throws ClientException, JsonProcessingException;
+        List<MarketData> apply(List<Symbol> symbols) throws ClientException, MappingException;
     }
 
     @RequiredArgsConstructor

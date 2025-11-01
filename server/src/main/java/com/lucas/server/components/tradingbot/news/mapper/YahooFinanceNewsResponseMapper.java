@@ -1,9 +1,9 @@
 package com.lucas.server.components.tradingbot.news.mapper;
 
-import com.lucas.server.common.Mapper;
-import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.news.jpa.News;
+import com.lucas.utils.Mapper;
+import com.lucas.utils.exception.MappingException;
 import org.flywaydb.core.internal.util.StringUtils;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
@@ -25,7 +25,7 @@ import static com.lucas.server.common.Constants.NEWS;
 public class YahooFinanceNewsResponseMapper implements Mapper<Element, News> {
 
     @Override
-    public News map(Element item) throws JsonProcessingException {
+    public News map(Element item) throws MappingException {
         try {
             return new News()
                     .setExternalId((long) item.getElementsByTagName("guid").item(0).getTextContent().hashCode())
@@ -38,11 +38,11 @@ public class YahooFinanceNewsResponseMapper implements Mapper<Element, News> {
                     .setUrl(item.getElementsByTagName("link").item(0).getTextContent())
                     .setSource("Yahoo Finance RSS");
         } catch (Exception e) {
-            throw new JsonProcessingException(MessageFormat.format(MAPPING_ERROR, NEWS), e);
+            throw new MappingException(MessageFormat.format(MAPPING_ERROR, NEWS), e);
         }
     }
 
-    public List<News> mapAll(Document document, Symbol symbol) throws JsonProcessingException {
+    public List<News> mapAll(Document document, Symbol symbol) throws MappingException {
         try {
             NodeList items = document.getElementsByTagName("item");
             if (null == items || 0 == items.getLength()) {
@@ -55,7 +55,7 @@ public class YahooFinanceNewsResponseMapper implements Mapper<Element, News> {
             }
             return newsList;
         } catch (Exception e) {
-            throw new JsonProcessingException(MessageFormat.format(MAPPING_ERROR, NEWS), e);
+            throw new MappingException(MessageFormat.format(MAPPING_ERROR, NEWS), e);
         }
     }
 }

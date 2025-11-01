@@ -3,10 +3,10 @@ package com.lucas.server.components.tradingbot.portfolio.controller;
 import com.lucas.server.common.controller.ControllerUtil;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.common.exception.IllegalStateException;
-import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;
 import com.lucas.server.components.tradingbot.portfolio.jpa.PortfolioBase;
 import com.lucas.server.components.tradingbot.portfolio.service.PortfolioManager;
+import com.lucas.utils.exception.MappingException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,7 +97,7 @@ public class PortfolioController {
         }
         try {
             return ResponseEntity.ok(jpaService.getAllAsPortfolioStandById(symbols, getPortfolioType(username), dynamic));
-        } catch (ClientException | JsonProcessingException e) {
+        } catch (ClientException | MappingException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }

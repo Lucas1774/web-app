@@ -2,9 +2,9 @@ package com.lucas.server.components.tradingbot.news.controller;
 
 import com.lucas.server.common.controller.ControllerUtil;
 import com.lucas.server.common.exception.ClientException;
-import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;
 import com.lucas.server.components.tradingbot.news.jpa.News;
+import com.lucas.utils.exception.MappingException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +39,7 @@ public class NewsController {
         }
         try {
             return ResponseEntity.ok(jpaService.retrieveNewsByName(SP500_SYMBOLS));
-        } catch (ClientException | JsonProcessingException e) {
+        } catch (ClientException | MappingException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -53,7 +53,7 @@ public class NewsController {
         }
         try {
             return ResponseEntity.ok(jpaService.retrieveNewsById(symbols));
-        } catch (ClientException | JsonProcessingException e) {
+        } catch (ClientException | MappingException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -67,7 +67,7 @@ public class NewsController {
         }
         try {
             return ResponseEntity.ok(jpaService.retrieveNewsByDateRangeAndName(SP500_SYMBOLS, from, LocalDate.now()));
-        } catch (JsonProcessingException | ClientException e) {
+        } catch (MappingException | ClientException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -83,7 +83,7 @@ public class NewsController {
         }
         try {
             return ResponseEntity.ok(jpaService.retrieveNewsByDateRangeAndId(symbols, from, LocalDate.now()));
-        } catch (JsonProcessingException | ClientException e) {
+        } catch (MappingException | ClientException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }

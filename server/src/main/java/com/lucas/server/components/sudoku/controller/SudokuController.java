@@ -1,11 +1,11 @@
 package com.lucas.server.components.sudoku.controller;
 
-import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.sudoku.jpa.Sudoku;
 import com.lucas.server.components.sudoku.jpa.SudokuJpaService;
 import com.lucas.server.components.sudoku.mapper.SudokuFileToSudokuMapper;
 import com.lucas.server.components.sudoku.service.SudokuGenerator;
 import com.lucas.server.components.sudoku.service.SudokuSolver;
+import com.lucas.utils.exception.MappingException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -49,7 +49,7 @@ public class SudokuController {
                         return solver.isValid(s, -1) && solver.solveWithTimeout(copy);
                     })
                     .toList();
-        } catch (JsonProcessingException e) {
+        } catch (MappingException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 

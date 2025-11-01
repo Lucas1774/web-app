@@ -1,12 +1,12 @@
 package com.lucas.server.components.tradingbot.news.jpa;
 
 import com.lucas.server.common.exception.ClientException;
-import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.common.jpa.GenericJpaServiceDelegate;
 import com.lucas.server.common.jpa.JpaService;
 import com.lucas.server.common.jpa.UniqueConstraintWearyJpaServiceDelegate;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.news.service.NewsSentimentClient;
+import com.lucas.utils.exception.MappingException;
 import lombok.experimental.Delegate;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -57,7 +57,7 @@ public class NewsJpaService implements JpaService<News> {
     }
 
     public List<News> generateSentiment(List<Long> list, LocalDateTime from, LocalDateTime to)
-            throws ClientException, JsonProcessingException {
+            throws ClientException, MappingException {
         List<News> newsList = repository.findAllBySymbols_IdInAndDateBetween(list, from, to);
         List<News> res = new ArrayList<>(newsList.size());
         for (News news : newsList) {

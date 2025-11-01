@@ -2,11 +2,11 @@ package com.lucas.server.components.tradingbot.news.service;
 
 import com.lucas.server.common.HttpRequestClient;
 import com.lucas.server.common.exception.ClientException;
-import com.lucas.server.common.exception.JsonProcessingException;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
-import com.lucas.server.components.tradingbot.config.SlidingWindowRateLimiter;
 import com.lucas.server.components.tradingbot.news.jpa.News;
 import com.lucas.server.components.tradingbot.news.mapper.YahooFinanceNewsResponseMapper;
+import com.lucas.utils.SlidingWindowRateLimiter;
+import com.lucas.utils.exception.MappingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,8 +37,8 @@ public class YahooFinanceNewsClient {
     }
 
     @SuppressWarnings("DefaultAnnotationParam")
-    @Retryable(retryFor = {ClientException.class, JsonProcessingException.class}, maxAttempts = REQUEST_MAX_ATTEMPTS)
-    public List<News> retrieveNews(Symbol symbol) throws ClientException, JsonProcessingException {
+    @Retryable(retryFor = {ClientException.class, MappingException.class}, maxAttempts = REQUEST_MAX_ATTEMPTS)
+    public List<News> retrieveNews(Symbol symbol) throws ClientException, MappingException {
         rateLimiter.acquirePermission();
         logger.info(RETRIEVING_DATA_INFO, NEWS, symbol);
         String url = UriComponentsBuilder.fromUriString(endpoint)
