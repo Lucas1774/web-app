@@ -28,7 +28,6 @@ public class NewsSentimentClient {
         this.url = url;
     }
 
-    @SuppressWarnings("DefaultAnnotationParam")
     @Retryable(retryFor = {ClientException.class, MappingException.class}, maxAttempts = REQUEST_MAX_ATTEMPTS)
     public News generateSentiment(News news) throws ClientException, MappingException {
         logger.info(RETRIEVING_DATA_INFO, SENTIMENT, news);

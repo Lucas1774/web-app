@@ -21,8 +21,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
-import static com.lucas.server.common.Constants.MAPPING_ERROR;
-import static com.lucas.server.common.Constants.NEWS;
+import static com.lucas.server.common.Constants.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -280,7 +279,7 @@ class YahooFinanceNewsResponseMapperTest {
 
     @Test
     @Transactional
-    void whenMapAllEmptyOrNonArray_thenReturnEmptyList() throws Exception {
+    void whenMapAllEmptyOrNonArray_thenThrowsException() throws Exception {
         // given: valid XML structure but no <item> elements
         String xmlWithoutItems = """
                 <?xml version="1.0" encoding="UTF-8"?>
@@ -294,13 +293,12 @@ class YahooFinanceNewsResponseMapperTest {
                 </rss>
                 """;
         Document doc = parseXml(xmlWithoutItems);
-        Symbol symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
 
-        // when
-        List<News> result = mapper.mapAll(doc, symbol);
-
-        // then
-        assertThat(result).isEmpty();
+        // when & then
+        assertThatThrownBy(() -> mapper.mapAll(doc, symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow()))
+                .isInstanceOf(MappingException.class)
+                .cause()
+                .hasMessageContaining(MessageFormat.format(NO_YAHOO_NEWS_ERROR, doc));
     }
 
     @Test

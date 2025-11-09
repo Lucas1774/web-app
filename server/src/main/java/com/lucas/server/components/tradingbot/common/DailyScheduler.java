@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -25,10 +24,10 @@ import static com.lucas.server.common.Constants.*;
 @Component
 public class DailyScheduler {
 
+    private static final Logger logger = LoggerFactory.getLogger(DailyScheduler.class);
     private final DataManager dataManager;
     private final Map<String, AIClient> clients;
     private final MqttPublisher publisher;
-    private final Logger logger = LoggerFactory.getLogger(DailyScheduler.class);
 
     public DailyScheduler(DataManager dataManager, Map<String, AIClient> clients, MqttPublisher publisher) {
         this.dataManager = dataManager;
@@ -47,13 +46,15 @@ public class DailyScheduler {
     private void doMidnightTask(List<String> symbolNames) {
         try {
             List<MarketData> updatedMds = dataManager.retrieveMarketData(symbolNames, MarketDataType.LAST);
-            logger.info(SCHEDULED_TASK_SUCCESS_INFO, "fetched market data", updatedMds);
+            String message = String.format("fetched %d market data", updatedMds.size());
+            logger.info(SCHEDULED_TASK_SUCCESS_INFO, message, updatedMds);
         } catch (ClientException | MappingException e) {
             logger.error(e.getMessage(), e);
         }
 
         List<MarketData> removedMds = dataManager.removeOldMarketData(DATABASE_MARKET_DATA_PER_SYMBOL);
-        logger.info(SCHEDULED_TASK_SUCCESS_INFO, "removed market data", removedMds);
+        String message = String.format("removed %d market data", removedMds.size());
+        logger.info(SCHEDULED_TASK_SUCCESS_INFO, message, removedMds);
     }
 
     @Scheduled(cron = "${scheduler.news-recommendations-cron}", zone = "America/New_York")
@@ -69,39 +70,37 @@ public class DailyScheduler {
 
     @SuppressWarnings("SameParameterValue")
     private void doMorningTask(List<String> symbolNames) {
-        try {
-            List<News> updatedNews = dataManager.retrieveNewsByName(symbolNames);
-            logger.info(SCHEDULED_TASK_SUCCESS_INFO, "fetched news", updatedNews.size());
-        } catch (ClientException | MappingException e) {
-            logger.error(e.getMessage(), e);
-        }
-
         List<Recommendation> updatedRecommendations = dataManager.getRandomRecommendations(
                 symbolNames, filterClients(clients, RecommendationMode.RANDOM), PortfolioType.REAL,
-                SCHEDULED_RECOMMENDATIONS_COUNT, true, true, false, false, false
+                SCHEDULED_RECOMMENDATIONS_COUNT, true, true, true, false, false
         );
-        logger.info(SCHEDULED_TASK_SUCCESS_INFO, "generated recommendations", updatedRecommendations.stream()
+        String message = String.format("generated %d recommendations", updatedRecommendations.size());
+        logger.info(SCHEDULED_TASK_SUCCESS_INFO, message, updatedRecommendations.stream()
                 .map(Recommendation::getSymbol).toList());
 
         LocalDate now = LocalDate.now();
-        List<Long> topRecommendedSymbols = new ArrayList<>(dataManager.getTopRecommendedSymbols(BUY, NEWS_FINE_GRAIN_THRESHOLD, now));
+        List<Long> topRecommendedSymbols = dataManager.getTopRecommendedSymbols(BUY, RECOMMENDATION_MEDIUM_GRAIN_THRESHOLD, now);
         getRecommendations(topRecommendedSymbols, RecommendationMode.NOT_RANDOM);
-        getRecommendations(new ArrayList<>(dataManager.getTopRecommendedSymbols(BUY, GROK_FINE_GRAIN_THRESHOLD, now)
-                .stream().limit(MAX_RECOMMENDATIONS_COUNT).toList()), RecommendationMode.FINE_GRAIN);
+        List<Long> topRecommendedSymbolsAfterMediumGrain = dataManager.getTopRecommendedSymbols(BUY, RECOMMENDATION_FINE_GRAIN_THRESHOLD, now)
+                .stream().limit(MAX_RECOMMENDATIONS_COUNT).toList();
+        getRecommendations(topRecommendedSymbolsAfterMediumGrain, RecommendationMode.FINE_GRAIN);
         publisher.publish("jobs", "job done");
 
         List<News> removedNews = dataManager.removeOldNews(DATABASE_NEWS_PER_SYMBOL);
-        logger.info(SCHEDULED_TASK_SUCCESS_INFO, "removed news", removedNews);
+        String message2 = String.format("removed %d news", removedNews.size());
+        logger.info(SCHEDULED_TASK_SUCCESS_INFO, message2, removedNews);
 
         List<Recommendation> removedRecommendations = dataManager.removeOldRecommendations(DATABASE_RECOMMENDATIONS_PER_SYMBOL);
-        logger.info(SCHEDULED_TASK_SUCCESS_INFO, "removed recommendations", removedRecommendations.stream()
+        String message3 = String.format("removed %d recommendations", removedRecommendations.size());
+        logger.info(SCHEDULED_TASK_SUCCESS_INFO, message3, removedRecommendations.stream()
                 .map(Recommendation::getSymbol).toList());
     }
 
     private void getRecommendations(List<Long> topRecommendedSymbols, RecommendationMode mode) {
         List<Recommendation> updatedRecommendations = dataManager.getRecommendationsById(topRecommendedSymbols, filterClients(clients, mode), PortfolioType.REAL,
-                true, true, false, false);
-        logger.info(SCHEDULED_TASK_SUCCESS_INFO, "generated recommendations", updatedRecommendations.stream()
+                true, true, false, true);
+        String message = String.format("generated %d recommendations", updatedRecommendations.size());
+        logger.info(SCHEDULED_TASK_SUCCESS_INFO, message, updatedRecommendations.stream()
                 .map(Recommendation::getSymbol).toList());
     }
 

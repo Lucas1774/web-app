@@ -14,7 +14,6 @@ import com.lucas.server.components.tradingbot.portfolio.jpa.PortfolioJpaService;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.AssetReportRaw;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.NewsItemRaw;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.PricePointRaw;
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -56,7 +55,6 @@ class RecommendationChatCompletionClientTest {
     private AssetReportDataProvider provider;
 
     @Test
-    @Transactional
     void testProvide() {
         // given: insert 34 days of market data. Needs to be at least 34 and greater than the history days
         Symbol symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();

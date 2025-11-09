@@ -36,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ManualRunTest {
 
     private static final List<String> symbolNames = List.of("AAPL", "NVDA", "MSFT", "AMZN", "META", "TSLA", "GOOGL");
-    private static final LocalDate from = LocalDate.of(2025, 9, 1); // inclusive
+    private static final LocalDate from = LocalDate.of(2025, 11, 1); // inclusive
     private static final LocalDate to = LocalDate.now(); // exclusive
 
     @Autowired
@@ -161,7 +161,6 @@ class ManualRunTest {
         System.out.println(summaryOf(allStats, "ALL"));
 
         if (null != filteredStats && 0 < filteredStats.count && null != baselineStats && 0 < baselineStats.count) {
-
             BigDecimal filteredAverageClose = filteredStats.sumClose.divide(BigDecimal.valueOf(filteredStats.count), 8, RoundingMode.HALF_UP);
             BigDecimal baselineAverageClose = baselineStats.sumClose.divide(BigDecimal.valueOf(baselineStats.count), 8, RoundingMode.HALF_UP);
 

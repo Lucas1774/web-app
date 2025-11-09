@@ -35,7 +35,6 @@ public class YahooFinanceMarketDataClient {
         this.endpoint = endpoint;
     }
 
-    @SuppressWarnings("DefaultAnnotationParam")
     @Retryable(retryFor = {ClientException.class, MappingException.class}, maxAttempts = REQUEST_MAX_ATTEMPTS)
     public MarketData retrieveMarketData(Symbol symbol) throws ClientException, MappingException {
         rateLimiter.acquirePermission();

@@ -11,6 +11,8 @@ import lombok.experimental.Delegate;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -42,6 +44,7 @@ public class NewsJpaService implements JpaService<News> {
         ).getContent();
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public List<News> createOrUpdate(List<News> entities) {
         return uniqueConstraintDelegate.createOrUpdate(allEntities -> repository.findByExternalIdIn(
                         allEntities.stream().map(News::getExternalId).toList()

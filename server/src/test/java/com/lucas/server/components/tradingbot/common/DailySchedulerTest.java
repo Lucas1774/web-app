@@ -41,10 +41,6 @@ class DailySchedulerTest {
         doReturn(true).when(dailyScheduler).shouldRun(any());
         doNothing().when(dailyScheduler).sleep();
         await().atMost(Duration.ofSeconds(10))
-                .untilAsserted(() -> {
-                            verify(dataManager, atLeastOnce()).retrieveMarketData(any(), any());
-                            verify(dataManager, atLeastOnce()).retrieveNewsByName(any());
-                        }
-                );
+                .untilAsserted(() -> verify(dataManager, atLeastOnce()).retrieveMarketData(any(), any()));
     }
 }

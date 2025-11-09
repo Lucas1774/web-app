@@ -1,5 +1,6 @@
 package com.lucas.server.components.tradingbot.recommendation.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -7,8 +8,6 @@ import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.components.tradingbot.common.AIClient;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
-import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
-import com.lucas.server.components.tradingbot.news.jpa.News;
 import com.lucas.server.components.tradingbot.recommendation.jpa.Recommendation;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.AssetReportRaw;
@@ -18,17 +17,13 @@ import com.lucas.utils.SlidingWindowRateLimiter;
 import com.lucas.utils.exception.MappingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.retry.annotation.Recover;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.function.LongFunction;
 import java.util.stream.Collectors;
 
 import static com.lucas.server.common.Constants.*;
@@ -37,7 +32,6 @@ import static com.lucas.server.common.Constants.*;
 public class RecommendationChatCompletionClient {
 
     private static final Logger logger = LoggerFactory.getLogger(RecommendationChatCompletionClient.class);
-    private final Object yahooApiLock = new Object();
     private final ObjectNode systemMessage;
     private final ObjectNode context;
     private final ObjectNode fewShotMessage;
@@ -62,26 +56,7 @@ public class RecommendationChatCompletionClient {
         this.rateLimiters = rateLimiters;
     }
 
-    public List<Recommendation> getRecommendations(List<DataManager.SymbolPayload> payload, AIClient client, NewsFetcher newsFetcher,
-                                                   LongFunction<List<News>> backupNewsFetcher,
-                                                   MarketDataFetcher marketDataFetcher) throws IOException, ClientException, MappingException {
-        synchronized (yahooApiLock) {
-            payload.forEach(p -> {
-                try {
-                    p.setPremarket(marketDataFetcher.apply(p));
-                } catch (ClientException | MappingException e) {
-                    logger.warn(RETRIEVAL_FAILED_WARN, PREMARKET, p.getSymbol(), e);
-                    p.setPremarket(null);
-                }
-                try {
-                    p.setNews(newsFetcher.apply(p));
-                } catch (ClientException | MappingException e) {
-                    logger.warn(RETRIEVAL_FAILED_WARN, NEWS, p.getSymbol(), e);
-                    p.setNews(backupNewsFetcher.apply(p.getSymbol().getId()));
-                }
-            });
-        }
-
+    public List<Recommendation> getRecommendations(List<DataManager.SymbolPayload> payload, AIClient client) throws ClientException, JsonProcessingException, MappingException {
         List<AssetReportRaw> reports = payload.stream()
                 .map(assertReportDataProvider::provide)
                 .toList();
@@ -110,24 +85,5 @@ public class RecommendationChatCompletionClient {
         } catch (Exception e) {
             throw new ClientException(e);
         }
-    }
-
-    @SuppressWarnings("unused")
-    @Recover
-    public List<Recommendation> recover(ClientException e, List<DataManager.SymbolPayload> payload, AIClient client, NewsFetcher newsFetcher,
-                                        LongFunction<List<News>> backupNewsFetcher, MarketDataFetcher marketDataFetcher) {
-        logger.warn(CLIENT_FAILED_BACKUP_WARN, client.getConfig().name(), PROMPT, e);
-        return new ArrayList<>();
-    }
-
-    @FunctionalInterface
-    public interface NewsFetcher {
-        List<News> apply(DataManager.SymbolPayload payload) throws ClientException, MappingException;
-    }
-
-    @FunctionalInterface
-    public interface MarketDataFetcher {
-        @SuppressWarnings("unused")
-        MarketData apply(DataManager.SymbolPayload payload) throws ClientException, MappingException;
     }
 }

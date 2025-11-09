@@ -15,11 +15,9 @@ import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-import static com.lucas.server.common.Constants.MAPPING_ERROR;
-import static com.lucas.server.common.Constants.NEWS;
+import static com.lucas.server.common.Constants.*;
 
 @Component
 public class YahooFinanceNewsResponseMapper implements Mapper<Element, News> {
@@ -46,7 +44,7 @@ public class YahooFinanceNewsResponseMapper implements Mapper<Element, News> {
         try {
             NodeList items = document.getElementsByTagName("item");
             if (null == items || 0 == items.getLength()) {
-                return Collections.emptyList();
+                throw new MappingException(MessageFormat.format(NO_YAHOO_NEWS_ERROR, document));
             }
 
             List<News> newsList = new ArrayList<>();

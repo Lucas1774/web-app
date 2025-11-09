@@ -36,7 +36,6 @@ public class FinnhubNewsClient {
         this.endpoint = endpoint;
     }
 
-    @SuppressWarnings("DefaultAnnotationParam")
     @Retryable(retryFor = {ClientException.class, MappingException.class}, maxAttempts = REQUEST_MAX_ATTEMPTS)
     public List<News> retrieveNewsByDateRange(Symbol symbol, LocalDate from, LocalDate to) throws ClientException, MappingException {
         String apiKey = finnhubRateLimiter.acquirePermission();

@@ -36,13 +36,12 @@ public class YahooFinanceNewsClient {
         this.endpoint = endpoint;
     }
 
-    @SuppressWarnings("DefaultAnnotationParam")
     @Retryable(retryFor = {ClientException.class, MappingException.class}, maxAttempts = REQUEST_MAX_ATTEMPTS)
     public List<News> retrieveNews(Symbol symbol) throws ClientException, MappingException {
         rateLimiter.acquirePermission();
         logger.info(RETRIEVING_DATA_INFO, NEWS, symbol);
         String url = UriComponentsBuilder.fromUriString(endpoint)
-                .queryParam("s", symbol.getName())
+                .queryParam("s", symbol.getName().replace('.', '-'))
                 .queryParam("region", "US")
                 .queryParam("lang", "en-US")
                 .toUriString();

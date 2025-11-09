@@ -1,5 +1,6 @@
 package com.lucas.server.components.tradingbot.common.jpa;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.common.exception.IllegalStateException;
 import com.lucas.server.components.tradingbot.common.AIClient;
@@ -33,7 +34,6 @@ import java.time.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Function;
-import java.util.function.LongFunction;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -138,168 +138,163 @@ public class DataManager {
     private List<Recommendation> getRecommendationsInParallel(List<Symbol> symbols, List<AIClient> clients, PortfolioType type, boolean overwrite,
                                                               boolean onlyIfHasNews, boolean onTheFlyNews, boolean fetchPreMarket, boolean useOldNews) {
         List<Recommendation> res = new ArrayList<>();
-        List<AIClient> mutableClients = new ArrayList<>(clients);
+        Deque<AIClient> mutableClients = new ConcurrentLinkedDeque<>(clients);
         IPortfolioJpaService<PortfolioBase> portfolioService = getService(type);
         Supplier<PortfolioBase> portfolioSupplier = portfolioTypeToNewPortfolio.get(type);
 
-        ZonedDateTime easternTime = ZonedDateTime.now(NY_ZONE);
-        LocalDate lastTradeFinishedDate = easternTime.toLocalDate();
-        if (easternTime.toLocalTime().isBefore(MARKET_CLOSE)) {
-            lastTradeFinishedDate = lastTradeFinishedDate.minusDays(1);
+        LocalDateTime startUtc;
+        if (useOldNews) {
+            startUtc = null;
+        } else {
+            ZonedDateTime easternTime = ZonedDateTime.now(NY_ZONE);
+            LocalDate lastTradeFinishedDate = easternTime.toLocalDate();
+            if (easternTime.toLocalTime().isBefore(MARKET_CLOSE)) {
+                lastTradeFinishedDate = lastTradeFinishedDate.minusDays(1);
+            }
+            while (!isTradingDate(lastTradeFinishedDate)) {
+                lastTradeFinishedDate = lastTradeFinishedDate.minusDays(1);
+            }
+            LocalTime close = !EARLY_CLOSE_DATES_2025.contains(lastTradeFinishedDate) ? MARKET_CLOSE : EARLY_CLOSE;
+            startUtc = ZonedDateTime.of(lastTradeFinishedDate, close, NY_ZONE).withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime();
         }
-        while (!isTradingDate(lastTradeFinishedDate)) {
-            lastTradeFinishedDate = lastTradeFinishedDate.minusDays(1);
-        }
-        LocalTime close = !EARLY_CLOSE_DATES_2025.contains(lastTradeFinishedDate) ? MARKET_CLOSE : EARLY_CLOSE;
-        LocalDateTime startUtc = ZonedDateTime.of(lastTradeFinishedDate, close, NY_ZONE).withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime();
 
-        List<SymbolPayload> remainingPayload = symbols.parallelStream()
-                .map(symbol -> {
-                    List<News> news = null;
-                    if (!onTheFlyNews) {
-                        if (!useOldNews) {
-                            news = newsService.getTopForSymbolId(symbol.getId(), NEWS_COUNT).stream()
-                                    .filter(n -> n.getDate().isAfter(startUtc)).toList();
-                        } else {
-                            news = newsService.getTopForSymbolId(symbol.getId(), NEWS_COUNT);
-                        }
-                    }
-                    if (onlyIfHasNews && Objects.requireNonNull(news).isEmpty()) {
-                        return Optional.<SymbolPayload>empty();
-                    }
-
+        List<Symbol> remainingSymbols = new ArrayList<>(symbols);
+        try (ExecutorService executor = Executors.newFixedThreadPool(clients.size())) {
+            int attempts = 0;
+            while (!remainingSymbols.isEmpty() && RECOMMENDATION_MAX_ATTEMPTS > attempts) {
+                BlockingQueue<List<Recommendation>> resultsQueue = new LinkedBlockingQueue<>();
+                int submitted = 0;
+                List<SymbolPayload> recommendationBuffer = new ArrayList<>();
+                logger.info(RETRIEVING_DATA_INFO, RECOMMENDATION, remainingSymbols.size());
+                for (Symbol symbol : new ArrayList<>(remainingSymbols)) {
                     List<MarketData> marketData = marketDataService.getTopForSymbolId(symbol.getId(), MARKET_DATA_RELEVANT_DAYS_COUNT);
                     if (marketData.isEmpty()) {
-                        return Optional.<SymbolPayload>empty();
+                        remainingSymbols.remove(symbol);
+                        continue;
                     }
-
+                    List<News> news = provideNews(onTheFlyNews, useOldNews, symbol, startUtc);
+                    if (onlyIfHasNews && news.isEmpty()) {
+                        remainingSymbols.remove(symbol);
+                        continue;
+                    }
+                    List<News> persistedNews;
+                    synchronized (newsPersistLock) {
+                        persistedNews = newsService.createOrUpdate(news);
+                    }
                     PortfolioBase portfolio = portfolioService.findBySymbol(symbol)
                             .orElseGet(() -> portfolioSupplier.get().setSymbol(symbol));
 
-                    return Optional.of(new SymbolPayload(symbol, marketData, portfolio).setNews(news));
-                })
-                .flatMap(Optional::stream)
-                .toList();
+                    SymbolPayload payload = new SymbolPayload(symbol, marketData, portfolio).setNews(persistedNews);
+                    providePremarket(fetchPreMarket, symbol, payload);
+                    recommendationBuffer.add(payload);
+                    AIClient client = mutableClients.peekFirst();
+                    if (recommendationBuffer.size() == Objects.requireNonNull(client).getConfig().chunkSize()) {
+                        submitChunk(new ArrayList<>(recommendationBuffer), client, executor, resultsQueue, overwrite);
+                        submitted++;
+                        mutableClients.add(mutableClients.pollFirst());
+                        recommendationBuffer.clear();
+                    }
+                }
+                if (!recommendationBuffer.isEmpty()) {
+                    AIClient client = mutableClients.peekFirst();
+                    submitChunk(new ArrayList<>(recommendationBuffer), client, executor, resultsQueue, overwrite);
+                    submitted++;
+                    mutableClients.add(mutableClients.pollFirst());
+                }
 
-        RecommendationChatCompletionClient.NewsFetcher newsFetcher;
+                for (int i = 0; i < submitted; i++) {
+                    List<Recommendation> fetched = resultsQueue.take();
+                    if (!fetched.isEmpty()) {
+                        res.addAll(fetched);
+                        Set<Symbol> fetchedSymbols = fetched.stream()
+                                .map(Recommendation::getSymbol)
+                                .collect(Collectors.toSet());
+                        remainingSymbols.removeIf(fetchedSymbols::contains);
+                    }
+                }
+                attempts++;
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.error(e.getMessage(), e);
+        }
+
+        if (!remainingSymbols.isEmpty()) {
+            logger.warn(RETRIEVAL_FAILED_WARN, RECOMMENDATION, remainingSymbols);
+        }
+        return res;
+    }
+
+    private void providePremarket(boolean fetchPreMarket, Symbol symbol, SymbolPayload payload) {
+        if (fetchPreMarket) {
+            try {
+                payload.setPremarket(yahooFinanceMarketDataClient.retrieveMarketData(symbol));
+            } catch (ClientException | MappingException e) {
+                logger.warn(RETRIEVAL_FAILED_WARN, PREMARKET, symbol, e);
+            }
+        }
+    }
+
+    private List<News> provideNews(boolean onTheFlyNews, boolean useOldNews, Symbol symbol, LocalDateTime startUtc) {
         if (!onTheFlyNews) {
-            newsFetcher = SymbolPayload::getNews;
+            if (!useOldNews) {
+                return newsService.getTopForSymbolId(symbol.getId(), NEWS_COUNT).stream()
+                        .filter(n -> n.getDate().isAfter(startUtc)).toList();
+            } else {
+                return newsService.getTopForSymbolId(symbol.getId(), NEWS_COUNT);
+            }
         } else {
             if (!useOldNews) {
-                newsFetcher = p -> {
-                    List<News> news = retrieveYahooNews(List.of(p.getSymbol())).stream()
+                try {
+                    return retrieveYahooNews(List.of(symbol)).stream()
                             .filter(n -> n.getDate().isAfter(startUtc))
                             .sorted(Comparator.comparing(News::getDate).reversed())
                             .limit(NEWS_COUNT)
                             .toList();
-                    synchronized (newsPersistLock) {
-                        return newsService.createOrUpdate(news);
-                    }
-                };
+                } catch (ClientException | MappingException e) {
+                    logger.warn(RETRIEVAL_FAILED_WARN, NEWS, symbol, e);
+                    return newsService.getTopForSymbolId(symbol.getId(), NEWS_COUNT).stream()
+                            .filter(n -> n.getDate().isAfter(startUtc)).toList();
+                }
             } else {
-                newsFetcher = p -> {
-                    List<News> news = retrieveYahooNews(List.of(p.getSymbol())).stream()
+                try {
+                    return retrieveYahooNews(List.of(symbol)).stream()
                             .sorted(Comparator.comparing(News::getDate).reversed())
                             .limit(NEWS_COUNT)
                             .toList();
-                    synchronized (newsPersistLock) {
-                        return newsService.createOrUpdate(news);
-                    }
-                };
+                } catch (ClientException | MappingException e) {
+                    logger.warn(RETRIEVAL_FAILED_WARN, NEWS, symbol, e);
+                    return newsService.getTopForSymbolId(symbol.getId(), NEWS_COUNT);
+                }
             }
         }
-        LongFunction<List<News>> backupNewsFetcher = id -> newsService.getTopForSymbolId(id, NEWS_COUNT).stream()
-                .filter(n -> n.getDate().isAfter(startUtc)).toList();
-        RecommendationChatCompletionClient.MarketDataFetcher marketDataFetcher = fetchPreMarket
-                ? p -> yahooFinanceMarketDataClient.retrieveMarketData(p.getSymbol())
-                : SymbolPayload::getPremarket;
-
-        logger.info(RETRIEVING_DATA_INFO, RECOMMENDATION, remainingPayload.size());
-        try (ExecutorService executor = Executors.newFixedThreadPool(clients.size())) {
-            int attempts = 0;
-            while (!remainingPayload.isEmpty() && RECOMMENDATION_MAX_ATTEMPTS > attempts) {
-                List<Recommendation> fetched = doGetRecommendationsInParallel(remainingPayload, mutableClients, executor,
-                        overwrite, newsFetcher, backupNewsFetcher, marketDataFetcher);
-                res.addAll(fetched);
-                Set<Symbol> fetchedSymbols = fetched.stream()
-                        .map(Recommendation::getSymbol)
-                        .collect(Collectors.toSet());
-                remainingPayload = remainingPayload.stream()
-                        .filter(p -> !fetchedSymbols.contains(p.getSymbol()))
-                        .toList();
-                attempts++;
-            }
-        }
-
-        if (!remainingPayload.isEmpty()) {
-            logger.warn(RETRIEVAL_FAILED_WARN, RECOMMENDATION, remainingPayload.stream().map(SymbolPayload::getSymbol).toList());
-        }
-        return res;
     }
 
-    private List<Recommendation> doGetRecommendationsInParallel(List<SymbolPayload> payload, List<AIClient> clients, ExecutorService executor,
-                                                                boolean overwrite, RecommendationChatCompletionClient.NewsFetcher newsFetcher,
-                                                                LongFunction<List<News>> backupNewsFetcher,
-                                                                RecommendationChatCompletionClient.MarketDataFetcher marketDataFetcher) {
-        List<BatchJob> jobs = new ArrayList<>();
-        List<SymbolPayload> buffer = new ArrayList<>();
-
-        for (SymbolPayload load : payload) {
-            AIClient client = clients.getFirst();
-            buffer.add(load);
-
-            if (buffer.size() == client.getConfig().chunkSize()) {
-                submitChunk(buffer, client, executor, jobs, overwrite, newsFetcher, backupNewsFetcher, marketDataFetcher);
-                buffer.clear();
-                Collections.rotate(clients, -1);
-            }
-        }
-
-        if (!buffer.isEmpty()) {
-            AIClient client = clients.getFirst();
-            submitChunk(buffer, client, executor, jobs, overwrite, newsFetcher, backupNewsFetcher, marketDataFetcher);
-            Collections.rotate(clients, -1);
-        }
-
-        List<Recommendation> res = new ArrayList<>();
-        for (BatchJob job : jobs) {
+    private void submitChunk(List<SymbolPayload> buffer, AIClient client, ExecutorService executor,
+                             BlockingQueue<List<Recommendation>> resultsQueue, boolean overwrite) {
+        executor.submit(() -> {
             try {
-                res.addAll(job.future().get());
+                List<Recommendation> partial = recommendationClient.getRecommendations(buffer, client);
+                logger.info(GENERATION_SUCCESSFUL_INFO, RECOMMENDATION);
+                if (overwrite) {
+                    partial = recommendationsService.createOrUpdate(partial);
+                } else {
+                    recommendationsService.createIgnoringDuplicates(partial);
+                }
+                resultsQueue.put(partial);
+            } catch (JsonProcessingException | ClientException | MappingException e) {
+                logger.warn(RETRIEVAL_FAILED_WARN, RECOMMENDATION, buffer.stream().map(SymbolPayload::getSymbol).toList(), e);
+                try {
+                    resultsQueue.put(Collections.emptyList());
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                    logger.error(e.getMessage(), e);
+                }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                logger.warn(RETRIEVAL_FAILED_WARN, RECOMMENDATION, job.symbols(), e);
-            } catch (ExecutionException e) {
-                logger.warn(RETRIEVAL_FAILED_WARN, RECOMMENDATION, job.symbols(), e);
+                logger.error(e.getMessage(), e);
             }
-        }
-
-        return res;
-    }
-
-    private void submitChunk(List<SymbolPayload> buffer, AIClient client, ExecutorService executor, List<BatchJob> jobs,
-                             boolean overwrite, RecommendationChatCompletionClient.NewsFetcher newsFetcher,
-                             LongFunction<List<News>> backupNewsFetcher,
-                             RecommendationChatCompletionClient.MarketDataFetcher marketDataFetcher) {
-        List<SymbolPayload> snapshot = new ArrayList<>(buffer);
-        Callable<List<Recommendation>> task = () -> {
-            List<Recommendation> partialRecommendations = recommendationClient.getRecommendations(snapshot,
-                    client,
-                    newsFetcher,
-                    backupNewsFetcher,
-                    marketDataFetcher);
-            if (partialRecommendations.isEmpty()) {
-                return partialRecommendations;
-            }
-            logger.info(GENERATION_SUCCESSFUL_INFO, RECOMMENDATION);
-            if (overwrite) {
-                return recommendationsService.createOrUpdate(partialRecommendations);
-            } else {
-                recommendationsService.createIgnoringDuplicates(partialRecommendations);
-                return partialRecommendations;
-            }
-        };
-
-        jobs.add(new BatchJob(executor.submit(task), snapshot.stream().map(SymbolPayload::getSymbol).toList()));
+        });
     }
 
     @Transactional(rollbackOn = {ClientException.class, MappingException.class})
@@ -555,11 +550,5 @@ public class DataManager {
         private MarketData premarket;
         @Setter
         private List<News> news;
-    }
-
-    private record BatchJob(
-            Future<List<Recommendation>> future,
-            List<Symbol> symbols
-    ) {
     }
 }

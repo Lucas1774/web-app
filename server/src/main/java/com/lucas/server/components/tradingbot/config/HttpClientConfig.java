@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.lucas.server.common.Constants.*;
+import static com.lucas.utils.Utils.EMPTY_STRING;
 
 @Configuration
 public class HttpClientConfig {
@@ -33,7 +34,8 @@ public class HttpClientConfig {
 
     @Bean
     public Map<String, AIClient> clients(HttpRequestClient httpClient, AIProperties aiProps, ObjectMapper objectMapper) {
-        return aiProps.getDeployments().stream()
+        Map<String, AIClient> res = aiProps.getDeployments().stream()
+                .filter(d -> !d.name().contains("specialist"))
                 .collect(Collectors.toMap(
                         AIProperties.DeploymentProperties::name,
                         config -> new AIClient(
@@ -43,5 +45,17 @@ public class HttpClientConfig {
                                 httpClient
                         )
                 ));
+        res.putAll(aiProps.getDeployments().stream()
+                .filter(d -> d.name().contains("-specialist"))
+                .collect(Collectors.toMap(
+                        AIProperties.DeploymentProperties::name,
+                        config -> new AIClient(
+                                config,
+                                res.get(config.name().replace("-specialist", EMPTY_STRING)).getRateLimiter(),
+                                objectMapper,
+                                httpClient
+                        )
+                )));
+        return res;
     }
 }

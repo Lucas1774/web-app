@@ -26,11 +26,11 @@ public class Constants {
     public static final int DATABASE_MARKET_DATA_PER_SYMBOL = 100;
     public static final int DATABASE_RECOMMENDATIONS_PER_SYMBOL = 30;
     public static final int SCHEDULED_RECOMMENDATIONS_COUNT = 503;
-    public static final int MAX_RECOMMENDATIONS_COUNT = 30;
-    public static final int REQUEST_MAX_ATTEMPTS = 3;
+    public static final int MAX_RECOMMENDATIONS_COUNT = 36;
+    public static final int REQUEST_MAX_ATTEMPTS = 2;
     public static final int RECOMMENDATION_MAX_ATTEMPTS = 5;
-    public static final BigDecimal NEWS_FINE_GRAIN_THRESHOLD = BigDecimal.valueOf(0.75);
-    public static final BigDecimal GROK_FINE_GRAIN_THRESHOLD = BigDecimal.valueOf(0.75);
+    public static final BigDecimal RECOMMENDATION_MEDIUM_GRAIN_THRESHOLD = BigDecimal.valueOf(0.75);
+    public static final BigDecimal RECOMMENDATION_FINE_GRAIN_THRESHOLD = BigDecimal.valueOf(0.75);
     public static final String DEFAULT_USERNAME = "default";
     public static final String NA = "N/A";
     public static final String INVALID_EXPRESSION = "Invalid expression";
@@ -47,7 +47,6 @@ public class Constants {
     public static final String SENTIMENT = "sentiment";
     public static final String RECOMMENDATION = "recommendation";
     public static final String PREMARKET = "premarket";
-    public static final String PROMPT = "prompt";
     public static final String VOLATILITY = "volatility";
     public static final String OBV = "OBV";
     public static final String AI_PER_SECOND_RATE_LIMITER = "perSecondRateLimiter";
@@ -63,6 +62,7 @@ public class Constants {
     public static final String RETRIEVING_DATA_INFO = "Retrieving {} for {}";
     public static final String PROMPTING_MODEL_INFO = "Prompting model {}";
     public static final String GENERATION_SUCCESSFUL_INFO = "Successfully generated {}";
+    public static final String NO_YAHOO_NEWS_ERROR = "No news found in document {0}";
     public static final String MAPPING_ERROR = "Error mapping {0}";
     public static final String INSUFFICIENT_STOCK_ERROR = "{0}: Nothing to sell";
     public static final String SYMBOL_NOT_FOUND_ERROR = "{0}: Unknown symbol";
@@ -92,7 +92,8 @@ public class Constants {
             LocalDate.of(2025, 11, 27), // Thanksgiving
             LocalDate.of(2025, 12, 25) // Christmas Day
     );
-    private static final List<Clients> FINE_GRAIN_CLIENTS = List.of(GPT_4_1, GPT_4_1_2, GPT_4_1_3, GPT_4_1_4, GPT_4_1_5, GPT_4_1_6);
+    private static final List<Clients> FINE_GRAIN_CLIENTS = List.of(GPT_4_1_SPECIALIST, GPT_4_1_2_SPECIALIST, GPT_4_1_3_SPECIALIST,
+            GPT_4_1_4_SPECIALIST, GPT_4_1_5_SPECIALIST, GPT_4_1_6_SPECIALIST);
     private static final List<Clients> RECOMMENDATION_CLIENTS = List.of(GPT_4_1, GPT_4_1_2, GPT_4_1_3, GPT_4_1_4, GPT_4_1_5, GPT_4_1_6);
     private static final List<Clients> RANDOM_RECOMMENDATION_CLIENTS = List.of(GPT_4_1, GPT_4_1_2, GPT_4_1_3, GPT_4_1_4, GPT_4_1_5, GPT_4_1_6);
     private static final Map<RecommendationMode, Set<String>> modeToClientNames = new EnumMap<>(Map.of(
@@ -176,6 +177,12 @@ public class Constants {
         GPT_4_1_4("gpt-4.1-4"),
         GPT_4_1_5("gpt-4.1-5"),
         GPT_4_1_6("gpt-4.1-6"),
+        GPT_4_1_SPECIALIST("gpt-4.1-specialist"),
+        GPT_4_1_2_SPECIALIST("gpt-4.1-2-specialist"),
+        GPT_4_1_3_SPECIALIST("gpt-4.1-3-specialist"),
+        GPT_4_1_4_SPECIALIST("gpt-4.1-4-specialist"),
+        GPT_4_1_5_SPECIALIST("gpt-4.1-5-specialist"),
+        GPT_4_1_6_SPECIALIST("gpt-4.1-6-specialist"),
         GPT_4_1_MINI("gpt-4.1-mini"),
         GPT_4_1_NANO("gpt-4.1-nano"),
         GPT_4O("gpt-4o"),

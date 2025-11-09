@@ -57,7 +57,6 @@ public class TwelveDataMarketDataClient {
         ));
     }
 
-    @SuppressWarnings("DefaultAnnotationParam")
     @Retryable(retryFor = {ClientException.class, MappingException.class}, maxAttempts = REQUEST_MAX_ATTEMPTS)
     public List<MarketData> retrieveMarketData(Symbol symbol, MarketDataType type) throws ClientException, MappingException {
         rateLimiter.acquirePermission();

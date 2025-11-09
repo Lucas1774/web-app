@@ -7,6 +7,7 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -14,9 +15,9 @@ import java.util.Map;
 @Service
 public class MqttPublisher implements AutoCloseable {
 
+    private static final Logger logger = LoggerFactory.getLogger(MqttPublisher.class);
     private final Map<String, String> topics;
     private final MqttClient client;
-    private final Logger logger = org.slf4j.LoggerFactory.getLogger(MqttPublisher.class);
 
     public MqttPublisher(MqttProperties props) {
         topics = props.getTopics();
