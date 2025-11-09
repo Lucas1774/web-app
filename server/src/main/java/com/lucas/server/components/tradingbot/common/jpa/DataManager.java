@@ -18,6 +18,7 @@ import com.lucas.server.components.tradingbot.portfolio.service.PortfolioManager
 import com.lucas.server.components.tradingbot.recommendation.jpa.Recommendation;
 import com.lucas.server.components.tradingbot.recommendation.jpa.RecommendationsJpaService;
 import com.lucas.server.components.tradingbot.recommendation.service.RecommendationChatCompletionClient;
+import com.lucas.utils.Interrupts;
 import com.lucas.utils.exception.MappingException;
 import jakarta.transaction.Transactional;
 import lombok.Getter;
@@ -203,8 +204,10 @@ public class DataManager {
                 }
 
                 for (int i = 0; i < submitted; i++) {
-                    List<Recommendation> fetched = resultsQueue.take();
-                    if (!fetched.isEmpty()) {
+                    List<Recommendation> fetched = Interrupts.callOrSwallow(resultsQueue::take,
+                            Collections::emptyList,
+                            e -> logger.error(e.getMessage(), e));
+                    if (!Objects.requireNonNull(fetched).isEmpty()) {
                         res.addAll(fetched);
                         Set<Symbol> fetchedSymbols = fetched.stream()
                                 .map(Recommendation::getSymbol)
@@ -214,9 +217,6 @@ public class DataManager {
                 }
                 attempts++;
             }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            logger.error(e.getMessage(), e);
         }
 
         if (!remainingSymbols.isEmpty()) {
@@ -276,23 +276,17 @@ public class DataManager {
             try {
                 List<Recommendation> partial = recommendationClient.getRecommendations(buffer, client);
                 logger.info(GENERATION_SUCCESSFUL_INFO, RECOMMENDATION);
+                List<Recommendation> finalPartial;
                 if (overwrite) {
-                    partial = recommendationsService.createOrUpdate(partial);
+                    finalPartial = recommendationsService.createOrUpdate(partial);
                 } else {
+                    finalPartial = partial;
                     recommendationsService.createIgnoringDuplicates(partial);
                 }
-                resultsQueue.put(partial);
+                Interrupts.runOrThrow(() -> resultsQueue.put(finalPartial), e -> logger.error(e.getMessage(), e));
             } catch (JsonProcessingException | ClientException | MappingException e) {
                 logger.warn(RETRIEVAL_FAILED_WARN, RECOMMENDATION, buffer.stream().map(SymbolPayload::getSymbol).toList(), e);
-                try {
-                    resultsQueue.put(Collections.emptyList());
-                } catch (InterruptedException ex) {
-                    Thread.currentThread().interrupt();
-                    logger.error(e.getMessage(), e);
-                }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                logger.error(e.getMessage(), e);
+                Interrupts.runOrThrow(() -> resultsQueue.put(Collections.emptyList()), ie -> logger.error(ie.getMessage(), ie));
             }
         });
     }

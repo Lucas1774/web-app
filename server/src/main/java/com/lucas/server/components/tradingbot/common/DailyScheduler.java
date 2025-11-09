@@ -6,7 +6,7 @@ import com.lucas.server.components.tradingbot.common.jpa.DataManager;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.news.jpa.News;
 import com.lucas.server.components.tradingbot.recommendation.jpa.Recommendation;
-import com.lucas.utils.Utils;
+import com.lucas.utils.Interrupts;
 import com.lucas.utils.exception.MappingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -118,6 +118,6 @@ public class DailyScheduler {
      * Abstraction for testing purposes
      */
     public void sleep() {
-        Utils.sleep(120_000, e -> logger.error(e.getMessage(), e));
+        Interrupts.runOrSwallow(() -> Thread.sleep(120_000), e -> logger.error(e.getMessage(), e));
     }
 }
