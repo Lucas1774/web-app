@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 @Repository
 public interface RecommendationsRepository extends JpaRepository<Recommendation, Long> {
@@ -20,6 +21,8 @@ public interface RecommendationsRepository extends JpaRepository<Recommendation,
     Slice<Recommendation> findBySymbol_Id(Long symbolId, PageRequest date);
 
     List<Recommendation> findBySymbol_Id(Long id);
+
+    List<Recommendation> findByNews_IdIn(Set<Long> newsIds);
 
     List<Recommendation> findByActionAndConfidenceGreaterThanEqualAndDate(String action,
                                                                           BigDecimal confidenceThreshold,

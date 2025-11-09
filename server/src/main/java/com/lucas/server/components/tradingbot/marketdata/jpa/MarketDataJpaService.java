@@ -56,8 +56,4 @@ public class MarketDataJpaService implements JpaService<MarketData> {
     public Optional<MarketData> findLatestBySymbolId(Long id) {
         return repository.findTopBySymbol_IdOrderByDateDesc(id);
     }
-
-    public void deleteAll(List<MarketData> res) {
-        repository.deleteAllInBatch(res);
-    }
 }

@@ -178,14 +178,10 @@ public class DataManager {
                         remainingSymbols.remove(symbol);
                         continue;
                     }
-                    List<News> persistedNews;
-                    synchronized (newsPersistLock) {
-                        persistedNews = newsService.createOrUpdate(news);
-                    }
                     PortfolioBase portfolio = portfolioService.findBySymbol(symbol)
                             .orElseGet(() -> portfolioSupplier.get().setSymbol(symbol));
 
-                    SymbolPayload payload = new SymbolPayload(symbol, marketData, portfolio).setNews(persistedNews);
+                    SymbolPayload payload = new SymbolPayload(symbol, marketData, portfolio).setNews(news);
                     providePremarket(fetchPreMarket, symbol, payload);
                     recommendationBuffer.add(payload);
                     AIClient client = mutableClients.peekFirst();
@@ -277,6 +273,15 @@ public class DataManager {
                 List<Recommendation> partial = recommendationClient.getRecommendations(buffer, client);
                 logger.info(GENERATION_SUCCESSFUL_INFO, RECOMMENDATION);
                 List<Recommendation> finalPartial;
+                synchronized (newsPersistLock) {
+                    Map<Long, News> persistedNews = newsService.createOrUpdate(partial.stream()
+                                    .flatMap(r -> r.getNews().stream())
+                                    .toList()).stream()
+                            .collect(Collectors.toMap(News::getExternalId, Function.identity()));
+                    partial.forEach(r -> r.setNews(r.getNews().stream()
+                            .map(n -> persistedNews.get(n.getExternalId()))
+                            .collect(Collectors.toSet())));
+                }
                 if (overwrite) {
                     finalPartial = recommendationsService.createOrUpdate(partial);
                 } else {
@@ -468,7 +473,16 @@ public class DataManager {
                 n.getSymbols().remove(symbol);
             });
         }
-        newsService.removeOrphanedNews();
+
+        List<News> orphanedNews = newsService.findOrphanedNews();
+        Set<Long> orphanedIds = orphanedNews.stream()
+                .map(News::getId)
+                .collect(Collectors.toSet());
+        recommendationsService.findByNewsId(orphanedIds).forEach(
+                r -> r.getNews().removeIf(n -> orphanedIds.contains(n.getId()))
+        );
+        newsService.deleteAll(orphanedNews);
+
         return res;
     }
 

@@ -23,4 +23,7 @@ public interface JpaService<E extends JpaEntity> {
      */
     @SuppressWarnings("unused")
     List<E> findAll();
+
+    @SuppressWarnings("unused")
+    void deleteAll(List<E> entities);
 }

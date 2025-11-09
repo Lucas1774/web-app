@@ -19,4 +19,8 @@ public class GenericJpaServiceDelegate<T extends JpaEntity, R extends JpaReposit
     public List<T> findAll() {
         return repository.findAll();
     }
+
+    public void deleteAll(List<T> entities) {
+        repository.deleteAllInBatch(entities);
+    }
 }

@@ -11,10 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class RecommendationsJpaService implements JpaService<Recommendation> {
@@ -44,10 +41,6 @@ public class RecommendationsJpaService implements JpaService<Recommendation> {
 
     public List<Recommendation> findByDateBetween(LocalDate from, LocalDate to) {
         return repository.findByDateBetween(from, to);
-    }
-
-    public void deleteAll(List<Recommendation> res) {
-        repository.deleteAllInBatch(res);
     }
 
     // TODO: batch
@@ -85,5 +78,9 @@ public class RecommendationsJpaService implements JpaService<Recommendation> {
 
     public List<Recommendation> getDailyRecommendations(BigDecimal confidenceThreshold, LocalDate date, String action, List<String> models) {
         return repository.findByConfidenceGreaterThanEqualAndDateAndActionAndModelIn(confidenceThreshold, date, action, models);
+    }
+
+    public List<Recommendation> findByNewsId(Set<Long> newsIds) {
+        return repository.findByNews_IdIn(newsIds);
     }
 }
