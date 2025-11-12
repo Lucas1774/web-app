@@ -186,7 +186,7 @@ public class DataManager {
                     recommendationBuffer.add(payload);
                     AIClient client = mutableClients.peekFirst();
                     if (recommendationBuffer.size() == Objects.requireNonNull(client).getConfig().chunkSize()) {
-                        submitChunk(new ArrayList<>(recommendationBuffer), client, executor, resultsQueue, overwrite);
+                        submitChunk(new ArrayList<>(recommendationBuffer), client, executor, resultsQueue, overwrite, useOldNews);
                         submitted++;
                         mutableClients.add(mutableClients.pollFirst());
                         recommendationBuffer.clear();
@@ -194,7 +194,7 @@ public class DataManager {
                 }
                 if (!recommendationBuffer.isEmpty()) {
                     AIClient client = mutableClients.peekFirst();
-                    submitChunk(new ArrayList<>(recommendationBuffer), client, executor, resultsQueue, overwrite);
+                    submitChunk(new ArrayList<>(recommendationBuffer), client, executor, resultsQueue, overwrite, useOldNews);
                     submitted++;
                     mutableClients.add(mutableClients.pollFirst());
                 }
@@ -267,10 +267,10 @@ public class DataManager {
     }
 
     private void submitChunk(List<SymbolPayload> buffer, AIClient client, ExecutorService executor,
-                             BlockingQueue<List<Recommendation>> resultsQueue, boolean overwrite) {
+                             BlockingQueue<List<Recommendation>> resultsQueue, boolean overwrite, boolean useOldNews) {
         executor.submit(() -> {
             try {
-                List<Recommendation> partial = recommendationClient.getRecommendations(buffer, client);
+                List<Recommendation> partial = recommendationClient.getRecommendations(buffer, client, useOldNews);
                 logger.info(GENERATION_SUCCESSFUL_INFO, RECOMMENDATION);
                 List<Recommendation> finalPartial;
                 synchronized (newsPersistLock) {
