@@ -6,6 +6,7 @@ import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataJpaService;
+import com.lucas.server.components.tradingbot.marketdata.jpa.MarketSnapshot;
 import com.lucas.server.components.tradingbot.marketdata.service.MarketDataKpiGenerator;
 import com.lucas.server.components.tradingbot.news.jpa.News;
 import com.lucas.server.components.tradingbot.news.jpa.NewsJpaService;
@@ -73,7 +74,7 @@ class RecommendationChatCompletionClientTest {
         }
         marketDataService.createIgnoringDuplicates(mds.stream().sorted(Comparator.comparing(MarketData::getDate)).toList());
         BigDecimal lastPrice = mds.getLast().getPrice();
-        MarketData premarket = new MarketData()
+        MarketSnapshot premarket = new MarketSnapshot()
                 .setSymbol(symbol)
                 .setOpen(lastPrice)
                 .setHigh(lastPrice.add(BigDecimal.valueOf(1)))

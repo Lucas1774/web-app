@@ -4,6 +4,7 @@ import com.lucas.server.common.MqttPublisher;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
+import com.lucas.server.components.tradingbot.marketdata.jpa.MarketSnapshot;
 import com.lucas.server.components.tradingbot.news.jpa.News;
 import com.lucas.server.components.tradingbot.recommendation.jpa.Recommendation;
 import com.lucas.utils.Interrupts;
@@ -102,6 +103,21 @@ public class DailyScheduler {
         String message = String.format("generated %d recommendations", updatedRecommendations.size());
         logger.info(SCHEDULED_TASK_SUCCESS_INFO, message, updatedRecommendations.stream()
                 .map(Recommendation::getSymbol).toList());
+    }
+
+    @Scheduled(cron = "${scheduler.recommendation-inference-cron}", zone = "America/New_York")
+    public void earlyMorningTask() {
+        LocalDate nowEt = ZonedDateTime.now(NY_ZONE).toLocalDate();
+        if (shouldRun(nowEt)) {
+            doEarlyMorningTask(SP500_SYMBOLS);
+        }
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    private void doEarlyMorningTask(List<String> symbolNames) {
+        List<MarketSnapshot> updatedSnapshots = dataManager.retrieveSnapshotsByName(symbolNames);
+        String message = String.format("fetched %d market snapshots", updatedSnapshots.size());
+        logger.info(SCHEDULED_TASK_SUCCESS_INFO, message, updatedSnapshots);
     }
 
     /**

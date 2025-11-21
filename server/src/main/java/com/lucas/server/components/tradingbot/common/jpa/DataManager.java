@@ -6,9 +6,11 @@ import com.lucas.server.common.exception.IllegalStateException;
 import com.lucas.server.components.tradingbot.common.AIClient;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataJpaService;
+import com.lucas.server.components.tradingbot.marketdata.jpa.MarketSnapshot;
+import com.lucas.server.components.tradingbot.marketdata.jpa.MarketSnapshotJpaService;
 import com.lucas.server.components.tradingbot.marketdata.service.FinnhubMarketDataClient;
 import com.lucas.server.components.tradingbot.marketdata.service.TwelveDataMarketDataClient;
-import com.lucas.server.components.tradingbot.marketdata.service.YahooFinanceMarketDataClient;
+import com.lucas.server.components.tradingbot.marketdata.service.YahooFinanceMarketSnapshotClient;
 import com.lucas.server.components.tradingbot.news.jpa.News;
 import com.lucas.server.components.tradingbot.news.jpa.NewsJpaService;
 import com.lucas.server.components.tradingbot.news.service.FinnhubNewsClient;
@@ -52,10 +54,11 @@ public class DataManager {
     private final Object newsPersistLock = new Object();
     private final SymbolJpaService symbolService;
     private final MarketDataJpaService marketDataService;
+    private final MarketSnapshotJpaService marketSnapshotService;
     private final NewsJpaService newsService;
     private final RecommendationsJpaService recommendationsService;
     private final YahooFinanceNewsClient yahooFinanceNewsClient;
-    private final YahooFinanceMarketDataClient yahooFinanceMarketDataClient;
+    private final YahooFinanceMarketSnapshotClient yahooFinanceMarketSnapshotClient;
     private final FinnhubNewsClient finnhubNewsClient;
     private final FinnhubMarketDataClient finnhubMarketDataClient;
     private final TwelveDataMarketDataClient twelveDataMarketDataClient;
@@ -64,17 +67,19 @@ public class DataManager {
     private final Map<MarketDataType, TypeToMarketDataFunction> typeToRunner;
     private final Map<PortfolioType, IPortfolioJpaService<?>> portfolioTypeToService;
 
-    public DataManager(SymbolJpaService symbolService, MarketDataJpaService marketDataService, NewsJpaService newsService,
-                       RecommendationsJpaService recommendationsService, YahooFinanceNewsClient yahooFinanceNewsClient,
-                       YahooFinanceMarketDataClient yahooFinanceMarketDataClient, FinnhubMarketDataClient finnhubMarketDataClient, TwelveDataMarketDataClient twelveDataMarketDataClient,
+    public DataManager(SymbolJpaService symbolService, MarketDataJpaService marketDataService, MarketSnapshotJpaService marketSnapshotService,
+                       NewsJpaService newsService, RecommendationsJpaService recommendationsService,
+                       YahooFinanceNewsClient yahooFinanceNewsClient, YahooFinanceMarketSnapshotClient yahooFinanceMarketSnapshotClient,
+                       FinnhubMarketDataClient finnhubMarketDataClient, TwelveDataMarketDataClient twelveDataMarketDataClient,
                        RecommendationChatCompletionClient recommendationClient, PortfolioJpaService portfolioService,
                        PortfolioMockJpaService portfolioMockService, FinnhubNewsClient newsClient, PortfolioManager portfolioManager) {
         this.symbolService = symbolService;
         this.marketDataService = marketDataService;
+        this.marketSnapshotService = marketSnapshotService;
         this.newsService = newsService;
         this.recommendationsService = recommendationsService;
         this.yahooFinanceNewsClient = yahooFinanceNewsClient;
-        this.yahooFinanceMarketDataClient = yahooFinanceMarketDataClient;
+        this.yahooFinanceMarketSnapshotClient = yahooFinanceMarketSnapshotClient;
         this.finnhubMarketDataClient = finnhubMarketDataClient;
         this.twelveDataMarketDataClient = twelveDataMarketDataClient;
         this.recommendationClient = recommendationClient;
@@ -224,9 +229,9 @@ public class DataManager {
     private void providePremarket(boolean fetchPreMarket, Symbol symbol, SymbolPayload payload) {
         if (fetchPreMarket) {
             try {
-                payload.setPremarket(yahooFinanceMarketDataClient.retrieveMarketData(symbol));
+                payload.setPremarket(yahooFinanceMarketSnapshotClient.retrieveMarketSnapshot(symbol));
             } catch (ClientException | MappingException e) {
-                logger.warn(RETRIEVAL_FAILED_WARN, PREMARKET, symbol, e);
+                logger.warn(RETRIEVAL_FAILED_WARN, MARKET_SNAPSHOT, symbol, e);
             }
         }
     }
@@ -376,6 +381,25 @@ public class DataManager {
         logger.info(GENERATION_SUCCESSFUL_INFO, MARKET_DATA);
         marketDataService.createIgnoringDuplicates(mds);
         return mds;
+    }
+
+    @Transactional(rollbackOn = {ClientException.class, MappingException.class})
+    public List<MarketSnapshot> retrieveSnapshotsByName(List<String> symbolNames) {
+        List<Symbol> symbols = symbolService.getOrCreateByName(symbolNames);
+        return retrieveSnapshots(symbols);
+    }
+
+    private List<MarketSnapshot> retrieveSnapshots(List<Symbol> symbols) {
+        List<MarketSnapshot> mss = new ArrayList<>();
+        for (Symbol symbol : symbols) {
+            try {
+                mss.add(yahooFinanceMarketSnapshotClient.retrieveMarketSnapshot(symbol));
+            } catch (ClientException | MappingException e) {
+                logger.warn(RETRIEVAL_FAILED_WARN, MARKET_SNAPSHOT, symbol, e);
+            }
+        }
+        logger.info(GENERATION_SUCCESSFUL_INFO, MARKET_SNAPSHOT);
+        return marketSnapshotService.createAll(mss);
     }
 
     @Transactional(rollbackOn = IllegalStateException.class)
@@ -555,7 +579,7 @@ public class DataManager {
         private final List<MarketData> marketData;
         private final PortfolioBase portfolio;
         @Setter
-        private MarketData premarket;
+        private MarketSnapshot premarket;
         @Setter
         private List<News> news;
     }

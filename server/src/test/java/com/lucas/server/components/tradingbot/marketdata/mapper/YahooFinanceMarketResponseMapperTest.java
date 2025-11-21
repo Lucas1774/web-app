@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lucas.server.TestConfiguration;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
-import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
+import com.lucas.server.components.tradingbot.marketdata.jpa.MarketSnapshot;
 import com.lucas.utils.exception.MappingException;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
@@ -15,10 +15,12 @@ import org.springframework.context.annotation.Import;
 
 import java.math.BigDecimal;
 import java.text.MessageFormat;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.Set;
 
 import static com.lucas.server.common.Constants.MAPPING_ERROR;
-import static com.lucas.server.common.Constants.PREMARKET;
+import static com.lucas.server.common.Constants.MARKET_SNAPSHOT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -175,7 +177,7 @@ class YahooFinanceMarketResponseMapperTest {
         Symbol symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
 
         // when
-        MarketData result = mapper.map(objectMapper.readTree(json), symbol);
+        MarketSnapshot result = mapper.map(objectMapper.readTree(json), symbol);
 
         // then
         assertThat(result).isNotNull();
@@ -185,10 +187,7 @@ class YahooFinanceMarketResponseMapperTest {
         assertThat(result.getLow()).isEqualByComparingTo(BigDecimal.valueOf(211.27));
         assertThat(result.getPrice()).isEqualByComparingTo(BigDecimal.valueOf(211.44));
         assertThat(result.getVolume()).isNull();
-        assertThat(result.getDate()).isNull();
-        assertThat(result.getPreviousClose()).isNull();
-        assertThat(result.getChange()).isNull();
-        assertThat(result.getChangePercent()).isNull();
+        assertThat(result.getDate()).isEqualTo(Instant.ofEpochSecond(1753864520).atZone(ZoneOffset.UTC).toLocalDateTime());
     }
 
     @Test
@@ -220,6 +219,6 @@ class YahooFinanceMarketResponseMapperTest {
         // when & then
         assertThatThrownBy(() -> mapper.map(objectMapper.readTree(json), symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow()))
                 .isInstanceOf(MappingException.class)
-                .hasMessageContaining(MessageFormat.format(MAPPING_ERROR, PREMARKET));
+                .hasMessageContaining(MessageFormat.format(MAPPING_ERROR, MARKET_SNAPSHOT));
     }
 }

@@ -2,6 +2,7 @@ package com.lucas.server.components.tradingbot.recommendation.service;
 
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
+import com.lucas.server.components.tradingbot.marketdata.jpa.MarketSnapshot;
 import com.lucas.server.components.tradingbot.marketdata.service.MarketDataKpiGenerator;
 import com.lucas.server.components.tradingbot.portfolio.service.PortfolioManager;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.AssetReportRaw;
@@ -37,11 +38,12 @@ public class AssetReportDataProvider {
         BigDecimal atr14 = kpiGenerator.computeRelativeAtr(current);
         BigDecimal obv20 = kpiGenerator.computeObv(mdHistory, 20).orElse(null);
 
-        MarketData pm = payload.getPremarket();
+        MarketSnapshot pm = payload.getPremarket();
         PricePointRaw premarket = null;
         if (null != pm) {
-            kpiGenerator.computeChange(pm, current.getPrice());
-            premarket = new PricePointRaw(null, pm.getOpen(), pm.getHigh(), pm.getLow(), pm.getPrice(), null, pm.getChangePercent());
+            MarketData pmmd = MarketData.from(pm);
+            kpiGenerator.computeChange(pmmd, current.getPrice());
+            premarket = new PricePointRaw(null, pmmd.getOpen(), pmmd.getHigh(), pmmd.getLow(), pmmd.getPrice(), null, pmmd.getChangePercent());
         }
         List<PricePointRaw> priceHistory = mdHistory.subList(0, min(mdHistory.size(), HISTORY_DAYS_COUNT)).stream()
                 .map(md -> new PricePointRaw(md.getDate(), md.getOpen(), md.getHigh(), md.getLow(), md.getPrice(), md.getVolume(), null))

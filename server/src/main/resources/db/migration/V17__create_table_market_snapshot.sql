@@ -1,0 +1,13 @@
+CREATE TABLE IF NOT EXISTS market_snapshot (
+  id SERIAL PRIMARY KEY,
+  symbol_id INTEGER NOT NULL
+    REFERENCES symbol(id)
+    ON UPDATE CASCADE
+    ON DELETE RESTRICT,
+  open NUMERIC(15,4),
+  high NUMERIC(15,4),
+  low NUMERIC(15,4),
+  price NUMERIC(15,4) NOT NULL,
+  volume BIGINT,
+  date TIMESTAMP NOT NULL
+);

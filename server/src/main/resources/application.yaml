@@ -4,6 +4,7 @@ security:
 scheduler:
   market-data-cron: "0 0 0 * * *" # Every day at midnight UTC
   news-recommendations-cron: "0 15 9 * * *" # Every day before the market opens
+  recommendation-inference-cron: "0 45 9 * * *" # Every day after the market opens
 
 spring:
   application:

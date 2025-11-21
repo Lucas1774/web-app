@@ -43,10 +43,10 @@ public class Constants {
     public static final String ROLE = "role";
     public static final String BUY = "BUY";
     public static final String MARKET_DATA = "market data";
+    public static final String MARKET_SNAPSHOT = "market snapshot";
     public static final String NEWS = "news";
     public static final String SENTIMENT = "sentiment";
     public static final String RECOMMENDATION = "recommendation";
-    public static final String PREMARKET = "premarket";
     public static final String VOLATILITY = "volatility";
     public static final String OBV = "OBV";
     public static final String AI_PER_SECOND_RATE_LIMITER = "perSecondRateLimiter";

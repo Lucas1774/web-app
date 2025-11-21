@@ -79,6 +79,18 @@ public class MarketData implements JpaEntity {
     @Column(name = "previous_average_loss", precision = 15, scale = 4)
     private BigDecimal previousAverageLoss;
 
+    public static MarketData from(MarketSnapshot snapshot) {
+        return new MarketData()
+                .setSymbol(snapshot.getSymbol())
+                .setOpen(snapshot.getOpen())
+                .setHigh(snapshot.getHigh())
+                .setLow(snapshot.getLow())
+                .setPrice(snapshot.getPrice())
+                .setVolume(snapshot.getVolume())
+                .setDate(null == snapshot.getDate() ? null : snapshot.getDate().toLocalDate())
+                .setPrice(snapshot.getPrice());
+    }
+
     public void addRecommendation(Recommendation r) {
         recommendations.add(r);
     }
