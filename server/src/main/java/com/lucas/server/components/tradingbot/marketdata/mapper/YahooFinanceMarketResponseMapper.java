@@ -55,7 +55,7 @@ public class YahooFinanceMarketResponseMapper implements Mapper<JsonNode, Market
     public MarketSnapshot map(JsonNode json, Symbol symbol) throws MappingException {
         try {
             JsonNode result = json.get("chart").get("result").get(0);
-            if (!symbol.getName().equals(result.get("meta").get(SYMBOL).asText())) {
+            if (!symbol.getName().equals(result.get("meta").get(SYMBOL).asText().replace('-', '.'))) {
                 throw new MappingException(MessageFormat.format(MAPPING_ERROR, MARKET_SNAPSHOT));
             }
             return map(result).setSymbol(symbol);
