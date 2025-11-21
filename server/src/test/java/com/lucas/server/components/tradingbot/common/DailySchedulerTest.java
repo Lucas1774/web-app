@@ -17,7 +17,12 @@ import java.time.Duration;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest(properties = {"scheduler.market-data-cron=* * * * * *", "scheduler.news-recommendations-cron=* * * * * *"})
+@SpringBootTest(properties = {
+        "scheduler.market-data-cron=* * * * * *",
+        "scheduler.news-recommendations-cron=* * * * * *",
+        "scheduler.recommendation-inference-five-cron=* * * * * *",
+        "scheduler.recommendation-inference-fifteen-cron=* * * * * *"
+})
 @Import(TestConfiguration.class)
 class DailySchedulerTest {
 
@@ -41,6 +46,12 @@ class DailySchedulerTest {
         doReturn(true).when(dailyScheduler).shouldRun(any());
         doNothing().when(dailyScheduler).sleep();
         await().atMost(Duration.ofSeconds(10))
-                .untilAsserted(() -> verify(dataManager, atLeastOnce()).retrieveMarketData(any(), any()));
+                .untilAsserted(() -> {
+                    verify(dataManager, atLeastOnce()).retrieveMarketData(any(), any());
+                    verify(dataManager, atLeastOnce()).getRandomRecommendations(
+                            any(), any(), any(), anyInt(), anyBoolean(), anyBoolean(), anyBoolean(), anyBoolean(), anyBoolean()
+                    );
+                    verify(dataManager, times(2)).retrieveSnapshotsByName(any());
+                });
     }
 }
