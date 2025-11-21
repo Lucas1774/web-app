@@ -39,7 +39,7 @@ public class YahooFinanceMarketSnapshotClient {
     public MarketSnapshot retrieveMarketSnapshot(Symbol symbol) throws ClientException, MappingException {
         rateLimiter.acquirePermission();
         logger.info(RETRIEVING_DATA_INFO, MARKET_SNAPSHOT, symbol);
-        String url = UriComponentsBuilder.fromUriString(endpoint + "/" + symbol.getName())
+        String url = UriComponentsBuilder.fromUriString(endpoint + "/" + symbol.getName().replace('.', '-'))
                 .queryParam("interval", "1h")
                 .queryParam("includePrePost", true)
                 .build()

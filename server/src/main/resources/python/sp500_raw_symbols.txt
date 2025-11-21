@@ -273,9 +273,6 @@
 |{{NyseSymbol|CAH}}
 |[[Cardinal Health]]|| Health Care || Health Care Distributors ||     [[Dublin, Ohio]] || 1997-05-27 || 0000721371 || 1971
 |-
-|{{NyseSymbol|KMX}}
-|[[CarMax]]|| Consumer Discretionary || Automotive Retail ||     [[Richmond, Virginia]] || 2010-06-28 || 0001170010 || 1993
-|-
 |{{NyseSymbol|CCL}}
 |[[Carnival Corporation & plc|Carnival]]|| Consumer Discretionary || Hotels, Resorts & Cruise Lines || [[Miami]], Florida || 1998-12-22 || 0000815097 || 1972
 |-
@@ -499,9 +496,6 @@
 |{{NyseSymbol|DD}}
 |[[DuPont]]|| Materials || Specialty Chemicals || [[Wilmington, Delaware]] || 2019-06-03 || 0001666700 || 2017 (1802)
 |-
-|{{NyseSymbol|EMN}}
-|[[Eastman Chemical Company]]|| Materials || Specialty Chemicals || [[Kingsport, Tennessee]] || 1994-01-01 || 0000915389 || 1920
-|-
 |{{NyseSymbol|ETN}}
 |[[Eaton Corporation]]|| Industrials || Electrical Components & Equipment || [[Dublin]], Ireland || 1957-03-04 || 0001551182 || 1911
 |-
@@ -618,7 +612,7 @@
 |{{NyseSymbol|FE}}
 |[[FirstEnergy]]|| Utilities || Electric Utilities || [[Akron, Ohio]] || 1997-11-28 || 0001031296 || 1997
 |-
-|{{NyseSymbol|FI}}
+|{{NasdaqSymbol|FISV}}
 |[[Fiserv]]|| Financials || Transaction & Payment Processing Services || [[Brookfield, Wisconsin]] || 2001-04-02 || 0000798354 || 1984
 |-
 |{{NyseSymbol|F}}
@@ -666,7 +660,7 @@
 |[[Generac]]|| Industrials || Electrical Components & Equipment || [[Waukesha, Wisconsin]] || 2021-03-22 || 0001474735 || 1959
 |-
 |{{NyseSymbol|GD}}
-|[[General Dynamics]]|| Industrials || Aerospace & Defense || [[Falls Church, Virginia]] || 1957-03-04 || 0000040533 || 1899
+|[[General Dynamics]]|| Industrials || Aerospace & Defense || [[Reston, Virginia]] || 1957-03-04 || 0000040533 || 1899
 |-
 |{{NyseSymbol|GIS}}
 |[[General Mills]]|| Consumer Staples || Packaged Foods & Meats || [[Golden Valley, Minnesota]] || 1957-03-04 || 0000040704 || 1856
@@ -1205,6 +1199,9 @@
 |{{NyseSymbol|DGX}}
 |[[Quest Diagnostics]]||    Health Care || Health Care Services || [[Secaucus, New Jersey]] || 2002-12-12 || 0001022079 || 1967
 |-
+|{{NyseSymbol|Q}}
+|[[Qnity Electronics]]|| Information Technology || Semiconductor Materials & Equipment || [[Wilmington, Delaware]] || 2025-11-03|| 0002058873 || 2025
+|-
 |{{NyseSymbol|RL}}
 |[[Ralph Lauren Corporation]]||    Consumer Discretionary ||    Apparel, Accessories & Luxury Goods    || [[New York City]], New York || 2007-02-02 || 0001037038 || 1967
 |-
@@ -1294,6 +1291,15 @@
 |-
 |{{NyseSymbol|SNA}}
 |[[Snap-on]]|| Industrials || Industrial Machinery & Supplies & Components || [[Kenosha, Wisconsin]] || 1982-09-30 || 0000091440 || 1920
+|-
+|{{NasdaqSymbol|SOLS}}
+|[[Solstice Advanced Materials]]
+|Materials
+|Specialty Chemicals
+|[[Morris Plains, New Jersey]]
+|2025-10-30
+|0002064953
+|2025
 |-
 |{{NyseSymbol|SOLV}}
 |[[Solventum]]|| Health Care || Health Care Technology || [[Saint Paul, Minnesota]] || 2024-04-01 || 0001964738 || 2023
