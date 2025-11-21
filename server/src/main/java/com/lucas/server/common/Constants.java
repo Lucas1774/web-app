@@ -66,7 +66,8 @@ public class Constants {
     public static final String MAPPING_ERROR = "Error mapping {0}";
     public static final String INSUFFICIENT_STOCK_ERROR = "{0}: Nothing to sell";
     public static final String SYMBOL_NOT_FOUND_ERROR = "{0}: Unknown symbol";
-    public static final ZoneId NY_ZONE = ZoneId.of("America/New_York");
+    public static final String AMERICA_NY = "America/New_York";
+    public static final ZoneId NY_ZONE = ZoneId.of(AMERICA_NY);
     public static final LocalTime MARKET_CLOSE = LocalTime.of(16, 0);
     public static final LocalTime EARLY_CLOSE = LocalTime.of(13, 0);
     public static final Set<LocalDate> EARLY_CLOSE_DATES_2025 = Set.of(

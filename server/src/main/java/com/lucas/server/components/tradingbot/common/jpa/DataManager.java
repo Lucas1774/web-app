@@ -526,6 +526,21 @@ public class DataManager {
     }
 
     @Transactional
+    public List<MarketSnapshot> removeOldSnapshots(int keepCount) {
+        List<MarketSnapshot> res = new ArrayList<>();
+        List<Symbol> symbols = symbolService.findAll();
+        for (Symbol symbol : symbols) {
+            List<MarketSnapshot> toKeep = marketSnapshotService.getTopForSymbolId(symbol.getId(), keepCount);
+            List<MarketSnapshot> toRemove = marketSnapshotService.findBySymbolId(symbol.getId()).stream()
+                    .filter(marketSnapshot -> !toKeep.contains(marketSnapshot))
+                    .toList();
+            res.addAll(toRemove);
+        }
+        marketSnapshotService.deleteAll(res);
+        return res;
+    }
+
+    @Transactional
     public List<Recommendation> removeOldRecommendations(int keepCount) {
         List<Recommendation> res = new ArrayList<>();
         List<Symbol> symbols = symbolService.findAll();
