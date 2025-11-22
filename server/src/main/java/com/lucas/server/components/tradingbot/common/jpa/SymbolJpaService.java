@@ -6,9 +6,9 @@ import com.lucas.server.common.jpa.UniqueConstraintWearyJpaServiceDelegate;
 import lombok.experimental.Delegate;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,7 +25,7 @@ public class SymbolJpaService implements JpaService<Symbol> {
         this.repository = repository;
     }
 
-    public List<Symbol> getOrCreateByName(Collection<String> names) {
+    public Set<Symbol> getOrCreateByName(Set<String> names) {
         return uniqueConstraintDelegate.createOrUpdate(this::findUnique,
                 (oldEntity, newEntity) -> oldEntity,
                 names.stream().map(name -> new Symbol().setName(name)).collect(Collectors.toSet()));
@@ -35,11 +35,11 @@ public class SymbolJpaService implements JpaService<Symbol> {
         return repository.findById(id);
     }
 
-    private Collection<Symbol> findUnique(Collection<Symbol> symbols) {
-        return repository.findByNameIn(symbols.stream().map(Symbol::getName).toList());
+    private Set<Symbol> findUnique(Set<Symbol> symbols) {
+        return repository.findByNameIn(symbols.stream().map(Symbol::getName).collect(Collectors.toSet()));
     }
 
-    public List<Symbol> findAllById(List<Long> symbolIds) {
-        return repository.findAllById(symbolIds);
+    public Set<Symbol> findAllById(Set<Long> symbolIds) {
+        return new HashSet<>(repository.findAllById(symbolIds));
     }
 }

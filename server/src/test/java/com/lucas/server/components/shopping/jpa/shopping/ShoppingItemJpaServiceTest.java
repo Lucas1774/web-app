@@ -1,6 +1,6 @@
 package com.lucas.server.components.shopping.jpa.shopping;
 
-import com.lucas.server.TestConfiguration;
+import com.lucas.server.ConfiguredTest;
 import com.lucas.server.common.jpa.user.UserJpaService;
 import com.lucas.server.components.shopping.jpa.category.Category;
 import com.lucas.server.components.shopping.jpa.category.CategoryJpaService;
@@ -9,18 +9,13 @@ import com.lucas.server.components.shopping.jpa.product.ProductJpaService;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
-@SpringBootTest
-@Import(TestConfiguration.class)
-class ShoppingItemJpaServiceTest {
+class ShoppingItemJpaServiceTest extends ConfiguredTest {
 
     @Autowired
     private ShoppingItemJpaService shoppingItemService;
@@ -39,7 +34,7 @@ class ShoppingItemJpaServiceTest {
     void testFindAllByUsername() {
         Category c1 = new Category().setName("C1").setOrder(1);
         Category c2 = new Category().setName("C2").setOrder(2);
-        categoryService.createAll(List.of(c1, c2));
+        categoryService.createAll(Set.of(c1, c2));
 
         Product prodA = new Product()
                 .setName("ProdA")
@@ -51,9 +46,9 @@ class ShoppingItemJpaServiceTest {
                 .setIsRare(false)
                 .setCategory(c2)
                 .setOrder(200);
-        productService.createAll(List.of(prodA, prodB));
+        productService.createAll(Set.of(prodA, prodB));
 
-        shoppingItemService.createAll(List.of(
+        shoppingItemService.createAll(Set.of(
                 new ShoppingItem()
                         .setUser(userService.findByUsername("admin").orElseThrow())
                         .setProduct(prodB)
@@ -72,9 +67,7 @@ class ShoppingItemJpaServiceTest {
                         ShoppingItem::getQuantity,
                         s -> s.getProduct().getOrder()
                 )
-                .containsExactly(
-                        tuple("ProdB", 5, 200)
-                );
+                .containsExactly(tuple("ProdB", 5, 200));
     }
 
     @Test
@@ -89,7 +82,7 @@ class ShoppingItemJpaServiceTest {
         shoppingItemService.updateShoppingItemQuantity(new ShoppingItem().setProduct(p2).setQuantity(2), "admin");
 
         // when: set all to 7
-        List<ShoppingItem> updated = shoppingItemService.updateAllShoppingItemQuantities("admin", 7);
+        Set<ShoppingItem> updated = shoppingItemService.updateAllShoppingItemQuantities("admin", 7);
 
         // then: both items have quantity 7
         assertThat(updated).hasSize(2)
@@ -106,7 +99,7 @@ class ShoppingItemJpaServiceTest {
         // given: admin item auto-created and an item for default user
         Product prod = productService.createProductAndOrLinkToUser("P", "admin").orElseThrow();
         shoppingItemService.createAll(
-                Collections.singletonList(new ShoppingItem()
+                Set.of(new ShoppingItem()
                         .setUser(userService.findByUsername("default").orElseThrow())
                         .setProduct(prod).setQuantity(2))
         );
@@ -129,7 +122,7 @@ class ShoppingItemJpaServiceTest {
         // given: one item per user
         Product p = productService.createProductAndOrLinkToUser("ToDel", "admin").orElseThrow();
         shoppingItemService.createAll(
-                Collections.singletonList(new ShoppingItem().setUser(userService.findByUsername("default").orElseThrow())
+                Set.of(new ShoppingItem().setUser(userService.findByUsername("default").orElseThrow())
                         .setProduct(p).setQuantity(5))
         );
         // admin already has item from insertProduct

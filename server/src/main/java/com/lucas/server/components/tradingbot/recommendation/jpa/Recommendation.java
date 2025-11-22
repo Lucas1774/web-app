@@ -13,7 +13,6 @@ import lombok.experimental.Accessors;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -66,7 +65,7 @@ public class Recommendation implements JpaEntity {
     @Column(columnDefinition = "TEXT")
     private String errors;
 
-    public Recommendation addNews(Collection<News> news) {
+    public Recommendation addNews(Set<News> news) {
         this.news.addAll(news);
         return this;
     }
@@ -80,9 +79,13 @@ public class Recommendation implements JpaEntity {
     @Override
     public String toString() {
         return "Recommendation{" +
-                "date=" + date +
+                "id=" + id +
                 ", symbol=" + symbol +
-                ", id=" + id +
+                ", marketData=" + marketData +
+                ", action='" + action + '\'' +
+                ", confidence=" + confidence +
+                ", date=" + date +
+                ", model='" + model + '\'' +
                 '}';
     }
 

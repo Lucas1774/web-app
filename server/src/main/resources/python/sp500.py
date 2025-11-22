@@ -19,7 +19,7 @@ def main():
         wikicode = f.read()
 
     symbols = extract_sp500_symbols(wikicode)
-    print(f"public static final List<String> SP500_SYMBOLS = List.of({', '.join(f'\"{s}\"' for s in symbols)});")
+    print(f"public static final Set<String> SP500_SYMBOLS = Set.of({', '.join(f'\"{s}\"' for s in symbols)});")
 
 
 if __name__ == "__main__":

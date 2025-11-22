@@ -35,13 +35,13 @@ public class RecommendationChatCompletionResponseMapper implements Mapper<JsonNo
         }
     }
 
-    public List<Recommendation> mapAll(List<DataManager.SymbolPayload> payload, JsonNode jsonNode, String message,
-                                       String model) throws MappingException {
+    public Set<Recommendation> mapAll(Set<DataManager.SymbolPayload> payload, JsonNode jsonNode, String message,
+                                      String model) throws MappingException {
         try {
-            List<Recommendation> recommendations = new ArrayList<>();
+            Set<Recommendation> recommendations = new HashSet<>();
             Map<String, Symbol> symbolByName = new HashMap<>();
             Map<String, MarketData> latestMarketDataByName = new HashMap<>();
-            Map<String, List<News>> newsByName = new HashMap<>();
+            Map<String, Set<News>> newsByName = new HashMap<>();
             for (DataManager.SymbolPayload p : payload) {
                 String name = p.getSymbol().getName();
                 symbolByName.put(name, p.getSymbol());
@@ -52,7 +52,7 @@ public class RecommendationChatCompletionResponseMapper implements Mapper<JsonNo
 
             if (jsonNode.isObject()) {
                 String symbolName = jsonNode.get(SYMBOL).asText();
-                return List.of(map(jsonNode)
+                return Set.of(map(jsonNode)
                         .setModel(model)
                         .setInput(message)
                         .setErrors(EMPTY_STRING)

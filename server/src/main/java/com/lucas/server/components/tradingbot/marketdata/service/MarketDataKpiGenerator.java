@@ -2,12 +2,14 @@ package com.lucas.server.components.tradingbot.marketdata.service;
 
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataJpaService;
+import com.lucas.utils.OrderedIndexedSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
@@ -29,7 +31,7 @@ public class MarketDataKpiGenerator {
 
     @SuppressWarnings("UnusedReturnValue")
     public MarketData computeDerivedFields(MarketData md) {
-        List<MarketData> previous14 = service.findTop14BySymbolIdAndDateBeforeOrderByDateDesc(md.getSymbol().getId(), md.getDate());
+        OrderedIndexedSet<MarketData> previous14 = service.findTop14BySymbolIdAndDateBeforeOrderByDateDesc(md.getSymbol().getId(), md.getDate());
         if (previous14.isEmpty()) {
             logger.warn(NON_COMPUTABLE_KPI_WARN, "anything", md);
             return md;
@@ -71,12 +73,12 @@ public class MarketDataKpiGenerator {
      * @param n       size
      * @return simple moving n-average of closing prices
      */
-    public Optional<BigDecimal> computeMovingAverage(List<MarketData> history, int n) {
+    public Optional<BigDecimal> computeMovingAverage(OrderedIndexedSet<MarketData> history, int n) {
         if (history.size() < n) {
             logger.warn(NON_COMPUTABLE_KPI_WARN, "moving average", history);
             return Optional.empty();
         }
-        List<MarketData> cropped = history.subList(0, n);
+        OrderedIndexedSet<MarketData> cropped = history.subList(0, n);
         BigDecimal average = computeMean(cropped.stream().map(MarketData::getPrice).toList());
 
         if (0 == average.compareTo(BigDecimal.ZERO)) {
@@ -90,12 +92,12 @@ public class MarketDataKpiGenerator {
      * @param n       size
      * @return exponential moving n‑average of closing prices (EMA)
      */
-    public Optional<BigDecimal> computeEma(List<MarketData> history, int n) {
+    public Optional<BigDecimal> computeEma(OrderedIndexedSet<MarketData> history, int n) {
         if (history.size() < n) {
             logger.warn(NON_COMPUTABLE_KPI_WARN, "exponential moving average", history);
             return Optional.empty();
         }
-        List<MarketData> cropped = history.subList(0, n).reversed();
+        OrderedIndexedSet<MarketData> cropped = history.subList(0, n).reversed();
         BigDecimal ema = computeEma(cropped.stream().map(MarketData::getPrice).toList());
 
         if (0 == ema.compareTo(BigDecimal.ZERO)) {
@@ -110,7 +112,7 @@ public class MarketDataKpiGenerator {
      * @param slowEmaSize slow ema size
      * @return MACD line = EMA(fastEmaSize) − EMA(slowEmaSize) of closing prices
      */
-    public Optional<BigDecimal> computeMacdLine(List<MarketData> history, int fastEmaSize, int slowEmaSize) {
+    public Optional<BigDecimal> computeMacdLine(OrderedIndexedSet<MarketData> history, int fastEmaSize, int slowEmaSize) {
         if (history.size() < slowEmaSize) {
             logger.warn(NON_COMPUTABLE_KPI_WARN, "MACD", history);
             return Optional.empty();
@@ -128,7 +130,7 @@ public class MarketDataKpiGenerator {
      * @param slowEmaSize slow ema size
      * @return signal line = n‑day EMA of the MACD line
      */
-    public Optional<BigDecimal> computeSignalLine(List<MarketData> history, int n, int fastEmaSize, int slowEmaSize) {
+    public Optional<BigDecimal> computeSignalLine(OrderedIndexedSet<MarketData> history, int n, int fastEmaSize, int slowEmaSize) {
         if (history.size() < slowEmaSize + (n - 1)) {
             logger.warn(NON_COMPUTABLE_KPI_WARN, "signal line", history);
             return Optional.empty();
@@ -147,7 +149,7 @@ public class MarketDataKpiGenerator {
     /**
      * @param history list of 14 consecutive MarketData entries. The previousClose param allows for not 14 + 1 needed.
      */
-    private void computeGainsAndLoses(List<MarketData> history) {
+    private void computeGainsAndLoses(OrderedIndexedSet<MarketData> history) {
         MarketData current = history.getFirst();
         BigDecimal previousAvgGain = current.getPreviousAverageGain();
         BigDecimal previousAvgLoss = current.getPreviousAverageLoss();
@@ -208,7 +210,7 @@ public class MarketDataKpiGenerator {
      * @param history list of 14 consecutive MarketData entries. The previousClose param allows for not 14 + 1 needed.
      * @return Wilder-smoothed average true range over 14 periods (ATR14)
      */
-    private Optional<BigDecimal> computeAtr(List<MarketData> history) {
+    private Optional<BigDecimal> computeAtr(OrderedIndexedSet<MarketData> history) {
         MarketData current = history.getFirst();
         BigDecimal previousAtr = current.getPreviousAtr();
         BigDecimal atr;
@@ -260,18 +262,18 @@ public class MarketDataKpiGenerator {
      * @param n       size
      * @return annualized volatility in percent (std dev of daily returns)
      */
-    public Optional<BigDecimal> computeVolatility(List<MarketData> history, int n) {
+    public Optional<BigDecimal> computeVolatility(OrderedIndexedSet<MarketData> history, int n) {
         if (history.size() < n) {
             logger.warn(NON_COMPUTABLE_KPI_WARN, VOLATILITY, history);
             return Optional.empty();
         }
-        List<MarketData> cropped = history.subList(0, n).reversed();
+        OrderedIndexedSet<MarketData> cropped = history.subList(0, n).reversed();
         if (!cropped.stream().allMatch(md -> null != md.getPreviousClose())) {
             logger.warn(NON_COMPUTABLE_KPI_WARN, VOLATILITY, cropped);
             return Optional.empty();
         }
 
-        List<BigDecimal> dailyReturns = new java.util.ArrayList<>();
+        List<BigDecimal> dailyReturns = new ArrayList<>();
         for (MarketData md : cropped) {
             dailyReturns.add(
                     md.getPrice().subtract(md.getPreviousClose())
@@ -298,12 +300,12 @@ public class MarketDataKpiGenerator {
      * @param n       size
      * @return On‑Balance Volume (OBV) accumulated over n periods
      */
-    public Optional<BigDecimal> computeObv(List<MarketData> history, int n) {
+    public Optional<BigDecimal> computeObv(OrderedIndexedSet<MarketData> history, int n) {
         if (history.size() < n) {
             logger.warn(NON_COMPUTABLE_KPI_WARN, OBV, history);
             return Optional.empty();
         }
-        List<MarketData> cropped = history.subList(0, n).reversed();
+        OrderedIndexedSet<MarketData> cropped = history.subList(0, n).reversed();
         if (!cropped.stream().allMatch(md -> null != md.getPreviousClose())) {
             logger.warn(NON_COMPUTABLE_KPI_WARN, OBV, cropped);
             return Optional.empty();

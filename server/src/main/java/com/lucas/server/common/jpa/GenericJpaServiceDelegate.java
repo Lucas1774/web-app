@@ -2,7 +2,8 @@ package com.lucas.server.common.jpa;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 public class GenericJpaServiceDelegate<T extends JpaEntity, R extends JpaRepository<T, ?>> {
 
@@ -12,15 +13,15 @@ public class GenericJpaServiceDelegate<T extends JpaEntity, R extends JpaReposit
         this.repository = repository;
     }
 
-    public List<T> createAll(List<T> entities) {
-        return repository.saveAll(entities);
+    public Set<T> createAll(Set<T> entities) {
+        return new HashSet<>(repository.saveAll(entities));
     }
 
-    public List<T> findAll() {
-        return repository.findAll();
+    public Set<T> findAll() {
+        return new HashSet<>(repository.findAll());
     }
 
-    public void deleteAll(List<T> entities) {
+    public void deleteAll(Set<T> entities) {
         repository.deleteAllInBatch(entities);
     }
 }

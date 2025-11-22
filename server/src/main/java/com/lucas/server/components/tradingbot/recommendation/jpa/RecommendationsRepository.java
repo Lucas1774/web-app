@@ -1,35 +1,32 @@
 package com.lucas.server.components.tradingbot.recommendation.jpa;
 
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
 @Repository
 public interface RecommendationsRepository extends JpaRepository<Recommendation, Long> {
 
-    List<Recommendation> findByDateBetween(LocalDate from, LocalDate to);
+    Set<Recommendation> findByDateBetween(LocalDate from, LocalDate to);
 
-    List<Recommendation> findBySymbol_IdInAndDateIn(Collection<Long> ids, Collection<LocalDate> dates);
+    Set<Recommendation> findBySymbol_IdInAndDateIn(Set<Long> ids, Set<LocalDate> dates);
 
-    Slice<Recommendation> findBySymbol_Id(Long symbolId, PageRequest date);
+    Set<Recommendation> findBySymbol_Id(Long symbolId, PageRequest date);
 
-    List<Recommendation> findBySymbol_Id(Long id);
+    Set<Recommendation> findBySymbol_Id(Long id);
 
-    List<Recommendation> findByNews_IdIn(Set<Long> newsIds);
+    Set<Recommendation> findByNews_IdIn(Set<Long> newsIds);
 
-    List<Recommendation> findByActionAndConfidenceGreaterThanEqualAndDate(String action,
-                                                                          BigDecimal confidenceThreshold,
-                                                                          LocalDate recommendationDate);
+    Set<Recommendation> findByActionAndConfidenceGreaterThanEqualAndDate(String action,
+                                                                         BigDecimal confidenceThreshold,
+                                                                         LocalDate recommendationDate);
 
-    List<Recommendation> findByConfidenceGreaterThanEqualAndDateAndActionAndModelIn(BigDecimal confidenceThreshold,
-                                                                                    LocalDate date,
-                                                                                    String action,
-                                                                                    List<String> models);
+    Set<Recommendation> findByConfidenceGreaterThanEqualAndDateAndActionAndModelIn(BigDecimal confidenceThreshold,
+                                                                                   LocalDate date,
+                                                                                   String action,
+                                                                                   Set<String> models);
 }

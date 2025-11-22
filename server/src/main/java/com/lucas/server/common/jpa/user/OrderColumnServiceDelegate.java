@@ -1,10 +1,11 @@
 package com.lucas.server.common.jpa.user;
 
 import com.lucas.server.components.shopping.dto.Sortable;
+import com.lucas.utils.OrderedIndexedSet;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 public class OrderColumnServiceDelegate<T extends Sortable> {
 
@@ -14,14 +15,14 @@ public class OrderColumnServiceDelegate<T extends Sortable> {
         this.repository = repository;
     }
 
-    public List<T> updateOrders(List<T> elements) {
-        List<T> toSave = new ArrayList<>();
+    public Set<T> updateOrders(OrderedIndexedSet<T> elements) {
+        Set<T> toSave = new HashSet<>();
         for (int i = 0; i < elements.size(); i++) {
             T input = elements.get(i);
             T managed = repository.findById(input.getId()).orElseThrow();
             managed.setOrder(i + 1);
             toSave.add(managed);
         }
-        return repository.saveAll(toSave);
+        return new HashSet<>(repository.saveAll(toSave));
     }
 }

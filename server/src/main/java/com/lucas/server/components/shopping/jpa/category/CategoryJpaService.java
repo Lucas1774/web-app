@@ -4,10 +4,9 @@ import com.lucas.server.common.jpa.GenericJpaServiceDelegate;
 import com.lucas.server.common.jpa.JpaService;
 import com.lucas.server.common.jpa.OrderColumnJpaService;
 import com.lucas.server.common.jpa.user.OrderColumnServiceDelegate;
+import com.lucas.utils.OrderedIndexedSet;
 import lombok.experimental.Delegate;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class CategoryJpaService implements JpaService<Category>, OrderColumnJpaService<Category> {
@@ -24,7 +23,7 @@ public class CategoryJpaService implements JpaService<Category>, OrderColumnJpaS
         this.repository = repository;
     }
 
-    public List<Category> findAllByOrderByOrderAsc() {
+    public OrderedIndexedSet<Category> findAllByOrderByOrderAsc() {
         return repository.findAllByOrderByOrderAsc();
     }
 }

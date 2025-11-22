@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import java.util.List;
+import java.util.Set;
 
 
 @Getter
@@ -12,7 +12,7 @@ import java.util.List;
 @ConfigurationProperties(prefix = "ai")
 public class AIProperties {
 
-    private List<DeploymentProperties> deployments;
+    private Set<DeploymentProperties> deployments;
 
     public record DeploymentProperties(
             String name,

@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Set;
 
 import static com.lucas.server.common.Constants.*;
 
@@ -76,21 +76,21 @@ public class PortfolioController {
     }
 
     @GetMapping("/stand")
-    public ResponseEntity<List<PortfolioManager.SymbolStand>> getStandPortfolio(HttpServletRequest request) {
+    public ResponseEntity<Set<PortfolioManager.SymbolStand>> getStandPortfolio(HttpServletRequest request) {
         return ResponseEntity.ok(jpaService.getPortfolioStand(SP500_SYMBOLS,
                 getPortfolioType(controllerUtil.retrieveUsername(request.getCookies()))));
     }
 
     @GetMapping("/stand/all")
-    public ResponseEntity<List<PortfolioManager.SymbolStand>> getStandPortfolioAll(HttpServletRequest request) {
+    public ResponseEntity<Set<PortfolioManager.SymbolStand>> getStandPortfolioAll(HttpServletRequest request) {
         return ResponseEntity.ok(jpaService.getAllAsPortfolioStand(SP500_SYMBOLS,
                 getPortfolioType(controllerUtil.retrieveUsername(request.getCookies()))));
     }
 
     @GetMapping("stand/{symbols}")
-    public ResponseEntity<List<PortfolioManager.SymbolStand>> getStandPortfolioBySymbol(HttpServletRequest request,
-                                                                                        @PathVariable List<Long> symbols,
-                                                                                        @RequestParam boolean dynamic) {
+    public ResponseEntity<Set<PortfolioManager.SymbolStand>> getStandPortfolioBySymbol(HttpServletRequest request,
+                                                                                       @PathVariable Set<Long> symbols,
+                                                                                       @RequestParam boolean dynamic) {
         String username = controllerUtil.retrieveUsername(request.getCookies());
         if (dynamic && DEFAULT_USERNAME.equals(username)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();

@@ -10,15 +10,15 @@ import org.springframework.http.HttpStatus;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class RequestPerSecondLimitFilter implements RateLimitFilter {
 
     private static final int MAX_REQUESTS_PER_SECOND = 10;
-    private static final Map<String, List<Long>> requestTimestamps = new ConcurrentHashMap<>();
+    private static final Map<String, Set<Long>> requestTimestamps = new ConcurrentHashMap<>();
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
@@ -28,7 +28,7 @@ public class RequestPerSecondLimitFilter implements RateLimitFilter {
         String clientIP = request.getRemoteAddr();
         long now = Instant.now().getEpochSecond();
         synchronized (requestTimestamps) {
-            List<Long> clientRequests = requestTimestamps.computeIfAbsent(clientIP, k -> new ArrayList<>());
+            Set<Long> clientRequests = requestTimestamps.computeIfAbsent(clientIP, k -> new HashSet<>());
             clientRequests.removeIf(timestamp -> timestamp < now - 1);
             if (MAX_REQUESTS_PER_SECOND <= clientRequests.size()) {
                 response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());

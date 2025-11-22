@@ -5,13 +5,15 @@ import com.lucas.server.components.sudoku.jpa.SudokuJpaService;
 import com.lucas.server.components.sudoku.mapper.SudokuFileToSudokuMapper;
 import com.lucas.server.components.sudoku.service.SudokuGenerator;
 import com.lucas.server.components.sudoku.service.SudokuSolver;
+import com.lucas.utils.OrderedIndexedSet;
 import com.lucas.utils.exception.MappingException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Random;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.lucas.server.common.Constants.SUDOKU_NUMBER_OF_CELLS;
 import static com.lucas.utils.Utils.EMPTY_STRING;
@@ -36,19 +38,19 @@ public class SudokuController {
     }
 
     @PostMapping("/upload/sudokus")
-    public ResponseEntity<List<Sudoku>> handleFileUpload(@RequestBody String file) {
+    public ResponseEntity<Set<Sudoku>> handleFileUpload(@RequestBody String file) {
         if (10000 < file.length()) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        List<Sudoku> sudoku;
+        Set<Sudoku> sudoku;
         try {
             sudoku = fromFileMapper.map(file.replace("\"", EMPTY_STRING)).stream()
                     .filter(s -> {
                         Sudoku copy = Sudoku.withValues(s.getState());
                         return solver.isValid(s, -1) && solver.solveWithTimeout(copy);
                     })
-                    .toList();
+                    .collect(Collectors.toSet());
         } catch (MappingException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
@@ -58,7 +60,7 @@ public class SudokuController {
 
     @GetMapping("fetch/sudoku")
     public ResponseEntity<Sudoku> getRandom() {
-        List<Sudoku> sudoku = sudokuService.findAll();
+        OrderedIndexedSet<Sudoku> sudoku = sudokuService.findAll().stream().collect(OrderedIndexedSet.toOrderedIndexedSet());
         if (sudoku.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         } else {
@@ -82,19 +84,20 @@ public class SudokuController {
     }
 
     @PostMapping("/check/sudoku")
-    public ResponseEntity<Boolean> checkSudoku(@RequestBody List<Sudoku> sudoku) {
-        if (2 != sudoku.size()) {
+    public ResponseEntity<Boolean> checkSudoku(@RequestBody Set<Sudoku> sudoku) {
+        OrderedIndexedSet<Sudoku> indexedSudoku = new OrderedIndexedSet<>(sudoku);
+        if (2 != indexedSudoku.size()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 
-        int[] initialValues = sudoku.getFirst().getState();
+        int[] initialValues = indexedSudoku.getFirst().getState();
         Sudoku s = Sudoku.withValues(initialValues);
         if (!solver.isValid(s, -1) || !solver.solveWithTimeout(s)) {
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
         }
 
         int[] currentState = s.getState();
-        int[] initialState = sudoku.get(1).getState();
+        int[] initialState = indexedSudoku.get(1).getState();
         for (int i = 0; SUDOKU_NUMBER_OF_CELLS > i; i++) {
             if (0 != initialState[i] && currentState[i] != initialState[i]) {
                 return ResponseEntity.ok(false);

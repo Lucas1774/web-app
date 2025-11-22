@@ -13,6 +13,7 @@ import com.lucas.server.components.tradingbot.recommendation.jpa.Recommendation;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.AssetReportRaw;
 import com.lucas.server.components.tradingbot.recommendation.mapper.RecommendationChatCompletionResponseMapper;
+import com.lucas.utils.OrderedIndexedSet;
 import com.lucas.utils.SlidingWindowRateLimiter;
 import com.lucas.utils.exception.MappingException;
 import org.slf4j.Logger;
@@ -25,10 +26,10 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.lucas.server.common.Constants.*;
@@ -81,10 +82,10 @@ public class RecommendationChatCompletionClient {
         this.rateLimiters = rateLimiters;
     }
 
-    public List<Recommendation> getRecommendations(List<DataManager.SymbolPayload> payload, AIClient client, boolean useOldNews) throws ClientException, JsonProcessingException, MappingException {
-        List<AssetReportRaw> reports = payload.stream()
+    public Set<Recommendation> getRecommendations(Set<DataManager.SymbolPayload> payload, AIClient client, boolean useOldNews) throws ClientException, JsonProcessingException, MappingException {
+        Set<AssetReportRaw> reports = payload.stream()
                 .map(assertReportDataProvider::provide)
-                .toList();
+                .collect(Collectors.toSet());
         ObjectNode rawReportMessage = objectMapper.readValue(assetReportToMustacheMapper.map(reports), ObjectNode.class);
         ObjectNode reportMessage;
         if (!client.getConfig().fixMe()) {
@@ -93,7 +94,7 @@ public class RecommendationChatCompletionClient {
             reportMessage = objectMapper.readValue(fixMeMessage.get(CONTENT).asText()
                     .replace("{placeholder}", rawReportMessage.get(CONTENT).asText()), ObjectNode.class);
         }
-        List<Symbol> symbols = payload.stream().map(DataManager.SymbolPayload::getSymbol).toList();
+        Set<Symbol> symbols = payload.stream().map(DataManager.SymbolPayload::getSymbol).collect(Collectors.toSet());
         ObjectNode contextMessage = context.deepCopy().put(CONTENT, context.get(CONTENT).asText().replace("{date}",
                 ZonedDateTime.now(NY_ZONE).format(DateTimeFormatter.ofPattern("EEEE, yyyy-MM-dd HH:mm:ss z", Locale.ENGLISH))));
 
@@ -104,7 +105,7 @@ public class RecommendationChatCompletionClient {
             rateLimiters.get(AI_PER_SECOND_RATE_LIMITER).acquirePermission();
             logger.info(PROMPTING_MODEL_INFO, client.getConfig().name());
             ObjectNode usedSystemMessage = useOldNews ? systemLongTermMessage : systemMessage;
-            List<JsonNode> prompt = List.of(usedSystemMessage, contextMessage, fewShotMessage, reportMessage);
+            OrderedIndexedSet<JsonNode> prompt = OrderedIndexedSet.of(usedSystemMessage, contextMessage, fewShotMessage, reportMessage);
             return mapper.mapAll(payload,
                     objectMapper.readTree(client.complete(prompt)),
                     prompt.stream().map(p -> sanitizeHtml(p.get(CONTENT).asText())).collect(Collectors.joining("\n\n\n")), client.getConfig().name());

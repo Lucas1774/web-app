@@ -1,25 +1,30 @@
 package com.lucas.server.components.tradingbot.news.jpa;
 
-import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.common.jpa.GenericJpaServiceDelegate;
 import com.lucas.server.common.jpa.JpaService;
 import com.lucas.server.common.jpa.UniqueConstraintWearyJpaServiceDelegate;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.news.service.NewsSentimentClient;
-import com.lucas.utils.exception.MappingException;
+import com.lucas.utils.OrderedIndexedSet;
 import lombok.experimental.Delegate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static com.lucas.server.common.Constants.RETRIEVAL_FAILED_WARN;
+import static com.lucas.server.common.Constants.SENTIMENT;
 
 @Service
 public class NewsJpaService implements JpaService<News> {
 
+    private static final Logger logger = LoggerFactory.getLogger(NewsJpaService.class);
     @Delegate
     private final GenericJpaServiceDelegate<News, NewsRepository> delegate;
     private final UniqueConstraintWearyJpaServiceDelegate<News> uniqueConstraintDelegate;
@@ -34,17 +39,17 @@ public class NewsJpaService implements JpaService<News> {
     }
 
     // TODO: batch
-    public List<News> getTopForSymbolId(Long symbolId, int limit) {
-        return repository.findBySymbols_IdAndSentimentNotOrSymbols_IdAndSentimentIsNull(
+    public OrderedIndexedSet<News> getTopForSymbolId(Long symbolId, int limit) {
+        return new OrderedIndexedSet<>(repository.findBySymbols_IdAndSentimentNotOrSymbols_IdAndSentimentIsNull(
                 symbolId, "neutral", symbolId, PageRequest.of(
                         0, limit, Sort.by("date").descending()
                 )
-        ).getContent();
+        ));
     }
 
-    public List<News> createOrUpdate(List<News> entities) {
+    public Set<News> createOrUpdate(Set<News> entities) {
         return uniqueConstraintDelegate.createOrUpdate(allEntities -> repository.findByExternalIdIn(
-                        allEntities.stream().map(News::getExternalId).toList()
+                        allEntities.stream().map(News::getExternalId).collect(Collectors.toSet())
                 ),
                 (oldEntity, newEntity) -> {
                     for (Symbol symbol : newEntity.getSymbols()) {
@@ -53,23 +58,24 @@ public class NewsJpaService implements JpaService<News> {
                     }
                     return oldEntity;
                 },
-                new LinkedHashSet<>(entities));
+                entities);
     }
 
-    public List<News> generateSentiment(List<Long> list, LocalDateTime from, LocalDateTime to)
-            throws ClientException, MappingException {
-        List<News> newsList = repository.findAllBySymbols_IdInAndDateBetween(list, from, to);
-        List<News> res = new ArrayList<>(newsList.size());
-        for (News news : newsList) {
-            if (null != news.getSentiment() && null != news.getSentimentConfidence()) {
-                continue;
-            }
-            res.add(sentimentClient.generateSentiment(news));
-        }
-        return res;
+    public Set<News> generateSentiment(Set<Long> symbolIds, LocalDateTime from, LocalDateTime to) {
+        return repository.findAllBySymbols_IdInAndDateBetween(symbolIds, from, to).stream()
+                .filter(news -> null == news.getSentiment() || null == news.getSentimentConfidence())
+                .flatMap(news -> {
+                    try {
+                        return Stream.of(sentimentClient.generateSentiment(news));
+                    } catch (Exception e) {
+                        logger.warn(RETRIEVAL_FAILED_WARN, SENTIMENT, news);
+                        return Stream.empty();
+                    }
+                })
+                .collect(Collectors.toSet());
     }
 
-    public List<News> findOrphanedNews() {
+    public Set<News> findOrphanedNews() {
         return repository.findBySymbolsIsEmpty();
     }
 }

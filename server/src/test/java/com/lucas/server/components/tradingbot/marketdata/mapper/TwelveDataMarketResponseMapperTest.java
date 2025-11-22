@@ -2,21 +2,19 @@ package com.lucas.server.components.tradingbot.marketdata.mapper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lucas.server.TestConfiguration;
+import com.lucas.server.ConfiguredTest;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
+import com.lucas.utils.OrderedIndexedSet;
 import com.lucas.utils.exception.MappingException;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 
 import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Set;
 
 import static com.lucas.server.common.Constants.MAPPING_ERROR;
@@ -24,9 +22,7 @@ import static com.lucas.server.common.Constants.MARKET_DATA;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@SpringBootTest
-@Import(TestConfiguration.class)
-class TwelveDataMarketResponseMapperTest {
+class TwelveDataMarketResponseMapperTest extends ConfiguredTest {
 
     @Autowired
     private SymbolJpaService symbolService;
@@ -230,7 +226,7 @@ class TwelveDataMarketResponseMapperTest {
                       "volume": "624277"
                     },
                     {
-                      "datetime": "2021-09-16 15:58:00",
+                      "datetime": "2021-09-15 15:58:00",
                       "open": "148.72000",
                       "high": "148.78000",
                       "low": "148.70000",
@@ -238,7 +234,7 @@ class TwelveDataMarketResponseMapperTest {
                       "volume": "274622"
                     },
                     {
-                      "datetime": "2021-09-16 15:57:00",
+                      "datetime": "2021-09-14 15:57:00",
                       "open": "148.77499",
                       "high": "148.79500",
                       "low": "148.71001",
@@ -246,7 +242,7 @@ class TwelveDataMarketResponseMapperTest {
                       "volume": "254725"
                     },
                     {
-                      "datetime": "2021-09-16 15:56:00",
+                      "datetime": "2021-09-13 15:56:00",
                       "open": "148.76500",
                       "high": "148.78999",
                       "low": "148.72000",
@@ -254,7 +250,7 @@ class TwelveDataMarketResponseMapperTest {
                       "volume": "230758"
                     },
                     {
-                      "datetime": "2021-09-16 15:55:00",
+                      "datetime": "2021-09-12 15:55:00",
                       "open": "148.80000",
                       "high": "148.80000",
                       "low": "148.70000",
@@ -268,7 +264,7 @@ class TwelveDataMarketResponseMapperTest {
         Symbol symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
 
         // when
-        List<MarketData> result = mapper.mapAll(objectMapper.readTree(json), symbol);
+        OrderedIndexedSet<MarketData> result = mapper.mapAll(objectMapper.readTree(json), symbol);
 
         // then
         assertThat(result).isNotNull().hasSize(5);
@@ -287,7 +283,7 @@ class TwelveDataMarketResponseMapperTest {
         assertThat(secondEntry.getLow()).isEqualByComparingTo(BigDecimal.valueOf(148.7));
         assertThat(secondEntry.getPrice()).isEqualByComparingTo(BigDecimal.valueOf(148.74001));
         assertThat(secondEntry.getVolume()).isEqualByComparingTo(274622L);
-        assertThat(secondEntry.getDate()).isEqualTo(LocalDate.parse("2021-09-16"));
+        assertThat(secondEntry.getDate()).isEqualTo(LocalDate.parse("2021-09-15"));
     }
 
     @Test
@@ -313,7 +309,7 @@ class TwelveDataMarketResponseMapperTest {
         Symbol symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
 
         // when
-        List<MarketData> result = mapper.mapAll(objectMapper.readTree(json), symbol);
+        Set<MarketData> result = mapper.mapAll(objectMapper.readTree(json), symbol);
 
         // then
         assertThat(result).isNotNull().isEmpty();

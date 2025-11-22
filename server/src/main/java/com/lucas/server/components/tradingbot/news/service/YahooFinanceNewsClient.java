@@ -14,8 +14,8 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static com.lucas.server.common.Constants.*;
 
@@ -37,7 +37,7 @@ public class YahooFinanceNewsClient {
     }
 
     @Retryable(retryFor = {ClientException.class, MappingException.class}, maxAttempts = REQUEST_MAX_ATTEMPTS)
-    public List<News> retrieveNews(Symbol symbol) throws ClientException, MappingException {
+    public Set<News> retrieveNews(Symbol symbol) throws ClientException, MappingException {
         rateLimiter.acquirePermission();
         logger.info(RETRIEVING_DATA_INFO, NEWS, symbol);
         // TODO: Yahoo expects old "FI" name for this endpoint. Figure a less brittle way to do this or keep an eye opened

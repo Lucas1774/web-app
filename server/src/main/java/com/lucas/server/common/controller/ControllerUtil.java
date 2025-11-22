@@ -13,8 +13,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 import static com.lucas.server.common.Constants.DEFAULT_USERNAME;
@@ -23,11 +23,11 @@ import static com.lucas.server.common.Constants.DEFAULT_USERNAME;
 public class ControllerUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(ControllerUtil.class);
-    private final List<String> admin;
+    private final Set<String> admin;
     private final JWTVerifier verifier;
     private final Algorithm algorithm;
 
-    public ControllerUtil(@Value("${spring.security.admin}") List<String> admin, @Value("${spring.security.jwt.secret}") String secretKey) {
+    public ControllerUtil(@Value("${spring.security.admin}") Set<String> admin, @Value("${spring.security.jwt.secret}") String secretKey) {
         this.admin = admin;
         algorithm = Algorithm.HMAC256(secretKey);
         verifier = JWT.require(algorithm).build();

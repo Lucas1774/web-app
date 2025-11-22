@@ -9,13 +9,16 @@ import com.lucas.server.components.shopping.jpa.product.Product;
 import com.lucas.server.components.shopping.jpa.product.ProductJpaService;
 import com.lucas.server.components.shopping.jpa.shopping.ShoppingItem;
 import com.lucas.server.components.shopping.jpa.shopping.ShoppingItemJpaService;
+import com.lucas.utils.OrderedIndexedSet;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static com.lucas.server.common.Constants.DEFAULT_USERNAME;
 import static com.lucas.utils.Utils.EMPTY_STRING;
@@ -40,12 +43,12 @@ public class ShoppingController {
     }
 
     @GetMapping("/shopping")
-    public ResponseEntity<List<ShoppingItem>> getShoppingItems(HttpServletRequest request) {
+    public ResponseEntity<Set<ShoppingItem>> getShoppingItems(HttpServletRequest request) {
         return ResponseEntity.ok(shoppingItemService.findAllByUsername(controllerUtil.retrieveUsername(request.getCookies())));
     }
 
     @GetMapping("/get-possible-categories")
-    public ResponseEntity<List<Category>> getPossibleCategories() {
+    public ResponseEntity<Set<Category>> getPossibleCategories() {
         return ResponseEntity.ok(categoryJpaService.findAllByOrderByOrderAsc());
     }
 
@@ -71,7 +74,7 @@ public class ShoppingController {
     }
 
     @PostMapping("/update-all-product-quantity")
-    public ResponseEntity<List<ShoppingItem>> updateAllProductQuantity(HttpServletRequest request, @RequestBody Integer quantity) {
+    public ResponseEntity<Set<ShoppingItem>> updateAllProductQuantity(HttpServletRequest request, @RequestBody Integer quantity) {
         return ResponseEntity.ok(shoppingItemService.updateAllShoppingItemQuantities(controllerUtil.retrieveUsername(request.getCookies()), quantity));
     }
 
@@ -81,15 +84,15 @@ public class ShoppingController {
     }
 
     @PostMapping("update-sortables")
-    public <T extends Sortable> ResponseEntity<List<T>> updateSortable(HttpServletRequest request, @RequestBody List<T> elements) {
+    public <T extends Sortable> ResponseEntity<Set<T>> updateSortable(HttpServletRequest request, @RequestBody List<T> elements) {
         String username = controllerUtil.retrieveUsername(request.getCookies());
         if (DEFAULT_USERNAME.equals(username)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         if (elements.isEmpty()) {
-            return ResponseEntity.ok(elements);
+            return ResponseEntity.ok(Collections.emptySet());
         }
-        return ResponseEntity.ok(getService(elements).updateOrders(elements));
+        return ResponseEntity.ok(getService(elements).updateOrders(new OrderedIndexedSet<>(elements)));
     }
 
     @SuppressWarnings("unchecked")

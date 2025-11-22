@@ -11,9 +11,9 @@ import org.springframework.stereotype.Component;
 import java.text.MessageFormat;
 import java.time.Instant;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import static com.lucas.server.common.Constants.MAPPING_ERROR;
 import static com.lucas.server.common.Constants.NEWS;
@@ -41,12 +41,12 @@ public class FinnhubNewsResponseMapper implements Mapper<JsonNode, News> {
         }
     }
 
-    public List<News> mapAll(JsonNode json, Symbol symbol) throws MappingException {
+    public Set<News> mapAll(JsonNode json, Symbol symbol) throws MappingException {
         if (!json.isArray()) {
-            return Collections.emptyList();
+            return Collections.emptySet();
         }
 
-        List<News> newsList = new ArrayList<>();
+        Set<News> newsList = new HashSet<>();
         for (JsonNode node : json) {
             newsList.add(map(node).addSymbol(symbol));
         }

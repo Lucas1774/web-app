@@ -11,6 +11,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
+import java.util.Objects;
+
 @Getter
 @Setter
 @Accessors(chain = true)
@@ -39,9 +41,23 @@ public class ShoppingItem implements JpaEntity {
 
     @Override
     public String toString() {
-        return "Shopping{" +
+        return "ShoppingItem{" +
                 "id=" + id +
+                ", user=" + user +
                 ", product=" + product +
+                ", quantity=" + quantity +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (null == o || getClass() != o.getClass()) return false;
+        ShoppingItem that = (ShoppingItem) o;
+        return Objects.equals(user, that.user) && Objects.equals(product, that.product);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(user, product);
     }
 }

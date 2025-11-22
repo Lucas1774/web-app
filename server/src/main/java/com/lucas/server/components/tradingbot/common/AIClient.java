@@ -5,10 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lucas.server.common.HttpRequestClient;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.components.tradingbot.config.AIProperties;
+import com.lucas.utils.OrderedIndexedSet;
 import com.lucas.utils.SlidingWindowRateLimiter;
 import lombok.Getter;
 
-import java.util.List;
 import java.util.Map;
 
 import static com.lucas.server.common.Constants.*;
@@ -30,7 +30,7 @@ public class AIClient {
         this.httpClient = httpClient;
     }
 
-    public String complete(List<JsonNode> prompt) throws ClientException {
+    public String complete(OrderedIndexedSet<JsonNode> prompt) throws ClientException {
         JsonNode body = objectMapper.valueToTree(
                 Map.of(
                         "model", config.model(),

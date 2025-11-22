@@ -1,22 +1,18 @@
 package com.lucas.server.components.shopping.jpa.category;
 
-import com.lucas.server.TestConfiguration;
+import com.lucas.server.ConfiguredTest;
+import com.lucas.utils.OrderedIndexedSet;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.Comparator;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
-@SpringBootTest
-@Import(TestConfiguration.class)
-class CategoryJpaServiceTest {
+class CategoryJpaServiceTest extends ConfiguredTest {
 
     @Autowired
     private CategoryJpaService categoryService;
@@ -31,10 +27,10 @@ class CategoryJpaServiceTest {
         Category category2 = new Category()
                 .setName("y")
                 .setOrder(20);
-        categoryService.createAll(List.of(category2, category1));
+        categoryService.createAll(Set.of(category2, category1));
 
         // when
-        List<Category> result = categoryService.findAllByOrderByOrderAsc();
+        OrderedIndexedSet<Category> result = categoryService.findAllByOrderByOrderAsc();
 
         // then
         assertThat(result)
@@ -56,26 +52,25 @@ class CategoryJpaServiceTest {
         // given: two categories with reversed order values
         Category c1 = new Category().setName("A").setOrder(2);
         Category c2 = new Category().setName("B").setOrder(1);
-        List<Category> saved = categoryService.createAll(Arrays.asList(c1, c2));
+        Set<Category> saved = categoryService.createAll(Set.of(c1, c2));
         assertThat(saved)
-                .extracting(Category::getOrder)
-                .containsExactly(2, 1);
+                .extracting(Category::getName, Category::getOrder)
+                .containsExactlyInAnyOrder(
+                        tuple("A", 2),
+                        tuple("B", 1)
+                );
 
-        // when:
-        List<Category> input = Arrays.asList(saved.get(0), saved.get(1));
-        Collections.reverse(input);
-        List<Category> result = categoryService.updateOrders(input);
+        // when: updating with "A" first "B" second
+        OrderedIndexedSet<Category> input = saved.stream().sorted(Comparator.comparing(Category::getOrder).reversed())
+                .collect(OrderedIndexedSet.toOrderedIndexedSet());
+        Set<Category> result = categoryService.updateOrders(input);
 
         // then: orders should be reassigned to [1,2]
         assertThat(result)
-                .extracting(Category::getOrder)
-                .containsExactly(1, 2);
-
-        assertThat(result)
                 .extracting(Category::getName, Category::getOrder)
-                .containsExactly(
-                        tuple(saved.get(1).getName(), 1),
-                        tuple(saved.get(0).getName(), 2)
+                .containsExactlyInAnyOrder(
+                        tuple("A", 1),
+                        tuple("B", 2)
                 );
     }
 }

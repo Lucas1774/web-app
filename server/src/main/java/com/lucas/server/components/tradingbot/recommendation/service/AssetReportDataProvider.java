@@ -8,10 +8,10 @@ import com.lucas.server.components.tradingbot.portfolio.service.PortfolioManager
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.AssetReportRaw;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.NewsItemRaw;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.PricePointRaw;
+import com.lucas.utils.OrderedIndexedSet;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 import static com.lucas.server.common.Constants.HISTORY_DAYS_COUNT;
 import static java.lang.Math.min;
@@ -28,7 +28,7 @@ public class AssetReportDataProvider {
     }
 
     public AssetReportRaw provide(DataManager.SymbolPayload payload) {
-        List<MarketData> mdHistory = payload.getMarketData();
+        OrderedIndexedSet<MarketData> mdHistory = payload.getMarketData();
 
         BigDecimal ema20 = kpiGenerator.computeEma(mdHistory, 20).orElse(null);
         BigDecimal macdLine1226 = kpiGenerator.computeMacdLine(mdHistory, 12, 26).orElse(null);
@@ -45,12 +45,12 @@ public class AssetReportDataProvider {
             kpiGenerator.computeChange(pmmd, current.getPrice());
             premarket = new PricePointRaw(null, pmmd.getOpen(), pmmd.getHigh(), pmmd.getLow(), pmmd.getPrice(), null, pmmd.getChangePercent());
         }
-        List<PricePointRaw> priceHistory = mdHistory.subList(0, min(mdHistory.size(), HISTORY_DAYS_COUNT)).stream()
+        OrderedIndexedSet<PricePointRaw> priceHistory = mdHistory.subList(0, min(mdHistory.size(), HISTORY_DAYS_COUNT)).stream()
                 .map(md -> new PricePointRaw(md.getDate(), md.getOpen(), md.getHigh(), md.getLow(), md.getPrice(), md.getVolume(), null))
-                .toList();
-        List<NewsItemRaw> news = payload.getNews().stream()
+                .collect(OrderedIndexedSet.toOrderedIndexedSet());
+        OrderedIndexedSet<NewsItemRaw> news = payload.getNews().stream()
                 .map(a -> new NewsItemRaw(a.getHeadline(), a.getSentiment(), a.getSentimentConfidence(), a.getSummary(), a.getDate()))
-                .toList();
+                .collect(OrderedIndexedSet.toOrderedIndexedSet());
 
         PortfolioManager.SymbolStand stand = portfolioManager.computeStand(payload.getPortfolio(), current);
         return new AssetReportRaw(payload.getSymbol().getName(), stand.quantity(), stand.positionValue(), stand.averageCost(), stand.pnL(), stand.percentPnl(),

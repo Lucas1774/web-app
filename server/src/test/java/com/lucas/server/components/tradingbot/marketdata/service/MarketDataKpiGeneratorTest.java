@@ -1,23 +1,20 @@
 package com.lucas.server.components.tradingbot.marketdata.service;
 
-import com.lucas.server.TestConfiguration;
+import com.lucas.server.ConfiguredTest;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataJpaService;
+import com.lucas.utils.OrderedIndexedSet;
 import jakarta.transaction.Transactional;
 import nl.altindag.log.LogCaptor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -26,12 +23,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 
-@SpringBootTest
-@Import(TestConfiguration.class)
-class MarketDataKpiGeneratorTest {
+class MarketDataKpiGeneratorTest extends ConfiguredTest {
 
     private static final LogCaptor logCaptor = LogCaptor.forClass(MarketDataKpiGenerator.class);
-    private static final List<MarketData> mds = Arrays.asList(
+    private static final OrderedIndexedSet<MarketData> mds = OrderedIndexedSet.of(
             md(10, 9, 11, 9, 4),
             md(13, 11, 14, 12, 1),
             md(12, 10, 13, 11, 3),
@@ -81,7 +76,7 @@ class MarketDataKpiGeneratorTest {
                 .setPrice(BigDecimal.valueOf(140.00));
 
         // when
-        marketDataService.createIgnoringDuplicates(List.of(previousData, currentData));
+        marketDataService.createIgnoringDuplicates(OrderedIndexedSet.of(previousData, currentData));
         kpiGenerator.computeDerivedFields(currentData);
 
         // then
@@ -104,7 +99,7 @@ class MarketDataKpiGeneratorTest {
                 .setPrice(BigDecimal.valueOf(150.00));
 
         // when
-        marketDataService.createIgnoringDuplicates(List.of(currentData));
+        marketDataService.createIgnoringDuplicates(OrderedIndexedSet.of(currentData));
         kpiGenerator.computeDerivedFields(currentData);
 
         // then
@@ -134,7 +129,7 @@ class MarketDataKpiGeneratorTest {
                 .setPrice(BigDecimal.ZERO);
 
         // when
-        marketDataService.createIgnoringDuplicates(List.of(previousData, currentData));
+        marketDataService.createIgnoringDuplicates(OrderedIndexedSet.of(previousData, currentData));
         kpiGenerator.computeDerivedFields(currentData);
 
         // then
@@ -156,7 +151,7 @@ class MarketDataKpiGeneratorTest {
 
     @Test
     void testComputeMovingAverage_prizesAreZero() {
-        List<MarketData> marketDataList = Arrays.asList(
+        OrderedIndexedSet<MarketData> marketDataList = OrderedIndexedSet.of(
                 md(0, 5, 1, 1, 4),
                 md(0, 0, 1, 1, 3),
                 md(0, 0, 1, 1, 2),
@@ -174,7 +169,7 @@ class MarketDataKpiGeneratorTest {
 
     @Test
     void testComputeVolatility_noGainsNoLoses() {
-        List<MarketData> marketDataList = Arrays.asList(
+        OrderedIndexedSet<MarketData> marketDataList = OrderedIndexedSet.of(
                 md(4, 4, 5, 4, 0),
                 md(4, 4, 4, 3, 1),
                 md(4, 4, 7, 2, 2),
@@ -192,7 +187,7 @@ class MarketDataKpiGeneratorTest {
 
     @Test
     void testComputeVolatility_notEnoughPreviousClose() {
-        List<MarketData> marketDataList = Arrays.asList(
+        OrderedIndexedSet<MarketData> marketDataList = OrderedIndexedSet.of(
                 md(4, 4, 5, 4, 0),
                 md(4, 4, 4, 3, 1),
                 md(4, 4, 7, 2, 2),

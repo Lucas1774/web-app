@@ -8,15 +8,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import static com.lucas.server.common.Constants.MAPPING_ERROR;
 import static com.lucas.server.common.Constants.SUDOKU_IGNORED_MALFORMED_JSON_WARN;
 import static com.lucas.utils.Utils.EMPTY_STRING;
 
 @Component
-public class SudokuFileToSudokuMapper implements Mapper<String, List<Sudoku>> {
+public class SudokuFileToSudokuMapper implements Mapper<String, Set<Sudoku>> {
 
     private static final Logger logger = LoggerFactory.getLogger(SudokuFileToSudokuMapper.class);
     private final StringToSudokuMapper sudokuMapper;
@@ -34,8 +34,8 @@ public class SudokuFileToSudokuMapper implements Mapper<String, List<Sudoku>> {
      * @param content the string to parse
      */
     @Override
-    public List<Sudoku> map(String content) throws MappingException {
-        List<Sudoku> sudoku = new ArrayList<>();
+    public Set<Sudoku> map(String content) throws MappingException {
+        Set<Sudoku> sudoku = new HashSet<>();
         String[] lines;
         try {
             lines = content.split("\\\\r\\\\n|\\\\r|\\\\n");

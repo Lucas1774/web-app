@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.utils.Mapper;
+import com.lucas.utils.OrderedIndexedSet;
 import com.lucas.utils.exception.MappingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,8 +13,6 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
 import static com.lucas.server.common.Constants.*;
 
@@ -50,14 +49,14 @@ public class TwelveDataMarketResponseMapper implements Mapper<JsonNode, MarketDa
         return map(json).setSymbol(symbol);
     }
 
-    public List<MarketData> mapAll(JsonNode json, Symbol symbol) throws MappingException {
+    public OrderedIndexedSet<MarketData> mapAll(JsonNode json, Symbol symbol) throws MappingException {
         try {
             if (!symbol.getName().equals(json.at("/meta/symbol").asText(null))) {
                 throw new MappingException(MessageFormat.format(MAPPING_ERROR, MARKET_DATA));
             }
             JsonNode series = json.get("values");
 
-            List<MarketData> history = new ArrayList<>(series.size());
+            OrderedIndexedSet<MarketData> history = new OrderedIndexedSet<>();
             for (JsonNode node : series) {
                 LocalDate date = LocalDate.parse(node.get("datetime").asText().substring(0, 10));
                 MarketData md = new MarketData()

@@ -8,7 +8,8 @@ import jakarta.transaction.Transactional;
 import lombok.experimental.Delegate;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class ShoppingItemJpaService implements JpaService<ShoppingItem> {
@@ -24,7 +25,7 @@ public class ShoppingItemJpaService implements JpaService<ShoppingItem> {
         this.productRepository = productRepository;
     }
 
-    public List<ShoppingItem> findAllByUsername(String username) {
+    public Set<ShoppingItem> findAllByUsername(String username) {
         return repository.findAllByUser_Username(username);
     }
 
@@ -36,9 +37,9 @@ public class ShoppingItemJpaService implements JpaService<ShoppingItem> {
     }
 
     @Transactional
-    public List<ShoppingItem> updateAllShoppingItemQuantities(String username, int quantity) {
+    public Set<ShoppingItem> updateAllShoppingItemQuantities(String username, int quantity) {
         return repository.findAllByUser_Username(username).stream()
-                .map(item -> item.setQuantity(quantity)).toList();
+                .map(item -> item.setQuantity(quantity)).collect(Collectors.toSet());
     }
 
     @Transactional

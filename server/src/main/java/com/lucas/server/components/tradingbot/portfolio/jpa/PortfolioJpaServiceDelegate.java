@@ -9,8 +9,8 @@ import java.math.RoundingMode;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -84,7 +84,7 @@ public class PortfolioJpaServiceDelegate<T extends PortfolioBase, R extends JpaR
     }
 
     @SuppressWarnings("unused")
-    public List<T> findActivePortfolio() {
+    public Set<T> findActivePortfolio() {
         return repository.findAll().stream()
                 .collect(Collectors.toMap(
                         T::getSymbol,
@@ -94,6 +94,6 @@ public class PortfolioJpaServiceDelegate<T extends PortfolioBase, R extends JpaR
                 .values()
                 .stream()
                 .filter(p -> 0 < p.getQuantity().compareTo(BigDecimal.ZERO))
-                .toList();
+                .collect(Collectors.toSet());
     }
 }

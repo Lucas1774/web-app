@@ -3,9 +3,9 @@ package com.lucas.server.components.sudoku.service;
 import com.lucas.server.components.sudoku.jpa.Sudoku;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 import static com.lucas.server.common.Constants.*;
@@ -58,7 +58,7 @@ public class SudokuSolver {
         if (!isSolvable(sudoku)) {
             return false;
         }
-        List<Integer> trivialCells = getTrivial(sudoku);
+        Set<Integer> trivialCells = getTrivial(sudoku);
         if (!trivialCells.isEmpty()) {
             for (int trivialCell : trivialCells) {
                 for (int digit : getDigits()) {
@@ -111,8 +111,8 @@ public class SudokuSolver {
         return true;
     }
 
-    private List<Integer> getTrivial(Sudoku sudoku) {
-        List<Integer> promisingCells = new ArrayList<>();
+    private Set<Integer> getTrivial(Sudoku sudoku) {
+        Set<Integer> promisingCells = new HashSet<>();
         for (int place = 0; SUDOKU_NUMBER_OF_CELLS > place; place++) {
             if (0 == sudoku.getState()[place]) {
                 int count = 0;

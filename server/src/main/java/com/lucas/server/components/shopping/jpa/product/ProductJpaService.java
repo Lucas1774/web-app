@@ -70,7 +70,7 @@ public class ProductJpaService implements JpaService<Product>, OrderColumnJpaSer
         if (null != input.getCategory().getId()) {
             category = categoryRepository.findById(input.getCategory().getId()).orElseThrow();
         } else {
-            Integer maxOrder = categoryRepository.findFirstByOrderByOrderDesc()
+            Integer maxOrder = categoryRepository.findTopByOrderByOrderDesc()
                     .map(c -> c.getOrder() + 1)
                     .orElse(1);
             category = categoryRepository.save(new Category()

@@ -2,7 +2,7 @@ package com.lucas.server.components.tradingbot.news.mapper;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lucas.server.TestConfiguration;
+import com.lucas.server.ConfiguredTest;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.news.jpa.News;
@@ -10,14 +10,11 @@ import com.lucas.utils.exception.MappingException;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 
 import java.text.MessageFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.List;
 import java.util.Set;
 
 import static com.lucas.server.common.Constants.MAPPING_ERROR;
@@ -26,9 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
-@SpringBootTest
-@Import(TestConfiguration.class)
-class FinnhubNewsResponseMapperTest {
+class FinnhubNewsResponseMapperTest extends ConfiguredTest {
 
     @Autowired
     private SymbolJpaService symbolService;
@@ -98,7 +93,7 @@ class FinnhubNewsResponseMapperTest {
         JsonNode arrayNode = objectMapper.readTree(jsonArray);
 
         // when
-        List<News> list = mapper.mapAll(arrayNode, symbol);
+        Set<News> list = mapper.mapAll(arrayNode, symbol);
 
         // then
         assertThat(list)
@@ -108,7 +103,7 @@ class FinnhubNewsResponseMapperTest {
                         .hasSize(1)
                         .containsExactly(symbol.getName()))
                 .extracting(News::getExternalId, News::getHeadline)
-                .containsExactly(
+                .containsExactlyInAnyOrder(
                         tuple(now, "H1"),
                         tuple(now + 60, "H2")
                 );

@@ -14,8 +14,8 @@ import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import static com.lucas.server.common.Constants.*;
 
@@ -40,14 +40,14 @@ public class YahooFinanceNewsResponseMapper implements Mapper<Element, News> {
         }
     }
 
-    public List<News> mapAll(Document document, Symbol symbol) throws MappingException {
+    public Set<News> mapAll(Document document, Symbol symbol) throws MappingException {
         try {
             NodeList items = document.getElementsByTagName("item");
             if (null == items || 0 == items.getLength()) {
                 throw new MappingException(MessageFormat.format(NO_YAHOO_NEWS_ERROR, document));
             }
 
-            List<News> newsList = new ArrayList<>();
+            Set<News> newsList = new HashSet<>();
             for (int i = 0; i < items.getLength(); i++) {
                 newsList.add(map((Element) items.item(i)).addSymbol(symbol));
             }

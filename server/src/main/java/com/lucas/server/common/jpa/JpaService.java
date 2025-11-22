@@ -1,6 +1,6 @@
 package com.lucas.server.common.jpa;
 
-import java.util.List;
+import java.util.Set;
 
 /**
  * Generic CRUD service for JPA entities.
@@ -16,14 +16,14 @@ public interface JpaService<E extends JpaEntity> {
      * @return the saved entities
      */
     @SuppressWarnings("unused")
-    List<E> createAll(List<E> entities);
+    Set<E> createAll(Set<E> entities);
 
     /**
      * @return all entities
      */
     @SuppressWarnings("unused")
-    List<E> findAll();
+    Set<E> findAll();
 
     @SuppressWarnings("unused")
-    void deleteAll(List<E> entities);
+    void deleteAll(Set<E> entities);
 }

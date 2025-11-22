@@ -10,7 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import static com.lucas.server.common.Constants.MarketDataType;
 import static com.lucas.server.common.Constants.SP500_SYMBOLS;
@@ -27,7 +28,7 @@ public class MarketDataController {
     }
 
     @GetMapping("last")
-    public ResponseEntity<List<MarketData>> fetchAndSaveAll() {
+    public ResponseEntity<Set<MarketData>> fetchAndSaveAll() {
         try {
             return ResponseEntity.ok(jpaService.retrieveMarketData(SP500_SYMBOLS, MarketDataType.LAST));
         } catch (ClientException | MappingException e) {
@@ -37,9 +38,9 @@ public class MarketDataController {
     }
 
     @GetMapping("last/{symbols}")
-    public ResponseEntity<List<MarketData>> fetchAndSaveSome(@PathVariable List<String> symbols) {
+    public ResponseEntity<Set<MarketData>> fetchAndSaveSome(@PathVariable Set<String> symbols) {
         try {
-            return ResponseEntity.ok(jpaService.retrieveMarketData(symbols, MarketDataType.LAST));
+            return ResponseEntity.ok(jpaService.retrieveMarketData(new HashSet<>(symbols), MarketDataType.LAST));
         } catch (ClientException | MappingException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -47,7 +48,7 @@ public class MarketDataController {
     }
 
     @GetMapping("/historic")
-    public ResponseEntity<List<MarketData>> fetchAndSaveHistoricAll() {
+    public ResponseEntity<Set<MarketData>> fetchAndSaveHistoricAll() {
         try {
             return ResponseEntity.ok(jpaService.retrieveMarketData(SP500_SYMBOLS, MarketDataType.HISTORIC));
         } catch (MappingException | ClientException e) {
@@ -57,9 +58,9 @@ public class MarketDataController {
     }
 
     @GetMapping("/historic/{symbols}")
-    public ResponseEntity<List<MarketData>> fetchAndSaveHistoricSome(@PathVariable List<String> symbols) {
+    public ResponseEntity<Set<MarketData>> fetchAndSaveHistoricSome(@PathVariable Set<String> symbols) {
         try {
-            return ResponseEntity.ok(jpaService.retrieveMarketData(symbols, MarketDataType.HISTORIC));
+            return ResponseEntity.ok(jpaService.retrieveMarketData(new HashSet<>(symbols), MarketDataType.HISTORIC));
         } catch (MappingException | ClientException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -67,7 +68,7 @@ public class MarketDataController {
     }
 
     @DeleteMapping("/purge")
-    public ResponseEntity<List<MarketData>> purge(@RequestParam int toKeep) {
+    public ResponseEntity<Set<MarketData>> purge(@RequestParam int toKeep) {
         return ResponseEntity.ok(jpaService.removeOldMarketData(toKeep));
     }
 }

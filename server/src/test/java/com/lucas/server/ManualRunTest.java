@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestPropertySource;
 
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
@@ -34,11 +34,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Synthetic program runner. Run containers manually and pass production env vars as env vars
  */
-@SpringBootTest(properties = "spring.jpa.show-sql=false")
-@Disabled("Manual run only")
-class ManualRunTest {
 
-    private static final List<String> SYMBOL_NAMES = List.of("AAPL", "NVDA", "MSFT", "AMZN", "META", "TSLA", "GOOGL");
+@TestPropertySource(properties = "spring.jpa.show-sql=false")
+@Disabled("Manual run only")
+class ManualRunTest extends BaseTest {
+
+    private static final Set<String> SYMBOL_NAMES = Set.of("AAPL", "NVDA", "MSFT", "AMZN", "META", "TSLA", "GOOGL");
     private static final LocalDate FROM = LocalDate.of(2025, 11, 1); // inclusive
     private static final LocalDate TO = LocalDate.now().plusDays(1); // exclusive
     private static final LocalTime SNAPSHOT_TIME = LocalTime.of(9, 45); // 9:35 or 9:45
@@ -58,7 +59,7 @@ class ManualRunTest {
     @Autowired
     private DailyScheduler dailyScheduler;
 
-    private static Stats computeStats(Collection<MarketData> mds) {
+    private static Stats computeStats(Set<MarketData> mds) {
         return mds.stream()
                 .map(d -> {
                     BigDecimal open = d.getOpen();
@@ -117,7 +118,7 @@ class ManualRunTest {
     @Transactional
     void runMidnightTask() throws Exception {
         assertTrue(true); // useless assertion so Sonar doesn't cry
-        Method method = DailyScheduler.class.getDeclaredMethod("doMidnightTask", List.class);
+        Method method = DailyScheduler.class.getDeclaredMethod("doMidnightTask", Set.class);
         method.setAccessible(true);
         method.invoke(dailyScheduler, SYMBOL_NAMES);
     }
@@ -126,7 +127,7 @@ class ManualRunTest {
     @Transactional
     void runMorningTask() throws Exception {
         assertTrue(true); // useless assertion so Sonar doesn't cry
-        Method method = DailyScheduler.class.getDeclaredMethod("doMorningTask", List.class);
+        Method method = DailyScheduler.class.getDeclaredMethod("doMorningTask", Set.class);
         method.setAccessible(true);
         method.invoke(dailyScheduler, SYMBOL_NAMES);
     }
@@ -137,7 +138,7 @@ class ManualRunTest {
         assertTrue(true); // useless assertion so Sonar doesn't cry
 
         Set<Long> allSymbolIds = symbolRepository.findAll().stream().map(Symbol::getId).collect(Collectors.toSet());
-        List<LocalDate> dates = FROM.datesUntil(TO).toList();
+        Set<LocalDate> dates = FROM.datesUntil(TO).collect(Collectors.toSet());
 
         Map<SymDate, MarketData> mdByKey = marketDataRepository.findBySymbol_IdInAndDateIn(allSymbolIds, dates).stream()
                 .collect(Collectors.toMap(
@@ -160,7 +161,7 @@ class ManualRunTest {
         assertTrue(true); // useless assertion so Sonar doesn't cry
 
         Set<Long> allSymbolIds = symbolRepository.findAll().stream().map(Symbol::getId).collect(Collectors.toSet());
-        List<LocalDate> dates = FROM.datesUntil(TO).toList();
+        Set<LocalDate> dates = FROM.datesUntil(TO).collect(Collectors.toSet());
 
         Map<SymDate, MarketData> mdByKey = marketDataRepository.findBySymbol_IdInAndDateIn(allSymbolIds, dates).stream()
                 .collect(Collectors.toMap(
@@ -180,7 +181,8 @@ class ManualRunTest {
                 .max(Comparator.naturalOrder())
                 .orElseThrow();
 
-        List<LocalDate> nextDatesWindow = firstDateForCurrentPriceNeeded.datesUntil(lastDateForCurrentPriceNeeded).toList();
+        Set<LocalDate> nextDatesWindow = firstDateForCurrentPriceNeeded.datesUntil(lastDateForCurrentPriceNeeded)
+                .collect(Collectors.toSet());
 
         Map<SymDate, MarketData> nextDayMd = marketDataRepository.findBySymbol_IdInAndDateIn(symbolsNeeded, nextDatesWindow).stream()
                 .collect(Collectors.toMap(
@@ -213,7 +215,7 @@ class ManualRunTest {
         assertTrue(true); // useless assertion so Sonar doesn't cry
 
         Set<Long> allSymbolIds = symbolRepository.findAll().stream().map(Symbol::getId).collect(Collectors.toSet());
-        List<LocalDate> dates = FROM.datesUntil(TO).toList();
+        Set<LocalDate> dates = FROM.datesUntil(TO).collect(Collectors.toSet());
 
         Map<SymDate, MarketSnapshot> msByKey = dates.stream()
                 .flatMap(date -> marketSnapshotRepository.findAllBySymbol_IdInAndDateBetween(allSymbolIds,
@@ -237,7 +239,8 @@ class ManualRunTest {
                 .max(Comparator.naturalOrder())
                 .orElseThrow();
 
-        List<LocalDate> previousDatesWindow = firstDateForPreviousCloseNeeded.datesUntil(lastDateForPreviousCloseNeeded).toList();
+        Set<LocalDate> previousDatesWindow = firstDateForPreviousCloseNeeded.datesUntil(lastDateForPreviousCloseNeeded)
+                .collect(Collectors.toSet());
 
         Map<SymDate, MarketData> previousDayMd = marketDataRepository.findBySymbol_IdInAndDateIn(symbolsNeeded, previousDatesWindow).stream()
                 .collect(Collectors.toMap(
@@ -261,9 +264,9 @@ class ManualRunTest {
         Map<Recommendation, MarketData> baseline = getBaseline(mdByKey);
         Map<Recommendation, MarketData> filtered = getFiltered(baseline);
 
-        Stats filteredStats = computeStats(filtered.values());
-        Stats baselineStats = computeStats(baseline.values());
-        Stats allStats = computeStats(mdByKey.values());
+        Stats filteredStats = computeStats(new HashSet<>(filtered.values()));
+        Stats baselineStats = computeStats(new HashSet<>(baseline.values()));
+        Stats allStats = computeStats(new HashSet<>(mdByKey.values()));
 
         System.out.println(summaryOf(filteredStats, "FILTERED"));
         System.out.println(summaryOf(baselineStats, "BASELINE"));

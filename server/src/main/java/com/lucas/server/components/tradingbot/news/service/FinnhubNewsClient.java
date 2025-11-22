@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.util.Set;
 
 import static com.lucas.server.common.Constants.*;
 
@@ -37,7 +37,7 @@ public class FinnhubNewsClient {
     }
 
     @Retryable(retryFor = {ClientException.class, MappingException.class}, maxAttempts = REQUEST_MAX_ATTEMPTS)
-    public List<News> retrieveNewsByDateRange(Symbol symbol, LocalDate from, LocalDate to) throws ClientException, MappingException {
+    public Set<News> retrieveNewsByDateRange(Symbol symbol, LocalDate from, LocalDate to) throws ClientException, MappingException {
         String apiKey = finnhubRateLimiter.acquirePermission();
         logger.info(RETRIEVING_DATA_INFO, NEWS, symbol);
         String url = UriComponentsBuilder.fromUriString(endpoint + COMPANY_NEWS)

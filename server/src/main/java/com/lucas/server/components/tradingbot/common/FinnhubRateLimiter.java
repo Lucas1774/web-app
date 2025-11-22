@@ -1,27 +1,28 @@
 package com.lucas.server.components.tradingbot.common;
 
+import com.lucas.utils.OrderedIndexedSet;
 import com.lucas.utils.SlidingWindowRateLimiter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.lucas.server.common.Constants.FINNHUB_RATE_LIMITERS;
+import static com.lucas.server.common.Constants.getFinnhubRateLimiterNames;
 
 @Component
 public class FinnhubRateLimiter {
 
-    private final List<Map.Entry<String, SlidingWindowRateLimiter>> keyToLimiterEntries;
+    private final OrderedIndexedSet<Map.Entry<String, SlidingWindowRateLimiter>> keyToLimiterEntries;
     private final AtomicInteger pointer = new AtomicInteger();
 
     public FinnhubRateLimiter(@Value("${finnhub.api-keys}") List<String> apiKeys, Map<String, SlidingWindowRateLimiter> allRateLimiters) {
-        keyToLimiterEntries = new ArrayList<>(apiKeys.size());
+        keyToLimiterEntries = new OrderedIndexedSet<>();
+        OrderedIndexedSet<String> finnhubRateLimiterNames = getFinnhubRateLimiterNames();
         for (int i = 0; i < apiKeys.size(); i++) {
             String apiKey = apiKeys.get(i);
-            String limiterKey = FINNHUB_RATE_LIMITERS.get(i);
+            String limiterKey = finnhubRateLimiterNames.get(i);
             SlidingWindowRateLimiter rateLimiter = allRateLimiters.get(limiterKey);
             keyToLimiterEntries.add(Map.entry(apiKey, rateLimiter));
         }

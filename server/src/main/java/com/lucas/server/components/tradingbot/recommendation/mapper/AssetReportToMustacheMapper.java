@@ -6,6 +6,7 @@ import com.github.mustachejava.MustacheFactory;
 import com.lucas.server.common.exception.ConfigurationException;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.AssetReportRaw;
 import com.lucas.utils.Mapper;
+import com.lucas.utils.OrderedIndexedSet;
 import com.lucas.utils.exception.MappingException;
 import org.springframework.stereotype.Component;
 
@@ -21,14 +22,14 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import static com.lucas.server.common.Constants.*;
 import static com.lucas.utils.Utils.EMPTY_STRING;
 
 @Component
-public class AssetReportToMustacheMapper implements Mapper<List<AssetReportRaw>, String> {
+public class AssetReportToMustacheMapper implements Mapper<Set<AssetReportRaw>, String> {
 
     private final Mustache mustache;
 
@@ -44,7 +45,7 @@ public class AssetReportToMustacheMapper implements Mapper<List<AssetReportRaw>,
     }
 
     @Override
-    public String map(List<AssetReportRaw> assets) throws MappingException {
+    public String map(Set<AssetReportRaw> assets) throws MappingException {
         StringWriter out = new StringWriter();
         try {
             mustache.execute(out, Collections.singletonMap("assets", assets.stream().map(AssetReport::from).toList())).flush();
@@ -63,7 +64,7 @@ public class AssetReportToMustacheMapper implements Mapper<List<AssetReportRaw>,
             BigDecimal unrealizedPercentPnL,
             int historyDays,
             PricePointRaw premarket,
-            List<PricePointRaw> priceHistory,
+            OrderedIndexedSet<PricePointRaw> priceHistory,
             BigDecimal ema20,
             BigDecimal macdLine1226,
             BigDecimal macdSignalLine9,
@@ -71,7 +72,7 @@ public class AssetReportToMustacheMapper implements Mapper<List<AssetReportRaw>,
             BigDecimal atr14,
             BigDecimal obv20,
             int newsCount,
-            List<NewsItemRaw> news
+            OrderedIndexedSet<NewsItemRaw> news
     ) {
     }
 
@@ -104,7 +105,7 @@ public class AssetReportToMustacheMapper implements Mapper<List<AssetReportRaw>,
             String unrealizedPercentPnl,
             String historyDays,
             PricePoint premarket,
-            List<PricePoint> priceHistory,
+            OrderedIndexedSet<PricePoint> priceHistory,
             String ema20,
             String macdLine1226,
             String macdSignalLine9,
@@ -113,7 +114,7 @@ public class AssetReportToMustacheMapper implements Mapper<List<AssetReportRaw>,
             String atr14,
             String obv20,
             String newsCount,
-            List<NewsItem> news
+            OrderedIndexedSet<NewsItem> news
     ) {
         private static AssetReport from(AssetReportRaw report) {
             return new AssetReport(
@@ -125,7 +126,7 @@ public class AssetReportToMustacheMapper implements Mapper<List<AssetReportRaw>,
                     null != report.unrealizedPercentPnL ? report.unrealizedPercentPnL.stripTrailingZeros().toPlainString().concat("%") : "0%",
                     String.valueOf(report.historyDays),
                     null != report.premarket ? PricePoint.from(report.premarket) : null,
-                    report.priceHistory.stream().map(PricePoint::from).toList(),
+                    report.priceHistory.stream().map(PricePoint::from).collect(OrderedIndexedSet.toOrderedIndexedSet()),
                     null != report.ema20 ? report.ema20.stripTrailingZeros().toPlainString() : NA,
                     null != report.macdLine1226 ? report.macdLine1226.stripTrailingZeros().toPlainString() : NA,
                     null != report.macdSignalLine9 ? report.macdSignalLine9.stripTrailingZeros().toPlainString() : NA,
@@ -136,7 +137,7 @@ public class AssetReportToMustacheMapper implements Mapper<List<AssetReportRaw>,
                     null != report.atr14 ? report.atr14.stripTrailingZeros().toPlainString().concat("%") : NA,
                     null != report.obv20 ? report.obv20.stripTrailingZeros().toPlainString() : NA,
                     String.valueOf(report.newsCount),
-                    report.news.stream().map(NewsItem::from).toList()
+                    report.news.stream().map(NewsItem::from).collect(OrderedIndexedSet.toOrderedIndexedSet())
             );
         }
 

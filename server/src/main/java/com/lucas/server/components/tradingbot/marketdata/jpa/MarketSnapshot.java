@@ -28,6 +28,9 @@ public class MarketSnapshot implements JpaEntity {
     @JoinColumn(name = "symbol_id", nullable = false)
     private Symbol symbol;
 
+    @Column(nullable = false)
+    private LocalDateTime date;
+
     @Column(precision = 15, scale = 4)
     private BigDecimal open;
 
@@ -42,6 +45,17 @@ public class MarketSnapshot implements JpaEntity {
 
     private Long volume;
 
-    @Column(nullable = false)
-    private LocalDateTime date;
+    @Override
+    public String toString() {
+        return "MarketSnapshot{" +
+                "id=" + id +
+                ", symbol=" + symbol +
+                ", date=" + date +
+                ", open=" + open +
+                ", high=" + high +
+                ", low=" + low +
+                ", price=" + price +
+                ", volume=" + volume +
+                '}';
+    }
 }

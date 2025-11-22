@@ -1,27 +1,23 @@
 package com.lucas.server.components.shopping.jpa.product;
 
-import com.lucas.server.TestConfiguration;
+import com.lucas.server.ConfiguredTest;
 import com.lucas.server.common.jpa.user.UserJpaService;
 import com.lucas.server.components.shopping.jpa.category.Category;
 import com.lucas.server.components.shopping.jpa.category.CategoryJpaService;
 import com.lucas.server.components.shopping.jpa.shopping.ShoppingItem;
 import com.lucas.server.components.shopping.jpa.shopping.ShoppingItemJpaService;
+import com.lucas.utils.OrderedIndexedSet;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.Comparator;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.*;
 
-@SpringBootTest
-@Import(TestConfiguration.class)
-class ProductJpaServiceTest {
+class ProductJpaServiceTest extends ConfiguredTest {
 
     @Autowired
     private ShoppingItemJpaService shoppingItemService;
@@ -135,29 +131,25 @@ class ProductJpaServiceTest {
         // given: two categories with reversed order values
         Product p1 = new Product().setName("A").setOrder(2);
         Product p2 = new Product().setName("B").setOrder(1);
-        List<Product> saved = productService.createAll(Arrays.asList(p1, p2));
+        Set<Product> saved = productService.createAll(Set.of(p1, p2));
         assertThat(saved)
                 .extracting(Product::getName, Product::getOrder)
-                .containsExactly(
+                .containsExactlyInAnyOrder(
                         tuple("A", 2),
                         tuple("B", 1)
                 );
 
-        // when:
-        List<Product> input = Arrays.asList(saved.get(0), saved.get(1));
-        Collections.reverse(input);
-        List<Product> result = productService.updateOrders(input);
+        // when: updating with "A" first "B" second
+        OrderedIndexedSet<Product> input = saved.stream().sorted(Comparator.comparing(Product::getOrder).reversed())
+                .collect(OrderedIndexedSet.toOrderedIndexedSet());
+        Set<Product> result = productService.updateOrders(input);
 
         // then: orders should be reassigned to [1,2]
         assertThat(result)
-                .extracting(Product::getOrder)
-                .containsExactly(1, 2);
-
-        assertThat(result)
                 .extracting(Product::getName, Product::getOrder)
-                .containsExactly(
-                        tuple(saved.get(1).getName(), 1),
-                        tuple(saved.get(0).getName(), 2)
+                .containsExactlyInAnyOrder(
+                        tuple("A", 1),
+                        tuple("B", 2)
                 );
     }
 }

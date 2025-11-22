@@ -79,8 +79,18 @@ public class News implements JpaEntity {
     @Override
     public String toString() {
         return "News{" +
+                "id=" + id +
                 ", externalId=" + externalId +
+                ", symbols=" + symbols +
                 ", date=" + date +
+                ", headline='" + headline + '\'' +
+                ", summary='" + summary + '\'' +
+                ", url='" + url + '\'' +
+                ", source='" + source + '\'' +
+                ", category='" + category + '\'' +
+                ", image='" + image + '\'' +
+                ", sentiment='" + sentiment + '\'' +
+                ", sentimentConfidence=" + sentimentConfidence +
                 '}';
     }
 

@@ -3,6 +3,7 @@ package com.lucas.server.components.tradingbot.recommendation.mapper;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.AssetReportRaw;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.NewsItemRaw;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.PricePointRaw;
+import com.lucas.utils.OrderedIndexedSet;
 import com.lucas.utils.exception.MappingException;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,7 +13,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.List;
+import java.util.Set;
 
 import static com.lucas.server.common.Constants.CONTENT;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,17 +25,17 @@ class AssetReportToMustacheMapperTest {
 
     private static AssetReportRaw getAssetReportNullValues() {
         PricePointRaw pp = getPpNullValues();
-        List<NewsItemRaw> news = getNewsNullValues();
+        OrderedIndexedSet<NewsItemRaw> news = getNewsNullValues();
         return new AssetReportRaw("FOO", null, null, null, null, null,
-                1, null, List.of(pp), null, null, null, null, null, null, news.size(), news);
+                1, null, OrderedIndexedSet.of(pp), null, null, null, null, null, null, news.size(), news);
     }
 
     private static AssetReportRaw getAssetReportAllValues() {
         PricePointRaw pp = getPpAllValues();
-        List<NewsItemRaw> news = getNewsAllValues();
+        OrderedIndexedSet<NewsItemRaw> news = getNewsAllValues();
         return new AssetReportRaw("FOO", new BigDecimal("10.2412"), new BigDecimal("101.4887"),
                 new BigDecimal("11.5874"), new BigDecimal("50"), new BigDecimal("80.00"), 1,
-                pp, List.of(pp),
+                pp, OrderedIndexedSet.of(pp),
                 new BigDecimal("105.00"), new BigDecimal("42.42"), new BigDecimal("1.23"),
                 new BigDecimal("15.67"), new BigDecimal("15.68"), new BigDecimal("15.69"), news.size(), news);
     }
@@ -49,8 +50,8 @@ class AssetReportToMustacheMapperTest {
                 new BigDecimal("110"), new BigDecimal("90"), new BigDecimal("105"), 1234L, new BigDecimal("7.5"));
     }
 
-    private static List<NewsItemRaw> getNewsNullValues() {
-        return List.of(
+    private static OrderedIndexedSet<NewsItemRaw> getNewsNullValues() {
+        return OrderedIndexedSet.of(
                 new NewsItemRaw("Headline One", null, null,
                         "First summary", LocalDateTime.of(LocalDate.of(2025, 5, 1), LocalTime.MIDNIGHT)),
                 new NewsItemRaw("Headline Two", null, null,
@@ -58,8 +59,8 @@ class AssetReportToMustacheMapperTest {
         );
     }
 
-    private static List<NewsItemRaw> getNewsAllValues() {
-        return List.of(
+    private static OrderedIndexedSet<NewsItemRaw> getNewsAllValues() {
+        return OrderedIndexedSet.of(
                 new NewsItemRaw("Headline One", "positive", BigDecimal.valueOf(54.4412),
                         "First summary", LocalDateTime.of(LocalDate.of(2025, 5, 1), LocalTime.MIDNIGHT)),
                 new NewsItemRaw("Headline Two", "negative", BigDecimal.valueOf(54.4412),
@@ -93,7 +94,7 @@ class AssetReportToMustacheMapperTest {
                   • 2025-05-01 20:00:00 EDT: Headline Two: Second summary
                 
                 """;
-        assertThat(objectMapper.readTree(mapper.map(List.of(asset))).get(CONTENT).asText()).isEqualTo(expected);
+        assertThat(objectMapper.readTree(mapper.map(Set.of(asset))).get(CONTENT).asText()).isEqualTo(expected);
     }
 
     @Test
@@ -124,6 +125,6 @@ class AssetReportToMustacheMapperTest {
                 
                 """;
 
-        assertThat(objectMapper.readTree(mapper.map(List.of(asset))).get(CONTENT).asText()).isEqualTo(expected);
+        assertThat(objectMapper.readTree(mapper.map(Set.of(asset))).get(CONTENT).asText()).isEqualTo(expected);
     }
 }

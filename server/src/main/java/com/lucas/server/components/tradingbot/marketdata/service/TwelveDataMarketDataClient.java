@@ -6,6 +6,7 @@ import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.marketdata.mapper.TwelveDataMarketResponseMapper;
+import com.lucas.utils.OrderedIndexedSet;
 import com.lucas.utils.SlidingWindowRateLimiter;
 import com.lucas.utils.exception.MappingException;
 import org.slf4j.Logger;
@@ -17,7 +18,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Comparator;
 import java.util.EnumMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.UnaryOperator;
 
@@ -50,15 +50,15 @@ public class TwelveDataMarketDataClient {
         this.endpoint = endpoint;
         this.apiKey = apiKey;
         typeToMapper = new EnumMap<>(Map.of(
-                MarketDataType.LAST, (s, j) -> List.of(mapper.map(j, s)),
+                MarketDataType.LAST, (s, j) -> OrderedIndexedSet.of(mapper.map(j, s)),
                 MarketDataType.HISTORIC, (s, j) -> mapper.mapAll(j, s).stream()
                         .sorted(Comparator.comparing(MarketData::getDate))
-                        .toList()
+                        .collect(OrderedIndexedSet.toOrderedIndexedSet())
         ));
     }
 
     @Retryable(retryFor = {ClientException.class, MappingException.class}, maxAttempts = REQUEST_MAX_ATTEMPTS)
-    public List<MarketData> retrieveMarketData(Symbol symbol, MarketDataType type) throws ClientException, MappingException {
+    public OrderedIndexedSet<MarketData> retrieveMarketData(Symbol symbol, MarketDataType type) throws ClientException, MappingException {
         rateLimiter.acquirePermission();
         logger.info(RETRIEVING_DATA_INFO, MARKET_DATA, symbol);
         String url = typeToBuilderCustomizer.get(type).apply(UriComponentsBuilder.fromUriString(endpoint + typeToEndpoint.get(type)))
@@ -72,6 +72,6 @@ public class TwelveDataMarketDataClient {
 
     @FunctionalInterface
     private interface JsonToMarketDataFunction {
-        List<MarketData> apply(Symbol symbol, JsonNode jsonNode) throws MappingException;
+        OrderedIndexedSet<MarketData> apply(Symbol symbol, JsonNode jsonNode) throws MappingException;
     }
 }

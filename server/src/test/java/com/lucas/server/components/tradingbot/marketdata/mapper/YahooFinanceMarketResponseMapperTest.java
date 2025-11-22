@@ -2,7 +2,7 @@ package com.lucas.server.components.tradingbot.marketdata.mapper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lucas.server.TestConfiguration;
+import com.lucas.server.ConfiguredTest;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketSnapshot;
@@ -10,8 +10,6 @@ import com.lucas.utils.exception.MappingException;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 
 import java.math.BigDecimal;
 import java.text.MessageFormat;
@@ -24,9 +22,7 @@ import static com.lucas.server.common.Constants.MARKET_SNAPSHOT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@SpringBootTest
-@Import(TestConfiguration.class)
-class YahooFinanceMarketResponseMapperTest {
+class YahooFinanceMarketResponseMapperTest extends ConfiguredTest {
 
     @Autowired
     private SymbolJpaService symbolService;

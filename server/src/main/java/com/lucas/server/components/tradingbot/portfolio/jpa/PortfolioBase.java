@@ -37,4 +37,16 @@ public abstract class PortfolioBase implements JpaEntity {
 
     @Column(name = "effective_timestamp", nullable = false)
     private LocalDateTime effectiveTimestamp;
+
+    @Override
+    public String toString() {
+        return "PortfolioBase{" +
+                "id=" + id +
+                ", symbol=" + symbol +
+                ", quantity=" + quantity +
+                ", averageCost=" + averageCost +
+                ", averageCommission=" + averageCommission +
+                ", effectiveTimestamp=" + effectiveTimestamp +
+                '}';
+    }
 }

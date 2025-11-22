@@ -13,7 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.util.Set;
 
 import static com.lucas.server.common.Constants.DEFAULT_USERNAME;
 import static com.lucas.server.common.Constants.SP500_SYMBOLS;
@@ -32,7 +32,7 @@ public class NewsController {
     }
 
     @GetMapping("/last")
-    public ResponseEntity<List<News>> fetchAndSaveAll(HttpServletRequest request) {
+    public ResponseEntity<Set<News>> fetchAndSaveAll(HttpServletRequest request) {
         String username = controllerUtil.retrieveUsername(request.getCookies());
         if (DEFAULT_USERNAME.equals(username)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -46,7 +46,7 @@ public class NewsController {
     }
 
     @GetMapping("/last/{symbols}")
-    public ResponseEntity<List<News>> fetchAndSaveSome(HttpServletRequest request, @PathVariable List<Long> symbols) {
+    public ResponseEntity<Set<News>> fetchAndSaveSome(HttpServletRequest request, @PathVariable Set<Long> symbols) {
         String username = controllerUtil.retrieveUsername(request.getCookies());
         if (DEFAULT_USERNAME.equals(username)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -60,7 +60,7 @@ public class NewsController {
     }
 
     @GetMapping("/historic/{from}")
-    public ResponseEntity<List<News>> fetchAndSaveHistoricAll(HttpServletRequest request, @PathVariable LocalDate from) {
+    public ResponseEntity<Set<News>> fetchAndSaveHistoricAll(HttpServletRequest request, @PathVariable LocalDate from) {
         String username = controllerUtil.retrieveUsername(request.getCookies());
         if (DEFAULT_USERNAME.equals(username)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -74,9 +74,9 @@ public class NewsController {
     }
 
     @GetMapping("/historic/{from}/{symbols}")
-    public ResponseEntity<List<News>> fetchAndSaveHistoricSome(HttpServletRequest request,
-                                                               @PathVariable LocalDate from,
-                                                               @PathVariable List<Long> symbols) {
+    public ResponseEntity<Set<News>> fetchAndSaveHistoricSome(HttpServletRequest request,
+                                                              @PathVariable LocalDate from,
+                                                              @PathVariable Set<Long> symbols) {
         String username = controllerUtil.retrieveUsername(request.getCookies());
         if (DEFAULT_USERNAME.equals(username)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -90,7 +90,7 @@ public class NewsController {
     }
 
     @DeleteMapping("/purge")
-    public ResponseEntity<List<News>> purge(@RequestParam int toKeep) {
+    public ResponseEntity<Set<News>> purge(@RequestParam int toKeep) {
         return ResponseEntity.ok(jpaService.removeOldNews(toKeep));
     }
 }
