@@ -2,7 +2,7 @@ package com.lucas.server.components.tradingbot.news.mapper;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lucas.server.TestConfiguration;
+import com.lucas.server.ConfiguredTest;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.news.jpa.News;
@@ -10,8 +10,6 @@ import com.lucas.utils.exception.MappingException;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 
 import java.text.MessageFormat;
 import java.time.Instant;
@@ -26,9 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
-@SpringBootTest
-@Import(TestConfiguration.class)
-class FinnhubNewsResponseMapperTest {
+class FinnhubNewsResponseMapperTest extends ConfiguredTest {
 
     @Autowired
     private SymbolJpaService symbolService;

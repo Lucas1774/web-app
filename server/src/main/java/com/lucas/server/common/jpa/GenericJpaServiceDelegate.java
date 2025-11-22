@@ -3,6 +3,7 @@ package com.lucas.server.common.jpa;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Set;
 
 public class GenericJpaServiceDelegate<T extends JpaEntity, R extends JpaRepository<T, ?>> {
 
@@ -20,7 +21,7 @@ public class GenericJpaServiceDelegate<T extends JpaEntity, R extends JpaReposit
         return repository.findAll();
     }
 
-    public void deleteAll(List<T> entities) {
+    public void deleteAll(Set<T> entities) {
         repository.deleteAllInBatch(entities);
     }
 }

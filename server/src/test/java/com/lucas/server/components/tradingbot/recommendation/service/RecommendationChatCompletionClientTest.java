@@ -1,6 +1,6 @@
 package com.lucas.server.components.tradingbot.recommendation.service;
 
-import com.lucas.server.TestConfiguration;
+import com.lucas.server.ConfiguredTest;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
@@ -17,25 +17,21 @@ import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportT
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.PricePointRaw;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import static com.lucas.server.common.Constants.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
-@Import(TestConfiguration.class)
-class RecommendationChatCompletionClientTest {
+class RecommendationChatCompletionClientTest extends ConfiguredTest {
 
     @Autowired
     private MarketDataJpaService marketDataService;
@@ -60,7 +56,7 @@ class RecommendationChatCompletionClientTest {
         // given: insert 34 days of market data. Needs to be at least 34 and greater than the history days
         Symbol symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
         LocalDate today = LocalDate.now();
-        List<MarketData> mds = new ArrayList<>();
+        Set<MarketData> mds = new HashSet<>();
         for (int i = MARKET_DATA_RELEVANT_DAYS_COUNT; 0 <= i; i--) {
             MarketData md = new MarketData()
                     .setSymbol(symbolService.getOrCreateByName(Set.of(symbol.getName())).stream().findFirst().orElseThrow())
@@ -72,8 +68,8 @@ class RecommendationChatCompletionClientTest {
                     .setVolume(1_000L * (i + 1));
             mds.add(md);
         }
-        marketDataService.createIgnoringDuplicates(mds.stream().sorted(Comparator.comparing(MarketData::getDate)).toList());
-        BigDecimal lastPrice = mds.getLast().getPrice();
+        marketDataService.createIgnoringDuplicates(mds);
+        BigDecimal lastPrice = mds.stream().max(Comparator.comparing(MarketData::getDate)).orElseThrow().getPrice();
         MarketSnapshot premarket = new MarketSnapshot()
                 .setSymbol(symbol)
                 .setOpen(lastPrice)
@@ -82,7 +78,7 @@ class RecommendationChatCompletionClientTest {
                 .setPrice(lastPrice.add(new BigDecimal("0.5")));
 
         // given: insert 15 news items. Needs to be greater than the news per symbol and day
-        List<News> articles = new ArrayList<>();
+        Set<News> articles = new HashSet<>();
         LocalDateTime todayDateTime = LocalDateTime.now()
                 .atZone(ZoneOffset.UTC)
                 .toLocalDateTime();

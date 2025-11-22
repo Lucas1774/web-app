@@ -1,13 +1,11 @@
 package com.lucas.server.components.tradingbot.marketdata.jpa;
 
-import com.lucas.server.TestConfiguration;
+import com.lucas.server.ConfiguredTest;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -17,9 +15,7 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
-@SpringBootTest
-@Import(TestConfiguration.class)
-class MarketDataJpaServiceTest {
+class MarketDataJpaServiceTest extends ConfiguredTest {
 
     @Autowired
     private MarketDataJpaService jpaService;
@@ -46,7 +42,7 @@ class MarketDataJpaServiceTest {
                 .setDate(date2)
                 .setPrice(new BigDecimal("150.0000"));
 
-        List<MarketData> initialSave = jpaService.createIgnoringDuplicates(List.of(a1, a2));
+        Set<MarketData> initialSave = jpaService.createIgnoringDuplicates(Set.of(a1, a2));
         assertThat(initialSave)
                 .hasSize(2)
                 .extracting(
@@ -70,7 +66,7 @@ class MarketDataJpaServiceTest {
                 .setDate(date2)
                 .setPrice(new BigDecimal("155.0000"));
 
-        List<MarketData> result = jpaService.createIgnoringDuplicates(List.of(duplicate, valid));
+        Set<MarketData> result = jpaService.createIgnoringDuplicates(Set.of(duplicate, valid));
 
         // then: only the valid new record is returned, compare as double
         assertThat(result)

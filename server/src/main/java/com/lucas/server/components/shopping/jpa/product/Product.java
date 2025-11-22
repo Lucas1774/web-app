@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
+import java.util.Objects;
+
 @Getter
 @Setter
 @Accessors(chain = true)
@@ -41,6 +43,21 @@ public class Product implements JpaEntity, Sortable {
         return "Product{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
+                ", isRare=" + isRare +
+                ", order=" + order +
+                ", category=" + category +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (null == o || getClass() != o.getClass()) return false;
+        Product product = (Product) o;
+        return Objects.equals(name, product.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(name);
     }
 }

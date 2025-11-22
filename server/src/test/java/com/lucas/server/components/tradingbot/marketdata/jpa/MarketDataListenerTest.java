@@ -1,19 +1,16 @@
 package com.lucas.server.components.tradingbot.marketdata.jpa;
 
-import com.lucas.server.TestConfiguration;
+import com.lucas.server.ConfiguredTest;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.marketdata.service.MarketDataKpiGenerator;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,9 +18,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-@SpringBootTest
-@Import(TestConfiguration.class)
-class MarketDataListenerTest {
+class MarketDataListenerTest extends ConfiguredTest {
 
     @MockitoSpyBean
     private MarketDataKpiGenerator kpiGenerator;
@@ -50,7 +45,7 @@ class MarketDataListenerTest {
                 .setPrice(new BigDecimal("155"));
 
         // when
-        jpaService.createIgnoringDuplicates(List.of(previous, current));
+        jpaService.createIgnoringDuplicates(Set.of(previous, current));
 
         // then
         assertThat(current.getPreviousClose()).isEqualByComparingTo(new BigDecimal("150"));

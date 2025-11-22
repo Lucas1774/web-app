@@ -11,7 +11,10 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class RecommendationsJpaService implements JpaService<Recommendation> {
@@ -28,32 +31,32 @@ public class RecommendationsJpaService implements JpaService<Recommendation> {
     }
 
     @SuppressWarnings("UnusedReturnValue")
-    public List<Recommendation> createIgnoringDuplicates(Collection<Recommendation> entities) {
-        return uniqueConstraintDelegate.createIgnoringDuplicates(this::findUnique, new LinkedHashSet<>(entities));
+    public Set<Recommendation> createIgnoringDuplicates(Set<Recommendation> entities) {
+        return uniqueConstraintDelegate.createIgnoringDuplicates(this::findUnique, entities);
     }
 
-    private Collection<Recommendation> findUnique(Collection<Recommendation> recommendations) {
+    private Set<Recommendation> findUnique(Set<Recommendation> recommendations) {
         return repository.findBySymbol_IdInAndDateIn(
-                recommendations.stream().map(r -> r.getSymbol().getId()).toList(),
-                recommendations.stream().map(Recommendation::getDate).toList()
+                recommendations.stream().map(r -> r.getSymbol().getId()).collect(Collectors.toSet()),
+                recommendations.stream().map(Recommendation::getDate).collect(Collectors.toSet())
         );
     }
 
-    public List<Recommendation> findByDateBetween(LocalDate from, LocalDate to) {
+    public Set<Recommendation> findByDateBetween(LocalDate from, LocalDate to) {
         return repository.findByDateBetween(from, to);
     }
 
     // TODO: batch
     public List<Recommendation> getTopForSymbolId(Long symbolId, int limit) {
-        return repository.findBySymbol_Id(symbolId, PageRequest.of(0, limit, Sort.by("date").descending())).getContent();
+        return repository.findBySymbol_Id(symbolId, PageRequest.of(0, limit, Sort.by("date").descending()));
     }
 
-    public List<Recommendation> findBySymbolId(Long id) {
+    public Set<Recommendation> findBySymbolId(Long id) {
         return repository.findBySymbol_Id(id);
     }
 
     @Transactional
-    public List<Recommendation> createOrUpdate(List<Recommendation> entities) {
+    public Set<Recommendation> createOrUpdate(Set<Recommendation> entities) {
         return uniqueConstraintDelegate.createOrUpdate(this::findUnique,
                 (oldEntity, newEntity) -> oldEntity
                         .setModel(newEntity.getModel())
@@ -64,7 +67,7 @@ public class RecommendationsJpaService implements JpaService<Recommendation> {
                         .setInput(newEntity.getInput())
                         .setErrors(newEntity.getErrors())
                         .setNews(newEntity.getNews()),
-                new LinkedHashSet<>(entities));
+                entities);
     }
 
     public List<Long> getTopRecommendedSymbols(String action, BigDecimal confidenceThreshold, LocalDate recommendationDate) {
@@ -76,11 +79,11 @@ public class RecommendationsJpaService implements JpaService<Recommendation> {
                 .toList();
     }
 
-    public List<Recommendation> getDailyRecommendations(BigDecimal confidenceThreshold, LocalDate date, String action, List<String> models) {
+    public Set<Recommendation> getDailyRecommendations(BigDecimal confidenceThreshold, LocalDate date, String action, Set<String> models) {
         return repository.findByConfidenceGreaterThanEqualAndDateAndActionAndModelIn(confidenceThreshold, date, action, models);
     }
 
-    public List<Recommendation> findByNewsId(Set<Long> newsIds) {
+    public Set<Recommendation> findByNewsId(Set<Long> newsIds) {
         return repository.findByNews_IdIn(newsIds);
     }
 }

@@ -11,5 +11,5 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     List<Category> findAllByOrderByOrderAsc();
 
-    Optional<Category> findFirstByOrderByOrderDesc();
+    Optional<Category> findTopByOrderByOrderDesc();
 }

@@ -32,6 +32,9 @@ public class MarketData implements JpaEntity {
     @JoinColumn(name = "symbol_id", nullable = false)
     private Symbol symbol;
 
+    @Column(name = "trade_date", nullable = false)
+    private LocalDate date;
+
     @OneToMany(mappedBy = "marketData", fetch = FetchType.EAGER)
     private Set<Recommendation> recommendations = new HashSet<>();
 
@@ -48,9 +51,6 @@ public class MarketData implements JpaEntity {
     private BigDecimal price;
 
     private Long volume;
-
-    @Column(name = "trade_date", nullable = false)
-    private LocalDate date;
 
     @Column(name = "previous_close", precision = 15, scale = 4)
     private BigDecimal previousClose;
@@ -99,8 +99,22 @@ public class MarketData implements JpaEntity {
     public String toString() {
         return "MarketData{" +
                 "id=" + id +
-                ", symbol='" + symbol + '\'' +
+                ", symbol=" + symbol +
                 ", date=" + date +
+                ", open=" + open +
+                ", high=" + high +
+                ", low=" + low +
+                ", price=" + price +
+                ", volume=" + volume +
+                ", previousClose=" + previousClose +
+                ", change=" + change +
+                ", changePercent=" + changePercent +
+                ", atr=" + atr +
+                ", averageGain=" + averageGain +
+                ", averageLoss=" + averageLoss +
+                ", previousAtr=" + previousAtr +
+                ", previousAverageGain=" + previousAverageGain +
+                ", previousAverageLoss=" + previousAverageLoss +
                 '}';
     }
 

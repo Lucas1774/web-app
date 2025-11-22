@@ -1,17 +1,13 @@
 package com.lucas.server.components.calculator.jpa;
 
-import com.lucas.server.TestConfiguration;
+import com.lucas.server.ConfiguredTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 
 import static com.lucas.server.common.Constants.INVALID_EXPRESSION;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
-@Import(TestConfiguration.class)
-class CalculatorJpaServiceTest {
+class CalculatorJpaServiceTest extends ConfiguredTest {
 
     @Autowired
     private CalculatorJpaService calculatorService;

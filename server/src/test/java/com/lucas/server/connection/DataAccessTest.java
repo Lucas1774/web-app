@@ -1,6 +1,6 @@
 package com.lucas.server.connection;
 
-import com.lucas.server.TestConfiguration;
+import com.lucas.server.ConfiguredTest;
 import com.lucas.server.components.shopping.jpa.category.Category;
 import com.lucas.server.components.shopping.jpa.category.CategoryJpaService;
 import com.lucas.server.components.shopping.jpa.product.Product;
@@ -13,19 +13,16 @@ import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
-@SpringBootTest
-@Import(TestConfiguration.class)
-class DataAccessTest {
+class DataAccessTest extends ConfiguredTest {
 
     @Autowired
     private ShoppingItemJpaService shoppingItemService;
@@ -65,9 +62,9 @@ class DataAccessTest {
 
         // insert product and assign
         productService.createProductAndOrLinkToUser("item1", "bob");
-        List<ShoppingItem> items = shoppingItemService.findAllByUsername("bob");
+        Set<ShoppingItem> items = shoppingItemService.findAllByUsername("bob");
         assertThat(items).hasSize(1);
-        ShoppingItem item = items.getFirst();
+        ShoppingItem item = items.stream().findFirst().orElseThrow();
         assertThat(item.getProduct().getName()).isEqualTo("item1");
 
         // update quantity
@@ -134,8 +131,8 @@ class DataAccessTest {
         );
         // insert a product
         productService.createProductAndOrLinkToUser("prod1", "carol");
-        List<ShoppingItem> items = shoppingItemService.findAllByUsername("carol");
-        Product item = items.getFirst().getProduct();
+        Set<ShoppingItem> items = shoppingItemService.findAllByUsername("carol");
+        Product item = items.stream().findFirst().map(ShoppingItem::getProduct).orElseThrow();
 
         // update product name, rarity and assign existing category
         productService.updateProductCreateCategoryIfNecessary(new Product().setId((item.getId())).setName("prod1Updated").setIsRare(true).setCategory(
@@ -143,10 +140,11 @@ class DataAccessTest {
         ));
 
         // verify update
-        List<ShoppingItem> updated = shoppingItemService.findAllByUsername("carol");
-        assertThat(updated.getFirst().getProduct().getName()).isEqualTo("prod1Updated");
-        assertThat(updated.getFirst().getProduct().getIsRare()).isTrue();
-        assertThat(updated.getFirst().getProduct().getCategory().getId()).isEqualTo(1);
+        Set<ShoppingItem> updated = shoppingItemService.findAllByUsername("carol");
+        Product item2 = updated.stream().findFirst().map(ShoppingItem::getProduct).orElseThrow();
+        assertThat(item2.getName()).isEqualTo("prod1Updated");
+        assertThat(item2.getIsRare()).isTrue();
+        assertThat(item2.getCategory().getId()).isEqualTo(1);
     }
 
     @Test
@@ -157,8 +155,8 @@ class DataAccessTest {
                 "INSERT INTO users(username, password) VALUES('dave','pwd')"
         );
         productService.createProductAndOrLinkToUser("prod2", "dave");
-        List<ShoppingItem> items = shoppingItemService.findAllByUsername("dave");
-        Product item = items.getFirst().getProduct();
+        Set<ShoppingItem> items = shoppingItemService.findAllByUsername("dave");
+        Product item = items.stream().findFirst().map(ShoppingItem::getProduct).orElseThrow();
 
         // update product, passing null categoryId to force new category creation
         productService.updateProductCreateCategoryIfNecessary(
@@ -168,13 +166,15 @@ class DataAccessTest {
         );
 
         // verify that new category was created and assigned
-        List<ShoppingItem> cats = shoppingItemService.findAllByUsername("dave");
+        Set<ShoppingItem> cats = shoppingItemService.findAllByUsername("dave");
         assertThat(cats).extracting(c -> c.getProduct().getCategory().getName()).contains("newCat");
         int newCatId = cats.stream()
                 .filter(c -> "newCat".equals(c.getProduct().getCategory().getName()))
                 .findFirst().orElseThrow().getProduct().getCategory().getOrder();
-        List<ShoppingItem> updated = shoppingItemService.findAllByUsername("dave");
-        assertThat(updated.getFirst().getProduct().getCategory().getId()).isEqualTo(newCatId);
+        Set<ShoppingItem> updated = shoppingItemService.findAllByUsername("dave");
+        assertThat(
+                updated.stream().findFirst().map(s -> s.getProduct().getCategory().getId()).orElseThrow()
+        ).isEqualTo(newCatId);
     }
 
     @Test
@@ -196,7 +196,7 @@ class DataAccessTest {
 
         // call updateAllProductQuantity
         shoppingItemService.updateAllShoppingItemQuantities("eve", 0);
-        List<ShoppingItem> reset = shoppingItemService.findAllByUsername("eve");
+        Set<ShoppingItem> reset = shoppingItemService.findAllByUsername("eve");
         assertThat(reset).isNotEmpty().allMatch(i -> 0 == i.getQuantity());
     }
 }

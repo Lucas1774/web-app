@@ -6,9 +6,8 @@ import com.lucas.server.common.jpa.UniqueConstraintWearyJpaServiceDelegate;
 import lombok.experimental.Delegate;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class SudokuJpaService implements JpaService<Sudoku> {
@@ -25,9 +24,9 @@ public class SudokuJpaService implements JpaService<Sudoku> {
         this.repository = repository;
     }
 
-    public List<Sudoku> createIgnoringDuplicates(Collection<Sudoku> entities) {
+    public Set<Sudoku> createIgnoringDuplicates(Set<Sudoku> entities) {
         return uniqueConstraintDelegate.createIgnoringDuplicates(allEntities -> repository.findByStateIn(
-                allEntities.stream().map(Sudoku::getState).toList()
-        ), new LinkedHashSet<>(entities));
+                allEntities.stream().map(Sudoku::getState).collect(Collectors.toSet())
+        ), entities);
     }
 }

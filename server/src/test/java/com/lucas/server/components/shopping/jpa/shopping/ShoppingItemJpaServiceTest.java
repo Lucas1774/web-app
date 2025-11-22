@@ -1,6 +1,6 @@
 package com.lucas.server.components.shopping.jpa.shopping;
 
-import com.lucas.server.TestConfiguration;
+import com.lucas.server.ConfiguredTest;
 import com.lucas.server.common.jpa.user.UserJpaService;
 import com.lucas.server.components.shopping.jpa.category.Category;
 import com.lucas.server.components.shopping.jpa.category.CategoryJpaService;
@@ -9,8 +9,6 @@ import com.lucas.server.components.shopping.jpa.product.ProductJpaService;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 
 import java.util.Collections;
 import java.util.List;
@@ -18,9 +16,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
-@SpringBootTest
-@Import(TestConfiguration.class)
-class ShoppingItemJpaServiceTest {
+class ShoppingItemJpaServiceTest extends ConfiguredTest {
 
     @Autowired
     private ShoppingItemJpaService shoppingItemService;

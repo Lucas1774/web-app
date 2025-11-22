@@ -85,17 +85,17 @@ public class DataManager {
         this.recommendationClient = recommendationClient;
         finnhubNewsClient = newsClient;
         this.portfolioManager = portfolioManager;
-        typeToRunner = new EnumMap<>(Map.of(
+        typeToRunner = Map.of(
                 MarketDataType.LAST, this::retrieveMarketDataWithBackupStrategy,
                 MarketDataType.HISTORIC, this::retrieveTwelveDataMarketData,
                 MarketDataType.REAL_TIME, symbols -> {
-                    List<MarketData> res = new ArrayList<>();
+                    Set<MarketData> res = new HashSet<>();
                     for (Symbol symbol : symbols) {
                         res.add(finnhubMarketDataClient.retrieveMarketData(symbol));
                     }
                     return res;
                 }
-        ));
+        );
         portfolioTypeToService = new EnumMap<>(Map.of(
                 PortfolioType.REAL, portfolioService,
                 PortfolioType.MOCK, portfolioMockService
@@ -106,7 +106,7 @@ public class DataManager {
         return recommendationsService.getTopRecommendedSymbols(action, confidenceThreshold, recommendationDate);
     }
 
-    public List<Recommendation> getDailyRecommendations(BigDecimal confidenceThreshold, LocalDate date, String action, List<String> clients) {
+    public Set<Recommendation> getDailyRecommendations(BigDecimal confidenceThreshold, LocalDate date, String action, Set<String> clients) {
         return recommendationsService.getDailyRecommendations(confidenceThreshold, date, action, clients);
     }
 
@@ -118,7 +118,7 @@ public class DataManager {
     }
 
     @Transactional
-    public List<Recommendation> getRandomRecommendations(List<String> symbolNames, List<AIClient> clients, PortfolioType type, int count,
+    public List<Recommendation> getRandomRecommendations(Set<String> symbolNames, List<AIClient> clients, PortfolioType type, int count,
                                                          boolean overwrite, boolean onlyIfHasNews, boolean onTheFlyNews, boolean fetchPreMarket, boolean useOldNews) {
         Set<Long> already = recommendationsService.findByDateBetween(LocalDate.now(), LocalDate.now().plusDays(1)).stream()
                 .map(r -> r.getSymbol().getId())
@@ -168,7 +168,7 @@ public class DataManager {
         try (ExecutorService executor = Executors.newFixedThreadPool(clients.size())) {
             int attempts = 0;
             while (!remainingSymbols.isEmpty() && RECOMMENDATION_MAX_ATTEMPTS > attempts) {
-                BlockingQueue<List<Recommendation>> resultsQueue = new LinkedBlockingQueue<>();
+                BlockingQueue<Set<Recommendation>> resultsQueue = new LinkedBlockingQueue<>();
                 int submitted = 0;
                 List<SymbolPayload> recommendationBuffer = new ArrayList<>();
                 logger.info(RETRIEVING_DATA_INFO, RECOMMENDATION, remainingSymbols.size());
@@ -205,8 +205,8 @@ public class DataManager {
                 }
 
                 for (int i = 0; i < submitted; i++) {
-                    List<Recommendation> fetched = Interrupts.callOrSwallow(resultsQueue::take,
-                            Collections::emptyList,
+                    Set<Recommendation> fetched = Interrupts.callOrSwallow(resultsQueue::take,
+                            Collections::emptySet,
                             e -> logger.error(e.getMessage(), e));
                     if (!Objects.requireNonNull(fetched).isEmpty()) {
                         res.addAll(fetched);
@@ -247,7 +247,7 @@ public class DataManager {
         } else {
             if (!useOldNews) {
                 try {
-                    return retrieveYahooNews(List.of(symbol)).stream()
+                    return retrieveYahooNews(Set.of(symbol)).stream()
                             .filter(n -> n.getDate().isAfter(startUtc))
                             .sorted(Comparator.comparing(News::getDate).reversed())
                             .limit(NEWS_COUNT)
@@ -259,7 +259,7 @@ public class DataManager {
                 }
             } else {
                 try {
-                    return retrieveYahooNews(List.of(symbol)).stream()
+                    return retrieveYahooNews(Set.of(symbol)).stream()
                             .sorted(Comparator.comparing(News::getDate).reversed())
                             .limit(NEWS_COUNT)
                             .toList();
@@ -272,16 +272,16 @@ public class DataManager {
     }
 
     private void submitChunk(List<SymbolPayload> buffer, AIClient client, ExecutorService executor,
-                             BlockingQueue<List<Recommendation>> resultsQueue, boolean overwrite, boolean useOldNews) {
+                             BlockingQueue<Set<Recommendation>> resultsQueue, boolean overwrite, boolean useOldNews) {
         executor.submit(() -> {
             try {
-                List<Recommendation> partial = recommendationClient.getRecommendations(buffer, client, useOldNews);
+                Set<Recommendation> partial = new HashSet<>(recommendationClient.getRecommendations(buffer, client, useOldNews));
                 logger.info(GENERATION_SUCCESSFUL_INFO, RECOMMENDATION);
-                List<Recommendation> finalPartial;
+                Set<Recommendation> finalPartial;
                 synchronized (newsPersistLock) {
                     Map<Long, News> persistedNews = newsService.createOrUpdate(partial.stream()
                                     .flatMap(r -> r.getNews().stream())
-                                    .toList()).stream()
+                                    .collect(Collectors.toSet())).stream()
                             .collect(Collectors.toMap(News::getExternalId, Function.identity()));
                     partial.forEach(r -> r.setNews(r.getNews().stream()
                             .map(n -> persistedNews.get(n.getExternalId()))
@@ -296,39 +296,38 @@ public class DataManager {
                 Interrupts.runOrThrow(() -> resultsQueue.put(finalPartial), e -> logger.error(e.getMessage(), e));
             } catch (JsonProcessingException | ClientException | MappingException e) {
                 logger.warn(RETRIEVAL_FAILED_WARN, RECOMMENDATION, buffer.stream().map(SymbolPayload::getSymbol).toList(), e);
-                Interrupts.runOrThrow(() -> resultsQueue.put(Collections.emptyList()), ie -> logger.error(ie.getMessage(), ie));
+                Interrupts.runOrThrow(() -> resultsQueue.put(Collections.emptySet()), ie -> logger.error(ie.getMessage(), ie));
             }
         });
     }
 
-    @Transactional(rollbackOn = {ClientException.class, MappingException.class})
-    public List<News> generateSentiment(List<String> symbolNames, LocalDateTime from, LocalDateTime to)
-            throws ClientException, MappingException {
-        List<Symbol> symbols = symbolService.getOrCreateByName(symbolNames);
+    @Transactional
+    public Set<News> generateSentiment(Set<String> symbolNames, LocalDateTime from, LocalDateTime to) {
+        Set<Symbol> symbols = symbolService.getOrCreateByName(symbolNames);
         logger.info(GENERATION_SUCCESSFUL_INFO, SENTIMENT);
-        return newsService.generateSentiment(symbols.stream().map(Symbol::getId).toList(), from, to);
+        return newsService.generateSentiment(symbols.stream().map(Symbol::getId).collect(Collectors.toSet()), from, to);
     }
 
     @Transactional(rollbackOn = {ClientException.class, MappingException.class})
-    public List<News> retrieveNewsByName(List<String> symbolNames) throws ClientException, MappingException {
-        List<Symbol> symbols = symbolService.getOrCreateByName(symbolNames);
+    public Set<News> retrieveNewsByName(Set<String> symbolNames) throws ClientException, MappingException {
+        Set<Symbol> symbols = symbolService.getOrCreateByName(symbolNames);
         return retrieveNews(symbols);
     }
 
     @Transactional(rollbackOn = {ClientException.class, MappingException.class})
-    public List<News> retrieveNewsById(List<Long> symbolIds) throws ClientException, MappingException {
-        List<Symbol> symbols = symbolService.findAllById(symbolIds);
+    public Set<News> retrieveNewsById(List<Long> symbolIds) throws ClientException, MappingException {
+        Set<Symbol> symbols = new HashSet<>(symbolService.findAllById(symbolIds));
         return retrieveNews(symbols);
     }
 
-    private List<News> retrieveNews(List<Symbol> symbols) throws ClientException, MappingException {
-        List<News> news = retrieveYahooNews(symbols);
+    private Set<News> retrieveNews(Set<Symbol> symbols) throws ClientException, MappingException {
+        Set<News> news = retrieveYahooNews(symbols);
         logger.info(GENERATION_SUCCESSFUL_INFO, NEWS);
         newsService.createOrUpdate(news);
         return news;
     }
 
-    private List<News> retrieveYahooNews(List<Symbol> symbols) throws ClientException, MappingException {
+    private Set<News> retrieveYahooNews(Set<Symbol> symbols) throws ClientException, MappingException {
         Map<Long, News> newsByExternalId = new HashMap<>();
         for (Symbol symbol : symbols) {
             List<News> updated = yahooFinanceNewsClient.retrieveNews(symbol);
@@ -339,25 +338,25 @@ public class DataManager {
             }
         }
 
-        return new ArrayList<>(newsByExternalId.values());
+        return new HashSet<>(newsByExternalId.values());
     }
 
     @Transactional(rollbackOn = {ClientException.class, MappingException.class})
-    public List<News> retrieveNewsByDateRangeAndId(List<Long> symbolIds, LocalDate from,
-                                                   LocalDate to) throws ClientException, MappingException {
-        List<Symbol> symbols = symbolService.findAllById(symbolIds);
+    public Set<News> retrieveNewsByDateRangeAndId(List<Long> symbolIds, LocalDate from,
+                                                  LocalDate to) throws ClientException, MappingException {
+        Set<Symbol> symbols = new HashSet<>(symbolService.findAllById(symbolIds));
         return retrieveNewsByDateRange(symbols, from, to);
     }
 
     @Transactional(rollbackOn = {ClientException.class, MappingException.class})
-    public List<News> retrieveNewsByDateRangeAndName(List<String> symbolNames, LocalDate from,
-                                                     LocalDate to) throws ClientException, MappingException {
-        List<Symbol> symbols = symbolService.getOrCreateByName(symbolNames);
+    public Set<News> retrieveNewsByDateRangeAndName(Set<String> symbolNames, LocalDate from,
+                                                    LocalDate to) throws ClientException, MappingException {
+        Set<Symbol> symbols = symbolService.getOrCreateByName(symbolNames);
         return retrieveNewsByDateRange(symbols, from, to);
     }
 
-    private List<News> retrieveNewsByDateRange(List<Symbol> symbols, LocalDate from,
-                                               LocalDate to) throws ClientException, MappingException {
+    private Set<News> retrieveNewsByDateRange(Set<Symbol> symbols, LocalDate from,
+                                              LocalDate to) throws ClientException, MappingException {
         Map<Long, News> newsByExternalId = new HashMap<>();
         for (Symbol symbol : symbols) {
             List<News> updated = finnhubNewsClient.retrieveNewsByDateRange(symbol, from, to);
@@ -367,29 +366,29 @@ public class DataManager {
                         .addSymbol(symbol);
             }
         }
-        ArrayList<News> res = new ArrayList<>(newsByExternalId.values());
+        Set<News> res = new HashSet<>(newsByExternalId.values());
         logger.info(GENERATION_SUCCESSFUL_INFO, NEWS);
         newsService.createOrUpdate(res);
         return res;
     }
 
     @Transactional(rollbackOn = {ClientException.class, MappingException.class})
-    public List<MarketData> retrieveMarketData(List<String> symbolNames,
-                                               MarketDataType type) throws ClientException, MappingException {
-        List<Symbol> symbols = symbolService.getOrCreateByName(symbolNames);
-        List<MarketData> mds = typeToRunner.get(type).apply(symbols);
+    public Set<MarketData> retrieveMarketData(Set<String> symbolNames,
+                                              MarketDataType type) throws ClientException, MappingException {
+        Set<Symbol> symbols = symbolService.getOrCreateByName(symbolNames);
+        Set<MarketData> mds = typeToRunner.get(type).apply(symbols);
         logger.info(GENERATION_SUCCESSFUL_INFO, MARKET_DATA);
         marketDataService.createIgnoringDuplicates(mds);
         return mds;
     }
 
     @Transactional(rollbackOn = {ClientException.class, MappingException.class})
-    public List<MarketSnapshot> retrieveSnapshotsByName(List<String> symbolNames) {
-        List<Symbol> symbols = symbolService.getOrCreateByName(symbolNames);
+    public List<MarketSnapshot> retrieveSnapshotsByName(Set<String> symbolNames) {
+        Set<Symbol> symbols = symbolService.getOrCreateByName(symbolNames);
         return retrieveSnapshots(symbols);
     }
 
-    private List<MarketSnapshot> retrieveSnapshots(List<Symbol> symbols) {
+    private List<MarketSnapshot> retrieveSnapshots(Set<Symbol> symbols) {
         List<MarketSnapshot> mss = new ArrayList<>();
         for (Symbol symbol : symbols) {
             try {
@@ -413,7 +412,7 @@ public class DataManager {
         return service.executePortfolioAction(symbol, price, quantity, commission, timestamp, isBuy);
     }
 
-    public List<PortfolioManager.SymbolStand> getPortfolioStand(List<String> symbolNames, PortfolioType type) {
+    public List<PortfolioManager.SymbolStand> getPortfolioStand(Set<String> symbolNames, PortfolioType type) {
         List<PortfolioBase> portfolio = getService(type).findActivePortfolio()
                 .stream()
                 .filter(p -> symbolNames.contains(p.getSymbol().getName()))
@@ -437,12 +436,11 @@ public class DataManager {
                 : getStand(portfolioBySymbol.values().stream().toList());
     }
 
-    public List<PortfolioManager.SymbolStand> getAllAsPortfolioStand(List<String> symbolNames, PortfolioType type) {
-        Set<String> namesSet = new LinkedHashSet<>(symbolNames);
-        List<Symbol> symbols = symbolService.getOrCreateByName(namesSet);
+    public List<PortfolioManager.SymbolStand> getAllAsPortfolioStand(Set<String> symbolNames, PortfolioType type) {
+        Set<Symbol> symbols = symbolService.getOrCreateByName(symbolNames);
         Map<Symbol, PortfolioBase> portfolioBySymbol = getService(type)
                 .findActivePortfolio().stream()
-                .filter(p -> namesSet.contains(p.getSymbol().getName()))
+                .filter(p -> symbolNames.contains(p.getSymbol().getName()))
                 .collect(Collectors.toMap(
                         PortfolioBase::getSymbol,
                         Function.identity()
@@ -467,7 +465,7 @@ public class DataManager {
 
     private List<PortfolioManager.SymbolStand> getStandDynamically(List<PortfolioBase> portfolio) throws ClientException, MappingException {
         Map<String, MarketData> symbolsWithData = typeToRunner.get(MarketDataType.REAL_TIME)
-                .apply(portfolio.stream().map(PortfolioBase::getSymbol).toList())
+                .apply(portfolio.stream().map(PortfolioBase::getSymbol).collect(Collectors.toSet()))
                 .stream()
                 .collect(Collectors.toMap(md -> md.getSymbol().getName(), Function.identity()));
         return portfolio.stream()
@@ -498,7 +496,7 @@ public class DataManager {
             });
         }
 
-        List<News> orphanedNews = newsService.findOrphanedNews();
+        Set<News> orphanedNews = newsService.findOrphanedNews();
         Set<Long> orphanedIds = orphanedNews.stream()
                 .map(News::getId)
                 .collect(Collectors.toSet());
@@ -511,8 +509,8 @@ public class DataManager {
     }
 
     @Transactional
-    public List<MarketData> removeOldMarketData(int keepCount) {
-        List<MarketData> res = new ArrayList<>();
+    public Set<MarketData> removeOldMarketData(int keepCount) {
+        Set<MarketData> res = new HashSet<>();
         List<Symbol> symbols = symbolService.findAll();
         for (Symbol symbol : symbols) {
             List<MarketData> toKeep = marketDataService.getTopForSymbolId(symbol.getId(), keepCount);
@@ -526,8 +524,8 @@ public class DataManager {
     }
 
     @Transactional
-    public List<MarketSnapshot> removeOldSnapshots(int keepCount) {
-        List<MarketSnapshot> res = new ArrayList<>();
+    public Set<MarketSnapshot> removeOldSnapshots(int keepCount) {
+        Set<MarketSnapshot> res = new HashSet<>();
         List<Symbol> symbols = symbolService.findAll();
         for (Symbol symbol : symbols) {
             List<MarketSnapshot> toKeep = marketSnapshotService.getTopForSymbolId(symbol.getId(), keepCount);
@@ -541,8 +539,8 @@ public class DataManager {
     }
 
     @Transactional
-    public List<Recommendation> removeOldRecommendations(int keepCount) {
-        List<Recommendation> res = new ArrayList<>();
+    public Set<Recommendation> removeOldRecommendations(int keepCount) {
+        Set<Recommendation> res = new HashSet<>();
         List<Symbol> symbols = symbolService.findAll();
         for (Symbol symbol : symbols) {
             List<Recommendation> toKeep = recommendationsService.getTopForSymbolId(symbol.getId(), keepCount);
@@ -555,8 +553,8 @@ public class DataManager {
         return res;
     }
 
-    private List<MarketData> retrieveMarketDataWithBackupStrategy(List<Symbol> symbols) throws ClientException, MappingException {
-        List<MarketData> res = new ArrayList<>();
+    private Set<MarketData> retrieveMarketDataWithBackupStrategy(Set<Symbol> symbols) throws ClientException, MappingException {
+        Set<MarketData> res = new HashSet<>();
         for (Symbol symbol : symbols) {
             try {
                 res.add(twelveDataMarketDataClient.retrieveMarketData(symbol, MarketDataType.LAST).getFirst());
@@ -568,8 +566,8 @@ public class DataManager {
         return res;
     }
 
-    private List<MarketData> retrieveTwelveDataMarketData(List<Symbol> symbols) throws ClientException, MappingException {
-        List<MarketData> res = new ArrayList<>();
+    private Set<MarketData> retrieveTwelveDataMarketData(Set<Symbol> symbols) throws ClientException, MappingException {
+        Set<MarketData> res = new HashSet<>();
         for (Symbol symbol : symbols) {
             res.addAll(twelveDataMarketDataClient.retrieveMarketData(symbol, MarketDataType.HISTORIC));
         }
@@ -583,7 +581,7 @@ public class DataManager {
 
     @FunctionalInterface
     private interface TypeToMarketDataFunction {
-        List<MarketData> apply(List<Symbol> symbols) throws ClientException, MappingException;
+        Set<MarketData> apply(Set<Symbol> symbols) throws ClientException, MappingException;
     }
 
     @RequiredArgsConstructor

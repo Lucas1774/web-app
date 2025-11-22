@@ -9,6 +9,7 @@ import lombok.experimental.Delegate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class ShoppingItemJpaService implements JpaService<ShoppingItem> {
@@ -24,7 +25,7 @@ public class ShoppingItemJpaService implements JpaService<ShoppingItem> {
         this.productRepository = productRepository;
     }
 
-    public List<ShoppingItem> findAllByUsername(String username) {
+    public Set<ShoppingItem> findAllByUsername(String username) {
         return repository.findAllByUser_Username(username);
     }
 

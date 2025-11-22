@@ -80,9 +80,13 @@ public class Recommendation implements JpaEntity {
     @Override
     public String toString() {
         return "Recommendation{" +
-                "date=" + date +
+                "id=" + id +
                 ", symbol=" + symbol +
-                ", id=" + id +
+                ", marketData=" + marketData +
+                ", action='" + action + '\'' +
+                ", confidence=" + confidence +
+                ", date=" + date +
+                ", model='" + model + '\'' +
                 '}';
     }
 

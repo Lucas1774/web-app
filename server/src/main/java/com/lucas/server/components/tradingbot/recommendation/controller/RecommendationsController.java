@@ -11,8 +11,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static com.lucas.server.common.Constants.*;
 
@@ -72,20 +74,20 @@ public class RecommendationsController {
     }
 
     @GetMapping("/daily/{confidenceThreshold}")
-    public ResponseEntity<List<Recommendation>> getDailyRecommendations(@PathVariable BigDecimal confidenceThreshold,
-                                                                        @RequestParam(required = false) LocalDate date,
-                                                                        @RequestParam(required = false) String action,
-                                                                        @RequestParam(required = false) List<String> models) {
+    public ResponseEntity<Set<Recommendation>> getDailyRecommendations(@PathVariable BigDecimal confidenceThreshold,
+                                                                       @RequestParam(required = false) LocalDate date,
+                                                                       @RequestParam(required = false) String action,
+                                                                       @RequestParam(required = false) List<String> models) {
         LocalDate selectedDate = null == date ? LocalDate.now() : date;
         String selectedAction = null == action ? BUY : action;
         List<String> selectedClients = null == models
                 ? filterClients(clients, RecommendationMode.FINE_GRAIN).stream().map(c -> c.getConfig().name()).toList()
                 : models;
-        return ResponseEntity.ok(jpaService.getDailyRecommendations(confidenceThreshold, selectedDate, selectedAction, selectedClients));
+        return ResponseEntity.ok(jpaService.getDailyRecommendations(confidenceThreshold, selectedDate, selectedAction, new HashSet<>(selectedClients)));
     }
 
     @DeleteMapping("/purge")
-    public ResponseEntity<List<Recommendation>> purge(@RequestParam int toKeep) {
+    public ResponseEntity<Set<Recommendation>> purge(@RequestParam int toKeep) {
         return ResponseEntity.ok(jpaService.removeOldRecommendations(toKeep));
     }
 

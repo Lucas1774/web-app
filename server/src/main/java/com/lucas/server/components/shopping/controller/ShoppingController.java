@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static com.lucas.server.common.Constants.DEFAULT_USERNAME;
 import static com.lucas.utils.Utils.EMPTY_STRING;
@@ -40,7 +41,7 @@ public class ShoppingController {
     }
 
     @GetMapping("/shopping")
-    public ResponseEntity<List<ShoppingItem>> getShoppingItems(HttpServletRequest request) {
+    public ResponseEntity<Set<ShoppingItem>> getShoppingItems(HttpServletRequest request) {
         return ResponseEntity.ok(shoppingItemService.findAllByUsername(controllerUtil.retrieveUsername(request.getCookies())));
     }
 

@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.lucas.server.common.Constants.SUDOKU_NUMBER_OF_CELLS;
 import static com.lucas.utils.Utils.EMPTY_STRING;
@@ -36,19 +38,19 @@ public class SudokuController {
     }
 
     @PostMapping("/upload/sudokus")
-    public ResponseEntity<List<Sudoku>> handleFileUpload(@RequestBody String file) {
+    public ResponseEntity<Set<Sudoku>> handleFileUpload(@RequestBody String file) {
         if (10000 < file.length()) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        List<Sudoku> sudoku;
+        Set<Sudoku> sudoku;
         try {
             sudoku = fromFileMapper.map(file.replace("\"", EMPTY_STRING)).stream()
                     .filter(s -> {
                         Sudoku copy = Sudoku.withValues(s.getState());
                         return solver.isValid(s, -1) && solver.solveWithTimeout(copy);
                     })
-                    .toList();
+                    .collect(Collectors.toSet());
         } catch (MappingException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }

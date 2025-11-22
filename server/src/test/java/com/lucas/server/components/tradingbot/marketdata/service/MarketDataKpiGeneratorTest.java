@@ -1,6 +1,6 @@
 package com.lucas.server.components.tradingbot.marketdata.service;
 
-import com.lucas.server.TestConfiguration;
+import com.lucas.server.ConfiguredTest;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
@@ -10,8 +10,6 @@ import nl.altindag.log.LogCaptor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import java.math.BigDecimal;
@@ -26,9 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 
-@SpringBootTest
-@Import(TestConfiguration.class)
-class MarketDataKpiGeneratorTest {
+class MarketDataKpiGeneratorTest extends ConfiguredTest {
 
     private static final LogCaptor logCaptor = LogCaptor.forClass(MarketDataKpiGenerator.class);
     private static final List<MarketData> mds = Arrays.asList(
@@ -81,7 +77,7 @@ class MarketDataKpiGeneratorTest {
                 .setPrice(BigDecimal.valueOf(140.00));
 
         // when
-        marketDataService.createIgnoringDuplicates(List.of(previousData, currentData));
+        marketDataService.createIgnoringDuplicates(Set.of(previousData, currentData));
         kpiGenerator.computeDerivedFields(currentData);
 
         // then
@@ -104,7 +100,7 @@ class MarketDataKpiGeneratorTest {
                 .setPrice(BigDecimal.valueOf(150.00));
 
         // when
-        marketDataService.createIgnoringDuplicates(List.of(currentData));
+        marketDataService.createIgnoringDuplicates(Set.of(currentData));
         kpiGenerator.computeDerivedFields(currentData);
 
         // then
@@ -134,7 +130,7 @@ class MarketDataKpiGeneratorTest {
                 .setPrice(BigDecimal.ZERO);
 
         // when
-        marketDataService.createIgnoringDuplicates(List.of(previousData, currentData));
+        marketDataService.createIgnoringDuplicates(Set.of(previousData, currentData));
         kpiGenerator.computeDerivedFields(currentData);
 
         // then

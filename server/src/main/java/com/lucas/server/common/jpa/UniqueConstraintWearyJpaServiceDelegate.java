@@ -2,8 +2,7 @@ package com.lucas.server.common.jpa;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BinaryOperator;
@@ -30,11 +29,11 @@ public class UniqueConstraintWearyJpaServiceDelegate<T extends JpaEntity> {
      * @param entities       entities
      * @return the newly saved entities
      */
-    public List<T> createIgnoringDuplicates(UnaryOperator<Collection<T>> existingFinder, Set<T> entities) {
-        Collection<T> existing = existingFinder.apply(entities);
-        return repository.saveAll(entities.stream()
+    public Set<T> createIgnoringDuplicates(UnaryOperator<Set<T>> existingFinder, Set<T> entities) {
+        Set<T> existing = existingFinder.apply(entities);
+        return new HashSet<>(repository.saveAll(entities.stream()
                 .filter(e -> !existing.contains(e))
-                .toList());
+                .toList()));
     }
 
     /**
@@ -43,15 +42,15 @@ public class UniqueConstraintWearyJpaServiceDelegate<T extends JpaEntity> {
      * @param entities        entities
      * @return the updated entities as well as the newly saved ones
      */
-    public List<T> createOrUpdate(UnaryOperator<Collection<T>> existingFinder,
-                                  BinaryOperator<T> existingUpdater, Set<T> entities) {
-        Collection<T> existing = existingFinder.apply(entities);
+    public Set<T> createOrUpdate(UnaryOperator<Set<T>> existingFinder,
+                                 BinaryOperator<T> existingUpdater, Set<T> entities) {
+        Set<T> existing = existingFinder.apply(entities);
         Map<T, T> existingMap = existing.stream()
                 .collect(Collectors.toMap(Function.identity(), Function.identity()));
-        return repository.saveAll(entities.stream()
+        return new HashSet<>(repository.saveAll(entities.stream()
                 .map(incoming -> existingMap.containsKey(incoming)
                         ? existingUpdater.apply(existingMap.get(incoming), incoming)
                         : incoming)
-                .toList());
+                .toList()));
     }
 }

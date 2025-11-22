@@ -1,6 +1,6 @@
 package com.lucas.server.components.tradingbot.news.mapper;
 
-import com.lucas.server.TestConfiguration;
+import com.lucas.server.ConfiguredTest;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.news.jpa.News;
@@ -8,8 +8,6 @@ import com.lucas.utils.exception.MappingException;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -25,9 +23,7 @@ import static com.lucas.server.common.Constants.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@SpringBootTest
-@Import(TestConfiguration.class)
-class YahooFinanceNewsResponseMapperTest {
+class YahooFinanceNewsResponseMapperTest extends ConfiguredTest {
 
     @Autowired
     private SymbolJpaService symbolService;

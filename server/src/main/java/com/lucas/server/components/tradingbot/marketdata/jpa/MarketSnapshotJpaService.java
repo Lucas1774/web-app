@@ -8,6 +8,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class MarketSnapshotJpaService implements JpaService<MarketSnapshot> {
@@ -24,11 +25,11 @@ public class MarketSnapshotJpaService implements JpaService<MarketSnapshot> {
 
     // TODO: batch
     public List<MarketSnapshot> getTopForSymbolId(Long symbolId, int limit) {
-        return repository.findBySymbol_Id(symbolId, PageRequest.of(0, limit, Sort.by("date").descending())).getContent();
+        return repository.findBySymbol_Id(symbolId, PageRequest.of(0, limit, Sort.by("date").descending()));
     }
 
     // TODO: batch
-    public List<MarketSnapshot> findBySymbolId(Long id) {
+    public Set<MarketSnapshot> findBySymbolId(Long id) {
         return repository.findBySymbol_Id(id);
     }
 }
