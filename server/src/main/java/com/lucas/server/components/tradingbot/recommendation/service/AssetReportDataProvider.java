@@ -8,7 +8,7 @@ import com.lucas.server.components.tradingbot.portfolio.service.PortfolioManager
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.AssetReportRaw;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.NewsItemRaw;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.PricePointRaw;
-import com.lucas.utils.OrderedIndexedSet;
+import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -47,10 +47,10 @@ public class AssetReportDataProvider {
         }
         OrderedIndexedSet<PricePointRaw> priceHistory = mdHistory.subList(0, min(mdHistory.size(), HISTORY_DAYS_COUNT)).stream()
                 .map(md -> new PricePointRaw(md.getDate(), md.getOpen(), md.getHigh(), md.getLow(), md.getPrice(), md.getVolume(), null))
-                .collect(OrderedIndexedSet.toOrderedIndexedSet());
+                .collect(OrderedIndexedSet.toUnmodifiableOrderedIndexedSet());
         OrderedIndexedSet<NewsItemRaw> news = payload.getNews().stream()
                 .map(a -> new NewsItemRaw(a.getHeadline(), a.getSentiment(), a.getSentimentConfidence(), a.getSummary(), a.getDate()))
-                .collect(OrderedIndexedSet.toOrderedIndexedSet());
+                .collect(OrderedIndexedSet.toUnmodifiableOrderedIndexedSet());
 
         PortfolioManager.SymbolStand stand = portfolioManager.computeStand(payload.getPortfolio(), current);
         return new AssetReportRaw(payload.getSymbol().getName(), stand.quantity(), stand.positionValue(), stand.averageCost(), stand.pnL(), stand.percentPnl(),

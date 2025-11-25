@@ -1,7 +1,7 @@
 package com.lucas.server.common;
 
 import com.lucas.server.components.tradingbot.common.AIClient;
-import com.lucas.utils.OrderedIndexedSet;
+import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 
 import java.math.BigDecimal;
 import java.time.DayOfWeek;

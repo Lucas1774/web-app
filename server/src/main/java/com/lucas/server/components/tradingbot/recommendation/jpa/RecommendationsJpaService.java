@@ -3,7 +3,7 @@ package com.lucas.server.components.tradingbot.recommendation.jpa;
 import com.lucas.server.common.jpa.GenericJpaServiceDelegate;
 import com.lucas.server.common.jpa.JpaService;
 import com.lucas.server.common.jpa.UniqueConstraintWearyJpaServiceDelegate;
-import com.lucas.utils.OrderedIndexedSet;
+import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import jakarta.transaction.Transactional;
 import lombok.experimental.Delegate;
 import org.springframework.data.domain.PageRequest;
@@ -75,7 +75,7 @@ public class RecommendationsJpaService implements JpaService<Recommendation> {
                 .stream()
                 .sorted(Comparator.comparing(Recommendation::getConfidence).reversed())
                 .map(r -> r.getSymbol().getId())
-                .collect(OrderedIndexedSet.toOrderedIndexedSet());
+                .collect(OrderedIndexedSet.toUnmodifiableOrderedIndexedSet());
     }
 
     public Set<Recommendation> getDailyRecommendations(BigDecimal confidenceThreshold, LocalDate date, String action, Set<String> models) {

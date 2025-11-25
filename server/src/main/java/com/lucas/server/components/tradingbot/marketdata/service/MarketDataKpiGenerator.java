@@ -2,7 +2,7 @@ package com.lucas.server.components.tradingbot.marketdata.service;
 
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataJpaService;
-import com.lucas.utils.OrderedIndexedSet;
+import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -31,7 +31,7 @@ public class MarketDataKpiGenerator {
 
     @SuppressWarnings("UnusedReturnValue")
     public MarketData computeDerivedFields(MarketData md) {
-        OrderedIndexedSet<MarketData> previous14 = service.findTop14BySymbolIdAndDateBeforeOrderByDateDesc(md.getSymbol().getId(), md.getDate());
+        List<MarketData> previous14 = new ArrayList<>(service.findTop14BySymbolIdAndDateBeforeOrderByDateDesc(md.getSymbol().getId(), md.getDate()));
         if (previous14.isEmpty()) {
             logger.warn(NON_COMPUTABLE_KPI_WARN, "anything", md);
             return md;
@@ -48,10 +48,11 @@ public class MarketDataKpiGenerator {
         }
         previous14.removeLast();
         previous14.addFirst(md);
+        OrderedIndexedSet<MarketData> newSet = OrderedIndexedSet.copyOf(previous14);
         if (null == md.getAverageGain() || null == md.getAverageLoss()) {
-            computeGainsAndLoses(previous14);
+            computeGainsAndLoses(newSet);
         }
-        computeIfAbsent(md::getAtr, md::setAtr, () -> computeAtr(previous14).orElse(null));
+        computeIfAbsent(md::getAtr, md::setAtr, () -> computeAtr(newSet).orElse(null));
         return md;
     }
 

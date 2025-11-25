@@ -4,7 +4,7 @@ import com.lucas.server.common.controller.ControllerUtil;
 import com.lucas.server.components.tradingbot.common.AIClient;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;
 import com.lucas.server.components.tradingbot.recommendation.jpa.Recommendation;
-import com.lucas.utils.OrderedIndexedSet;
+import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -71,7 +71,7 @@ public class RecommendationsController {
 
     @GetMapping("/models")
     public ResponseEntity<Set<String>> getModels() {
-        return ResponseEntity.ok(clients.keySet().stream().sorted(String::compareTo).collect(OrderedIndexedSet.toOrderedIndexedSet()));
+        return ResponseEntity.ok(clients.keySet().stream().sorted(String::compareTo).collect(OrderedIndexedSet.toUnmodifiableOrderedIndexedSet()));
     }
 
     @GetMapping("/daily/{confidenceThreshold}")

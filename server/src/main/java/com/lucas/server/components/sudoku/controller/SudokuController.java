@@ -5,12 +5,13 @@ import com.lucas.server.components.sudoku.jpa.SudokuJpaService;
 import com.lucas.server.components.sudoku.mapper.SudokuFileToSudokuMapper;
 import com.lucas.server.components.sudoku.service.SudokuGenerator;
 import com.lucas.server.components.sudoku.service.SudokuSolver;
-import com.lucas.utils.OrderedIndexedSet;
 import com.lucas.utils.exception.MappingException;
+import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -60,7 +61,7 @@ public class SudokuController {
 
     @GetMapping("fetch/sudoku")
     public ResponseEntity<Sudoku> getRandom() {
-        OrderedIndexedSet<Sudoku> sudoku = sudokuService.findAll().stream().collect(OrderedIndexedSet.toOrderedIndexedSet());
+        OrderedIndexedSet<Sudoku> sudoku = OrderedIndexedSet.copyOf(sudokuService.findAll());
         if (sudoku.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         } else {
@@ -84,20 +85,19 @@ public class SudokuController {
     }
 
     @PostMapping("/check/sudoku")
-    public ResponseEntity<Boolean> checkSudoku(@RequestBody Set<Sudoku> sudoku) {
-        OrderedIndexedSet<Sudoku> indexedSudoku = new OrderedIndexedSet<>(sudoku);
-        if (2 != indexedSudoku.size()) {
+    public ResponseEntity<Boolean> checkSudoku(@RequestBody List<Sudoku> sudoku) {
+        if (2 != sudoku.size()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 
-        int[] initialValues = indexedSudoku.getFirst().getState();
+        int[] initialValues = sudoku.getFirst().getState();
         Sudoku s = Sudoku.withValues(initialValues);
         if (!solver.isValid(s, -1) || !solver.solveWithTimeout(s)) {
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
         }
 
         int[] currentState = s.getState();
-        int[] initialState = indexedSudoku.get(1).getState();
+        int[] initialState = sudoku.get(1).getState();
         for (int i = 0; SUDOKU_NUMBER_OF_CELLS > i; i++) {
             if (0 != initialState[i] && currentState[i] != initialState[i]) {
                 return ResponseEntity.ok(false);

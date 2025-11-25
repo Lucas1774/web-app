@@ -1,7 +1,7 @@
 package com.lucas.server.common.jpa.user;
 
 import com.lucas.server.components.shopping.dto.Sortable;
-import com.lucas.utils.OrderedIndexedSet;
+import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.HashSet;

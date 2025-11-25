@@ -3,7 +3,7 @@ package com.lucas.server.components.tradingbot.marketdata.jpa;
 import com.lucas.server.common.jpa.GenericJpaServiceDelegate;
 import com.lucas.server.common.jpa.JpaService;
 import com.lucas.server.common.jpa.UniqueConstraintWearyJpaServiceDelegate;
-import com.lucas.utils.OrderedIndexedSet;
+import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import lombok.experimental.Delegate;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;

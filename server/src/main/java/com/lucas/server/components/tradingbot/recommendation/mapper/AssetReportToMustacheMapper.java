@@ -6,8 +6,8 @@ import com.github.mustachejava.MustacheFactory;
 import com.lucas.server.common.exception.ConfigurationException;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.AssetReportRaw;
 import com.lucas.utils.Mapper;
-import com.lucas.utils.OrderedIndexedSet;
 import com.lucas.utils.exception.MappingException;
+import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -126,7 +126,7 @@ public class AssetReportToMustacheMapper implements Mapper<Set<AssetReportRaw>, 
                     null != report.unrealizedPercentPnL ? report.unrealizedPercentPnL.stripTrailingZeros().toPlainString().concat("%") : "0%",
                     String.valueOf(report.historyDays),
                     null != report.premarket ? PricePoint.from(report.premarket) : null,
-                    report.priceHistory.stream().map(PricePoint::from).collect(OrderedIndexedSet.toOrderedIndexedSet()),
+                    report.priceHistory.stream().map(PricePoint::from).collect(OrderedIndexedSet.toUnmodifiableOrderedIndexedSet()),
                     null != report.ema20 ? report.ema20.stripTrailingZeros().toPlainString() : NA,
                     null != report.macdLine1226 ? report.macdLine1226.stripTrailingZeros().toPlainString() : NA,
                     null != report.macdSignalLine9 ? report.macdSignalLine9.stripTrailingZeros().toPlainString() : NA,
@@ -137,7 +137,7 @@ public class AssetReportToMustacheMapper implements Mapper<Set<AssetReportRaw>, 
                     null != report.atr14 ? report.atr14.stripTrailingZeros().toPlainString().concat("%") : NA,
                     null != report.obv20 ? report.obv20.stripTrailingZeros().toPlainString() : NA,
                     String.valueOf(report.newsCount),
-                    report.news.stream().map(NewsItem::from).collect(OrderedIndexedSet.toOrderedIndexedSet())
+                    report.news.stream().map(NewsItem::from).collect(OrderedIndexedSet.toUnmodifiableOrderedIndexedSet())
             );
         }
 

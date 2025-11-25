@@ -9,7 +9,7 @@ import com.lucas.server.components.shopping.jpa.product.Product;
 import com.lucas.server.components.shopping.jpa.product.ProductJpaService;
 import com.lucas.server.components.shopping.jpa.shopping.ShoppingItem;
 import com.lucas.server.components.shopping.jpa.shopping.ShoppingItemJpaService;
-import com.lucas.utils.OrderedIndexedSet;
+import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -92,7 +92,7 @@ public class ShoppingController {
         if (elements.isEmpty()) {
             return ResponseEntity.ok(Collections.emptySet());
         }
-        return ResponseEntity.ok(getService(elements).updateOrders(new OrderedIndexedSet<>(elements)));
+        return ResponseEntity.ok(getService(elements).updateOrders(OrderedIndexedSet.copyOf(elements)));
     }
 
     @SuppressWarnings("unchecked")

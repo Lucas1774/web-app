@@ -4,7 +4,7 @@ import com.lucas.server.common.jpa.GenericJpaServiceDelegate;
 import com.lucas.server.common.jpa.JpaService;
 import com.lucas.server.common.jpa.OrderColumnJpaService;
 import com.lucas.server.common.jpa.user.OrderColumnServiceDelegate;
-import com.lucas.utils.OrderedIndexedSet;
+import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import lombok.experimental.Delegate;
 import org.springframework.stereotype.Service;
 

@@ -5,7 +5,7 @@ import com.lucas.server.common.jpa.JpaService;
 import com.lucas.server.common.jpa.UniqueConstraintWearyJpaServiceDelegate;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.news.service.NewsSentimentClient;
-import com.lucas.utils.OrderedIndexedSet;
+import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import lombok.experimental.Delegate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +40,7 @@ public class NewsJpaService implements JpaService<News> {
 
     // TODO: batch
     public OrderedIndexedSet<News> getTopForSymbolId(Long symbolId, int limit) {
-        return new OrderedIndexedSet<>(repository.findBySymbols_IdAndSentimentNotOrSymbols_IdAndSentimentIsNull(
+        return OrderedIndexedSet.copyOf(repository.findBySymbols_IdAndSentimentNotOrSymbols_IdAndSentimentIsNull(
                 symbolId, "neutral", symbolId, PageRequest.of(
                         0, limit, Sort.by("date").descending()
                 )

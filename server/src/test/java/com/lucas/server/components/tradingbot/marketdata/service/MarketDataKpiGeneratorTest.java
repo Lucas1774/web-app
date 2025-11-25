@@ -5,7 +5,7 @@ import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataJpaService;
-import com.lucas.utils.OrderedIndexedSet;
+import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import jakarta.transaction.Transactional;
 import nl.altindag.log.LogCaptor;
 import org.junit.jupiter.api.BeforeEach;

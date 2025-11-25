@@ -15,7 +15,9 @@ import com.lucas.server.components.tradingbot.portfolio.jpa.PortfolioJpaService;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.AssetReportRaw;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.NewsItemRaw;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.PricePointRaw;
-import com.lucas.utils.OrderedIndexedSet;
+import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
+import com.lucas.utils.orderedindexedset.OrderedIndexedSetImpl;
+import com.lucas.utils.orderedindexedset.UnmodifiableOrderedIndexedSet;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -56,7 +58,7 @@ class RecommendationChatCompletionClientTest extends ConfiguredTest {
         // given: insert 34 days of market data. Needs to be at least 34 and greater than the history days
         Symbol symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
         LocalDate today = LocalDate.now();
-        OrderedIndexedSet<MarketData> mds = new OrderedIndexedSet<>();
+        OrderedIndexedSet<MarketData> modifiableMds = new OrderedIndexedSetImpl<>();
         for (int i = MARKET_DATA_RELEVANT_DAYS_COUNT; 0 <= i; i--) {
             MarketData md = new MarketData()
                     .setSymbol(symbolService.getOrCreateByName(Set.of(symbol.getName())).stream().findFirst().orElseThrow())
@@ -66,8 +68,9 @@ class RecommendationChatCompletionClientTest extends ConfiguredTest {
                     .setLow(BigDecimal.valueOf(9 + i))
                     .setPrice(BigDecimal.valueOf(10 + i))
                     .setVolume(1_000L * (i + 1));
-            mds.add(md);
+            modifiableMds.add(md);
         }
+        OrderedIndexedSet<MarketData> mds = new UnmodifiableOrderedIndexedSet<>(modifiableMds);
         marketDataService.createIgnoringDuplicates(mds);
         BigDecimal lastPrice = mds.stream().max(Comparator.comparing(MarketData::getDate)).orElseThrow().getPrice();
         MarketSnapshot premarket = new MarketSnapshot()

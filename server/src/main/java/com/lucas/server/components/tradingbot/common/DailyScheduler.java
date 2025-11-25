@@ -8,8 +8,8 @@ import com.lucas.server.components.tradingbot.marketdata.jpa.MarketSnapshot;
 import com.lucas.server.components.tradingbot.news.jpa.News;
 import com.lucas.server.components.tradingbot.recommendation.jpa.Recommendation;
 import com.lucas.utils.Interrupts;
-import com.lucas.utils.OrderedIndexedSet;
 import com.lucas.utils.exception.MappingException;
+import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -83,7 +83,7 @@ public class DailyScheduler {
         Set<Long> topRecommendedSymbols = dataManager.getTopRecommendedSymbols(BUY, RECOMMENDATION_MEDIUM_GRAIN_THRESHOLD, now);
         getRecommendations(topRecommendedSymbols, RecommendationMode.NOT_RANDOM, false);
         OrderedIndexedSet<Long> topRecommendedSymbolsAfterMediumGrain = dataManager.getTopRecommendedSymbols(BUY, RECOMMENDATION_FINE_GRAIN_THRESHOLD, now)
-                .stream().limit(MAX_RECOMMENDATIONS_COUNT).collect(OrderedIndexedSet.toOrderedIndexedSet());
+                .stream().limit(MAX_RECOMMENDATIONS_COUNT).collect(OrderedIndexedSet.toUnmodifiableOrderedIndexedSet());
         getRecommendations(topRecommendedSymbolsAfterMediumGrain, RecommendationMode.FINE_GRAIN, true);
         publisher.publish("jobs", "job done");
 

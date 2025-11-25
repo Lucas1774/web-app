@@ -9,7 +9,7 @@ import com.lucas.server.components.shopping.jpa.shopping.ShoppingItem;
 import com.lucas.server.components.shopping.jpa.shopping.ShoppingItemJpaService;
 import com.lucas.server.components.sudoku.jpa.Sudoku;
 import com.lucas.server.components.sudoku.jpa.SudokuJpaService;
-import com.lucas.utils.OrderedIndexedSet;
+import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

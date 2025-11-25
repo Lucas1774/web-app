@@ -6,9 +6,9 @@ import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.marketdata.mapper.TwelveDataMarketResponseMapper;
-import com.lucas.utils.OrderedIndexedSet;
 import com.lucas.utils.SlidingWindowRateLimiter;
 import com.lucas.utils.exception.MappingException;
+import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -53,7 +53,7 @@ public class TwelveDataMarketDataClient {
                 MarketDataType.LAST, (s, j) -> OrderedIndexedSet.of(mapper.map(j, s)),
                 MarketDataType.HISTORIC, (s, j) -> mapper.mapAll(j, s).stream()
                         .sorted(Comparator.comparing(MarketData::getDate))
-                        .collect(OrderedIndexedSet.toOrderedIndexedSet())
+                        .collect(OrderedIndexedSet.toUnmodifiableOrderedIndexedSet())
         ));
     }
 

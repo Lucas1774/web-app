@@ -1,7 +1,7 @@
 package com.lucas.server.components.shopping.jpa.category;
 
 import com.lucas.server.ConfiguredTest;
-import com.lucas.utils.OrderedIndexedSet;
+import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,7 +62,7 @@ class CategoryJpaServiceTest extends ConfiguredTest {
 
         // when: updating with "A" first "B" second
         OrderedIndexedSet<Category> input = saved.stream().sorted(Comparator.comparing(Category::getOrder).reversed())
-                .collect(OrderedIndexedSet.toOrderedIndexedSet());
+                .collect(OrderedIndexedSet.toUnmodifiableOrderedIndexedSet());
         Set<Category> result = categoryService.updateOrders(input);
 
         // then: orders should be reassigned to [1,2]

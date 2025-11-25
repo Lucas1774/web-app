@@ -21,8 +21,10 @@ import com.lucas.server.components.tradingbot.recommendation.jpa.Recommendation;
 import com.lucas.server.components.tradingbot.recommendation.jpa.RecommendationsJpaService;
 import com.lucas.server.components.tradingbot.recommendation.service.RecommendationChatCompletionClient;
 import com.lucas.utils.Interrupts;
-import com.lucas.utils.OrderedIndexedSet;
 import com.lucas.utils.exception.MappingException;
+import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
+import com.lucas.utils.orderedindexedset.OrderedIndexedSetImpl;
+import com.lucas.utils.orderedindexedset.UnmodifiableOrderedIndexedSet;
 import jakarta.transaction.Transactional;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -90,11 +92,11 @@ public class DataManager {
                 MarketDataType.LAST, this::retrieveMarketDataWithBackupStrategy,
                 MarketDataType.HISTORIC, this::retrieveTwelveDataMarketData,
                 MarketDataType.REAL_TIME, symbols -> {
-                    OrderedIndexedSet<MarketData> res = new OrderedIndexedSet<>();
+                    OrderedIndexedSet<MarketData> res = new OrderedIndexedSetImpl<>();
                     for (Symbol symbol : symbols) {
                         res.add(finnhubMarketDataClient.retrieveMarketData(symbol));
                     }
-                    return res;
+                    return new UnmodifiableOrderedIndexedSet<>(res);
                 }
         );
         portfolioTypeToService = new EnumMap<>(Map.of(
@@ -241,7 +243,7 @@ public class DataManager {
         if (!onTheFlyNews) {
             if (!useOldNews) {
                 return newsService.getTopForSymbolId(symbol.getId(), NEWS_COUNT).stream()
-                        .filter(n -> n.getDate().isAfter(startUtc)).collect(OrderedIndexedSet.toOrderedIndexedSet());
+                        .filter(n -> n.getDate().isAfter(startUtc)).collect(OrderedIndexedSet.toUnmodifiableOrderedIndexedSet());
             } else {
                 return newsService.getTopForSymbolId(symbol.getId(), NEWS_COUNT);
             }
@@ -252,18 +254,18 @@ public class DataManager {
                             .filter(n -> n.getDate().isAfter(startUtc))
                             .sorted(Comparator.comparing(News::getDate).reversed())
                             .limit(NEWS_COUNT)
-                            .collect(OrderedIndexedSet.toOrderedIndexedSet());
+                            .collect(OrderedIndexedSet.toUnmodifiableOrderedIndexedSet());
                 } catch (ClientException | MappingException e) {
                     logger.warn(RETRIEVAL_FAILED_WARN, NEWS, symbol, e);
                     return newsService.getTopForSymbolId(symbol.getId(), NEWS_COUNT).stream()
-                            .filter(n -> n.getDate().isAfter(startUtc)).collect(OrderedIndexedSet.toOrderedIndexedSet());
+                            .filter(n -> n.getDate().isAfter(startUtc)).collect(OrderedIndexedSet.toUnmodifiableOrderedIndexedSet());
                 }
             } else {
                 try {
                     return retrieveYahooNews(Set.of(symbol)).stream()
                             .sorted(Comparator.comparing(News::getDate).reversed())
                             .limit(NEWS_COUNT)
-                            .collect(OrderedIndexedSet.toOrderedIndexedSet());
+                            .collect(OrderedIndexedSet.toUnmodifiableOrderedIndexedSet());
                 } catch (ClientException | MappingException e) {
                     logger.warn(RETRIEVAL_FAILED_WARN, NEWS, symbol, e);
                     return newsService.getTopForSymbolId(symbol.getId(), NEWS_COUNT);
@@ -461,7 +463,7 @@ public class DataManager {
                         PortfolioManager.SymbolStand::lastMoveDate,
                         Comparator.nullsFirst(Comparator.naturalOrder())
                 ).reversed())
-                .collect(OrderedIndexedSet.toOrderedIndexedSet());
+                .collect(OrderedIndexedSet.toUnmodifiableOrderedIndexedSet());
     }
 
     private OrderedIndexedSet<PortfolioManager.SymbolStand> getStandDynamically(Set<PortfolioBase> portfolio) throws ClientException, MappingException {
@@ -478,7 +480,7 @@ public class DataManager {
                         PortfolioManager.SymbolStand::lastMoveDate,
                         Comparator.nullsFirst(Comparator.naturalOrder())
                 ).reversed())
-                .collect(OrderedIndexedSet.toOrderedIndexedSet());
+                .collect(OrderedIndexedSet.toUnmodifiableOrderedIndexedSet());
     }
 
     @Transactional
@@ -555,7 +557,7 @@ public class DataManager {
     }
 
     private OrderedIndexedSet<MarketData> retrieveMarketDataWithBackupStrategy(Set<Symbol> symbols) throws ClientException, MappingException {
-        OrderedIndexedSet<MarketData> res = new OrderedIndexedSet<>();
+        OrderedIndexedSet<MarketData> res = new OrderedIndexedSetImpl<>();
         for (Symbol symbol : symbols) {
             try {
                 res.add(twelveDataMarketDataClient.retrieveMarketData(symbol, MarketDataType.LAST).getFirst());
@@ -564,15 +566,15 @@ public class DataManager {
                 res.add(finnhubMarketDataClient.retrieveMarketData(symbol));
             }
         }
-        return res;
+        return new UnmodifiableOrderedIndexedSet<>(res);
     }
 
     private OrderedIndexedSet<MarketData> retrieveTwelveDataMarketData(Set<Symbol> symbols) throws ClientException, MappingException {
-        OrderedIndexedSet<MarketData> res = new OrderedIndexedSet<>();
+        OrderedIndexedSet<MarketData> res = new OrderedIndexedSetImpl<>();
         for (Symbol symbol : symbols) {
             res.addAll(twelveDataMarketDataClient.retrieveMarketData(symbol, MarketDataType.HISTORIC));
         }
-        return res;
+        return new UnmodifiableOrderedIndexedSet<>(res);
     }
 
     @SuppressWarnings("unchecked")

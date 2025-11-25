@@ -1,7 +1,9 @@
 package com.lucas.server.components.tradingbot.common;
 
-import com.lucas.utils.OrderedIndexedSet;
 import com.lucas.utils.SlidingWindowRateLimiter;
+import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
+import com.lucas.utils.orderedindexedset.OrderedIndexedSetImpl;
+import com.lucas.utils.orderedindexedset.UnmodifiableOrderedIndexedSet;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -18,14 +20,15 @@ public class FinnhubRateLimiter {
     private final AtomicInteger pointer = new AtomicInteger();
 
     public FinnhubRateLimiter(@Value("${finnhub.api-keys}") List<String> apiKeys, Map<String, SlidingWindowRateLimiter> allRateLimiters) {
-        keyToLimiterEntries = new OrderedIndexedSet<>();
+        OrderedIndexedSetImpl<Map.Entry<String, SlidingWindowRateLimiter>> orderedIndexedSet = new OrderedIndexedSetImpl<>();
         OrderedIndexedSet<String> finnhubRateLimiterNames = getFinnhubRateLimiterNames();
         for (int i = 0; i < apiKeys.size(); i++) {
             String apiKey = apiKeys.get(i);
             String limiterKey = finnhubRateLimiterNames.get(i);
             SlidingWindowRateLimiter rateLimiter = allRateLimiters.get(limiterKey);
-            keyToLimiterEntries.add(Map.entry(apiKey, rateLimiter));
+            orderedIndexedSet.add(Map.entry(apiKey, rateLimiter));
         }
+        keyToLimiterEntries = new UnmodifiableOrderedIndexedSet<>(orderedIndexedSet);
     }
 
     public String acquirePermission() {

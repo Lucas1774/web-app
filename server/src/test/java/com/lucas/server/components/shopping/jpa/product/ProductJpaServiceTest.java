@@ -6,7 +6,7 @@ import com.lucas.server.components.shopping.jpa.category.Category;
 import com.lucas.server.components.shopping.jpa.category.CategoryJpaService;
 import com.lucas.server.components.shopping.jpa.shopping.ShoppingItem;
 import com.lucas.server.components.shopping.jpa.shopping.ShoppingItemJpaService;
-import com.lucas.utils.OrderedIndexedSet;
+import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -141,7 +141,7 @@ class ProductJpaServiceTest extends ConfiguredTest {
 
         // when: updating with "A" first "B" second
         OrderedIndexedSet<Product> input = saved.stream().sorted(Comparator.comparing(Product::getOrder).reversed())
-                .collect(OrderedIndexedSet.toOrderedIndexedSet());
+                .collect(OrderedIndexedSet.toUnmodifiableOrderedIndexedSet());
         Set<Product> result = productService.updateOrders(input);
 
         // then: orders should be reassigned to [1,2]

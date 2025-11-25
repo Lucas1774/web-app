@@ -2,7 +2,7 @@ package com.lucas.server.common.jpa;
 
 import com.lucas.server.common.jpa.user.OrderColumnServiceDelegate;
 import com.lucas.server.components.shopping.dto.Sortable;
-import com.lucas.utils.OrderedIndexedSet;
+import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 
 import java.util.Set;
 
