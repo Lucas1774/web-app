@@ -120,7 +120,7 @@ public class DailyScheduler {
         logger.info(SCHEDULED_TASK_SUCCESS_INFO, message, updatedSnapshots.stream().map(MarketSnapshot::getSymbol).toList());
 
         Set<MarketSnapshot> removedSnapshots = dataManager.removeOldSnapshots(DATABASE_MARKET_DATA_PER_SYMBOL);
-        String message2 = String.format("removed %d news", removedSnapshots.size());
+        String message2 = String.format("removed %d market snapshots", removedSnapshots.size());
         logger.info(SCHEDULED_TASK_SUCCESS_INFO, message2, removedSnapshots.stream().map(MarketSnapshot::getSymbol).toList());
     }
 

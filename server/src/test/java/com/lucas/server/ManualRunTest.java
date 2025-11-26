@@ -33,8 +33,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Synthetic program runner. Run containers manually and pass production env vars as env vars
+ * <p>
+ * Model correlation tests are offset so if you run all three before market open in the morning
+ * they will all represent data available at previous date and before,
+ * meaning nth day assertions will be done on nth day before yesterday recs.
+ * <p>
+ * Running the program at 9:00 UTC with <code>FROM</code> as yesterday will yield one day of data for each test
  */
-
 @TestPropertySource(properties = "spring.jpa.show-sql=false")
 @Disabled("Manual run only")
 class ManualRunTest extends BaseTest {
@@ -42,7 +47,6 @@ class ManualRunTest extends BaseTest {
     private static final Set<String> SYMBOL_NAMES = Set.of("AAPL", "NVDA", "MSFT", "AMZN", "META", "TSLA", "GOOGL");
     private static final LocalDate FROM = LocalDate.of(2025, 11, 1); // inclusive
     private static final LocalDate TO = LocalDate.now().plusDays(1); // exclusive
-    private static final LocalTime SNAPSHOT_TIME = LocalTime.of(9, 45); // 9:35 or 9:45
 
     @Autowired
     private SymbolRepository symbolRepository;
@@ -146,7 +150,7 @@ class ManualRunTest extends BaseTest {
                         Function.identity()
                 ));
 
-        processAndPrintResults(mdByKey);
+        processAndPrintResults(mdByKey, FROM, TO);
     }
 
     /**
@@ -161,7 +165,9 @@ class ManualRunTest extends BaseTest {
         assertTrue(true); // useless assertion so Sonar doesn't cry
 
         Set<Long> allSymbolIds = symbolRepository.findAll().stream().map(Symbol::getId).collect(Collectors.toSet());
-        Set<LocalDate> dates = FROM.datesUntil(TO).collect(Collectors.toSet());
+        LocalDate from = toPastOrFutureTradeDate(FROM, daysAfter, d -> d.minusDays(1));
+        LocalDate to = toPastOrFutureTradeDate(TO, daysAfter, d -> d.minusDays(1));
+        Set<LocalDate> dates = from.datesUntil(to).collect(Collectors.toSet());
 
         Map<SymDate, MarketData> mdByKey = marketDataRepository.findBySymbol_IdInAndDateIn(allSymbolIds, dates).stream()
                 .collect(Collectors.toMap(
@@ -206,12 +212,13 @@ class ManualRunTest extends BaseTest {
                         .stream())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        processAndPrintResults(mdsWithNextDayPrice);
+        processAndPrintResults(mdsWithNextDayPrice, from, to);
     }
 
-    @Test
+    @ParameterizedTest
+    @ValueSource(strings = {"09:35", "09:45"})
     @Transactional
-    void assertRecommendationsPrecisionAtSnapshot() {
+    void assertRecommendationsPrecisionAtSnapshot(LocalTime time) {
         assertTrue(true); // useless assertion so Sonar doesn't cry
 
         Set<Long> allSymbolIds = symbolRepository.findAll().stream().map(Symbol::getId).collect(Collectors.toSet());
@@ -219,8 +226,8 @@ class ManualRunTest extends BaseTest {
 
         Map<SymDate, MarketSnapshot> msByKey = dates.stream()
                 .flatMap(date -> marketSnapshotRepository.findAllBySymbol_IdInAndDateBetween(allSymbolIds,
-                                date.atTime(SNAPSHOT_TIME).minusMinutes(5).atZone(NY_ZONE).withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime(),
-                                date.atTime(SNAPSHOT_TIME).plusMinutes(5).atZone(NY_ZONE).withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime())
+                                date.atTime(time).minusMinutes(4).atZone(NY_ZONE).withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime(),
+                                date.atTime(time).plusMinutes(4).atZone(NY_ZONE).withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime())
                         .stream())
                 .collect(Collectors.toMap(
                         ms -> new SymDate(ms.getSymbol().getId(), ms.getDate().toLocalDate()),
@@ -257,11 +264,11 @@ class ManualRunTest extends BaseTest {
                         .stream())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        processAndPrintResults(msAsMdByKey);
+        processAndPrintResults(msAsMdByKey, FROM, TO);
     }
 
-    private void processAndPrintResults(Map<SymDate, MarketData> mdByKey) {
-        Map<Recommendation, MarketData> baseline = getBaseline(mdByKey);
+    private void processAndPrintResults(Map<SymDate, MarketData> mdByKey, LocalDate from, LocalDate to) {
+        Map<Recommendation, MarketData> baseline = getBaseline(mdByKey, from, to);
         Map<Recommendation, MarketData> filtered = getFiltered(baseline);
 
         Stats filteredStats = computeStats(new HashSet<>(filtered.values()));
@@ -356,9 +363,9 @@ class ManualRunTest extends BaseTest {
     }
 
 
-    private Map<Recommendation, MarketData> getBaseline(Map<SymDate, MarketData> mdByKey) {
+    private Map<Recommendation, MarketData> getBaseline(Map<SymDate, MarketData> mdByKey, LocalDate from, LocalDate to) {
         return recommendationsRepository
-                .findByDateBetween(FROM, TO)
+                .findByDateBetween(from, to)
                 .stream()
                 .filter(r -> isTradingDate(r.getDate()))
                 .flatMap(r -> Optional.ofNullable(mdByKey.get(new SymDate(r.getSymbol().getId(), r.getDate())))
