@@ -231,7 +231,7 @@ class ManualRunTest extends BaseTest {
                         .stream())
                 .collect(Collectors.toMap(
                         ms -> new SymDate(ms.getSymbol().getId(), ms.getDate().toLocalDate()),
-                        Function.identity()
+                        Function.identity(), (a, b) -> a, HashMap::new
                 ));
 
         Set<Long> symbolsNeeded = msByKey.values().stream()
