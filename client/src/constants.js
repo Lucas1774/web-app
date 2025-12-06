@@ -46,6 +46,7 @@ export const ICON = "icon";
 export const OBJECT = "object";
 export const REAL_TIME_KEY = "Real time";
 export const SYMBOL_NAME_KEY = "symbolName";
+export const SECTOR_KEY = "sector";
 export const LAST_MOVE_DATE_KEY = "lastMoveDate";
 export const RECOMMENDATION_DATE_KEY = "recommendationDate";
 export const RECOMMENDATION_ACTION_KEY = "recommendationAction";
@@ -112,6 +113,7 @@ export const PORTFOLIO_META = {
         ID_KEY,
         REAL_TIME_KEY,
         SYMBOL_NAME_KEY,
+        SECTOR_KEY,
         LAST_MOVE_DATE_KEY,
         RECOMMENDATION_DATE_KEY,
         RECOMMENDATION_ACTION_KEY,
@@ -137,6 +139,7 @@ export const PORTFOLIO_META = {
         [ID_KEY]: NUMBER,
         [REAL_TIME_KEY]: STRING,
         [SYMBOL_NAME_KEY]: STRING,
+        [SECTOR_KEY]: STRING,
         [LAST_MOVE_DATE_KEY]: DATE,
         [RECOMMENDATION_DATE_KEY]: DATE,
         [RECOMMENDATION_ACTION_KEY]: STRING,
@@ -162,6 +165,7 @@ export const PORTFOLIO_META = {
         [ID_KEY]: false,
         [REAL_TIME_KEY]: true,
         [SYMBOL_NAME_KEY]: true,
+        [SECTOR_KEY]: true,
         [LAST_MOVE_DATE_KEY]: true,
         [RECOMMENDATION_DATE_KEY]: true,
         [RECOMMENDATION_ACTION_KEY]: true,
@@ -187,6 +191,7 @@ export const PORTFOLIO_META = {
         [ID_KEY]: "",
         [REAL_TIME_KEY]: "R.T.",
         [SYMBOL_NAME_KEY]: "Symbol",
+        [SECTOR_KEY]: "Sector",
         [LAST_MOVE_DATE_KEY]: "Last Move Date",
         [RECOMMENDATION_DATE_KEY]: "Rec. Date",
         [RECOMMENDATION_ACTION_KEY]: "Rec. Action",
@@ -212,6 +217,7 @@ export const PORTFOLIO_META = {
         [ID_KEY]: false,
         [REAL_TIME_KEY]: false,
         [SYMBOL_NAME_KEY]: true,
+        [SECTOR_KEY]: true,
         [LAST_MOVE_DATE_KEY]: true,
         [RECOMMENDATION_DATE_KEY]: true,
         [RECOMMENDATION_ACTION_KEY]: true,
@@ -237,6 +243,7 @@ export const PORTFOLIO_META = {
         [ID_KEY]: false,
         [REAL_TIME_KEY]: false,
         [SYMBOL_NAME_KEY]: true,
+        [SECTOR_KEY]: true,
         [LAST_MOVE_DATE_KEY]: true,
         [RECOMMENDATION_DATE_KEY]: true,
         [RECOMMENDATION_ACTION_KEY]: true,

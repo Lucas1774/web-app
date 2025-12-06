@@ -119,6 +119,7 @@ const Portfolio = ({ onClose = () => { } }) => {
                     [constants.ID_KEY]: item.symbol.id,
                     [constants.REAL_TIME_KEY]: "N",
                     [constants.SYMBOL_NAME_KEY]: item.symbol.name,
+                    [constants.SECTOR_KEY]: item.symbol.sector,
                     [constants.LAST_MOVE_DATE_KEY]: item.lastMoveDate ? new Date(item.lastMoveDate) : null,
                     [constants.RECOMMENDATION_DATE_KEY]: recommendation ? new Date(recommendation.date) : null,
                     [constants.RECOMMENDATION_ACTION_KEY]: recommendation?.action,
