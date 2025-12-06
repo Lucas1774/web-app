@@ -13,7 +13,8 @@ import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 
@@ -27,6 +28,8 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static com.lucas.server.common.Constants.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -39,6 +42,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * meaning nth day assertions will be done on nth day before yesterday recs.
  * <p>
  * Running the program at 9:00 UTC with <code>FROM</code> as yesterday will yield one day of data for each test
+ * <p>
+ * It is not the goal of the model correlation tests to measure sector strength.
+ * Sector is controlled, removing companies from other sectors from the calculations.
+ * The goal is instead to measure how good the model is at predicting growth
+ * among the companies of a particular sector.
+ * In short, which sectors is the model most right about.
  */
 @TestPropertySource(properties = "spring.jpa.show-sql=false")
 @Disabled("Manual run only")
@@ -118,6 +127,21 @@ class ManualRunTest extends BaseTest {
         return d;
     }
 
+    private static Stream<Sector> sectorsWithNullFirst() {
+        return Stream.concat(Stream.of((Sector) null), Arrays.stream(Sector.values()));
+    }
+
+    private static Stream<Arguments> daysAndSectors() {
+        return IntStream.of(0, 1, 2, 3)
+                .boxed()
+                .flatMap(day -> sectorsWithNullFirst().map(sector -> Arguments.of(day, sector)));
+    }
+
+    private static Stream<Arguments> timesAndSectors() {
+        return Stream.of(LocalTime.of(9, 35), LocalTime.of(9, 45))
+                .flatMap(time -> sectorsWithNullFirst().map(sector -> Arguments.of(time, sector)));
+    }
+
     @Test
     @Transactional
     void runMidnightTask() throws Exception {
@@ -136,35 +160,18 @@ class ManualRunTest extends BaseTest {
         method.invoke(dailyScheduler, SYMBOL_NAMES);
     }
 
-    @Test
-    @Transactional
-    void assertRecommendationsPrecisionAtClose() {
-        assertTrue(true); // useless assertion so Sonar doesn't cry
-
-        Set<Long> allSymbolIds = symbolRepository.findAll().stream().map(Symbol::getId).collect(Collectors.toSet());
-        Set<LocalDate> dates = FROM.datesUntil(TO).collect(Collectors.toSet());
-
-        Map<SymDate, MarketData> mdByKey = marketDataRepository.findBySymbol_IdInAndDateIn(allSymbolIds, dates).stream()
-                .collect(Collectors.toMap(
-                        md -> new SymDate(md.getSymbol().getId(), md.getDate()),
-                        Function.identity()
-                ));
-
-        processAndPrintResults(mdByKey, FROM, TO);
-    }
-
     /**
      * High, low and volume (unused) lose correctness for values higher than 1
      *
      * @param daysAfter days after. 0 would be the day of the recommendation.
      */
     @ParameterizedTest
-    @ValueSource(ints = {1, 2, 3})
+    @MethodSource("daysAndSectors")
     @Transactional
-    void assertRecommendationsPrecisionAtCloseOfNthDay(int daysAfter) {
+    void assertRecommendationsPrecisionAtCloseOfNthDay(int daysAfter, Sector sector) {
         assertTrue(true); // useless assertion so Sonar doesn't cry
 
-        Set<Long> allSymbolIds = symbolRepository.findAll().stream().map(Symbol::getId).collect(Collectors.toSet());
+        Set<Long> allSymbolIds = getSymbolIdsFor(sector);
         LocalDate from = toPastOrFutureTradeDate(FROM, daysAfter, d -> d.minusDays(1));
         LocalDate to = toPastOrFutureTradeDate(TO, daysAfter, d -> d.minusDays(1));
         Set<LocalDate> dates = from.datesUntil(to).collect(Collectors.toSet());
@@ -212,16 +219,16 @@ class ManualRunTest extends BaseTest {
                         .stream())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        processAndPrintResults(mdsWithNextDayPrice, from, to);
+        processAndPrintResults(mdsWithNextDayPrice, from, to, sector);
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"09:35", "09:45"})
+    @MethodSource("timesAndSectors")
     @Transactional
-    void assertRecommendationsPrecisionAtSnapshot(LocalTime time) {
+    void assertRecommendationsPrecisionAtSnapshot(LocalTime time, Sector sector) {
         assertTrue(true); // useless assertion so Sonar doesn't cry
 
-        Set<Long> allSymbolIds = symbolRepository.findAll().stream().map(Symbol::getId).collect(Collectors.toSet());
+        Set<Long> allSymbolIds = getSymbolIdsFor(sector);
         Set<LocalDate> dates = FROM.datesUntil(TO).collect(Collectors.toSet());
 
         Map<SymDate, MarketSnapshot> msByKey = dates.stream()
@@ -264,10 +271,22 @@ class ManualRunTest extends BaseTest {
                         .stream())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        processAndPrintResults(msAsMdByKey, FROM, TO);
+        processAndPrintResults(msAsMdByKey, FROM, TO, sector);
     }
 
-    private void processAndPrintResults(Map<SymDate, MarketData> mdByKey, LocalDate from, LocalDate to) {
+    private Set<Long> getSymbolIdsFor(Sector sector) {
+        return symbolRepository.findAll().stream()
+                .filter(s -> null == sector || sector.equals(s.getSector()))
+                .map(Symbol::getId)
+                .collect(Collectors.toSet());
+    }
+
+    private void processAndPrintResults(Map<SymDate, MarketData> mdByKey, LocalDate from, LocalDate to, Sector sector) {
+        System.out.println("=================================================");
+        System.out.println("SECTOR: " + (null == sector ? "GLOBAL" : sector.name()));
+        System.out.println("Range: " + from + " - " + to);
+        System.out.println("-------------------------------------------------");
+
         Map<Recommendation, MarketData> baseline = getBaseline(mdByKey, from, to);
         Map<Recommendation, MarketData> filtered = getFiltered(baseline);
 

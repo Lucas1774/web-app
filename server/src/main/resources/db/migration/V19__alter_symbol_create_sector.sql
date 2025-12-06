@@ -1,0 +1,2 @@
+ALTER TABLE symbol
+    ADD COLUMN sector VARCHAR(50);

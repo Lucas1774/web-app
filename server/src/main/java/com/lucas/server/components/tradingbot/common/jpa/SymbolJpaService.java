@@ -27,16 +27,18 @@ public class SymbolJpaService implements JpaService<Symbol> {
 
     public Set<Symbol> getOrCreateByName(Set<String> names) {
         return uniqueConstraintDelegate.createOrUpdate(this::findUnique,
-                (oldEntity, newEntity) -> oldEntity,
-                names.stream().map(name -> new Symbol().setName(name)).collect(Collectors.toSet()));
-    }
-
-    public Optional<Symbol> findById(Long id) {
-        return repository.findById(id);
+                (oldEntity, newEntity) -> oldEntity.computeSector(),
+                names.stream()
+                        .map(name -> new Symbol().setName(name).computeSector())
+                        .collect(Collectors.toSet()));
     }
 
     private Set<Symbol> findUnique(Set<Symbol> symbols) {
         return repository.findByNameIn(symbols.stream().map(Symbol::getName).collect(Collectors.toSet()));
+    }
+
+    public Optional<Symbol> findById(Long id) {
+        return repository.findById(id);
     }
 
     public Set<Symbol> findAllById(Set<Long> symbolIds) {

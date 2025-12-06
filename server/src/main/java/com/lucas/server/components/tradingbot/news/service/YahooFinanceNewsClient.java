@@ -41,6 +41,7 @@ public class YahooFinanceNewsClient {
         rateLimiter.acquirePermission();
         logger.info(RETRIEVING_DATA_INFO, NEWS, symbol);
         // TODO: Yahoo expects old "FI" name for this endpoint. Figure a less brittle way to do this or keep an eye opened
+        // Dot for dash replacement is also brittle. Maybe a "Yahoo name" column is justified
         String symbolName = symbol.getName().equals("FISV") ? "FI" : symbol.getName().replace('.', '-');
         String url = UriComponentsBuilder.fromUriString(endpoint)
                 .queryParam("s", symbolName)

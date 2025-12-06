@@ -11,7 +11,7 @@ spring:
       file: ./docker/dev/compose.yaml
   datasource:
     url: jdbc:postgresql://localhost:5432/${DB_NAME}
-  jpa:
+  jpa: # To validate migration scripts, set ddl-auto to none, enable flyway and remove remaining necessary jpa and sql props
     hibernate:
       ddl-auto: update
     properties:
