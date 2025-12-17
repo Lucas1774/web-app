@@ -24,7 +24,7 @@ def java_escape(s: str) -> str:
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python sp500.py path/to/YourFile.java")
+        print("Usage: python update_sp500_tickers.py path/to/YourFile.java")
         sys.exit(2)
 
     # Scrape wikipedia (I'm sorry)

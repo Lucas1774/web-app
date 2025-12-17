@@ -54,7 +54,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ManualRunTest extends BaseTest {
 
     private static final Set<String> SYMBOL_NAMES = Set.of("AAPL", "NVDA", "MSFT", "AMZN", "META", "TSLA", "GOOGL");
-    private static final LocalDate FROM = LocalDate.of(2025, 11, 1); // inclusive
+    private static final LocalDate FROM = LocalDate.of(2025, 12, 1); // inclusive
     private static final LocalDate TO = LocalDate.now().plusDays(1); // exclusive
 
     @Autowired
@@ -291,30 +291,30 @@ class ManualRunTest extends BaseTest {
         Map<Recommendation, MarketData> filtered = getFiltered(baseline);
 
         Stats filteredStats = computeStats(new HashSet<>(filtered.values()));
-        Stats baselineStats = computeStats(new HashSet<>(baseline.values()));
         Stats allStats = computeStats(new HashSet<>(mdByKey.values()));
+        Stats baselineStats = computeStats(new HashSet<>(baseline.values()));
 
-        System.out.println(summaryOf(filteredStats, "FILTERED"));
-        System.out.println(summaryOf(baselineStats, "BASELINE"));
-        System.out.println(summaryOf(allStats, "ALL"));
-
-        if (null != filteredStats && 0 < filteredStats.count && null != baselineStats && 0 < baselineStats.count) {
+        if (null != filteredStats && 0 < filteredStats.count && null != allStats && 0 < allStats.count) {
             BigDecimal filteredAverageClose = filteredStats.sumClose.divide(BigDecimal.valueOf(filteredStats.count), 8, RoundingMode.HALF_UP);
-            BigDecimal baselineAverageClose = baselineStats.sumClose.divide(BigDecimal.valueOf(baselineStats.count), 8, RoundingMode.HALF_UP);
+            BigDecimal allAverageClose = allStats.sumClose.divide(BigDecimal.valueOf(allStats.count), 8, RoundingMode.HALF_UP);
 
-            BigDecimal absDiff = filteredAverageClose.subtract(baselineAverageClose).multiply(BigDecimal.valueOf(100));
-            BigDecimal denominator = filteredAverageClose.abs().max(baselineAverageClose.abs());
+            BigDecimal absDiff = filteredAverageClose.subtract(allAverageClose).multiply(BigDecimal.valueOf(100));
+            BigDecimal denominator = filteredAverageClose.abs().max(allAverageClose.abs());
             BigDecimal relDiff = 0 == denominator.compareTo(BigDecimal.ZERO)
                     ? BigDecimal.ZERO
-                    : filteredAverageClose.subtract(baselineAverageClose)
+                    : filteredAverageClose.subtract(allAverageClose)
                     .divide(denominator, 8, RoundingMode.HALF_UP)
                     .multiply(BigDecimal.valueOf(100));
 
-            System.out.printf("Absolute avg-close difference (filtered - baseline): %+.2f%%%n", absDiff);
-            System.out.println("Relative difference vs baseline: " + relDiff.setScale(2, RoundingMode.HALF_UP) + "%");
+            System.out.printf("Absolute avg-close difference (filtered - all): %+.2f%%%n", absDiff);
+            System.out.println("Relative difference vs all: " + relDiff.setScale(2, RoundingMode.HALF_UP) + "%");
         } else {
             System.out.println("Not enough data to compute uplifts.");
         }
+
+        System.out.println(summaryOf(filteredStats, "FILTERED"));
+        System.out.println(summaryOf(allStats, "ALL"));
+        System.out.println(summaryOf(baselineStats, "BASELINE"));
 
         BigDecimal onePct = BigDecimal.valueOf(0.01);
         BigDecimal minusOnePct = onePct.negate();

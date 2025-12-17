@@ -3,7 +3,7 @@
 Override IBKR watchlist.
 
 Usage:
-  python create_watchlist.py --symbols-user USER --symbols-pass PASS \
+  python update_daily_watchlist.py --symbols-user USER --symbols-pass PASS \
                              --mosquitto-user USER --mosquitto-pass PASS \
                              [--mosquitto-topic TOPIC]
 
@@ -14,10 +14,34 @@ Notes:
 """
 
 # noinspection PyUnresolvedReferences
-import argparse, requests, time, json, os, tempfile, urllib3, webbrowser, subprocess
+import argparse
+
+# noinspection PyUnresolvedReferences
+import json
+
+# noinspection PyUnresolvedReferences
+import os
 
 # noinspection PyUnresolvedReferences
 import paho.mqtt.client as mqtt
+
+# noinspection PyUnresolvedReferences
+import requests
+
+# noinspection PyUnresolvedReferences
+import subprocess
+
+# noinspection PyUnresolvedReferences
+import tempfile
+
+# noinspection PyUnresolvedReferences
+import time
+
+# noinspection PyUnresolvedReferences
+import urllib3
+
+# noinspection PyUnresolvedReferences
+import webbrowser
 
 # noinspection PyUnresolvedReferences
 from pathlib import Path
@@ -46,16 +70,32 @@ SYMBOLS_FETCH_TIMEOUT = 30
 WATCHLIST_OP_TIMEOUT = 20
 
 subprocess.Popen(
-    [str(CLIENT_PORTAL_PATH / "bin" / "run.bat"), "root/conf.yaml"], cwd=str(CLIENT_PORTAL_PATH), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+    [str(CLIENT_PORTAL_PATH / "bin" / "run.bat"), "root/conf.yaml"],
+    cwd=str(CLIENT_PORTAL_PATH),
+    stdout=subprocess.DEVNULL,
+    stderr=subprocess.DEVNULL,
 )
 webbrowser.open("https://localhost:5000")
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--symbols-user", required=True, help="Basic auth user for symbols URL")
-parser.add_argument("--symbols-pass", required=True, help="Basic auth password for symbols URL")
-parser.add_argument("--mosquitto-user", required=True, help="Basic auth user for mosquitto broker")
-parser.add_argument("--mosquitto-pass", required=True, help="Basic auth password for mosquitto broker")
-parser.add_argument("--mosquitto-topic", required=False, default="jobs", help="Topic for mosquitto broker")
+parser.add_argument(
+    "--symbols-user", required=True, help="Basic auth user for symbols URL"
+)
+parser.add_argument(
+    "--symbols-pass", required=True, help="Basic auth password for symbols URL"
+)
+parser.add_argument(
+    "--mosquitto-user", required=True, help="Basic auth user for mosquitto broker"
+)
+parser.add_argument(
+    "--mosquitto-pass", required=True, help="Basic auth password for mosquitto broker"
+)
+parser.add_argument(
+    "--mosquitto-topic",
+    required=False,
+    default="jobs",
+    help="Topic for mosquitto broker",
+)
 args = parser.parse_args()
 
 s = requests.Session()
@@ -101,7 +141,9 @@ while True:
     except requests.exceptions.RequestException as e:
         print(f"Auth check error: {e}")
     if time.time() > deadline:
-        print(f"Timed out waiting for gateway authentication after {GATEWAY_AUTH_TIMEOUT} seconds.")
+        print(
+            f"Timed out waiting for gateway authentication after {GATEWAY_AUTH_TIMEOUT} seconds."
+        )
         exit()
     time.sleep(2)
 
@@ -112,7 +154,11 @@ try:
     rr = requests.get(SYMBOLS_URL, timeout=SYMBOLS_FETCH_TIMEOUT, auth=auth)
     rr.raise_for_status()
     data = rr.json()
-    symbols = [item["symbol"]["name"].strip().replace('.', ' ').upper() for item in data if item.get("symbol") and item["symbol"].get("name")]
+    symbols = [
+        item["symbol"]["name"].strip().replace(".", " ").upper()
+        for item in data
+        if item.get("symbol") and item["symbol"].get("name")
+    ]
 except Exception as e:
     print(f"Failed to fetch symbols from {SYMBOLS_URL}: {e}")
     exit()
@@ -129,7 +175,11 @@ for sym in symbols:
         print(f"{sym} -> conid {symbol_to_conid[sym]} (from cache)")
         continue
     try:
-        r = s.get(f"{BASE}/iserver/secdef/search", params={"symbol": sym, "name": "false"}, timeout=SECDEF_TIMEOUT)
+        r = s.get(
+            f"{BASE}/iserver/secdef/search",
+            params={"symbol": sym, "name": "false"},
+            timeout=SECDEF_TIMEOUT,
+        )
     except Exception as e:
         print(f"Error contacting secdef/search for {sym}: {e}")
         continue
@@ -141,7 +191,9 @@ for sym in symbols:
     stocks = [
         h
         for h in hits
-        if h.get("secType") == "STK" and ("NYSE" in h.get("companyHeader") or "NASDAQ" in h.get("companyHeader")) and int(h.get("conid", -1)) != -1
+        if h.get("secType") == "STK"
+        and ("NYSE" in h.get("companyHeader") or "NASDAQ" in h.get("companyHeader"))
+        and int(h.get("conid", -1)) != -1
     ]
     if not stocks:
         print(f"No matches returned for {sym}")
@@ -161,7 +213,9 @@ for sym in symbols:
 # write updated conid cache back to disk
 if new_conids:
     try:
-        tmpfd, tmpname = tempfile.mkstemp(prefix="conids.", suffix=".tmp", dir=str(SCRIPT_DIR))
+        tmpfd, tmpname = tempfile.mkstemp(
+            prefix="conids.", suffix=".tmp", dir=str(SCRIPT_DIR)
+        )
         with os.fdopen(tmpfd, "w", encoding="utf-8") as tf:
             json.dump(symbol_to_conid, tf, indent=2, sort_keys=True)
         os.replace(tmpname, str(CONID_MAP_FILE))
@@ -198,7 +252,9 @@ for item in existing:
         break
 if found:
     if "id" not in found:
-        print(f"Found watchlist named '{WATCHLIST}' but no 'id' field present in response item: {found}")
+        print(
+            f"Found watchlist named '{WATCHLIST}' but no 'id' field present in response item: {found}"
+        )
         exit()
     wl_id = found["id"]
     del_url = f"{BASE}/iserver/watchlist"
