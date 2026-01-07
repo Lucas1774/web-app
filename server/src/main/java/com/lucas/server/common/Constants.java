@@ -70,11 +70,7 @@ public class Constants {
     public static final ZoneId NY_ZONE = ZoneId.of(AMERICA_NY);
     public static final LocalTime MARKET_CLOSE = LocalTime.of(16, 0);
     public static final LocalTime EARLY_CLOSE = LocalTime.of(13, 0);
-    // TODO: remove 2025 after Jan first 🥳
-    public static final Set<LocalDate> EARLY_CLOSE_DATES_2025 = Set.of(
-            LocalDate.of(2025, 7, 3), // Pre‑Independence Day
-            LocalDate.of(2025, 11, 28), // Day after Thanksgiving
-            LocalDate.of(2025, 12, 24), // Christmas Eve
+    public static final Set<LocalDate> EARLY_CLOSE_DATES_2026 = Set.of(
             LocalDate.of(2026, 11, 27), // Day after Thanksgiving
             LocalDate.of(2026, 12, 24)  // Christmas Eve
     );
@@ -86,17 +82,7 @@ public class Constants {
     private static final String FINNHUB_RATE_LIMITER_3 = "finnhubRateLimiter3";
     private static final OrderedIndexedSet<String> FINNHUB_RATE_LIMITERS = OrderedIndexedSet.of(FINNHUB_RATE_LIMITER, FINNHUB_RATE_LIMITER_2, FINNHUB_RATE_LIMITER_3);
     private static final int[] DIGITS = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-    private static final Set<LocalDate> MARKET_HOLIDAYS_2025 = Set.of(
-            LocalDate.of(2025, 1, 1), // New Year's Day
-            LocalDate.of(2025, 1, 20), // Martin Luther King Jr. Day
-            LocalDate.of(2025, 2, 17), // Presidents’ Day
-            LocalDate.of(2025, 4, 18), // Good Friday
-            LocalDate.of(2025, 5, 26), // Memorial Day
-            LocalDate.of(2025, 6, 19), // Juneteenth Day
-            LocalDate.of(2025, 7, 4), // Independence Day
-            LocalDate.of(2025, 9, 1), // Labor Day
-            LocalDate.of(2025, 11, 27), // Thanksgiving
-            LocalDate.of(2025, 12, 25), // Christmas Day
+    private static final Set<LocalDate> MARKET_HOLIDAYS_2026 = Set.of(
             LocalDate.of(2026, 1, 1), // New Year's Day
             LocalDate.of(2026, 1, 19), // Martin Luther King Jr. Day
             LocalDate.of(2026, 2, 16), // Presidents' Day
@@ -175,7 +161,7 @@ public class Constants {
         DayOfWeek dayOfWeek = date.getDayOfWeek();
         return DayOfWeek.SATURDAY != dayOfWeek
                 && DayOfWeek.SUNDAY != dayOfWeek
-                && !MARKET_HOLIDAYS_2025.contains(date);
+                && !MARKET_HOLIDAYS_2026.contains(date);
     }
 
     public enum MarketDataType {

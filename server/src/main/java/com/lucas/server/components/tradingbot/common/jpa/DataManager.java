@@ -163,7 +163,7 @@ public class DataManager {
             while (!isTradingDate(lastTradeFinishedDate)) {
                 lastTradeFinishedDate = lastTradeFinishedDate.minusDays(1);
             }
-            LocalTime close = !EARLY_CLOSE_DATES_2025.contains(lastTradeFinishedDate) ? MARKET_CLOSE : EARLY_CLOSE;
+            LocalTime close = !EARLY_CLOSE_DATES_2026.contains(lastTradeFinishedDate) ? MARKET_CLOSE : EARLY_CLOSE;
             startUtc = ZonedDateTime.of(lastTradeFinishedDate, close, NY_ZONE).withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime();
         }
 
