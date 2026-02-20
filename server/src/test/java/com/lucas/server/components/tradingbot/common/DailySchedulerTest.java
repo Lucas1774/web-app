@@ -45,7 +45,7 @@ class DailySchedulerTest extends ConfiguredTest {
         doNothing().when(dailyScheduler).sleep();
         await().atMost(Duration.ofSeconds(10))
                 .untilAsserted(() -> {
-                    verify(dataManager, atLeastOnce()).retrieveMarketData(any(), any());
+                    verify(dataManager, atLeastOnce()).retrieveMarketData(any(), any(), anyBoolean());
                     verify(dataManager, atLeastOnce()).getRandomRecommendations(
                             any(), any(), any(), anyInt(), anyBoolean(), anyBoolean(), anyBoolean(), anyBoolean(), anyBoolean()
                     );

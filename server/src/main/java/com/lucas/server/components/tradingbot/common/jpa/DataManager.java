@@ -377,11 +377,16 @@ public class DataManager {
 
     @Transactional(rollbackOn = {ClientException.class, MappingException.class})
     public Set<MarketData> retrieveMarketData(Set<String> symbolNames,
-                                              MarketDataType type) throws ClientException, MappingException {
+                                              MarketDataType type,
+                                              boolean override) throws ClientException, MappingException {
         Set<Symbol> symbols = symbolService.getOrCreateByName(symbolNames);
         OrderedIndexedSet<MarketData> mds = typeToRunner.get(type).apply(symbols);
         logger.info(GENERATION_SUCCESSFUL_INFO, MARKET_DATA);
-        marketDataService.createIgnoringDuplicates(mds);
+        if (override) {
+            marketDataService.createOrUpdate(mds);
+        } else {
+            marketDataService.createIgnoringDuplicates(mds);
+        }
         return mds;
     }
 

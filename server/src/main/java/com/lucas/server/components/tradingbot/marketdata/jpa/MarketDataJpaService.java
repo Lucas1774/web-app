@@ -36,6 +36,21 @@ public class MarketDataJpaService implements JpaService<MarketData> {
         return uniqueConstraintDelegate.createIgnoringDuplicates(this::findUnique, entities);
     }
 
+    @SuppressWarnings("UnusedReturnValue")
+    public Set<MarketData> createOrUpdate(OrderedIndexedSet<MarketData> entities) {
+        return uniqueConstraintDelegate.createOrUpdate(this::findUnique,
+                (oldEntity, newEntity) -> oldEntity
+                        .setOpen(newEntity.getOpen())
+                        .setHigh(newEntity.getHigh())
+                        .setLow(newEntity.getLow())
+                        .setPrice(newEntity.getPrice())
+                        .setVolume(newEntity.getVolume())
+                        .setPreviousClose(newEntity.getPreviousClose())
+                        .setChange(newEntity.getChange())
+                        .setChangePercent(newEntity.getChangePercent())
+                , entities);
+    }
+
     private Set<MarketData> findUnique(Set<MarketData> marketData) {
         return repository.findBySymbol_IdInAndDateIn(
                 marketData.stream().map(md -> md.getSymbol().getId()).collect(Collectors.toSet()),

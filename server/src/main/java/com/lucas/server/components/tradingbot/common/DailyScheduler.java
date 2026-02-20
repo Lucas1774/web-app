@@ -47,7 +47,7 @@ public class DailyScheduler {
     @SuppressWarnings("SameParameterValue")
     private void doMidnightTask(Set<String> symbolNames) {
         try {
-            Set<MarketData> updatedMds = dataManager.retrieveMarketData(symbolNames, MarketDataType.LAST);
+            Set<MarketData> updatedMds = dataManager.retrieveMarketData(symbolNames, MarketDataType.LAST, true);
             String message = String.format("fetched %d market data", updatedMds.size());
             logger.info(SCHEDULED_TASK_SUCCESS_INFO, message, updatedMds.stream().map(MarketData::getSymbol).toList());
         } catch (ClientException | MappingException e) {

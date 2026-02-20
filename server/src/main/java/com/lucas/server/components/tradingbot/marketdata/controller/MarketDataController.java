@@ -30,7 +30,7 @@ public class MarketDataController {
     @GetMapping("last")
     public ResponseEntity<Set<MarketData>> fetchAndSaveAll() {
         try {
-            return ResponseEntity.ok(jpaService.retrieveMarketData(SP500_SYMBOLS, MarketDataType.LAST));
+            return ResponseEntity.ok(jpaService.retrieveMarketData(SP500_SYMBOLS, MarketDataType.LAST, false));
         } catch (ClientException | MappingException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -40,7 +40,7 @@ public class MarketDataController {
     @GetMapping("last/{symbols}")
     public ResponseEntity<Set<MarketData>> fetchAndSaveSome(@PathVariable Set<String> symbols) {
         try {
-            return ResponseEntity.ok(jpaService.retrieveMarketData(new HashSet<>(symbols), MarketDataType.LAST));
+            return ResponseEntity.ok(jpaService.retrieveMarketData(new HashSet<>(symbols), MarketDataType.LAST, false));
         } catch (ClientException | MappingException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -50,7 +50,7 @@ public class MarketDataController {
     @GetMapping("/historic")
     public ResponseEntity<Set<MarketData>> fetchAndSaveHistoricAll() {
         try {
-            return ResponseEntity.ok(jpaService.retrieveMarketData(SP500_SYMBOLS, MarketDataType.HISTORIC));
+            return ResponseEntity.ok(jpaService.retrieveMarketData(SP500_SYMBOLS, MarketDataType.HISTORIC, false));
         } catch (MappingException | ClientException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -60,7 +60,7 @@ public class MarketDataController {
     @GetMapping("/historic/{symbols}")
     public ResponseEntity<Set<MarketData>> fetchAndSaveHistoricSome(@PathVariable Set<String> symbols) {
         try {
-            return ResponseEntity.ok(jpaService.retrieveMarketData(new HashSet<>(symbols), MarketDataType.HISTORIC));
+            return ResponseEntity.ok(jpaService.retrieveMarketData(new HashSet<>(symbols), MarketDataType.HISTORIC, false));
         } catch (MappingException | ClientException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

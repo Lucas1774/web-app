@@ -21,6 +21,10 @@ spring:
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
 
+management:
+  endpoints:
+    enabled-by-default: false
+
 mqtt:
   broker: ${MQTT_BROKER}
   username: ${MQTT_USER}
