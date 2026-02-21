@@ -88,7 +88,7 @@ class MarketDataKpiGeneratorTest extends ConfiguredTest {
 
     @Test
     @Transactional
-    void computeDerivedFieldsWithoutPreviousData_thenNothingHappens() {
+    void whenComputeDerivedFieldsWithoutPreviousData_thenNothingHappens() {
         // given
         LocalDate currentDate = LocalDate.of(2023, 12, 15);
         Symbol symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
@@ -140,17 +140,17 @@ class MarketDataKpiGeneratorTest extends ConfiguredTest {
     }
 
     @Test
-    void testComputeMovingAverage() {
+    void computeMovingAverage() {
         assertThat(kpiGenerator.computeMovingAverage(mds, mds.size()).orElseThrow()).isEqualByComparingTo(new BigDecimal("12.0000"));
     }
 
     @Test
-    void testComputeVolatility() {
+    void computeVolatility() {
         assertThat(kpiGenerator.computeVolatility(mds, mds.size()).orElseThrow()).isEqualByComparingTo(new BigDecimal("160.2067"));
     }
 
     @Test
-    void testComputeMovingAverage_prizesAreZero() {
+    void computeMovingAverage_prizesAreZero() {
         OrderedIndexedSet<MarketData> marketDataList = OrderedIndexedSet.of(
                 md(0, 5, 1, 1, 4),
                 md(0, 0, 1, 1, 3),
@@ -168,7 +168,7 @@ class MarketDataKpiGeneratorTest extends ConfiguredTest {
     }
 
     @Test
-    void testComputeVolatility_noGainsNoLoses() {
+    void computeVolatility_noGainsNoLoses() {
         OrderedIndexedSet<MarketData> marketDataList = OrderedIndexedSet.of(
                 md(4, 4, 5, 4, 0),
                 md(4, 4, 4, 3, 1),
@@ -186,7 +186,7 @@ class MarketDataKpiGeneratorTest extends ConfiguredTest {
     }
 
     @Test
-    void testComputeVolatility_notEnoughPreviousClose() {
+    void computeVolatility_notEnoughPreviousClose() {
         OrderedIndexedSet<MarketData> marketDataList = OrderedIndexedSet.of(
                 md(4, 4, 5, 4, 0),
                 md(4, 4, 4, 3, 1),

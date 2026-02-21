@@ -31,7 +31,7 @@ class ShoppingItemJpaServiceTest extends ConfiguredTest {
 
     @Test
     @Transactional
-    void testFindAllByUsername() {
+    void findAllByUsername() {
         Category c1 = new Category().setName("C1").setOrder(1);
         Category c2 = new Category().setName("C2").setOrder(2);
         categoryService.createAll(Set.of(c1, c2));
@@ -72,7 +72,7 @@ class ShoppingItemJpaServiceTest extends ConfiguredTest {
 
     @Test
     @Transactional
-    void testUpdateAllShoppingItemQuantities() {
+    void updateAllShoppingItemQuantities() {
         // given: multiple items for admin
         Product p1 = productService.createProductAndOrLinkToUser("P1", "admin").orElseThrow();
         Product p2 = productService.createProductAndOrLinkToUser("P2", "admin").orElseThrow();
@@ -95,7 +95,7 @@ class ShoppingItemJpaServiceTest extends ConfiguredTest {
 
     @Test
     @Transactional
-    void testUpdateShoppingItemQuantity() {
+    void updateShoppingItemQuantity() {
         // given: admin item auto-created and an item for default user
         Product prod = productService.createProductAndOrLinkToUser("P", "admin").orElseThrow();
         shoppingItemService.createAll(

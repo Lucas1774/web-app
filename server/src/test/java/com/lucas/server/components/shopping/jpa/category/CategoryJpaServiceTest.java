@@ -19,7 +19,7 @@ class CategoryJpaServiceTest extends ConfiguredTest {
 
     @Test
     @Transactional
-    void testFindAllByOrderByOrderAsc() {
+    void findAllByOrderByOrderAsc() {
         // given
         Category category1 = new Category()
                 .setName("x")
@@ -48,7 +48,7 @@ class CategoryJpaServiceTest extends ConfiguredTest {
 
     @Test
     @Transactional
-    void testUpdateOrders() {
+    void updateOrders() {
         // given: two categories with reversed order values
         Category c1 = new Category().setName("A").setOrder(2);
         Category c2 = new Category().setName("B").setOrder(1);

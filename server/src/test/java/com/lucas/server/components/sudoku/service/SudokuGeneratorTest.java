@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Random;
 
 import static com.lucas.server.common.Constants.SUDOKU_SIZE;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class SudokuGeneratorTest {
 
@@ -16,13 +16,13 @@ class SudokuGeneratorTest {
     private final SudokuSolver solver = new SudokuSolver();
     private final SudokuGenerator generator = new SudokuGenerator(solver, random);
 
-
     @Test
     void generationConstraints() {
         for (int i = 0; NUM_RUNS > i; i++) {
             int difficulty = random.nextInt(SUDOKU_SIZE) + 1;
             Sudoku sudoku = generator.generate(difficulty);
-            assertTrue(solver.isValid(sudoku, difficulty) && solver.solveWithTimeout(sudoku));
+            assertThat(solver.isValid(sudoku, difficulty)).isTrue();
+            assertThat(solver.solveWithTimeout(sudoku)).isTrue();
         }
     }
 }

@@ -33,7 +33,7 @@ import java.util.Set;
 import static com.lucas.server.common.Constants.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
-class RecommendationChatCompletionClientTest extends ConfiguredTest {
+class AssetReportDataProviderTest extends ConfiguredTest {
 
     @Autowired
     private MarketDataJpaService marketDataService;
@@ -54,7 +54,7 @@ class RecommendationChatCompletionClientTest extends ConfiguredTest {
     private AssetReportDataProvider provider;
 
     @Test
-    void testProvide() {
+    void provide() {
         // given: insert 34 days of market data. Needs to be at least 34 and greater than the history days
         Symbol symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
         LocalDate today = LocalDate.now();

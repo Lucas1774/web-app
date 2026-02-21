@@ -11,7 +11,6 @@ import com.lucas.server.components.sudoku.jpa.Sudoku;
 import com.lucas.server.components.sudoku.jpa.SudokuJpaService;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import jakarta.transaction.Transactional;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -39,19 +38,9 @@ class DataAccessTest extends ConfiguredTest {
     @Autowired
     private NamedParameterJdbcTemplate jdbcTemplate;
 
-    @BeforeEach
-    void cleanDatabase() {
-        jdbcTemplate.getJdbcOperations().execute(
-                "TRUNCATE TABLE shopping, products, categories, sudokus, users RESTART IDENTITY CASCADE"
-        );
-        jdbcTemplate.getJdbcOperations().execute(
-                "INSERT INTO users(username, password) VALUES ('admin','admin'), ('default','default')"
-        );
-    }
-
     @Test
     @Transactional
-    void testShoppingCRUD() {
+    void shoppingCRUD() {
         // seed user and category
         jdbcTemplate.getJdbcOperations().execute(
                 "INSERT INTO users(username, password) VALUES('bob','pwd')"
@@ -78,7 +67,7 @@ class DataAccessTest extends ConfiguredTest {
 
     @Test
     @Transactional
-    void testInsertAndRetrieveSudoku() {
+    void insertAndRetrieveSudoku() {
         Sudoku s1 = Sudoku.withDefaultValues();
         sudokuService.createIgnoringDuplicates(Collections.singleton(s1));
         assertThat(sudokuService.findAll())
@@ -89,7 +78,7 @@ class DataAccessTest extends ConfiguredTest {
 
     @Test
     @Transactional
-    void testGetPossibleCategories() {
+    void getPossibleCategories() {
         jdbcTemplate.getJdbcOperations().execute(
                 "INSERT INTO categories(name, category_order) VALUES('x',10),( 'y',20 )"
         );
@@ -99,7 +88,7 @@ class DataAccessTest extends ConfiguredTest {
 
     @Test
     @Transactional
-    void testUpdateOrders() {
+    void updateOrders() {
         // seed categories
         jdbcTemplate.getJdbcOperations().execute(
                 "INSERT INTO categories(name, category_order) VALUES('a',1),('b',2)"
@@ -121,7 +110,7 @@ class DataAccessTest extends ConfiguredTest {
 
     @Test
     @Transactional
-    void testUpdateProductWithExistingCategory() {
+    void updateProductWithExistingCategory() {
         // seed user, category, and product
         jdbcTemplate.getJdbcOperations().execute(
                 "INSERT INTO users(username, password) VALUES('carol','pwd')"
@@ -149,7 +138,7 @@ class DataAccessTest extends ConfiguredTest {
 
     @Test
     @Transactional
-    void testUpdateProductWithNewCategory() {
+    void updateProductWithNewCategory() {
         // seed user and initial product
         jdbcTemplate.getJdbcOperations().execute(
                 "INSERT INTO users(username, password) VALUES('dave','pwd')"
@@ -179,7 +168,7 @@ class DataAccessTest extends ConfiguredTest {
 
     @Test
     @Transactional
-    void testUpdateAllProductQuantity() {
+    void updateAllProductQuantity() {
         // seed user, categories, and two products
         jdbcTemplate.getJdbcOperations().execute(
                 "INSERT INTO users(username, password) VALUES('eve','pwd')"

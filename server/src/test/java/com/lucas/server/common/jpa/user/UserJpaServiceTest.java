@@ -16,11 +16,9 @@ class UserJpaServiceTest extends ConfiguredTest {
 
     @Test
     @Transactional
-    void testUserPasswordFlow() {
+    void userPasswordFlow() {
         // given
-        User user = new User()
-                .setUsername("alice")
-                .setPassword("secret");
+        User user = new User().setUsername("alice").setPassword("secret");
         userService.createAll(Set.of(user));
 
         // when & then

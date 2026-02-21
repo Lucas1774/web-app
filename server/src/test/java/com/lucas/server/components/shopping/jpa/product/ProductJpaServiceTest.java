@@ -33,7 +33,7 @@ class ProductJpaServiceTest extends ConfiguredTest {
 
     @Test
     @Transactional
-    void testCreateProductAndOrLinkToUser() {
+    void createProductAndOrLinkToUser() {
         // given: no products, admin user
         assertThat(productService.findAll()).isEmpty();
         userService.findByUsername("admin")
@@ -82,7 +82,7 @@ class ProductJpaServiceTest extends ConfiguredTest {
 
     @Test
     @Transactional
-    void testUpdateProductCreateCategoryIfNecessary() {
+    void updateProductCreateCategoryIfNecessary() {
         // given: an existing product for admin
         Product original = productService.createProductAndOrLinkToUser("Original", "admin").orElseThrow();
 
@@ -127,7 +127,7 @@ class ProductJpaServiceTest extends ConfiguredTest {
 
     @Test
     @Transactional
-    void testUpdateOrders() {
+    void updateOrders() {
         // given: two categories with reversed order values
         Product p1 = new Product().setName("A").setOrder(2);
         Product p2 = new Product().setName("B").setOrder(1);

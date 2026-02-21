@@ -13,7 +13,7 @@ class CalculatorJpaServiceTest extends ConfiguredTest {
     private CalculatorJpaService calculatorService;
 
     @Test
-    void testComputeAndSaveNumber() {
+    void computeAndSaveNumber() {
         // given
         String number = "1+2";
 
@@ -29,7 +29,7 @@ class CalculatorJpaServiceTest extends ConfiguredTest {
     }
 
     @Test
-    void testComputeAndSaveText() {
+    void computeAndSaveText() {
         // given
         String text = "Hello World";
 

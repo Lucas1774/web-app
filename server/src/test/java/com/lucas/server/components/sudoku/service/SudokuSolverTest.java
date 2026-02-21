@@ -1,15 +1,15 @@
-package com.lucas.server.components.sudoku.jpa;
+package com.lucas.server.components.sudoku.service;
 
-import com.lucas.server.components.sudoku.service.SudokuGenerator;
-import com.lucas.server.components.sudoku.service.SudokuSolver;
+import com.lucas.server.components.sudoku.jpa.Sudoku;
 import org.junit.jupiter.api.Test;
 
 import java.util.Random;
 
 import static com.lucas.server.common.Constants.SUDOKU_SIZE;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class SudokuTest {
+class SudokuSolverTest {
 
     private static final int NUM_RUNS = 1000;
 
@@ -22,7 +22,7 @@ class SudokuTest {
         for (int i = 0; NUM_RUNS > i; i++) {
             Sudoku sudoku = generator.generate(random.nextInt(SUDOKU_SIZE) + 1);
             solver.solve(sudoku);
-            assertTrue(solver.isSolved(sudoku));
+            assertThat(solver.isSolved(sudoku)).isTrue();
         }
     }
 

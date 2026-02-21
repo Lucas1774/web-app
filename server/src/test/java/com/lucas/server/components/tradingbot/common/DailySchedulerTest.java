@@ -40,7 +40,7 @@ class DailySchedulerTest extends ConfiguredTest {
 
     @Test
     @Transactional
-    void schedulerShouldInvokeClientRepeatedly() {
+    void schedulerInvokesDataManagerRepeatedly() {
         doReturn(true).when(dailyScheduler).shouldRun(any());
         doNothing().when(dailyScheduler).sleep();
         await().atMost(Duration.ofSeconds(10))

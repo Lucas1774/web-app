@@ -9,8 +9,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.stream.Stream;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class StringToSudokuMapperTest {
 
@@ -48,14 +48,14 @@ class StringToSudokuMapperTest {
 
     @ParameterizedTest
     @MethodSource("getSudoku")
-    void testMap(String value, boolean serializable, boolean isSolvable, boolean isActuallySolvable) throws MappingException {
+    void map(String value, boolean serializable, boolean isSolvable, boolean isActuallySolvable) throws MappingException {
         if (!serializable) {
             assertThatThrownBy(() -> mapper.map(value)).isInstanceOf(MappingException.class);
         } else {
             Sudoku sudoku = mapper.map(value);
-            assertEquals(isSolvable, solver.isValid(sudoku, -1));
+            assertThat(solver.isValid(sudoku, -1)).isEqualTo(isSolvable);
             if (isSolvable) {
-                assertEquals(isActuallySolvable, solver.solveWithTimeout(sudoku));
+                assertThat(solver.solveWithTimeout(sudoku)).isEqualTo(isActuallySolvable);
             }
         }
     }
