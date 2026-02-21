@@ -344,31 +344,37 @@ const Portfolio = ({ onClose = () => { } }) => {
         const action = event.nativeEvent.submitter.value;
         if (!password || "validate" !== action) {
             setMessage("No password provided. Continuing as guest");
-            setTimeout(() => {
+            setTimeout(async () => {
                 setMessage(null);
                 setIsLoading(true);
                 setIsLoginFormVisible(false);
                 getData();
+                const res = await get("/recommendations/models");
+                setModels(res.data);
             }, constants.TIMEOUT_DELAY);
         } else {
             setIsLoading(true);
             try {
                 await post('/authentication/login', { [constants.USERNAME]: username, [constants.PASSWORD]: password });
                 setMessage("Login successful");
-                setTimeout(() => {
+                setTimeout(async () => {
                     setMessage(null);
                     setIsLoading(true);
                     setIsLoginFormVisible(false);
                     getData();
+                    const res = await get("/recommendations/models");
+                    setModels(res.data);
                 }, constants.TIMEOUT_DELAY);
             } catch (error) {
                 if (error.response?.status === 403) {
                     setMessage("Wrong credentials. Continuing as guest");
-                    setTimeout(() => {
+                    setTimeout(async () => {
                         setMessage(null);
                         setIsLoading(true);
                         setIsLoginFormVisible(false);
                         getData();
+                        const res = await get("/recommendations/models");
+                        setModels(res.data);
                     }, constants.TIMEOUT_DELAY);
                 } else {
                     handleError("Error sending data", error);
