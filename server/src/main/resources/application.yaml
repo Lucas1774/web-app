@@ -1,5 +1,6 @@
 security:
   ip-address: ${SOME_IP_ADDRESS}
+  api-key: ${API_KEY}
 
 scheduler:
   market-data-cron: "0 0 0 * * *" # Every day at midnight UTC

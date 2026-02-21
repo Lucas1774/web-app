@@ -51,9 +51,8 @@ public class AuthenticationController {
 
     @GetMapping("/check-auth")
     public ResponseEntity<Void> checkAuth(HttpServletRequest request) {
-        if (controllerUtil.retrieveAuthCookie(request.getCookies()).isPresent()) {
-            return ResponseEntity.ok().build();
-        }
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        return controllerUtil.retrieveAuthCookie(request.getCookies())
+                .<ResponseEntity<Void>>map(cookie -> ResponseEntity.ok().build())
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.FORBIDDEN).build());
     }
 }

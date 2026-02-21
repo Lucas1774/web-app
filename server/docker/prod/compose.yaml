@@ -23,6 +23,7 @@ services:
       - "443:443"
     environment:
       SOME_IP_ADDRESS: ${SOME_IP_ADDRESS}
+      API_KEY: ${API_KEY}
       KEY_STORE_PASSWORD: ${KEY_STORE_PASSWORD}
 
       ADMIN_USERS: ${ADMIN_USERS}

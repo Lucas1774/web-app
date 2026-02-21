@@ -71,6 +71,14 @@ public class ControllerUtil {
                 .findFirst();
     }
 
+    public <T> Optional<ResponseEntity<T>> getUnauthorizedResponseIfInvalidUser(Cookie[] cookies) {
+        String username = retrieveUsername(cookies);
+        if (DEFAULT_USERNAME.equals(username)) {
+            return Optional.of(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
+        }
+        return Optional.empty();
+    }
+
     private boolean isTokenValid(String token) {
         try {
             verifier.verify(token);

@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static com.lucas.server.common.Constants.DEFAULT_USERNAME;
 import static com.lucas.utils.Utils.EMPTY_STRING;
 
 @RestController
@@ -61,11 +60,8 @@ public class ShoppingController {
 
     @PostMapping("/update-product")
     public ResponseEntity<Product> updateProduct(HttpServletRequest request, @RequestBody Product product) {
-        String username = controllerUtil.retrieveUsername(request.getCookies());
-        if (DEFAULT_USERNAME.equals(username)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        return ResponseEntity.ok(productService.updateProductCreateCategoryIfNecessary(product));
+        return controllerUtil.<Product>getUnauthorizedResponseIfInvalidUser(request.getCookies())
+                .orElseGet(() -> ResponseEntity.ok(productService.updateProductCreateCategoryIfNecessary(product)));
     }
 
     @PostMapping("/update-product-quantity")
@@ -85,14 +81,13 @@ public class ShoppingController {
 
     @PostMapping("update-sortables")
     public <T extends Sortable> ResponseEntity<Set<T>> updateSortable(HttpServletRequest request, @RequestBody List<T> elements) {
-        String username = controllerUtil.retrieveUsername(request.getCookies());
-        if (DEFAULT_USERNAME.equals(username)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        if (elements.isEmpty()) {
-            return ResponseEntity.ok(Collections.emptySet());
-        }
-        return ResponseEntity.ok(getService(elements).updateOrders(OrderedIndexedSet.copyOf(elements)));
+        return controllerUtil.<Set<T>>getUnauthorizedResponseIfInvalidUser(request.getCookies())
+                .orElseGet(() -> {
+                    if (elements.isEmpty()) {
+                        return ResponseEntity.ok(Collections.emptySet());
+                    }
+                    return ResponseEntity.ok(getService(elements).updateOrders(OrderedIndexedSet.copyOf(elements)));
+                });
     }
 
     @SuppressWarnings("unchecked")

@@ -35,6 +35,6 @@ public class CalculatorController {
     public ResponseEntity<Calculator> get() {
         return calculatorService.find()
                 .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 }

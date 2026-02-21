@@ -89,8 +89,9 @@ public class RecommendationsController {
     }
 
     @DeleteMapping("/purge")
-    public ResponseEntity<Set<Recommendation>> purge(@RequestParam int toKeep) {
-        return ResponseEntity.ok(jpaService.removeOldRecommendations(toKeep));
+    public ResponseEntity<Set<Recommendation>> purge(HttpServletRequest request, @RequestParam int toKeep) {
+        return controllerUtil.<Set<Recommendation>>getUnauthorizedResponseIfInvalidUser(request.getCookies())
+                .orElseGet(() -> ResponseEntity.ok(jpaService.removeOldRecommendations(toKeep)));
     }
 
     private PortfolioType getPortfolioType(String username) {

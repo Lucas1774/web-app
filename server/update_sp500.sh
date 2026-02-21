@@ -3,13 +3,14 @@ set -euo pipefail
 
 export LC_ALL=C.UTF-8
 
-if [[ $# -ne 2 ]]; then
-  echo "Usage: $0 <user> <password>"
+if [[ $# -ne 3 ]]; then
+  echo "Usage: $0 <user> <password> <api-key>"
   exit 1
 fi
 
 USER="$1"
 PASSWORD="$2"
+API_KEY="$3"
 VM_HOST="ferafera.ddns.net"
 
 if ! git diff-index HEAD --quiet; then
@@ -47,7 +48,7 @@ until curl -f -k -u "$USER:$PASSWORD" "https://$VM_HOST/actuator/health"; do
 done
 echo
 echo "Fetching historic data for new symbols: $ADDED_SYMBOLS"
-curl -f -k -u "$USER:$PASSWORD" "https://$VM_HOST/market/historic/$ADDED_SYMBOLS" > /dev/null
+curl -f -k -u "$USER:$PASSWORD" -H "X-API-Key: $API_KEY" "https://$VM_HOST/market/historic/api/$ADDED_SYMBOLS" > /dev/null
 
 echo "Updating IBKR watchlist"
 python src/main/resources/python/ibkr/update_sp500_watchlist.py "$CONSTANTS_FILE"
