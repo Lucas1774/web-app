@@ -54,7 +54,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ManualRunTest extends BaseTest {
 
     private static final Set<String> SYMBOL_NAMES = Set.of("AAPL", "NVDA", "MSFT", "AMZN", "META", "TSLA", "GOOGL");
-    private static final LocalDate FROM = LocalDate.of(2025, 12, 1); // inclusive
+    private static final LocalDate FROM = LocalDate.of(2026, 2, 1); // inclusive
     private static final LocalDate TO = LocalDate.now().plusDays(1); // exclusive
 
     @Autowired
@@ -85,7 +85,7 @@ class ManualRunTest extends BaseTest {
                 .orElse(null);
     }
 
-    private static String summaryOf(Stats s, String label) {
+    private static String summaryOf(Stats s, String label, String exitLabel) {
         if (null == s || 0 == s.count) return label + ": (no data)";
         BigDecimal cnt = BigDecimal.valueOf(s.count);
         BigDecimal avgClose = s.sumClose.divide(cnt, 8, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
@@ -94,22 +94,22 @@ class ManualRunTest extends BaseTest {
         return String.format(
                 "%s%n" +
                         "Sample size: %d%n" +
-                        "Avg close profit: %+.2f%%%n" +
+                        "Avg %s profit: %+.2f%%%n" +
                         "Avg max profit: %+.2f%%%n" +
                         "Avg max loss: %+.2f%%%n" +
-                        "Max gain at close: %+.2f%%%n" +
-                        "Max loss at close: %+.2f%%%n" +
+                        "Max gain at %s: %+.2f%%%n" +
+                        "Max loss at %s: %+.2f%%%n" +
                         "Max possible gain: %+.2f%%%n" +
                         "Min possible gain: %+.2f%%%n" +
                         "Min possible loss: %+.2f%%%n" +
                         "Max possible loss: %+.2f%%",
                 label,
                 s.count,
-                avgClose,
+                exitLabel, avgClose,
                 avgHigh,
                 avgLow,
-                s.maxClose.multiply(BigDecimal.valueOf(100)),
-                s.minClose.multiply(BigDecimal.valueOf(100)),
+                exitLabel, s.maxClose.multiply(BigDecimal.valueOf(100)),
+                exitLabel, s.minClose.multiply(BigDecimal.valueOf(100)),
                 s.maxHigh.multiply(BigDecimal.valueOf(100)),
                 s.minHigh.multiply(BigDecimal.valueOf(100)),
                 s.maxLow.multiply(BigDecimal.valueOf(100)),
@@ -132,7 +132,7 @@ class ManualRunTest extends BaseTest {
     }
 
     private static Stream<Arguments> daysAndSectors() {
-        return IntStream.of(0, 1, 2, 3)
+        return IntStream.of(0, 1, 2, 3, 4, 5)
                 .boxed()
                 .flatMap(day -> sectorsWithNullFirst().map(sector -> Arguments.of(day, sector)));
     }
@@ -219,7 +219,7 @@ class ManualRunTest extends BaseTest {
                         .stream())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        processAndPrintResults(mdsWithNextDayPrice, from, to, sector);
+        processAndPrintResults(mdsWithNextDayPrice, from, to, sector, "close");
     }
 
     @ParameterizedTest
@@ -271,7 +271,7 @@ class ManualRunTest extends BaseTest {
                         .stream())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        processAndPrintResults(msAsMdByKey, FROM, TO, sector);
+        processAndPrintResults(msAsMdByKey, FROM, TO, sector, time.toString());
     }
 
     private Set<Long> getSymbolIdsFor(Sector sector) {
@@ -281,7 +281,7 @@ class ManualRunTest extends BaseTest {
                 .collect(Collectors.toSet());
     }
 
-    private void processAndPrintResults(Map<SymDate, MarketData> mdByKey, LocalDate from, LocalDate to, Sector sector) {
+    private void processAndPrintResults(Map<SymDate, MarketData> mdByKey, LocalDate from, LocalDate to, Sector sector, String exitLabel) {
         System.out.println("=================================================");
         System.out.println("SECTOR: " + (null == sector ? "GLOBAL" : sector.name()));
         System.out.println("Range: " + from + " - " + to);
@@ -306,15 +306,15 @@ class ManualRunTest extends BaseTest {
                     .divide(denominator, 8, RoundingMode.HALF_UP)
                     .multiply(BigDecimal.valueOf(100));
 
-            System.out.printf("Absolute avg-close difference (filtered - all): %+.2f%%%n", absDiff);
+            System.out.printf("Absolute avg-%s difference (filtered - all): %+.2f%%%n", exitLabel, absDiff);
             System.out.println("Relative difference vs all: " + relDiff.setScale(2, RoundingMode.HALF_UP) + "%");
         } else {
             System.out.println("Not enough data to compute uplifts.");
         }
 
-        System.out.println(summaryOf(filteredStats, "FILTERED"));
-        System.out.println(summaryOf(allStats, "ALL"));
-        System.out.println(summaryOf(baselineStats, "BASELINE"));
+        System.out.println(summaryOf(filteredStats, "FILTERED", exitLabel));
+        System.out.println(summaryOf(allStats, "ALL", exitLabel));
+        System.out.println(summaryOf(baselineStats, "BASELINE", exitLabel));
 
         BigDecimal onePct = BigDecimal.valueOf(0.01);
         BigDecimal minusOnePct = onePct.negate();
@@ -397,7 +397,7 @@ class ManualRunTest extends BaseTest {
         return baseline.entrySet()
                 .stream()
                 .filter(e -> {
-                    if (!BUY.equals(e.getKey().getAction()) || 0 > e.getKey().getConfidence().compareTo(BigDecimal.valueOf(0.75))) {
+                    if (!BUY.equals(e.getKey().getAction()) || 0 > e.getKey().getConfidence().compareTo(BigDecimal.valueOf(0.8))) {
                         return false;
                     }
                     BigDecimal gapPct = e.getValue().getOpen()
