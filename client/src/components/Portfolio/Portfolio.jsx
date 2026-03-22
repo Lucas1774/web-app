@@ -99,11 +99,14 @@ const Portfolio = ({ onClose = () => { } }) => {
         if (!model) {
             return "";
         }
-        if (model === "gpt-4.1" || model.includes("gpt-4.1-")) {
+        if (model.startsWith("gpt-4.1")) {
             return "gpt-4.1";
         }
-        if (model === "grok-3" || model.includes("grok-3-")) {
+        if (model.startsWith("grok-3")) {
             return "grok-3";
+        }
+        if (model.startsWith("deepseek-r1-0528")) {
+            return "deepseek-r1-0528";
         }
         return model;
     }

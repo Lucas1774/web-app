@@ -305,6 +305,15 @@ ai:
       requests-per-minute: 4
       chunk-size: 5
       fix-me: false
+    - name: command-r-2024
+      api-key: ${GITHUB_KEY}
+      url: ${GITHUB_URL}
+      model: cohere/cohere-command-r-08-2024
+      temperature: 0
+      max-tokens: 4000
+      requests-per-minute: 4
+      chunk-size: 5
+      fix-me: false
     - name: mistral-nemo
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
@@ -348,7 +357,7 @@ ai:
       temperature: 0
       max-tokens: 4000
       requests-per-minute: 1
-      chunk-size: 5
+      chunk-size: 2
       fix-me: false
     - name: deepseek-r1-0528
       api-key: ${GITHUB_KEY}
@@ -357,16 +366,106 @@ ai:
       temperature: 0
       max-tokens: 4000
       requests-per-minute: 1
-      chunk-size: 5
+      chunk-size: 2
       fix-me: false
-    - name: command-r-plus
-      api-key: ${GITHUB_KEY}
+    - name: deepseek-r1-0528-2
+      api-key: ${AI_FOUNDRY_KEY}
       url: ${GITHUB_URL}
-      model: cohere/cohere-command-r-plus
+      model: deepseek/deepseek-r1-0528
       temperature: 0
       max-tokens: 4000
-      requests-per-minute: 4
-      chunk-size: 5
+      requests-per-minute: 1
+      chunk-size: 2
+      fix-me: false
+    - name: deepseek-r1-0528-3
+      api-key: ${AI_FOUNDRY_KEY_2}
+      url: ${GITHUB_URL}
+      model: deepseek/deepseek-r1-0528
+      temperature: 0
+      max-tokens: 4000
+      requests-per-minute: 1
+      chunk-size: 2
+      fix-me: false
+    - name: deepseek-r1-0528-4
+      api-key: ${AI_FOUNDRY_KEY_3}
+      url: ${GITHUB_URL}
+      model: deepseek/deepseek-r1-0528
+      temperature: 0
+      max-tokens: 4000
+      requests-per-minute: 1
+      chunk-size: 2
+      fix-me: false
+    - name: deepseek-r1-0528-5
+      api-key: ${AI_FOUNDRY_KEY_4}
+      url: ${GITHUB_URL}
+      model: deepseek/deepseek-r1-0528
+      temperature: 0
+      max-tokens: 4000
+      requests-per-minute: 1
+      chunk-size: 2
+      fix-me: false
+    - name: deepseek-r1-0528-6
+      api-key: ${AI_FOUNDRY_KEY_5}
+      url: ${GITHUB_URL}
+      model: deepseek/deepseek-r1-0528
+      temperature: 0
+      max-tokens: 4000
+      requests-per-minute: 1
+      chunk-size: 2
+      fix-me: false
+    - name: deepseek-r1-0528-specialist
+      api-key: ${GITHUB_KEY}
+      url: ${GITHUB_URL}
+      model: deepseek/deepseek-r1-0528
+      temperature: 0
+      max-tokens: 4000
+      requests-per-minute: 1
+      chunk-size: 1
+      fix-me: false
+    - name: deepseek-r1-0528-2-specialist
+      api-key: ${AI_FOUNDRY_KEY}
+      url: ${GITHUB_URL}
+      model: deepseek/deepseek-r1-0528
+      temperature: 0
+      max-tokens: 4000
+      requests-per-minute: 1
+      chunk-size: 1
+      fix-me: false
+    - name: deepseek-r1-0528-3-specialist
+      api-key: ${AI_FOUNDRY_KEY_2}
+      url: ${GITHUB_URL}
+      model: deepseek/deepseek-r1-0528
+      temperature: 0
+      max-tokens: 4000
+      requests-per-minute: 1
+      chunk-size: 1
+      fix-me: false
+    - name: deepseek-r1-0528-4-specialist
+      api-key: ${AI_FOUNDRY_KEY_3}
+      url: ${GITHUB_URL}
+      model: deepseek/deepseek-r1-0528
+      temperature: 0
+      max-tokens: 4000
+      requests-per-minute: 1
+      chunk-size: 1
+      fix-me: false
+    - name: deepseek-r1-0528-5-specialist
+      api-key: ${AI_FOUNDRY_KEY_4}
+      url: ${GITHUB_URL}
+      model: deepseek/deepseek-r1-0528
+      temperature: 0
+      max-tokens: 4000
+      requests-per-minute: 1
+      chunk-size: 1
+      fix-me: false
+    - name: deepseek-r1-0528-6-specialist
+      api-key: ${AI_FOUNDRY_KEY_5}
+      url: ${GITHUB_URL}
+      model: deepseek/deepseek-r1-0528
+      temperature: 0
+      max-tokens: 4000
+      requests-per-minute: 1
+      chunk-size: 1
       fix-me: false
     - name: o4-mini
       api-key: ${GITHUB_KEY}

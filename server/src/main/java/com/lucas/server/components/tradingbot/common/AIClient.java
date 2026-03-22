@@ -10,6 +10,7 @@ import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import lombok.Getter;
 
 import java.util.Map;
+import java.util.function.UnaryOperator;
 
 import static com.lucas.server.common.Constants.*;
 import static com.lucas.utils.Utils.EMPTY_STRING;
@@ -22,12 +23,14 @@ public class AIClient {
     private final SlidingWindowRateLimiter rateLimiter;
     private final ObjectMapper objectMapper;
     private final HttpRequestClient httpClient;
+    private final UnaryOperator<String> responseSanitizer;
 
-    public AIClient(AIProperties.DeploymentProperties config, SlidingWindowRateLimiter rateLimiter, ObjectMapper objectMapper, HttpRequestClient httpClient) {
+    public AIClient(AIProperties.DeploymentProperties config, SlidingWindowRateLimiter rateLimiter, ObjectMapper objectMapper, HttpRequestClient httpClient, UnaryOperator<String> responseSanitizer) {
         this.config = config;
         this.rateLimiter = rateLimiter;
         this.objectMapper = objectMapper;
         this.httpClient = httpClient;
+        this.responseSanitizer = responseSanitizer;
     }
 
     public String complete(OrderedIndexedSet<JsonNode> prompt) throws ClientException {
@@ -47,7 +50,8 @@ public class AIClient {
 
         );
 
-        return httpClient.fetch(config.url(), config.apiKey(), body, true).get("choices").get(0).get("message").get(CONTENT).asText()
+        String raw = httpClient.fetch(config.url(), config.apiKey(), body, true).get("choices").get(0).get("message").get(CONTENT).asText();
+        return responseSanitizer.apply(raw)
                 .replace("```", EMPTY_STRING)
                 .replace("json", EMPTY_STRING);
     }

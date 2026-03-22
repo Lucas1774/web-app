@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 import static com.lucas.server.common.Constants.*;
@@ -17,6 +18,16 @@ import static com.lucas.utils.Utils.EMPTY_STRING;
 
 @Configuration
 public class HttpClientConfig {
+
+    private static final String THINK_CLOSE_TAG = "</think>";
+    private static final UnaryOperator<String> STRIP_THINKING_BLOCK =
+            raw -> {
+                int end = raw.indexOf(THINK_CLOSE_TAG);
+                if (0 <= end) {
+                    return raw.substring(end + THINK_CLOSE_TAG.length()).trim();
+                }
+                return raw;
+            };
 
     @Bean
     public Map<String, SlidingWindowRateLimiter> rateLimiter(AIProperties aiProps) {
@@ -42,19 +53,24 @@ public class HttpClientConfig {
                                 config,
                                 new SlidingWindowRateLimiter(1, Duration.ofMinutes(1).dividedBy(config.requestsPerMinute())),
                                 objectMapper,
-                                httpClient
+                                httpClient,
+                                getModelsWithThinkingBlock().contains(config.name()) ? STRIP_THINKING_BLOCK : UnaryOperator.identity()
                         )
                 ));
         res.putAll(aiProps.getDeployments().stream()
                 .filter(d -> d.name().contains("-specialist"))
                 .collect(Collectors.toMap(
                         AIProperties.DeploymentProperties::name,
-                        config -> new AIClient(
-                                config,
-                                res.get(config.name().replace("-specialist", EMPTY_STRING)).getRateLimiter(),
-                                objectMapper,
-                                httpClient
-                        )
+                        config -> {
+                            String baseName = config.name().replace("-specialist", EMPTY_STRING);
+                            return new AIClient(
+                                    config,
+                                    res.get(baseName).getRateLimiter(),
+                                    objectMapper,
+                                    httpClient,
+                                    getModelsWithThinkingBlock().contains(baseName) ? STRIP_THINKING_BLOCK : UnaryOperator.identity()
+                            );
+                        }
                 )));
         return res;
     }
