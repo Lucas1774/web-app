@@ -96,9 +96,8 @@ public class Constants {
             LocalDate.of(2026, 11, 26), // Thanksgiving
             LocalDate.of(2026, 12, 25)  // Christmas Day
     );
-    private static final Set<Clients> FINE_GRAIN_CLIENTS = Set.of(DEEPSEEK_R1_0528_SPECIALIST,
-            DEEPSEEK_R1_0528_2_SPECIALIST, DEEPSEEK_R1_0528_3_SPECIALIST, DEEPSEEK_R1_0528_4_SPECIALIST,
-            DEEPSEEK_R1_0528_5_SPECIALIST, DEEPSEEK_R1_0528_6_SPECIALIST);
+    private static final Set<Clients> FINE_GRAIN_CLIENTS = Set.of(DEEPSEEK_R1_0528, DEEPSEEK_R1_0528_2,
+            DEEPSEEK_R1_0528_3, DEEPSEEK_R1_0528_4, DEEPSEEK_R1_0528_5, DEEPSEEK_R1_0528_6);
     private static final Set<Clients> RECOMMENDATION_CLIENTS = Set.of(GPT_4_1, GPT_4_1_2, GPT_4_1_3, GPT_4_1_4, GPT_4_1_5, GPT_4_1_6);
     private static final Set<Clients> RANDOM_RECOMMENDATION_CLIENTS = Set.of(GPT_4_1, GPT_4_1_2, GPT_4_1_3, GPT_4_1_4, GPT_4_1_5, GPT_4_1_6);
     private static final Map<RecommendationMode, Set<String>> modeToClientNames = new EnumMap<>(Map.of(

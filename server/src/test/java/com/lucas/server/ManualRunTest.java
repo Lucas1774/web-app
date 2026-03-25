@@ -1,5 +1,6 @@
 package com.lucas.server;
 
+import com.lucas.server.components.tradingbot.common.AIClient;
 import com.lucas.server.components.tradingbot.common.DailyScheduler;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolRepository;
@@ -71,6 +72,9 @@ class ManualRunTest extends BaseTest {
 
     @Autowired
     private DailyScheduler dailyScheduler;
+
+    @Autowired
+    private Map<String, AIClient> allClients;
 
     private static Stats computeStats(Set<MarketData> mds) {
         return mds.stream()
@@ -397,7 +401,12 @@ class ManualRunTest extends BaseTest {
         return baseline.entrySet()
                 .stream()
                 .filter(e -> {
-                    if (!BUY.equals(e.getKey().getAction()) || 0 > e.getKey().getConfidence().compareTo(BigDecimal.valueOf(0.8))) {
+                    if (!BUY.equals(e.getKey().getAction())
+                            || 0 > e.getKey().getConfidence().compareTo(BigDecimal.valueOf(0.8))
+                            || !filterClients(allClients, RecommendationMode.FINE_GRAIN).stream()
+                            .map(c -> c.getConfig().name())
+                            .collect(Collectors.toSet())
+                            .contains(e.getKey().getModel())) {
                         return false;
                     }
                     BigDecimal gapPct = e.getValue().getOpen()
