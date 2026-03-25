@@ -2,7 +2,12 @@
 
 ENV_FILE=".env"
 
-KEYSTORE_PASSWORD=$(grep -oP '^KEY_STORE_PASSWORD\s*=\s*\K.*' "$ENV_FILE" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+KEYSTORE_PASSWORD=$(awk -F '=' '/^KEY_STORE_PASSWORD[[:space:]]*=/ {
+  val=$2
+  sub(/^[[:space:]]*/, "", val)
+  sub(/[[:space:]]*$/, "", val)
+  print val
+}' "$ENV_FILE")
 
 if [ -z "$KEYSTORE_PASSWORD" ]; then
   echo "Key store password not found in $ENV_FILE"
