@@ -41,7 +41,8 @@ ai:
       model: openai/gpt-4.1
       temperature: 0
       max-tokens: 4000
-      requests-per-minute: 4
+      requests-per-minute: 10
+      concurrent-requests: 2
       chunk-size: 5
       fix-me: false
     - name: gpt-4.1-2
@@ -50,7 +51,8 @@ ai:
       model: openai/gpt-4.1
       temperature: 0
       max-tokens: 4000
-      requests-per-minute: 4
+      requests-per-minute: 10
+      concurrent-requests: 2
       chunk-size: 5
       fix-me: false
     - name: gpt-4.1-3
@@ -59,7 +61,8 @@ ai:
       model: openai/gpt-4.1
       temperature: 0
       max-tokens: 4000
-      requests-per-minute: 4
+      requests-per-minute: 10
+      concurrent-requests: 2
       chunk-size: 5
       fix-me: false
     - name: gpt-4.1-4
@@ -68,7 +71,8 @@ ai:
       model: openai/gpt-4.1
       temperature: 0
       max-tokens: 4000
-      requests-per-minute: 4
+      requests-per-minute: 10
+      concurrent-requests: 2
       chunk-size: 5
       fix-me: false
     - name: gpt-4.1-5
@@ -77,7 +81,8 @@ ai:
       model: openai/gpt-4.1
       temperature: 0
       max-tokens: 4000
-      requests-per-minute: 4
+      requests-per-minute: 10
+      concurrent-requests: 2
       chunk-size: 5
       fix-me: false
     - name: gpt-4.1-6
@@ -86,7 +91,8 @@ ai:
       model: openai/gpt-4.1
       temperature: 0
       max-tokens: 4000
-      requests-per-minute: 4
+      requests-per-minute: 10
+      concurrent-requests: 2
       chunk-size: 5
       fix-me: false
     - name: gpt-4.1-specialist
@@ -95,7 +101,8 @@ ai:
       model: openai/gpt-4.1
       temperature: 0
       max-tokens: 4000
-      requests-per-minute: 4
+      requests-per-minute: 10
+      concurrent-requests: 2
       chunk-size: 1
       fix-me: false
     - name: gpt-4.1-2-specialist
@@ -104,7 +111,8 @@ ai:
       model: openai/gpt-4.1
       temperature: 0
       max-tokens: 4000
-      requests-per-minute: 4
+      requests-per-minute: 10
+      concurrent-requests: 2
       chunk-size: 1
       fix-me: false
     - name: gpt-4.1-3-specialist
@@ -113,7 +121,8 @@ ai:
       model: openai/gpt-4.1
       temperature: 0
       max-tokens: 4000
-      requests-per-minute: 4
+      requests-per-minute: 10
+      concurrent-requests: 2
       chunk-size: 1
       fix-me: false
     - name: gpt-4.1-4-specialist
@@ -122,7 +131,8 @@ ai:
       model: openai/gpt-4.1
       temperature: 0
       max-tokens: 4000
-      requests-per-minute: 4
+      requests-per-minute: 10
+      concurrent-requests: 2
       chunk-size: 1
       fix-me: false
     - name: gpt-4.1-5-specialist
@@ -131,7 +141,8 @@ ai:
       model: openai/gpt-4.1
       temperature: 0
       max-tokens: 4000
-      requests-per-minute: 4
+      requests-per-minute: 10
+      concurrent-requests: 2
       chunk-size: 1
       fix-me: false
     - name: gpt-4.1-6-specialist
@@ -140,7 +151,8 @@ ai:
       model: openai/gpt-4.1
       temperature: 0
       max-tokens: 4000
-      requests-per-minute: 4
+      requests-per-minute: 10
+      concurrent-requests: 2
       chunk-size: 1
       fix-me: false
     - name: gpt-4o
@@ -149,7 +161,8 @@ ai:
       model: openai/gpt-4o
       temperature: 0
       max-tokens: 4000
-      requests-per-minute: 4
+      requests-per-minute: 10
+      concurrent-requests: 2
       chunk-size: 5
       fix-me: false
     - name: gpt-4.1-mini
@@ -158,7 +171,8 @@ ai:
       model: openai/gpt-4.1-mini
       temperature: 0
       max-tokens: 4000
-      requests-per-minute: 4
+      requests-per-minute: 15
+      concurrent-requests: 5
       chunk-size: 5
       fix-me: false
     - name: gpt-4o-mini
@@ -167,7 +181,8 @@ ai:
       model: openai/gpt-4o-mini
       temperature: 0
       max-tokens: 4000
-      requests-per-minute: 4
+      requests-per-minute: 15
+      concurrent-requests: 5
       chunk-size: 5
       fix-me: false
     - name: gpt-4.1-nano
@@ -176,188 +191,9 @@ ai:
       model: openai/gpt-4.1-nano
       temperature: 0
       max-tokens: 4000
-      requests-per-minute: 4
+      requests-per-minute: 15
+      concurrent-requests: 5
       chunk-size: 5
-      fix-me: false
-    - name: deepseek-v3
-      api-key: ${GITHUB_KEY}
-      url: ${GITHUB_URL}
-      model: deepseek/deepseek-V3-0324
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 1
-      chunk-size: 2
-      fix-me: false
-    - name: grok-3
-      api-key: ${GITHUB_KEY}
-      url: ${GITHUB_URL}
-      model: xai/grok-3
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 1
-      chunk-size: 2
-      fix-me: false
-    - name: grok-3-2
-      api-key: ${AI_FOUNDRY_KEY}
-      url: ${GITHUB_URL}
-      model: xai/grok-3
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 1
-      chunk-size: 2
-      fix-me: false
-    - name: grok-3-3
-      api-key: ${AI_FOUNDRY_KEY_2}
-      url: ${GITHUB_URL}
-      model: xai/grok-3
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 1
-      chunk-size: 2
-      fix-me: false
-    - name: grok-3-4
-      api-key: ${AI_FOUNDRY_KEY_3}
-      url: ${GITHUB_URL}
-      model: xai/grok-3
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 1
-      chunk-size: 2
-      fix-me: false
-    - name: grok-3-5
-      api-key: ${AI_FOUNDRY_KEY_4}
-      url: ${GITHUB_URL}
-      model: xai/grok-3
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 1
-      chunk-size: 2
-      fix-me: false
-    - name: grok-3-6
-      api-key: ${AI_FOUNDRY_KEY_5}
-      url: ${GITHUB_URL}
-      model: xai/grok-3
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 1
-      chunk-size: 2
-      fix-me: false
-    - name: llama-3.3-70b
-      api-key: ${GITHUB_KEY}
-      url: ${GITHUB_URL}
-      model: meta/llama-3.3-70b-instruct
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 4
-      chunk-size: 5
-      fix-me: false
-    - name: llama-3.1-405b
-      api-key: ${GITHUB_KEY}
-      url: ${GITHUB_URL}
-      model: meta/meta-llama-3.1-405b-instruct
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 4
-      chunk-size: 5
-      fix-me: false
-    - name: llama-3.1-70b
-      api-key: ${GITHUB_KEY}
-      url: ${GITHUB_URL}
-      model: meta/meta-llama-3.1-70b-instruct
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 4
-      chunk-size: 5
-      fix-me: false
-    - name: llama-3.1-8b
-      api-key: ${GITHUB_KEY}
-      url: ${GITHUB_URL}
-      model: meta/meta-llama-3.1-8b-instruct
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 4
-      chunk-size: 5
-      fix-me: false
-    - name: mistral-large
-      api-key: ${GITHUB_KEY}
-      url: ${GITHUB_URL}
-      model: mistral-ai/mistral-large-2411
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 4
-      chunk-size: 5
-      fix-me: false
-    - name: a21-jamba
-      api-key: ${GITHUB_KEY}
-      url: ${GITHUB_URL}
-      model: ai21-labs/ai21-jamba-1.5-large
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 4
-      chunk-size: 2
-      fix-me: false
-    - name: command-r-plus-2024
-      api-key: ${GITHUB_KEY}
-      url: ${GITHUB_URL}
-      model: cohere/cohere-command-r-plus-08-2024
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 4
-      chunk-size: 5
-      fix-me: false
-    - name: command-r-2024
-      api-key: ${GITHUB_KEY}
-      url: ${GITHUB_URL}
-      model: cohere/cohere-command-r-08-2024
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 4
-      chunk-size: 5
-      fix-me: false
-    - name: mistral-nemo
-      api-key: ${GITHUB_KEY}
-      url: ${GITHUB_URL}
-      model: mistral-ai/mistral-nemo
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 4
-      chunk-size: 5
-      fix-me: false
-    - name: ministral-3b
-      api-key: ${GITHUB_KEY}
-      url: ${GITHUB_URL}
-      model: mistral-ai/ministral-3b
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 4
-      chunk-size: 5
-      fix-me: false
-    - name: phi-4
-      api-key: ${GITHUB_KEY}
-      url: ${GITHUB_URL}
-      model: microsoft/phi-4
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 4
-      chunk-size: 5
-      fix-me: false
-    - name: command-a
-      api-key: ${GITHUB_KEY}
-      url: ${GITHUB_URL}
-      model: cohere/cohere-command-a
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 4
-      chunk-size: 5
-      fix-me: false
-    - name: deepseek-r1
-      api-key: ${GITHUB_KEY}
-      url: ${GITHUB_URL}
-      model: deepseek/deepseek-r1
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 1
-      chunk-size: 2
       fix-me: false
     - name: deepseek-r1-0528
       api-key: ${GITHUB_KEY}
@@ -366,6 +202,7 @@ ai:
       temperature: 0
       max-tokens: 4000
       requests-per-minute: 1
+      concurrent-requests: 1
       chunk-size: 2
       fix-me: false
     - name: deepseek-r1-0528-2
@@ -375,6 +212,7 @@ ai:
       temperature: 0
       max-tokens: 4000
       requests-per-minute: 1
+      concurrent-requests: 1
       chunk-size: 2
       fix-me: false
     - name: deepseek-r1-0528-3
@@ -384,6 +222,7 @@ ai:
       temperature: 0
       max-tokens: 4000
       requests-per-minute: 1
+      concurrent-requests: 1
       chunk-size: 2
       fix-me: false
     - name: deepseek-r1-0528-4
@@ -393,6 +232,7 @@ ai:
       temperature: 0
       max-tokens: 4000
       requests-per-minute: 1
+      concurrent-requests: 1
       chunk-size: 2
       fix-me: false
     - name: deepseek-r1-0528-5
@@ -402,6 +242,7 @@ ai:
       temperature: 0
       max-tokens: 4000
       requests-per-minute: 1
+      concurrent-requests: 1
       chunk-size: 2
       fix-me: false
     - name: deepseek-r1-0528-6
@@ -411,6 +252,7 @@ ai:
       temperature: 0
       max-tokens: 4000
       requests-per-minute: 1
+      concurrent-requests: 1
       chunk-size: 2
       fix-me: false
     - name: deepseek-r1-0528-specialist
@@ -420,6 +262,7 @@ ai:
       temperature: 0
       max-tokens: 4000
       requests-per-minute: 1
+      concurrent-requests: 1
       chunk-size: 1
       fix-me: false
     - name: deepseek-r1-0528-2-specialist
@@ -429,6 +272,7 @@ ai:
       temperature: 0
       max-tokens: 4000
       requests-per-minute: 1
+      concurrent-requests: 1
       chunk-size: 1
       fix-me: false
     - name: deepseek-r1-0528-3-specialist
@@ -438,6 +282,7 @@ ai:
       temperature: 0
       max-tokens: 4000
       requests-per-minute: 1
+      concurrent-requests: 1
       chunk-size: 1
       fix-me: false
     - name: deepseek-r1-0528-4-specialist
@@ -447,6 +292,7 @@ ai:
       temperature: 0
       max-tokens: 4000
       requests-per-minute: 1
+      concurrent-requests: 1
       chunk-size: 1
       fix-me: false
     - name: deepseek-r1-0528-5-specialist
@@ -456,6 +302,7 @@ ai:
       temperature: 0
       max-tokens: 4000
       requests-per-minute: 1
+      concurrent-requests: 1
       chunk-size: 1
       fix-me: false
     - name: deepseek-r1-0528-6-specialist
@@ -465,60 +312,177 @@ ai:
       temperature: 0
       max-tokens: 4000
       requests-per-minute: 1
+      concurrent-requests: 1
       chunk-size: 1
       fix-me: false
-    - name: o4-mini
+    - name: deepseek-r1
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: openai/o4-mini
+      model: deepseek/deepseek-r1
       temperature: 0
       max-tokens: 4000
-      requests-per-minute: 4
+      requests-per-minute: 1
+      concurrent-requests: 1
+      chunk-size: 2
+      fix-me: false
+    - name: deepseek-v3
+      api-key: ${GITHUB_KEY}
+      url: ${GITHUB_URL}
+      model: deepseek/deepseek-V3-0324
+      temperature: 0
+      max-tokens: 4000
+      requests-per-minute: 10
+      concurrent-requests: 2
+      chunk-size: 2
+      fix-me: false
+    - name: grok-3
+      api-key: ${GITHUB_KEY}
+      url: ${GITHUB_URL}
+      model: xai/grok-3
+      temperature: 0
+      max-tokens: 4000
+      requests-per-minute: 1
+      concurrent-requests: 1
+      chunk-size: 2
+      fix-me: false
+    - name: grok-3-2
+      api-key: ${AI_FOUNDRY_KEY}
+      url: ${GITHUB_URL}
+      model: xai/grok-3
+      temperature: 0
+      max-tokens: 4000
+      requests-per-minute: 1
+      concurrent-requests: 1
+      chunk-size: 2
+      fix-me: false
+    - name: grok-3-3
+      api-key: ${AI_FOUNDRY_KEY_2}
+      url: ${GITHUB_URL}
+      model: xai/grok-3
+      temperature: 0
+      max-tokens: 4000
+      requests-per-minute: 1
+      concurrent-requests: 1
+      chunk-size: 2
+      fix-me: false
+    - name: grok-3-4
+      api-key: ${AI_FOUNDRY_KEY_3}
+      url: ${GITHUB_URL}
+      model: xai/grok-3
+      temperature: 0
+      max-tokens: 4000
+      requests-per-minute: 1
+      concurrent-requests: 1
+      chunk-size: 2
+      fix-me: false
+    - name: grok-3-5
+      api-key: ${AI_FOUNDRY_KEY_4}
+      url: ${GITHUB_URL}
+      model: xai/grok-3
+      temperature: 0
+      max-tokens: 4000
+      requests-per-minute: 1
+      concurrent-requests: 1
+      chunk-size: 2
+      fix-me: false
+    - name: grok-3-6
+      api-key: ${AI_FOUNDRY_KEY_5}
+      url: ${GITHUB_URL}
+      model: xai/grok-3
+      temperature: 0
+      max-tokens: 4000
+      requests-per-minute: 1
+      concurrent-requests: 1
+      chunk-size: 2
+      fix-me: false
+    - name: llama-3.3-70b
+      api-key: ${GITHUB_KEY}
+      url: ${GITHUB_URL}
+      model: meta/llama-3.3-70b-instruct
+      temperature: 0
+      max-tokens: 4000
+      requests-per-minute: 10
+      concurrent-requests: 2
       chunk-size: 5
       fix-me: false
-    - name: o3
+    - name: llama-3.1-405b
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: openai/o3
+      model: meta/meta-llama-3.1-405b-instruct
       temperature: 0
       max-tokens: 4000
-      requests-per-minute: 4
+      requests-per-minute: 10
+      concurrent-requests: 2
       chunk-size: 5
       fix-me: false
-    - name: o3-mini
+    - name: llama-3.1-8b
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: openai/o3-mini
+      model: meta/meta-llama-3.1-8b-instruct
       temperature: 0
       max-tokens: 4000
-      requests-per-minute: 4
+      requests-per-minute: 15
+      concurrent-requests: 5
       chunk-size: 5
       fix-me: false
-    - name: o1
+    - name: a21-jamba
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: openai/o1
+      model: ai21-labs/ai21-jamba-1.5-large
       temperature: 0
       max-tokens: 4000
-      requests-per-minute: 4
+      requests-per-minute: 10
+      concurrent-requests: 2
+      chunk-size: 2
+      fix-me: false
+    - name: command-r-plus-2024
+      api-key: ${GITHUB_KEY}
+      url: ${GITHUB_URL}
+      model: cohere/cohere-command-r-plus-08-2024
+      temperature: 0
+      max-tokens: 4000
+      requests-per-minute: 10
+      concurrent-requests: 2
       chunk-size: 5
       fix-me: false
-    - name: o1-preview
+    - name: command-r-2024
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: openai/o1-preview
+      model: cohere/cohere-command-r-08-2024
       temperature: 0
       max-tokens: 4000
-      requests-per-minute: 4
+      requests-per-minute: 15
+      concurrent-requests: 5
       chunk-size: 5
       fix-me: false
-    - name: o1-mini
+    - name: command-a
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
-      model: openai/o1-mini
+      model: cohere/cohere-command-a
       temperature: 0
       max-tokens: 4000
-      requests-per-minute: 4
+      requests-per-minute: 15
+      concurrent-requests: 5
+      chunk-size: 5
+      fix-me: false
+    - name: ministral-3b
+      api-key: ${GITHUB_KEY}
+      url: ${GITHUB_URL}
+      model: mistral-ai/ministral-3b
+      temperature: 0
+      max-tokens: 4000
+      requests-per-minute: 15
+      concurrent-requests: 5
+      chunk-size: 5
+      fix-me: false
+    - name: phi-4
+      api-key: ${GITHUB_KEY}
+      url: ${GITHUB_URL}
+      model: microsoft/phi-4
+      temperature: 0
+      max-tokens: 4000
+      requests-per-minute: 15
+      concurrent-requests: 5
       chunk-size: 5
       fix-me: false
 

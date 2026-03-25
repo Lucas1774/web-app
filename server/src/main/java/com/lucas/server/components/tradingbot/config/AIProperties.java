@@ -22,6 +22,7 @@ public class AIProperties {
             double temperature,
             int maxTokens,
             int requestsPerMinute,
+            int concurrentRequests,
             int chunkSize,
             boolean fixMe
     ) {

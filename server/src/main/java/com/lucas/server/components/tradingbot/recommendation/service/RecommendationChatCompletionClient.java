@@ -101,8 +101,8 @@ public class RecommendationChatCompletionClient {
         logger.info(RETRIEVING_DATA_INFO, RECOMMENDATION, symbols);
         try {
             client.getRateLimiter().acquirePermission();
+            client.getConcurrentRequestsRateLimiter().acquirePermission();
             rateLimiters.get(client.getConfig().apiKey()).acquirePermission();
-            rateLimiters.get(AI_PER_SECOND_RATE_LIMITER).acquirePermission();
             logger.info(PROMPTING_MODEL_INFO, client.getConfig().name());
             ObjectNode usedSystemMessage = useOldNews ? systemLongTermMessage : systemMessage;
             OrderedIndexedSet<JsonNode> prompt = OrderedIndexedSet.of(usedSystemMessage, contextMessage, fewShotMessage, reportMessage);
@@ -111,6 +111,9 @@ public class RecommendationChatCompletionClient {
                     prompt.stream().map(p -> sanitizeHtml(p.get(CONTENT).asText())).collect(Collectors.joining("\n\n\n")), client.getConfig().name());
         } catch (Exception e) {
             throw new ClientException(e);
+        } finally {
+            client.getRateLimiter().releasePermission();
+            client.getConcurrentRequestsRateLimiter().releasePermission();
         }
     }
 }

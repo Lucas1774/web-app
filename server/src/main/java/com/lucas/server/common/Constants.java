@@ -49,7 +49,6 @@ public class Constants {
     public static final String RECOMMENDATION = "recommendation";
     public static final String VOLATILITY = "volatility";
     public static final String OBV = "OBV";
-    public static final String AI_PER_SECOND_RATE_LIMITER = "perSecondRateLimiter";
     public static final String TWELVEDATA_RATE_LIMITER = "twelveDataRateLimiter";
     public static final String YAHOO_FINANCE_RATE_LIMITER = "yahooFinanceRateLimiter";
     public static final String SUDOKU_IGNORED_MALFORMED_JSON_WARN = "Couldn't deserialize sudoku from raw data {}";
@@ -206,25 +205,6 @@ public class Constants {
         GPT_4_1_NANO("gpt-4.1-nano"),
         GPT_4O("gpt-4o"),
         GPT_4O_MINI("gpt-4o-mini"),
-        DEEPSEEK_V3("deepseek-v3"),
-        GROK_3("grok-3"),
-        GROK_3_2("grok-3-2"),
-        GROK_3_3("grok-3-3"),
-        GROK_3_4("grok-3-4"),
-        GROK_3_5("grok-3-5"),
-        GROK_3_6("grok-3-6"),
-        LLAMA_3_3_70B("llama-3.3-70b"),
-        LLAMA_3_1_405B("llama-3.1-405b"),
-        LLAMA_3_1_70B("llama-3.1-70b"),
-        LLAMA_3_1_8B("llama-3.1-8b"),
-        MISTRAL_LARGE("mistral-large"),
-        MISTRAL_NEMO("mistral-nemo"),
-        MINISTRAL_3B("ministral-3b"),
-        COMMAND_R_PLUS_2024("command-r-plus-2024"),
-        COMMAND_R_2024("command-r-2024"),
-        COMMAND_A("command-a"),
-        A21_JAMBA("a21-jamba"),
-        PHI_4("phi-4"),
         DEEPSEEK_R1_0528("deepseek-r1-0528"),
         DEEPSEEK_R1_0528_2("deepseek-r1-0528-2"),
         DEEPSEEK_R1_0528_3("deepseek-r1-0528-3"),
@@ -238,12 +218,22 @@ public class Constants {
         DEEPSEEK_R1_0528_5_SPECIALIST("deepseek-r1-0528-5-specialist"),
         DEEPSEEK_R1_0528_6_SPECIALIST("deepseek-r1-0528-6-specialist"),
         DEEPSEEK_R1("deepseek-r1"),
-        O4_MINI("o4-mini"), // not working
-        O3("o3"), // not working
-        O3_MINI("o3-mini"), // not working
-        O1("o1"), // not working
-        O1_PREVIEW("o1-preview"), // not working
-        O1_MINI("o1-mini"); // not working
+        DEEPSEEK_V3("deepseek-v3"),
+        GROK_3("grok-3"),
+        GROK_3_2("grok-3-2"),
+        GROK_3_3("grok-3-3"),
+        GROK_3_4("grok-3-4"),
+        GROK_3_5("grok-3-5"),
+        GROK_3_6("grok-3-6"),
+        LLAMA_3_3_70B("llama-3.3-70b"),
+        LLAMA_3_1_405B("llama-3.1-405b"),
+        LLAMA_3_1_8B("llama-3.1-8b"),
+        A21_JAMBA("a21-jamba"),
+        COMMAND_R_PLUS_2024("command-r-plus-2024"),
+        COMMAND_R_2024("command-r-2024"),
+        COMMAND_A("command-a"),
+        MINISTRAL_3B("ministral-3b"),
+        PHI_4("phi-4");
 
         private final String label;
 

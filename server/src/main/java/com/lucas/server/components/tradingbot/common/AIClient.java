@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lucas.server.common.HttpRequestClient;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.components.tradingbot.config.AIProperties;
-import com.lucas.utils.SlidingWindowRateLimiter;
+import com.lucas.utils.CompletionSlidingWindowRateLimiter;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import lombok.Getter;
 
@@ -20,14 +20,22 @@ public class AIClient {
     @Getter
     private final AIProperties.DeploymentProperties config;
     @Getter
-    private final SlidingWindowRateLimiter rateLimiter;
+    private final CompletionSlidingWindowRateLimiter rateLimiter;
+    @Getter
+    private final CompletionSlidingWindowRateLimiter concurrentRequestsRateLimiter;
     private final ObjectMapper objectMapper;
     private final HttpRequestClient httpClient;
     private final UnaryOperator<String> responseSanitizer;
 
-    public AIClient(AIProperties.DeploymentProperties config, SlidingWindowRateLimiter rateLimiter, ObjectMapper objectMapper, HttpRequestClient httpClient, UnaryOperator<String> responseSanitizer) {
+    public AIClient(AIProperties.DeploymentProperties config,
+                    CompletionSlidingWindowRateLimiter rateLimiter,
+                    CompletionSlidingWindowRateLimiter concurrentRequestsRateLimiter,
+                    ObjectMapper objectMapper,
+                    HttpRequestClient httpClient,
+                    UnaryOperator<String> responseSanitizer) {
         this.config = config;
         this.rateLimiter = rateLimiter;
+        this.concurrentRequestsRateLimiter = concurrentRequestsRateLimiter;
         this.objectMapper = objectMapper;
         this.httpClient = httpClient;
         this.responseSanitizer = responseSanitizer;

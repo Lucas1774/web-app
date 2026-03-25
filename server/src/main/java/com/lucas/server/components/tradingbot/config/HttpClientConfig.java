@@ -3,6 +3,7 @@ package com.lucas.server.components.tradingbot.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lucas.server.common.HttpRequestClient;
 import com.lucas.server.components.tradingbot.common.AIClient;
+import com.lucas.utils.CompletionSlidingWindowRateLimiter;
 import com.lucas.utils.SlidingWindowRateLimiter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,7 +33,6 @@ public class HttpClientConfig {
     @Bean
     public Map<String, SlidingWindowRateLimiter> rateLimiter(AIProperties aiProps) {
         Map<String, SlidingWindowRateLimiter> res = new HashMap<>();
-        res.put(AI_PER_SECOND_RATE_LIMITER, new SlidingWindowRateLimiter(1, Duration.ofSeconds(1)));
         res.put(TWELVEDATA_RATE_LIMITER, new SlidingWindowRateLimiter(8, Duration.ofMinutes(1)));
         res.put(YAHOO_FINANCE_RATE_LIMITER, new SlidingWindowRateLimiter(1, Duration.ofSeconds(1).dividedBy(4)));
         getFinnhubRateLimiterNames().forEach(name -> res.put(name,
@@ -51,7 +51,8 @@ public class HttpClientConfig {
                         AIProperties.DeploymentProperties::name,
                         config -> new AIClient(
                                 config,
-                                new SlidingWindowRateLimiter(1, Duration.ofMinutes(1).dividedBy(config.requestsPerMinute())),
+                                new CompletionSlidingWindowRateLimiter(config.requestsPerMinute(), Duration.ofMinutes(1)),
+                                new CompletionSlidingWindowRateLimiter(config.concurrentRequests(), Duration.ofSeconds(1)),
                                 objectMapper,
                                 httpClient,
                                 getModelsWithThinkingBlock().contains(config.name()) ? STRIP_THINKING_BLOCK : UnaryOperator.identity()
@@ -66,6 +67,7 @@ public class HttpClientConfig {
                             return new AIClient(
                                     config,
                                     res.get(baseName).getRateLimiter(),
+                                    res.get(baseName).getConcurrentRequestsRateLimiter(),
                                     objectMapper,
                                     httpClient,
                                     getModelsWithThinkingBlock().contains(baseName) ? STRIP_THINKING_BLOCK : UnaryOperator.identity()
