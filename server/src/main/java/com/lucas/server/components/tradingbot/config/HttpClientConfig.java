@@ -20,15 +20,21 @@ import static com.lucas.utils.Utils.EMPTY_STRING;
 @Configuration
 public class HttpClientConfig {
 
-    private static final String THINK_CLOSE_TAG = "</think>";
-    private static final UnaryOperator<String> STRIP_THINKING_BLOCK =
-            raw -> {
-                int end = raw.indexOf(THINK_CLOSE_TAG);
+    private static UnaryOperator<String> sanitizer(boolean stripThinking) {
+        return raw -> {
+            String result = raw;
+            if (stripThinking) {
+                int end = result.indexOf("</think>");
                 if (0 <= end) {
-                    return raw.substring(end + THINK_CLOSE_TAG.length()).trim();
+                    result = result.substring(end + "</think>".length());
                 }
-                return raw;
-            };
+            }
+
+            return result.replace("```json", EMPTY_STRING)
+                    .replace("```", EMPTY_STRING)
+                    .trim();
+        };
+    }
 
     @Bean
     public Map<String, SlidingWindowRateLimiter> rateLimiter(AIProperties aiProps) {
@@ -55,7 +61,7 @@ public class HttpClientConfig {
                                 new CompletionSlidingWindowRateLimiter(config.concurrentRequests(), Duration.ofSeconds(1)),
                                 objectMapper,
                                 httpClient,
-                                getModelsWithThinkingBlock().contains(config.name()) ? STRIP_THINKING_BLOCK : UnaryOperator.identity()
+                                sanitizer(getModelsWithThinkingBlock().contains(config.name()))
                         )
                 ));
         res.putAll(aiProps.getDeployments().stream()
@@ -70,7 +76,7 @@ public class HttpClientConfig {
                                     res.get(baseName).getConcurrentRequestsRateLimiter(),
                                     objectMapper,
                                     httpClient,
-                                    getModelsWithThinkingBlock().contains(baseName) ? STRIP_THINKING_BLOCK : UnaryOperator.identity()
+                                    sanitizer(getModelsWithThinkingBlock().contains(baseName))
                             );
                         }
                 )));

@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.function.UnaryOperator;
 
 import static com.lucas.server.common.Constants.*;
-import static com.lucas.utils.Utils.EMPTY_STRING;
 
 public class AIClient {
 
@@ -58,9 +57,7 @@ public class AIClient {
 
         );
 
-        String raw = httpClient.fetch(config.url(), config.apiKey(), body, true).get("choices").get(0).get("message").get(CONTENT).asText();
-        return responseSanitizer.apply(raw)
-                .replace("```", EMPTY_STRING)
-                .replace("json", EMPTY_STRING);
+        return responseSanitizer.apply(httpClient.fetch(config.url(), config.apiKey(), body, true)
+                .get("choices").get(0).get("message").get(CONTENT).asText());
     }
 }
