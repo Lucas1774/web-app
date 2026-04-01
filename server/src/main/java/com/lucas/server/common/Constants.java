@@ -61,6 +61,7 @@ public class Constants {
     public static final String RETRIEVING_DATA_INFO = "Retrieving {} for {}";
     public static final String PROMPTING_MODEL_INFO = "Prompting model {}";
     public static final String GENERATION_SUCCESSFUL_INFO = "Successfully generated {}";
+    public static final String RECOMMENDATION_COMPLETION_ERROR = "Failed to get recommendations. Completion: {0}";
     public static final String NO_YAHOO_NEWS_ERROR = "No news found in document {0}";
     public static final String MAPPING_ERROR = "Error mapping {0}";
     public static final String INSUFFICIENT_STOCK_ERROR = "{0}: Nothing to sell";

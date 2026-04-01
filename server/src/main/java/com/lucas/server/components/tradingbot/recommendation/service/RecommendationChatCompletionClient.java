@@ -13,9 +13,9 @@ import com.lucas.server.components.tradingbot.recommendation.jpa.Recommendation;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.AssetReportRaw;
 import com.lucas.server.components.tradingbot.recommendation.mapper.RecommendationChatCompletionResponseMapper;
-import com.lucas.utils.SlidingWindowRateLimiter;
 import com.lucas.utils.exception.MappingException;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
+import com.lucas.utils.ratelimiter.SlidingWindowRateLimiter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -24,12 +24,14 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.text.MessageFormat;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static com.lucas.server.common.Constants.*;
@@ -97,23 +99,27 @@ public class RecommendationChatCompletionClient {
         Set<Symbol> symbols = payload.stream().map(DataManager.SymbolPayload::getSymbol).collect(Collectors.toSet());
         ObjectNode contextMessage = context.deepCopy().put(CONTENT, context.get(CONTENT).asText().replace("{date}",
                 ZonedDateTime.now(NY_ZONE).format(DateTimeFormatter.ofPattern("EEEE, yyyy-MM-dd HH:mm:ss z", Locale.ENGLISH))));
+        ObjectNode usedSystemMessage = useOldNews ? systemLongTermMessage : systemMessage;
+        OrderedIndexedSet<JsonNode> prompt = OrderedIndexedSet.of(usedSystemMessage, contextMessage, fewShotMessage, reportMessage);
 
         logger.info(RETRIEVING_DATA_INFO, RECOMMENDATION, symbols);
+        AtomicReference<String> completion = new AtomicReference<>();
         try {
-            client.getRateLimiter().acquirePermission();
-            client.getConcurrentRequestsRateLimiter().acquirePermission();
-            rateLimiters.get(client.getConfig().apiKey()).acquirePermission();
-            logger.info(PROMPTING_MODEL_INFO, client.getConfig().name());
-            ObjectNode usedSystemMessage = useOldNews ? systemLongTermMessage : systemMessage;
-            OrderedIndexedSet<JsonNode> prompt = OrderedIndexedSet.of(usedSystemMessage, contextMessage, fewShotMessage, reportMessage);
-            return mapper.mapAll(payload,
-                    objectMapper.readTree(client.complete(prompt)),
-                    prompt.stream().map(p -> sanitizeHtml(p.get(CONTENT).asText())).collect(Collectors.joining("\n\n\n")), client.getConfig().name());
+            return client.getRateLimiter().call(() -> client.getConcurrentRequestsRateLimiter().call(() -> {
+                rateLimiters.get(client.getConfig().apiKey()).acquirePermission();
+                logger.info(PROMPTING_MODEL_INFO, client.getConfig().name());
+                completion.set(client.complete(prompt));
+                return mapper.mapAll(payload,
+                        objectMapper.readTree(completion.get()),
+                        prompt.stream().map(p -> sanitizeHtml(p.get(CONTENT).asText())).collect(Collectors.joining("\n\n\n")),
+                        client.getConfig().name());
+            }));
+        } catch (MappingException | JsonProcessingException e) {
+            throw new ClientException(MessageFormat.format(RECOMMENDATION_COMPLETION_ERROR, completion.get()), e);
+        } catch (ClientException e) {
+            throw e;
         } catch (Exception e) {
             throw new ClientException(e);
-        } finally {
-            client.getRateLimiter().releasePermission();
-            client.getConcurrentRequestsRateLimiter().releasePermission();
         }
     }
 }

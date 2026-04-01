@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lucas.server.common.HttpRequestClient;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.components.tradingbot.config.AIProperties;
-import com.lucas.utils.CompletionSlidingWindowRateLimiter;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
+import com.lucas.utils.ratelimiter.CompletionSlidingWindowRateLimiter;
 import lombok.Getter;
 
 import java.util.Map;

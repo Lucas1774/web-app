@@ -5,4 +5,8 @@ public class ClientException extends Exception {
     public ClientException(Throwable e) {
         super(e);
     }
+
+    public ClientException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }
