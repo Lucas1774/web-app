@@ -1,0 +1,209 @@
+package com.lucas.server.components.rubik.service;
+
+import com.lucas.server.components.rubik.jpa.AlgorithmMapping;
+import com.lucas.server.components.rubik.jpa.AlgorithmMappingJpaService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.lucas.server.common.Constants.AlgorithmKind.*;
+import static com.lucas.server.common.Constants.*;
+
+@RequiredArgsConstructor
+@Service
+public class RubikSolver {
+
+    private static final int[][] PERMS_CORNERS = {
+            {0, 3, 9, 6, 1, 4, 10, 7, 2, 5, 11, 8},
+            {12, 15, 18, 21, 13, 16, 19, 22, 14, 17, 20, 23},
+            {0, 17, 12, 5, 1, 15, 13, 3, 2, 16, 14, 4},
+            {6, 10, 21, 19, 7, 11, 22, 20, 8, 9, 23, 18},
+            {0, 7, 18, 16, 1, 8, 19, 17, 2, 6, 20, 15},
+            {3, 14, 21, 11, 4, 12, 22, 9, 5, 13, 23, 10}
+    };
+    private static final int[][] PERMS_EDGES = {
+            {0, 4, 6, 2, 1, 5, 7, 3},
+            {12, 14, 18, 16, 13, 15, 19, 17},
+            {0, 9, 12, 11, 1, 8, 13, 10},
+            {6, 23, 18, 21, 7, 22, 19, 20},
+            {2, 20, 14, 8, 3, 21, 15, 9},
+            {4, 10, 16, 22, 5, 11, 17, 23}
+    };
+
+    private static final String[][] MOVE_NAMES = {
+            {"U", "U2", "U'"},
+            {"D", "D2", "D'"},
+            {"F", "F2", "F'"},
+            {"B", "B2", "B'"},
+            {"R", "R2", "R'"},
+            {"L", "L2", "L'"}
+    };
+
+    private final AlgorithmMappingJpaService algorithmMappingJpaService;
+
+    // TODO: expose on controller.
+    public List<AlgorithmMapping> solve(String scramble) {
+        String[] tokens = scramble.trim().split("\\s+");
+        int[][] moves = new int[tokens.length][2];
+        for (int i = 0; i < tokens.length; i++) {
+            boolean found = false;
+            for (int f = 0; f < MOVE_NAMES.length && !found; f++) {
+                for (int t = 0; t < MOVE_NAMES[f].length && !found; t++) {
+                    if (MOVE_NAMES[f][t].equals(tokens[i])) {
+                        moves[i][0] = f;
+                        moves[i][1] = t;
+                        found = true;
+                    }
+                }
+            }
+        }
+        int[] corners = applyScramble(moves, PERMS_CORNERS);
+        int[] edges = applyScramble(moves, PERMS_EDGES);
+
+        // corners
+        List<Integer> cornerPath = new ArrayList<>();
+        List<Integer> twists = new ArrayList<>();
+        boolean[] solved = new boolean[CORNERS];
+        int solvedCount = 0;
+
+        for (int i = 0; CORNERS > i; i++) {
+            int s0 = corners[3 * i];
+            if (s0 == 3 * i) {
+                solved[i] = true;
+                solvedCount++;
+            } else if (s0 == 3 * i + 1) {
+                solved[i] = true;
+                solvedCount++;
+                if (0 != i) {
+                    twists.add(corners[3 * i + 1]);
+                    twists.add(corners[3 * i + 2]);
+                }
+            } else if (s0 == 3 * i + 2) {
+                solved[i] = true;
+                solvedCount++;
+                if (0 != i) {
+                    twists.add(corners[3 * i + 2]);
+                    twists.add(corners[3 * i + 1]);
+                }
+            }
+        }
+
+        while (CORNERS > solvedCount) {
+            int target;
+            int cycleStart = -1;
+            for (int i = 0; CORNERS > i; i++) {
+                if (2 < corners[3 * i] && !solved[i]) {
+                    cycleStart = i;
+                    break;
+                }
+            }
+            target = corners[3 * cycleStart];
+            if (0 != cycleStart) cornerPath.add(3 * cycleStart);
+            solved[cycleStart] = true;
+            solvedCount++;
+
+            while (target / 3 != cycleStart) {
+                cornerPath.add(target);
+                solved[target / 3] = true;
+                target = corners[target];
+                solvedCount++;
+                if (target / 3 == cycleStart && 0 != cycleStart) cornerPath.add(target);
+            }
+        }
+
+        // edges
+        List<Integer> edgePath = new ArrayList<>();
+        List<Integer> flips = new ArrayList<>();
+        solved = new boolean[EDGES];
+        solvedCount = 0;
+
+        for (int i = 0; EDGES > i; i++) {
+            if (edges[2 * i] == 2 * i) {
+                solved[i] = true;
+                solvedCount++;
+            } else if (edges[2 * i] == 2 * i + 1) {
+                solved[i] = true;
+                solvedCount++;
+                if (0 != i) {
+                    flips.add(edges[2 * i]);
+                    flips.add(edges[2 * i + 1]);
+                }
+            }
+        }
+
+        while (EDGES > solvedCount) {
+            int target;
+            int cycleStart = -1;
+            for (int i = 0; EDGES > i; i++) {
+                if (1 < edges[2 * i] && !solved[i]) {
+                    cycleStart = i;
+                    break;
+                }
+            }
+            target = edges[2 * cycleStart];
+            if (0 != cycleStart) edgePath.add(2 * cycleStart);
+            solved[cycleStart] = true;
+            solvedCount++;
+
+            while (target / 2 != cycleStart) {
+                edgePath.add(target);
+                solved[target / 2] = true;
+                target = edges[target];
+                solvedCount++;
+                if (target / 2 == cycleStart && 0 != cycleStart) edgePath.add(target);
+            }
+        }
+
+        // parity
+        int[] parity = new int[0];
+        if (0 != cornerPath.size() % 2) {
+            int cornerSticker = cornerPath.removeLast();
+            int edgeSticker = edgePath.isEmpty() ? -1 : edgePath.removeFirst();
+            parity = new int[]{cornerSticker, edgeSticker};
+        }
+
+        List<AlgorithmMapping> steps = new ArrayList<>();
+        // TODO: clear non relevant fields, so clients can recognize algorithm type, but make sure only in-memory
+        for (int i = 0; i + 1 < cornerPath.size(); i += 2) {
+            steps.add(algorithmMappingJpaService.findByStickers(cornerPath.get(i), cornerPath.get(i + 1), CORNER).orElseThrow());
+        }
+        if (0 != parity.length) { // TODO: try to find direct parity. Otherwise, use 0, 1 + corner alg
+            steps.add(algorithmMappingJpaService.findByStickers(parity[0], parity[1], PARITY).orElseThrow());
+            if (2 != parity[1] && 3 != parity[1] && -1 != parity[1]) {
+                steps.add(algorithmMappingJpaService.findByStickers(2, parity[1], EDGE).orElseThrow());
+            }
+        }
+        for (int i = 0; i + 1 < edgePath.size(); i += 2) {
+            steps.add(algorithmMappingJpaService.findByStickers(edgePath.get(i), edgePath.get(i + 1), EDGE).orElseThrow());
+        }
+        for (int i = 0; i + 1 < twists.size(); i += 2) {
+            steps.add(algorithmMappingJpaService.findByStickers(twists.get(i), twists.get(i + 1), CORNER).orElseThrow());
+        }
+        for (int i = 0; i + 1 < flips.size(); i += 2) {
+            steps.add(algorithmMappingJpaService.findByStickers(flips.get(i), flips.get(i + 1), EDGE).orElseThrow());
+        }
+
+        return steps;
+    }
+
+    private int[] applyScramble(int[][] moves, int[][] perms) {
+        int[] state = new int[STICKERS];
+        for (int i = 0; STICKERS > i; i++) state[i] = i;
+        for (int[] move : moves) {
+            int[] p = perms[move[0]];
+            int reps = move[1] + 1;
+            for (int r = 0; r < reps; r++) {
+                for (int g = 0; g < p.length; g += 4) {
+                    int aux = state[p[g]];
+                    state[p[g]] = state[p[g + 3]];
+                    state[p[g + 3]] = state[p[g + 2]];
+                    state[p[g + 2]] = state[p[g + 1]];
+                    state[p[g + 1]] = aux;
+                }
+            }
+        }
+        return state;
+    }
+}

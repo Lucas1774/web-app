@@ -18,6 +18,9 @@ import static com.lucas.server.common.Constants.Sector.*;
 
 public class Constants {
 
+    public static final int STICKERS = 24;
+    public static final int CORNERS = 8;
+    public static final int EDGES = 12;
     public static final int SUDOKU_SIZE = 9;
     public static final int SUDOKU_NUMBER_OF_CELLS = 81;
     public static final int MARKET_DATA_RELEVANT_DAYS_COUNT = 34;
@@ -29,6 +32,8 @@ public class Constants {
     public static final int MAX_RECOMMENDATIONS_COUNT = 36;
     public static final int REQUEST_MAX_ATTEMPTS = 2;
     public static final int RECOMMENDATION_MAX_ATTEMPTS = 5;
+    public static final int MAX_REQUESTS_PER_SECOND = 10;
+
     public static final BigDecimal RECOMMENDATION_MEDIUM_GRAIN_THRESHOLD = BigDecimal.valueOf(0.75);
     public static final BigDecimal RECOMMENDATION_FINE_GRAIN_THRESHOLD = BigDecimal.valueOf(0.75);
     public static final String DEFAULT_USERNAME = "default";
@@ -174,6 +179,10 @@ public class Constants {
         return DayOfWeek.SATURDAY != dayOfWeek
                 && DayOfWeek.SUNDAY != dayOfWeek
                 && !MARKET_HOLIDAYS_2026.contains(date);
+    }
+
+    public enum AlgorithmKind {
+        EDGE, CORNER, PARITY
     }
 
     public enum MarketDataType {

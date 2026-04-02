@@ -15,9 +15,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static com.lucas.server.common.Constants.MAX_REQUESTS_PER_SECOND;
+
 public class RequestPerSecondLimitFilter implements RateLimitFilter {
 
-    private static final int MAX_REQUESTS_PER_SECOND = 10;
     private static final Map<String, Set<Long>> requestTimestamps = new ConcurrentHashMap<>();
 
     @Override
