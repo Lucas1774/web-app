@@ -33,7 +33,7 @@ management:
         include: health
   endpoint:
     health:
-      enabled: true
+      access: unrestricted
 
 logging:
   level:

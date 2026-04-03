@@ -43,7 +43,6 @@ public class RubikSolver {
 
     private final AlgorithmMappingJpaService algorithmMappingJpaService;
 
-    // TODO: expose on controller.
     public List<AlgorithmMapping> solve(String scramble) {
         String[] tokens = scramble.trim().split("\\s+");
         int[][] moves = new int[tokens.length][2];
@@ -157,32 +156,36 @@ public class RubikSolver {
         }
 
         // parity
-        int[] parity = new int[0];
+        int[] parity;
         if (0 != cornerPath.size() % 2) {
             int cornerSticker = cornerPath.removeLast();
             int edgeSticker = edgePath.isEmpty() ? -1 : edgePath.removeFirst();
             parity = new int[]{cornerSticker, edgeSticker};
+        } else {
+            parity = new int[0];
         }
 
         List<AlgorithmMapping> steps = new ArrayList<>();
-        // TODO: clear non relevant fields, so clients can recognize algorithm type, but make sure only in-memory
         for (int i = 0; i + 1 < cornerPath.size(); i += 2) {
-            steps.add(algorithmMappingJpaService.findByStickers(cornerPath.get(i), cornerPath.get(i + 1), CORNER).orElseThrow());
+            steps.add(AlgorithmMapping.withKind(algorithmMappingJpaService.findByStickers(cornerPath.get(i), cornerPath.get(i + 1), CORNER).orElseThrow(), CORNER));
         }
-        if (0 != parity.length) { // TODO: try to find direct parity. Otherwise, use 0, 1 + corner alg
-            steps.add(algorithmMappingJpaService.findByStickers(parity[0], parity[1], PARITY).orElseThrow());
-            if (2 != parity[1] && 3 != parity[1] && -1 != parity[1]) {
-                steps.add(algorithmMappingJpaService.findByStickers(2, parity[1], EDGE).orElseThrow());
-            }
+        if (0 != parity.length) {
+            steps.addAll(algorithmMappingJpaService.findByStickers(parity[0], parity[1], PARITY)
+                    .map(m -> List.of(AlgorithmMapping.withKind(m, PARITY)))
+                    .orElseGet(() -> List.of(
+                            AlgorithmMapping.withKind(algorithmMappingJpaService.findByStickers(parity[0], 2, PARITY).orElseThrow(), PARITY),
+                            AlgorithmMapping.withKind(algorithmMappingJpaService.findByStickers(2, parity[1], EDGE).orElseThrow(), EDGE)
+                    ))
+            );
         }
         for (int i = 0; i + 1 < edgePath.size(); i += 2) {
-            steps.add(algorithmMappingJpaService.findByStickers(edgePath.get(i), edgePath.get(i + 1), EDGE).orElseThrow());
+            steps.add(AlgorithmMapping.withKind(algorithmMappingJpaService.findByStickers(edgePath.get(i), edgePath.get(i + 1), EDGE).orElseThrow(), EDGE));
         }
         for (int i = 0; i + 1 < twists.size(); i += 2) {
-            steps.add(algorithmMappingJpaService.findByStickers(twists.get(i), twists.get(i + 1), CORNER).orElseThrow());
+            steps.add(AlgorithmMapping.withKind(algorithmMappingJpaService.findByStickers(twists.get(i), twists.get(i + 1), CORNER).orElseThrow(), CORNER));
         }
         for (int i = 0; i + 1 < flips.size(); i += 2) {
-            steps.add(algorithmMappingJpaService.findByStickers(flips.get(i), flips.get(i + 1), EDGE).orElseThrow());
+            steps.add(AlgorithmMapping.withKind(algorithmMappingJpaService.findByStickers(flips.get(i), flips.get(i + 1), EDGE).orElseThrow(), EDGE));
         }
 
         return steps;

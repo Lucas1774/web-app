@@ -4030,6 +4030,137 @@
           ]
         }
       ]
+    },
+    {
+      "name": "rubik",
+      "item": [
+        {
+          "name": "solve",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "const data = pm.response.json();\r",
+                  "pm.test(\"Response is an array\", () => {\r",
+                  "    pm.expect(Array.isArray(data)).to.be.true;\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Each algorithm mapping has required fields\", () => {\r",
+                  "    data.forEach(mapping => {\r",
+                  "        pm.expect(mapping).to.have.property('firstSticker');\r",
+                  "        pm.expect(mapping).to.have.property('secondSticker');\r",
+                  "        pm.expect(mapping).to.have.property('letterPair');\r",
+                  "        pm.expect(mapping.firstSticker).to.be.a('number');\r",
+                  "        pm.expect(mapping.secondSticker).to.be.a('number');\r",
+                  "        pm.expect(mapping.letterPair).to.be.a('string');\r",
+                  "    });\r",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/rubik/solve?scramble=R U R' U'",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "rubik",
+                "solve"
+              ],
+              "query": [
+                {
+                  "key": "scramble",
+                  "value": "R U R' U'"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "upload/algorithm-mappings",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", () => {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "if (pm.response.code === 200) {\r",
+                  "    const data = pm.response.json();\r",
+                  "    pm.test(\"Response is a set (array) of algorithm mappings\", () => {\r",
+                  "        pm.expect(Array.isArray(data) || typeof data === 'object').to.be.true;\r",
+                  "    });\r",
+                  "    \r",
+                  "    pm.test(\"Each algorithm mapping has required fields\", () => {\r",
+                  "        if (Array.isArray(data)) {\r",
+                  "            data.forEach(mapping => {\r",
+                  "                pm.expect(mapping).to.have.property('firstSticker');\r",
+                  "                pm.expect(mapping).to.have.property('secondSticker');\r",
+                  "                pm.expect(mapping).to.have.property('letterPair');\r",
+                  "            });\r",
+                  "        } else {\r",
+                  "            Object.values(data).forEach(mapping => {\r",
+                  "                pm.expect(mapping).to.have.property('firstSticker');\r",
+                  "                pm.expect(mapping).to.have.property('secondSticker');\r",
+                  "                pm.expect(mapping).to.have.property('letterPair');\r",
+                  "            });\r",
+                  "        }\r",
+                  "    });\r",
+                  "} else if (pm.response.code === 401) {\r",
+                  "    pm.test(\"Response status is 401 for non-admin users\", () => {\r",
+                  "        pm.expect(pm.response.code).to.equal(401);\r",
+                  "    });\r",
+                  "} else if (pm.response.code === 400) {\r",
+                  "    pm.test(\"Response status is 400 for invalid file\", () => {\r",
+                  "        pm.expect(pm.response.code).to.equal(400);\r",
+                  "    });\r",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "value": ""
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/rubik/upload/algorithm-mappings",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "rubik",
+                "upload",
+                "algorithm-mappings"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "auth": {

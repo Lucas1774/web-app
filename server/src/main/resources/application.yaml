@@ -24,7 +24,8 @@ spring:
 
 management:
   endpoints:
-    enabled-by-default: false
+    access:
+      default: none
 
 mqtt:
   broker: ${MQTT_BROKER}

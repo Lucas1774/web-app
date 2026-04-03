@@ -35,8 +35,6 @@ public class AlgorithmMappingJpaService implements JpaService<AlgorithmMapping> 
                 });
     }
 
-    // TODO: use on importer and expose on controller
-    @SuppressWarnings("unused")
     public Set<AlgorithmMapping> createOrUpdate(Set<AlgorithmMapping> entities) {
         Set<Integer> firstStickers = entities.stream().map(AlgorithmMapping::getFirstSticker).collect(Collectors.toSet());
         Set<Integer> secondStickers = entities.stream().map(AlgorithmMapping::getSecondSticker).collect(Collectors.toSet());
