@@ -15,9 +15,10 @@ import java.util.stream.IntStream;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @TestPropertySource(properties = "spring.jpa.show-sql=false")
-@Sql(scripts = "/seed__algorithms.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(scripts = {"/seed__algorithms.sql", "/seed__letter__pairs.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 class RubikSolverTest extends ConfiguredTest {
 
+    private static final boolean WITH_LETTER_PAIRS = true; // disable this to easily check solution validity on tools like http://alg.cubing.net
     private static final int NUM_RUNS = 100;
     private static final int SCRAMBLE_LENGTH = 20;
     private static final String[][] MOVE_NAMES;
@@ -48,12 +49,18 @@ class RubikSolverTest extends ConfiguredTest {
     void solveProducesValidSolution() {
         for (int i = 0; NUM_RUNS > i; i++) {
             String scramble = generateScramble();
-            List<RubikSolver.RubikStep> solution = solver.solve(scramble);
-            System.out.println(scramble + "\n");
-            solution.forEach(System.out::println);
+            List<RubikSolver.RubikStep> solution = solver.solve(scramble, true);
+            System.out.println(scramble);
+            solution.forEach(s -> {
+                if (WITH_LETTER_PAIRS) {
+                    System.out.println(s.letterPair() + " " + s.o() + " " + s.audioLoop() + "(" + s.type() + "): ");
+                }
+                System.out.println(s);
+            });
             System.out.println("\n");
             assertThat(solution).isNotEmpty()
-                    .allMatch(s -> !s.letterPair().isBlank() && null != s.type() && !s.algorithm().isBlank());
+                    .allMatch(s -> !s.letterPair().isBlank() && null != s.type() && !s.algorithm().isBlank()
+                            && !s.o().isBlank() && !s.audioLoop().isBlank());
         }
     }
 }

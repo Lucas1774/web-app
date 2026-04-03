@@ -1,6 +1,7 @@
 package com.lucas.server.components.rubik.mapper;
 
 import com.lucas.server.components.rubik.jpa.AlgorithmMapping;
+import com.lucas.server.components.rubik.jpa.LetterPairs;
 import com.lucas.utils.Mapper;
 import com.lucas.utils.exception.MappingException;
 import org.dhatim.fastexcel.reader.Cell;
@@ -10,42 +11,39 @@ import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
 import java.text.MessageFormat;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Stream;
 
 import static com.lucas.server.common.Constants.*;
 
 @Component
-public class XlsxToAlgorithmMappingsMapper implements Mapper<InputStream, Set<AlgorithmMapping>> {
+public class XlsxToAlgorithmMappingsMapper implements Mapper<InputStream, XlsxToAlgorithmMappingsMapper.Result> {
 
-    // TODO: remove dups
     private static final Map<String, Integer> CORNER_STICKERS = Map.ofEntries(
-            Map.entry("UFR", 0), Map.entry("URF", 0),
-            Map.entry("RFU", 1), Map.entry("RUF", 1),
-            Map.entry("FRU", 2), Map.entry("FUR", 2),
-            Map.entry("UFL", 3), Map.entry("ULF", 3),
-            Map.entry("FLU", 4), Map.entry("FUL", 4),
-            Map.entry("LFU", 5), Map.entry("LUF", 5),
-            Map.entry("UBR", 6), Map.entry("URB", 6),
-            Map.entry("BRU", 7), Map.entry("BUR", 7),
-            Map.entry("RBU", 8), Map.entry("RUB", 8),
-            Map.entry("UBL", 9), Map.entry("ULB", 9),
-            Map.entry("LBU", 10), Map.entry("LUB", 10),
-            Map.entry("BLU", 11), Map.entry("BUL", 11),
-            Map.entry("DFL", 12), Map.entry("DLF", 12),
-            Map.entry("LFD", 13), Map.entry("LDF", 13),
-            Map.entry("FLD", 14), Map.entry("FDL", 14),
-            Map.entry("DFR", 15), Map.entry("DRF", 15),
-            Map.entry("FRD", 16), Map.entry("FDR", 16),
-            Map.entry("RFD", 17), Map.entry("RDF", 17),
-            Map.entry("DBR", 18), Map.entry("DRB", 18),
-            Map.entry("RBD", 19), Map.entry("RDB", 19),
-            Map.entry("BRD", 20), Map.entry("BDR", 20),
-            Map.entry("DBL", 21), Map.entry("DLB", 21),
-            Map.entry("BLD", 22), Map.entry("BDL", 22),
-            Map.entry("LBD", 23), Map.entry("LDB", 23)
+            Map.entry("UFR", 0),
+            Map.entry("RUF", 1),
+            Map.entry("FUR", 2),
+            Map.entry("UFL", 3),
+            Map.entry("FUL", 4),
+            Map.entry("LUF", 5),
+            Map.entry("UBR", 6),
+            Map.entry("BUR", 7),
+            Map.entry("RUB", 8),
+            Map.entry("UBL", 9),
+            Map.entry("LUB", 10),
+            Map.entry("BUL", 11),
+            Map.entry("DFL", 12),
+            Map.entry("LDF", 13),
+            Map.entry("FDL", 14),
+            Map.entry("DFR", 15),
+            Map.entry("FDR", 16),
+            Map.entry("RDF", 17),
+            Map.entry("DBR", 18),
+            Map.entry("RDB", 19),
+            Map.entry("BDR", 20),
+            Map.entry("DBL", 21),
+            Map.entry("BDL", 22),
+            Map.entry("LDB", 23)
     );
 
     private static final Map<String, Integer> EDGE_STICKERS = Map.ofEntries(
@@ -75,23 +73,52 @@ public class XlsxToAlgorithmMappingsMapper implements Mapper<InputStream, Set<Al
             Map.entry("LB", 23)
     );
 
+    private static final Map<Integer, String> LETTER_PAIR_EXCEL_INDEX = Map.ofEntries(
+            Map.entry(2, "A"),
+            Map.entry(3, "B"),
+            Map.entry(4, "C"),
+            Map.entry(5, "D"),
+            Map.entry(6, "E"),
+            Map.entry(7, "F"),
+            Map.entry(8, "J"),
+            Map.entry(9, "H"),
+            Map.entry(10, "I"),
+            Map.entry(11, "K"),
+            Map.entry(12, "L"),
+            Map.entry(13, "M"),
+            Map.entry(14, "N"),
+            Map.entry(15, "O"),
+            Map.entry(16, "P"),
+            Map.entry(17, "R"),
+            Map.entry(18, "S"),
+            Map.entry(19, "T"),
+            Map.entry(20, "U"),
+            Map.entry(21, "V"),
+            Map.entry(22, "Y"),
+            Map.entry(23, "Z"),
+            Map.entry(24, "X")
+    );
+
+    // TODO: Migration script on tables. Front-end
     @Override
-    public Set<AlgorithmMapping> map(InputStream input) throws MappingException {
-        Set<AlgorithmMapping> result = new HashSet<>();
+    public Result map(InputStream input) throws MappingException {
+        Result result = new Result(new HashSet<>(), new HashSet<>());
         try (ReadableWorkbook wb = new ReadableWorkbook(input)) {
             wb.findSheet(SHEET_CORNERS).orElseThrow().openStream().skip(1).limit(CORNERS_LAST_ROW)
-                    .forEach(row -> mapRow(row, result, AlgorithmKind.CORNER));
+                    .forEach(row -> mapAlgsRow(row, result.mappings(), AlgorithmKind.CORNER));
             wb.findSheet(SHEET_EDGES).orElseThrow().openStream().skip(1).limit(EDGES_LAST_ROW)
-                    .forEach(row -> mapRow(row, result, AlgorithmKind.EDGE));
+                    .forEach(row -> mapAlgsRow(row, result.mappings(), AlgorithmKind.EDGE));
             wb.findSheet(SHEET_PARITY).orElseThrow().openStream().skip(1).limit(PARITY_LAST_ROW)
-                    .forEach(row -> mapRow(row, result, AlgorithmKind.PARITY));
+                    .forEach(row -> mapAlgsRow(row, result.mappings(), AlgorithmKind.PARITY));
+            mapLetterPairsSheet(wb.findSheet(SHEET_LETTER_PAIRS).orElseThrow().openStream()
+                    .skip(1).limit(LETTER_PAIRS_LAST_ROW), result.letterPairs());
         } catch (Exception e) {
             throw new MappingException(MessageFormat.format(MAPPING_ERROR, "algorithm mappings"), e);
         }
         return result;
     }
 
-    private void mapRow(Row row, Set<AlgorithmMapping> result, AlgorithmKind kind) {
+    private void mapAlgsRow(Row row, Set<AlgorithmMapping> result, AlgorithmKind kind) {
         int first;
         int second;
         String type = null;
@@ -132,6 +159,23 @@ public class XlsxToAlgorithmMappingsMapper implements Mapper<InputStream, Set<Al
         }
     }
 
+    private void mapLetterPairsSheet(Stream<Row> stream, Set<LetterPairs> result) {
+        Iterator<Row> it = stream.iterator();
+        for (int rowIndex = 2; it.hasNext(); rowIndex++) {
+            Row row = it.next();
+            String firstLetter = LETTER_PAIR_EXCEL_INDEX.get(rowIndex);
+
+            for (int colIndex = 2; LETTER_PAIRS_LAST_ROW + 1 >= colIndex; colIndex++) {
+                String secondLetter = LETTER_PAIR_EXCEL_INDEX.get(colIndex);
+                String value = cell(row, colIndex - 1);
+
+                result.add(new LetterPairs()
+                        .setLetterPair(firstLetter + secondLetter)
+                        .setObject(value));
+            }
+        }
+    }
+
     private String cell(Row row, int col) {
         Cell cell = row.getCell(col);
         if (null == cell) {
@@ -139,5 +183,11 @@ public class XlsxToAlgorithmMappingsMapper implements Mapper<InputStream, Set<Al
         }
         String text = cell.getText();
         return null == text || text.trim().isEmpty() ? null : text;
+    }
+
+    public record Result(
+            Set<AlgorithmMapping> mappings,
+            Set<LetterPairs> letterPairs
+    ) {
     }
 }

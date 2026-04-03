@@ -20,6 +20,7 @@ target/
 
 V0_update_passwords.sql
 V2_create_mock_user.sql
+seed__letter__pairs.sql
 
 # misc
 .vscode/

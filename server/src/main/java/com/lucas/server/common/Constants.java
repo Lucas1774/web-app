@@ -22,6 +22,7 @@ public class Constants {
     public static final int CORNERS_LAST_ROW = 441;
     public static final int EDGES_LAST_ROW = 484;
     public static final int PARITY_LAST_ROW = 462;
+    public static final int LETTER_PAIRS_LAST_ROW = 23;
     public static final int STICKERS = 24;
     public static final int CORNERS = 8;
     public static final int EDGES = 12;
@@ -43,6 +44,7 @@ public class Constants {
     public static final String SHEET_CORNERS = "UFR";
     public static final String SHEET_EDGES = "UF";
     public static final String SHEET_PARITY = "Parity";
+    public static final String SHEET_LETTER_PAIRS = "Letter pairs";
     public static final String DEFAULT_USERNAME = "default";
     public static final String NA = "N/A";
     public static final String INVALID_EXPRESSION = "Invalid expression";
@@ -98,7 +100,7 @@ public class Constants {
     private static final OrderedIndexedSet<String> FINNHUB_RATE_LIMITERS = OrderedIndexedSet.of(FINNHUB_RATE_LIMITER, FINNHUB_RATE_LIMITER_2, FINNHUB_RATE_LIMITER_3);
     private static final int[] DIGITS = {1, 2, 3, 4, 5, 6, 7, 8, 9};
     private static final char[] LETTERS_CORNERS = "0SFMXBRVPUNLITCOYJEKDAHZ".toCharArray();
-    private static final char[] LETTERS_EDGES = "0XRSMNÚUFJKBÍIÓOÁAÉEDPLZ".toCharArray();
+    private static final char[] LETTERS_EDGES = "0XRSMNUVFJCBIYOKATEHDPLZ".toCharArray();
     private static final Set<LocalDate> MARKET_HOLIDAYS_2026 = Set.of(
             LocalDate.of(2026, 1, 1), // New Year's Day
             LocalDate.of(2026, 1, 19), // Martin Luther King Jr. Day
