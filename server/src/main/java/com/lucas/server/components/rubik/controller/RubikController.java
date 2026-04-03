@@ -57,7 +57,7 @@ public class RubikController {
     }
 
     @GetMapping("/solve")
-    public ResponseEntity<List<AlgorithmMapping>> solve(@RequestParam("scramble") String scramble) {
+    public ResponseEntity<List<RubikSolver.RubikStep>> solve(@RequestParam("scramble") String scramble) {
         return ResponseEntity.ok(solver.solve(scramble));
     }
 }

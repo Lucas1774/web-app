@@ -3,13 +3,14 @@ package com.lucas.server.components.rubik.service;
 import com.lucas.server.components.rubik.jpa.AlgorithmMapping;
 import com.lucas.server.components.rubik.jpa.AlgorithmMappingJpaService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.lucas.server.common.Constants.AlgorithmKind.*;
 import static com.lucas.server.common.Constants.*;
+import static com.lucas.server.common.Constants.AlgorithmKind.*;
 
 @RequiredArgsConstructor
 @Service
@@ -43,7 +44,7 @@ public class RubikSolver {
 
     private final AlgorithmMappingJpaService algorithmMappingJpaService;
 
-    public List<AlgorithmMapping> solve(String scramble) {
+    public List<RubikStep> solve(String scramble) {
         String[] tokens = scramble.trim().split("\\s+");
         int[][] moves = new int[tokens.length][2];
         for (int i = 0; i < tokens.length; i++) {
@@ -165,27 +166,31 @@ public class RubikSolver {
             parity = new int[0];
         }
 
-        List<AlgorithmMapping> steps = new ArrayList<>();
+        List<RubikStep> steps = new ArrayList<>();
         for (int i = 0; i + 1 < cornerPath.size(); i += 2) {
-            steps.add(AlgorithmMapping.withKind(algorithmMappingJpaService.findByStickers(cornerPath.get(i), cornerPath.get(i + 1), CORNER).orElseThrow(), CORNER));
+            AlgorithmMapping m = algorithmMappingJpaService.findByStickers(cornerPath.get(i), cornerPath.get(i + 1), CORNER).orElseThrow();
+            steps.add(createRubikStep(m, CORNER));
         }
         if (0 != parity.length) {
             steps.addAll(algorithmMappingJpaService.findByStickers(parity[0], parity[1], PARITY)
-                    .map(m -> List.of(AlgorithmMapping.withKind(m, PARITY)))
+                    .map(m -> List.of(createRubikStep(m, PARITY)))
                     .orElseGet(() -> List.of(
-                            AlgorithmMapping.withKind(algorithmMappingJpaService.findByStickers(parity[0], 2, PARITY).orElseThrow(), PARITY),
-                            AlgorithmMapping.withKind(algorithmMappingJpaService.findByStickers(2, parity[1], EDGE).orElseThrow(), EDGE)
+                            createRubikStep(algorithmMappingJpaService.findByStickers(parity[0], 2, PARITY).orElseThrow(), PARITY),
+                            createRubikStep(algorithmMappingJpaService.findByStickers(2, parity[1], EDGE).orElseThrow(), EDGE)
                     ))
             );
         }
         for (int i = 0; i + 1 < edgePath.size(); i += 2) {
-            steps.add(AlgorithmMapping.withKind(algorithmMappingJpaService.findByStickers(edgePath.get(i), edgePath.get(i + 1), EDGE).orElseThrow(), EDGE));
+            AlgorithmMapping m = algorithmMappingJpaService.findByStickers(edgePath.get(i), edgePath.get(i + 1), EDGE).orElseThrow();
+            steps.add(createRubikStep(m, EDGE));
         }
         for (int i = 0; i + 1 < twists.size(); i += 2) {
-            steps.add(AlgorithmMapping.withKind(algorithmMappingJpaService.findByStickers(twists.get(i), twists.get(i + 1), CORNER).orElseThrow(), CORNER));
+            AlgorithmMapping m = algorithmMappingJpaService.findByStickers(twists.get(i), twists.get(i + 1), CORNER).orElseThrow();
+            steps.add(createRubikStep(m, CORNER));
         }
         for (int i = 0; i + 1 < flips.size(); i += 2) {
-            steps.add(AlgorithmMapping.withKind(algorithmMappingJpaService.findByStickers(flips.get(i), flips.get(i + 1), EDGE).orElseThrow(), EDGE));
+            AlgorithmMapping m = algorithmMappingJpaService.findByStickers(flips.get(i), flips.get(i + 1), EDGE).orElseThrow();
+            steps.add(createRubikStep(m, EDGE));
         }
 
         return steps;
@@ -208,5 +213,49 @@ public class RubikSolver {
             }
         }
         return state;
+    }
+
+    // TODO: PAO
+    private RubikStep createRubikStep(AlgorithmMapping m, AlgorithmKind kind) {
+        String algorithm = null;
+        String algorithmType = null;
+        String technique = null;
+        String letterPair = null;
+        switch (kind) {
+            case EDGE:
+                algorithm = m.getEdgeAlgorithm();
+                algorithmType = m.getEdgeType();
+                technique = m.getEdgeTechnique();
+                letterPair = String.valueOf(getLettersEdges()[m.getFirstSticker()]) + getLettersEdges()[m.getSecondSticker()];
+                break;
+            case CORNER:
+                algorithm = m.getCornerAlgorithm();
+                algorithmType = m.getCornerType();
+                technique = m.getCornerTechnique();
+                letterPair = String.valueOf(getLettersCorners()[m.getFirstSticker()]) + getLettersCorners()[m.getSecondSticker()];
+                break;
+            case PARITY:
+                algorithm = m.getParityAlgorithm();
+                letterPair = String.valueOf(getLettersCorners()[m.getFirstSticker()]) + getLettersEdges()[m.getSecondSticker()];
+                break;
+        }
+        return new RubikStep(kind, algorithm, algorithmType, technique, letterPair, null, null, null);
+    }
+
+    public record RubikStep(
+            AlgorithmKind type,
+            String algorithm,
+            String algorithmType,
+            String technique,
+            String letterPair,
+            String p,
+            String a,
+            String o
+    ) {
+        @NonNull
+        @Override
+        public String toString() {
+            return algorithm;
+        }
     }
 }

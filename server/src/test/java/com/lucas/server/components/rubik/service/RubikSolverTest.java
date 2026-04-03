@@ -1,7 +1,6 @@
 package com.lucas.server.components.rubik.service;
 
 import com.lucas.server.ConfiguredTest;
-import com.lucas.server.components.rubik.jpa.AlgorithmMapping;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
@@ -49,12 +48,12 @@ class RubikSolverTest extends ConfiguredTest {
     void solveProducesValidSolution() {
         for (int i = 0; NUM_RUNS > i; i++) {
             String scramble = generateScramble();
-            List<AlgorithmMapping> solution = solver.solve(scramble);
+            List<RubikSolver.RubikStep> solution = solver.solve(scramble);
             System.out.println(scramble + "\n");
             solution.forEach(System.out::println);
             System.out.println("\n");
-            assertThat(solution).isNotEmpty();
-            assertThat(solution).allMatch(s -> 0 <= s.getFirstSticker() && 0 <= s.getSecondSticker());
+            assertThat(solution).isNotEmpty()
+                    .allMatch(s -> !s.letterPair().isBlank() && null != s.type() && !s.algorithm().isBlank());
         }
     }
 }

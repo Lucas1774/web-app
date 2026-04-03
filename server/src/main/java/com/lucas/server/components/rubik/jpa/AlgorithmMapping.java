@@ -1,6 +1,5 @@
 package com.lucas.server.components.rubik.jpa;
 
-import com.lucas.server.common.Constants.AlgorithmKind;
 import com.lucas.server.common.jpa.JpaEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -9,9 +8,6 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 
 import java.util.Objects;
-
-import static com.lucas.server.common.Constants.AlgorithmKind.*;
-import static com.lucas.utils.Utils.EMPTY_STRING;
 
 @Getter
 @Setter
@@ -32,18 +28,6 @@ public class AlgorithmMapping implements JpaEntity {
 
     @Column(name = "second_sticker", nullable = false)
     private Integer secondSticker;
-
-    @Column(name = "letter_pair", length = 10, nullable = false)
-    private String letterPair;
-
-    @Column(name = "person", length = 50)
-    private String person;
-
-    @Column(name = "action", length = 50)
-    private String action;
-
-    @Column(name = "object", length = 50)
-    private String object;
 
     @Column(name = "edge_algorithm", length = 100)
     private String edgeAlgorithm;
@@ -71,40 +55,6 @@ public class AlgorithmMapping implements JpaEntity {
 
     @Column(name = "parity_technique", length = 10)
     private String parityTechnique;
-
-    public static AlgorithmMapping withKind(AlgorithmMapping m, AlgorithmKind kind) {
-        return new AlgorithmMapping()
-                .setId(m.getId())
-                .setFirstSticker(m.getFirstSticker())
-                .setSecondSticker(m.getSecondSticker())
-                .setLetterPair(m.getLetterPair())
-                .setPerson(m.getPerson())
-                .setAction(m.getAction())
-                .setObject(m.getObject())
-                .setEdgeAlgorithm(EDGE == kind ? m.getEdgeAlgorithm() : null)
-                .setCornerAlgorithm(CORNER == kind ? m.getCornerAlgorithm() : null)
-                .setParityAlgorithm(PARITY == kind ? m.getParityAlgorithm() : null)
-                .setEdgeType(EDGE == kind ? m.getEdgeType() : null)
-                .setEdgeTechnique(EDGE == kind ? m.getEdgeTechnique() : null)
-                .setCornerType(CORNER == kind ? m.getCornerType() : null)
-                .setCornerTechnique(CORNER == kind ? m.getCornerTechnique() : null)
-                .setParityType(PARITY == kind ? m.getParityType() : null)
-                .setParityTechnique(PARITY == kind ? m.getParityTechnique() : null);
-    }
-
-    @Override
-    public String toString() {
-        if (null != edgeAlgorithm) {
-            return edgeAlgorithm;
-        }
-        if (null != cornerAlgorithm) {
-            return cornerAlgorithm;
-        }
-        if (null != parityAlgorithm) {
-            return parityAlgorithm;
-        }
-        return EMPTY_STRING;
-    }
 
     @Override
     public boolean equals(Object o) {

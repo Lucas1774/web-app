@@ -45,10 +45,6 @@ public class AlgorithmMappingJpaService implements JpaService<AlgorithmMapping> 
                                         Objects.equals(e.getSecondSticker(), existing.getSecondSticker())))
                         .collect(Collectors.toSet()),
                 (existing, incoming) -> existing
-                        .setLetterPair(incoming.getLetterPair())
-                        .setPerson(incoming.getPerson())
-                        .setAction(incoming.getAction())
-                        .setObject(incoming.getObject())
                         .setEdgeAlgorithm(incoming.getEdgeAlgorithm())
                         .setCornerAlgorithm(incoming.getCornerAlgorithm())
                         .setParityAlgorithm(incoming.getParityAlgorithm())

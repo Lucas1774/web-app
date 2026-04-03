@@ -75,7 +75,7 @@ public class XlsxToAlgorithmMappingsMapper implements Mapper<InputStream, Set<Al
             Map.entry("LB", 23)
     );
 
-    @Override // TODO: letter pairs (PAO), use O
+    @Override
     public Set<AlgorithmMapping> map(InputStream input) throws MappingException {
         Set<AlgorithmMapping> result = new HashSet<>();
         try (ReadableWorkbook wb = new ReadableWorkbook(input)) {
@@ -94,28 +94,20 @@ public class XlsxToAlgorithmMappingsMapper implements Mapper<InputStream, Set<Al
     private void mapRow(Row row, Set<AlgorithmMapping> result, AlgorithmKind kind) {
         int first;
         int second;
-        char firstLetter;
-        char secondLetter;
         String type = null;
         String technique = null;
 
         if (AlgorithmKind.PARITY == kind) {
             first = CORNER_STICKERS.get(row.getCell(2).getText());
             second = EDGE_STICKERS.get(row.getCell(1).getText());
-            firstLetter = getLettersCorners()[first];
-            secondLetter = getLettersEdges()[second];
         } else {
             Map<String, Integer> stickerMap = AlgorithmKind.EDGE == kind ? EDGE_STICKERS : CORNER_STICKERS;
             first = stickerMap.get(row.getCell(1).getText());
             second = stickerMap.get(row.getCell(2).getText());
-            char[] letters = AlgorithmKind.EDGE == kind ? getLettersEdges() : getLettersCorners();
-            firstLetter = letters[first];
-            secondLetter = letters[second];
             type = cell(row, 6);
             technique = cell(row, 7);
         }
 
-        String letterPair = new String(new char[]{firstLetter, secondLetter});
         String algorithm = cell(row, 3);
 
         AlgorithmMapping existing = result.stream()
@@ -124,8 +116,7 @@ public class XlsxToAlgorithmMappingsMapper implements Mapper<InputStream, Set<Al
                 .orElseGet(() -> {
                     AlgorithmMapping m = new AlgorithmMapping()
                             .setFirstSticker(first)
-                            .setSecondSticker(second)
-                            .setLetterPair(letterPair);
+                            .setSecondSticker(second);
                     result.add(m);
                     return m;
                 });
