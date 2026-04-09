@@ -7,6 +7,7 @@ import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.components.tradingbot.config.AIProperties;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import com.lucas.utils.ratelimiter.CompletionSlidingWindowRateLimiter;
+import com.lucas.utils.ratelimiter.SlidingWindowRateLimiter;
 import lombok.Getter;
 
 import java.util.Map;
@@ -22,6 +23,8 @@ public class AIClient {
     private final CompletionSlidingWindowRateLimiter rateLimiter;
     @Getter
     private final CompletionSlidingWindowRateLimiter concurrentRequestsRateLimiter;
+    @Getter
+    private final SlidingWindowRateLimiter apiKeyRateLimiter;
     private final ObjectMapper objectMapper;
     private final HttpRequestClient httpClient;
     private final UnaryOperator<String> responseSanitizer;
@@ -29,12 +32,14 @@ public class AIClient {
     public AIClient(AIProperties.DeploymentProperties config,
                     CompletionSlidingWindowRateLimiter rateLimiter,
                     CompletionSlidingWindowRateLimiter concurrentRequestsRateLimiter,
+                    SlidingWindowRateLimiter apiKeyRateLimiter,
                     ObjectMapper objectMapper,
                     HttpRequestClient httpClient,
                     UnaryOperator<String> responseSanitizer) {
         this.config = config;
         this.rateLimiter = rateLimiter;
         this.concurrentRequestsRateLimiter = concurrentRequestsRateLimiter;
+        this.apiKeyRateLimiter = apiKeyRateLimiter;
         this.objectMapper = objectMapper;
         this.httpClient = httpClient;
         this.responseSanitizer = responseSanitizer;

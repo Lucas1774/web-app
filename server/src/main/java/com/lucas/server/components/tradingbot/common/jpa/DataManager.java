@@ -123,22 +123,24 @@ public class DataManager {
     @Transactional
     public Set<Recommendation> getRandomRecommendations(Set<String> symbolNames, Set<AIClient> clients, PortfolioType type, int count,
                                                         boolean overwrite, boolean onlyIfHasNews, boolean onTheFlyNews, boolean fetchPreMarket, boolean useOldNews) {
-        Set<Long> already = recommendationsService.findByDateBetween(LocalDate.now(), LocalDate.now().plusDays(1)).stream()
-                .map(r -> r.getSymbol().getId())
-                .collect(Collectors.toSet());
 
         Set<Long> candidates = symbolService.findAll().stream()
                 .filter(s -> symbolNames.contains(s.getName()))
                 .map(Symbol::getId)
                 .collect(Collectors.toSet());
-        candidates.removeAll(already);
-
-        Set<Long> finalList = new HashSet<>();
-        if (0 < count && !candidates.isEmpty()) {
-            List<Long> pool = new ArrayList<>(candidates);
-            Collections.shuffle(pool);
-            finalList.addAll(pool.subList(0, Math.min(count, pool.size())));
+        if (!overwrite) {
+            Set<Long> already = recommendationsService.findByDateBetween(LocalDate.now(), LocalDate.now().plusDays(1)).stream()
+                    .map(r -> r.getSymbol().getId())
+                    .collect(Collectors.toSet());
+            candidates.removeAll(already);
         }
+
+        if (0 >= count || candidates.isEmpty()) {
+            return Set.of();
+        }
+        List<Long> pool = new ArrayList<>(candidates);
+        Collections.shuffle(pool);
+        Set<Long> finalList = Set.copyOf(pool.subList(0, Math.min(count, pool.size())));
 
         return getRecommendationsInParallel(symbolService.findAllById(finalList), clients, type, overwrite,
                 onlyIfHasNews, onTheFlyNews, fetchPreMarket, useOldNews);
@@ -168,7 +170,7 @@ public class DataManager {
         }
 
         Set<Symbol> remainingSymbols = new HashSet<>(symbols);
-        try (ExecutorService executor = Executors.newFixedThreadPool(clients.size())) {
+        try (ExecutorService executor = Executors.newCachedThreadPool()) {
             int attempts = 0;
             while (!remainingSymbols.isEmpty() && RECOMMENDATION_MAX_ATTEMPTS > attempts) {
                 BlockingQueue<Set<Recommendation>> resultsQueue = new LinkedBlockingQueue<>();
@@ -190,7 +192,13 @@ public class DataManager {
                             .orElseGet(() -> portfolioSupplier.get().setSymbol(symbol));
 
                     SymbolPayload payload = new SymbolPayload(symbol, marketData, portfolio).setNews(news);
-                    providePremarket(fetchPreMarket, symbol, payload);
+                    if (fetchPreMarket) {
+                        try {
+                            payload.setPremarket(yahooFinanceMarketSnapshotClient.retrieveMarketSnapshot(symbol));
+                        } catch (ClientException | MappingException e) {
+                            logger.warn(RETRIEVAL_FAILED_WARN, MARKET_SNAPSHOT, symbol, e);
+                        }
+                    }
                     recommendationBuffer.add(payload);
                     AIClient client = mutableClients.peekFirst();
                     if (recommendationBuffer.size() == Objects.requireNonNull(client).getConfig().chunkSize()) {
@@ -227,16 +235,6 @@ public class DataManager {
             logger.warn(RETRIEVAL_FAILED_WARN, RECOMMENDATION, remainingSymbols);
         }
         return res;
-    }
-
-    private void providePremarket(boolean fetchPreMarket, Symbol symbol, SymbolPayload payload) {
-        if (fetchPreMarket) {
-            try {
-                payload.setPremarket(yahooFinanceMarketSnapshotClient.retrieveMarketSnapshot(symbol));
-            } catch (ClientException | MappingException e) {
-                logger.warn(RETRIEVAL_FAILED_WARN, MARKET_SNAPSHOT, symbol, e);
-            }
-        }
     }
 
     private OrderedIndexedSet<News> provideNews(boolean onTheFlyNews, boolean useOldNews, Symbol symbol, LocalDateTime startUtc) {

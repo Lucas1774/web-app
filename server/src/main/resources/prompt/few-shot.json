@@ -1,4 +1,4 @@
 {
   "role": "assistant",
-  "content": "[{\"symbol\":\"MSFT\",\"action\":\"BUY\",\"confidence\":\"...\",\"rationale\":\"...\"},{\"symbol\":\"AAPL\",\"action\":\"SELL\",\"confidence\":\"...\",\"rationale\":\"...\"},{\"symbol\":\"GOOG\",\"action\":\"HOLD\",\"confidence\":\"...\",\"rationale\":\"... are not good / bad enough to justify a buy / sell\"}]"
+  "content": "[{\"symbol\":\"MSFT\",\"action\":\"BUY\",\"confidence\":0.xx,\"rationale\":\"...\"},{\"symbol\":\"AAPL\",\"action\":\"SELL\",\"confidence\":0.xx,\"rationale\":\"...\"},{\"symbol\":\"GOOG\",\"action\":\"HOLD\",\"confidence\":0.xx,\"rationale\":\"... are not good / bad enough to justify a buy / sell\"}]"
 }

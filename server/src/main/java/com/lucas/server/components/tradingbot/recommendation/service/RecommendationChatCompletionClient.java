@@ -15,7 +15,6 @@ import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportT
 import com.lucas.server.components.tradingbot.recommendation.mapper.RecommendationChatCompletionResponseMapper;
 import com.lucas.utils.exception.MappingException;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
-import com.lucas.utils.ratelimiter.SlidingWindowRateLimiter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -28,7 +27,6 @@ import java.text.MessageFormat;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -49,11 +47,11 @@ public class RecommendationChatCompletionClient {
     private final AssetReportToMustacheMapper assetReportToMustacheMapper;
     private final ObjectMapper objectMapper;
     private final RecommendationChatCompletionResponseMapper mapper;
-    private final Map<String, SlidingWindowRateLimiter> rateLimiters;
 
-    public RecommendationChatCompletionClient(AssetReportDataProvider assertReportDataProvider, AssetReportToMustacheMapper assetReportToMustacheMapper,
-                                              ObjectMapper objectMapper, RecommendationChatCompletionResponseMapper mapper,
-                                              Map<String, SlidingWindowRateLimiter> rateLimiters) {
+    public RecommendationChatCompletionClient(AssetReportDataProvider assertReportDataProvider,
+                                              AssetReportToMustacheMapper assetReportToMustacheMapper,
+                                              ObjectMapper objectMapper,
+                                              RecommendationChatCompletionResponseMapper mapper) {
         try (Reader contextReader = new InputStreamReader(
                 Objects.requireNonNull(getClass().getResourceAsStream("/prompt/context.json")),
                 StandardCharsets.UTF_8);
@@ -81,7 +79,6 @@ public class RecommendationChatCompletionClient {
         this.assetReportToMustacheMapper = assetReportToMustacheMapper;
         this.objectMapper = objectMapper;
         this.mapper = mapper;
-        this.rateLimiters = rateLimiters;
     }
 
     public Set<Recommendation> getRecommendations(Set<DataManager.SymbolPayload> payload, AIClient client, boolean useOldNews) throws ClientException, JsonProcessingException, MappingException {
@@ -106,7 +103,7 @@ public class RecommendationChatCompletionClient {
         AtomicReference<String> completion = new AtomicReference<>();
         try {
             return client.getRateLimiter().call(() -> client.getConcurrentRequestsRateLimiter().call(() -> {
-                rateLimiters.get(client.getConfig().apiKey()).acquirePermission();
+                client.getApiKeyRateLimiter().acquirePermission();
                 logger.info(PROMPTING_MODEL_INFO, client.getConfig().name());
                 completion.set(client.complete(prompt));
                 return mapper.mapAll(payload,

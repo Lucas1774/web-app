@@ -263,6 +263,7 @@ public class MarketDataKpiGenerator {
      * @param n       size
      * @return annualized volatility in percent (std dev of daily returns)
      */
+    @SuppressWarnings("DuplicatedCode")
     public Optional<BigDecimal> computeVolatility(OrderedIndexedSet<MarketData> history, int n) {
         if (history.size() < n) {
             logger.warn(NON_COMPUTABLE_KPI_WARN, VOLATILITY, history);
@@ -301,6 +302,7 @@ public class MarketDataKpiGenerator {
      * @param n       size
      * @return On‑Balance Volume (OBV) accumulated over n periods
      */
+    @SuppressWarnings({"DuplicatedCode", "ExtractMethodRecommender"})
     public Optional<BigDecimal> computeObv(OrderedIndexedSet<MarketData> history, int n) {
         if (history.size() < n) {
             logger.warn(NON_COMPUTABLE_KPI_WARN, OBV, history);

@@ -19,13 +19,13 @@ public class FinnhubRateLimiter {
     private final OrderedIndexedSet<Map.Entry<String, SlidingWindowRateLimiter>> keyToLimiterEntries;
     private final AtomicInteger pointer = new AtomicInteger();
 
-    public FinnhubRateLimiter(@Value("${finnhub.api-keys}") List<String> apiKeys, Map<String, SlidingWindowRateLimiter> allRateLimiters) {
+    public FinnhubRateLimiter(@Value("${finnhub.api-keys}") List<String> apiKeys, Map<String, SlidingWindowRateLimiter> rateLimiters) {
         OrderedIndexedSetImpl<Map.Entry<String, SlidingWindowRateLimiter>> orderedIndexedSet = new OrderedIndexedSetImpl<>();
         OrderedIndexedSet<String> finnhubRateLimiterNames = getFinnhubRateLimiterNames();
         for (int i = 0; i < apiKeys.size(); i++) {
             String apiKey = apiKeys.get(i);
             String limiterKey = finnhubRateLimiterNames.get(i);
-            SlidingWindowRateLimiter rateLimiter = allRateLimiters.get(limiterKey);
+            SlidingWindowRateLimiter rateLimiter = rateLimiters.get(limiterKey);
             orderedIndexedSet.add(Map.entry(apiKey, rateLimiter));
         }
         keyToLimiterEntries = new UnmodifiableOrderedIndexedSet<>(orderedIndexedSet);

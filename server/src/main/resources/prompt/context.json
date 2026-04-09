@@ -1,4 +1,4 @@
 {
   "role": "user",
-  "content": "• Current date: {date}\n• Low-volume (~$800/trade)\n• News- and technical-based morning entries\n• Exit on profit if no further upside is clear; exit on bad news or cut-loss.\n\n"
+  "content": "• Current date: {date}\n• Low-volume (~$800/trade). Liquidity is not an issue\n• News- and technical-based morning entries (long or short)\n• Exit on profit if no further upside is clear; exit on bad news or cut-loss.\n\n"
 }

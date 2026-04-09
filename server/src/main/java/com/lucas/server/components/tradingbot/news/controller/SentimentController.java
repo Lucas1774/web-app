@@ -28,17 +28,17 @@ public class SentimentController {
     @GetMapping("/historic")
     public ResponseEntity<Set<News>> fetchAndSaveHistoricAll(HttpServletRequest request,
                                                              @RequestParam(required = false) LocalDate from) {
-        return controllerUtil.<Set<News>>getUnauthorizedResponseIfInvalidUser(request.getCookies())
-                .orElseGet(() -> {
-                    LocalDateTime effectiveDate = null == from ? LocalDate.now().minusDays(1).atStartOfDay() : from.atStartOfDay();
-                    return ResponseEntity.ok(jpaService.generateSentiment(SP500_SYMBOLS, effectiveDate, LocalDate.now().plusDays(1).atStartOfDay()));
-                });
+        return fetchAndSaveHistoric(request, SP500_SYMBOLS, from);
     }
 
     @GetMapping("/historic/{symbols}")
     public ResponseEntity<Set<News>> fetchAndSaveHistoricSome(HttpServletRequest request,
                                                               @PathVariable Set<String> symbols,
                                                               @RequestParam(required = false) LocalDate from) {
+        return fetchAndSaveHistoric(request, symbols, from);
+    }
+
+    private ResponseEntity<Set<News>> fetchAndSaveHistoric(HttpServletRequest request, Set<String> symbols, LocalDate from) {
         return controllerUtil.<Set<News>>getUnauthorizedResponseIfInvalidUser(request.getCookies())
                 .orElseGet(() -> {
                     LocalDateTime effectiveDate = null == from ? LocalDate.now().minusDays(1).atStartOfDay() : from.atStartOfDay();

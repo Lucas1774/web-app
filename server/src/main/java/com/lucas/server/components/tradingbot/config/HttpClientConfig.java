@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
@@ -37,20 +38,25 @@ public class HttpClientConfig {
     }
 
     @Bean
-    public Map<String, SlidingWindowRateLimiter> rateLimiter(AIProperties aiProps) {
+    public Map<String, SlidingWindowRateLimiter> rateLimiters() {
         Map<String, SlidingWindowRateLimiter> res = new HashMap<>();
         res.put(TWELVEDATA_RATE_LIMITER, new SlidingWindowRateLimiter(8, Duration.ofMinutes(1)));
         res.put(YAHOO_FINANCE_RATE_LIMITER, new SlidingWindowRateLimiter(1, Duration.ofSeconds(1).dividedBy(4)));
         getFinnhubRateLimiterNames().forEach(name -> res.put(name,
                 new SlidingWindowRateLimiter(60, Duration.ofMinutes(1), Duration.ofMinutes(1))));
-        aiProps.getDeployments()
-                .forEach(config -> res.put(config.apiKey(), new SlidingWindowRateLimiter(24, Duration.ofMinutes(1))));
 
         return res;
     }
 
     @Bean
     public Map<String, AIClient> clients(HttpRequestClient httpClient, AIProperties aiProps, ObjectMapper objectMapper) {
+        Map<String, SlidingWindowRateLimiter> rateLimiters = aiProps.getDeployments().stream()
+                .map(AIProperties.DeploymentProperties::apiKey)
+                .collect(Collectors.toMap(
+                        Function.identity(),
+                        apiKey -> new SlidingWindowRateLimiter(24, Duration.ofMinutes(1)),
+                        (a, b) -> a
+                ));
         Map<String, AIClient> res = aiProps.getDeployments().stream()
                 .filter(d -> !d.name().contains("specialist"))
                 .collect(Collectors.toMap(
@@ -59,6 +65,7 @@ public class HttpClientConfig {
                                 config,
                                 new CompletionSlidingWindowRateLimiter(config.requestsPerMinute(), Duration.ofMinutes(1)),
                                 new CompletionSlidingWindowRateLimiter(config.concurrentRequests(), Duration.ofSeconds(1)),
+                                rateLimiters.get(config.apiKey()),
                                 objectMapper,
                                 httpClient,
                                 sanitizer(getModelsWithThinkingBlock().contains(config.name()))
@@ -70,16 +77,19 @@ public class HttpClientConfig {
                         AIProperties.DeploymentProperties::name,
                         config -> {
                             String baseName = config.name().replace("-specialist", EMPTY_STRING);
+                            AIClient baseClient = res.get(baseName);
                             return new AIClient(
                                     config,
-                                    res.get(baseName).getRateLimiter(),
-                                    res.get(baseName).getConcurrentRequestsRateLimiter(),
+                                    baseClient.getRateLimiter(),
+                                    baseClient.getConcurrentRequestsRateLimiter(),
+                                    baseClient.getApiKeyRateLimiter(),
                                     objectMapper,
                                     httpClient,
                                     sanitizer(getModelsWithThinkingBlock().contains(baseName))
                             );
                         }
                 )));
+
         return res;
     }
 }
