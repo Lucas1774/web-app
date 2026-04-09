@@ -1,17 +1,21 @@
 import PropTypes from "prop-types";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button, Form } from "react-bootstrap";
+import { get } from "../../api";
 import * as constants from "../../constants";
+import { handleError } from "../errorHandler";
 import Popup from "./Popup";
 import "./RubikTimer.css";
 import Scramble from "./scramblers/Scramble";
 import { formatTime, renderStats } from "./statsHelper";
+import scrambleNormalizer from "./scrambleNormalizer";
 const RubikTimer = ({ onClose = () => { } }) => {
     // IDENTIFIERS
     const isAndroid = /Android/i.test(navigator.userAgent);
 
     const [elapsedTime, setElapsedTime] = useState(0);
     const [scramble, setScramble] = useState("");
+    const [solution, setSolution] = useState("");
     const [isTimerPrepared, setIsTimerPrepared] = useState(false);
     const [isTimerRunning, setIsTimerRunning] = useState(false);
     const [isFormVisible, setIsFormVisible] = useState(true);
@@ -370,7 +374,30 @@ const RubikTimer = ({ onClose = () => { } }) => {
     const renderScramble = () => {
         return (
             <Scramble isNewScramble={isNewScramble.current}
-                onScrambleChange={(s) => { setScramble(s); isNewScramble.current = false }}
+                onScrambleChange={async (s) => {
+                    setScramble(s);
+                    isNewScramble.current = false;
+                    if (constants.BLD === selectedPuzzle.current) {
+                        // TODO: handle rendering on render. Also, hide behind something (button?).
+                        try {
+                            setSolution("");
+                            const normalizedScramble = scrambleNormalizer(s);
+                            const resp = await get(`/rubik/solve?scramble=${normalizedScramble}`);
+                            const solutionText = resp.data
+                                .map((item) => {
+                                    const type = item.type === "CORNER" && item.algorithmType === "TWIST" ? "CORNER TWIST" :
+                                        item.type === "EDGE" && item.algorithmType === "TWIST" ? "EDGE FLIP" : item.type
+                                    return `(${type}) ${item.o} ${item.audioLoop}\n${item.algorithm}`
+                                })
+                                .join("\n");
+                            setSolution(solutionText);
+                        } catch (error) {
+                            handleError("Error fetching data", error);
+                        }
+                    } else {
+                        setSolution("")
+                    }
+                }}
                 puzzle={selectedPuzzle.current}
                 display={scrambleDisplayMode}
                 quantity={multiQuantity.current}
@@ -411,6 +438,7 @@ const RubikTimer = ({ onClose = () => { } }) => {
                     : <>
                         {isTimerVisible && renderAverages()}
                         {renderScramble()}
+                        {solution && <pre style={{ display: scrambleDisplayMode }}>{solution}</pre>}
                         {isTimerVisible && renderTimer()}
                     </>
                 }
