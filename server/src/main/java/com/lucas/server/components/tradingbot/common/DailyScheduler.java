@@ -81,10 +81,10 @@ public class DailyScheduler {
 
         LocalDate now = LocalDate.now();
         Set<Long> topRecommendedSymbols = dataManager.getTopRecommendedSymbols(BUY, RECOMMENDATION_MEDIUM_GRAIN_THRESHOLD, now);
-        getRecommendations(topRecommendedSymbols, RecommendationMode.NOT_RANDOM, false);
+        getRecommendations(topRecommendedSymbols, RecommendationMode.NOT_RANDOM, false, false);
         OrderedIndexedSet<Long> topRecommendedSymbolsAfterMediumGrain = dataManager.getTopRecommendedSymbols(BUY, RECOMMENDATION_FINE_GRAIN_THRESHOLD, now)
                 .stream().limit(MAX_RECOMMENDATIONS_COUNT).collect(OrderedIndexedSet.toUnmodifiableOrderedIndexedSet());
-        getRecommendations(topRecommendedSymbolsAfterMediumGrain, RecommendationMode.FINE_GRAIN, true);
+        getRecommendations(topRecommendedSymbolsAfterMediumGrain, RecommendationMode.FINE_GRAIN, true, true);
         publisher.publish("jobs", "job done");
 
         Set<News> removedNews = dataManager.removeOldNews(DATABASE_NEWS_PER_SYMBOL);
@@ -96,9 +96,9 @@ public class DailyScheduler {
         logger.info(SCHEDULED_TASK_SUCCESS_INFO, message3, removedRecommendations.stream().map(Recommendation::getSymbol).toList());
     }
 
-    private void getRecommendations(Set<Long> topRecommendedSymbols, RecommendationMode mode, boolean useOldNews) {
+    private void getRecommendations(Set<Long> topRecommendedSymbols, RecommendationMode mode, boolean fetchPremarket, boolean useOldNews) {
         Set<Recommendation> updatedRecommendations = dataManager.getRecommendationsById(topRecommendedSymbols, filterClients(clients, mode), PortfolioType.REAL,
-                true, true, false, useOldNews);
+                true, true, fetchPremarket, useOldNews);
         String message = String.format("generated %d recommendations", updatedRecommendations.size());
         logger.info(SCHEDULED_TASK_SUCCESS_INFO, message, updatedRecommendations.stream().map(Recommendation::getSymbol).toList());
     }
