@@ -55,8 +55,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ManualRunTest extends BaseTest {
 
     private static final Set<String> SYMBOL_NAMES = Set.of("AAPL", "NVDA", "MSFT", "AMZN", "META", "TSLA", "GOOGL");
-    private static final LocalDate FROM = LocalDate.of(2026, 2, 1); // inclusive
+    private static final LocalDate FROM = LocalDate.of(2026, 4, 13); // inclusive
     private static final LocalDate TO = LocalDate.now().plusDays(1); // exclusive
+    private static Set<Recommendation> allRecommendations;
+    private static Set<MarketData> allMarketData;
 
     @Autowired
     private SymbolRepository symbolRepository;
@@ -146,6 +148,42 @@ class ManualRunTest extends BaseTest {
                 .flatMap(time -> sectorsWithNullFirst().map(sector -> Arguments.of(time, sector)));
     }
 
+    /**
+     * Pre-loads all recommendations needed across all possible test parameter combinations.
+     * Covers date range from daysAfter=0 to daysAfter=5 (6 variations) with all sectors.
+     * Note: If test input parameters change (e.g., daysAndSectors returns different values),
+     * update the tradeDaysElapsed value (currently 5) to match the maximum daysAfter parameter.
+     */
+    private void initializeRecommendations() {
+        if (null == allRecommendations) {
+            LocalDate earliestFrom = toPastOrFutureTradeDate(FROM, 5, d -> d.minusDays(1));
+            LocalDate latestTo = toPastOrFutureTradeDate(TO, 0, d -> d.minusDays(1));
+
+            allRecommendations = new HashSet<>(recommendationsRepository.findByDateBetween(earliestFrom, latestTo));
+        }
+    }
+
+    /**
+     * Pre-loads all market data needed across all possible test parameter combinations.
+     * Covers all symbols and dates from daysAfter=0 to daysAfter=5 (6 variations)
+     * and times 9:35 and 9:45 with all sectors.
+     * Note: If test input parameters change (e.g., daysAndSectors returns different values),
+     * update the tradeDaysElapsed value (currently 5) to match the maximum daysAfter parameter.
+     */
+    private void initializeMarketData() {
+        if (null == allMarketData) {
+            Set<Long> allSymbolIds = symbolRepository.findAll().stream()
+                    .map(Symbol::getId)
+                    .collect(Collectors.toSet());
+
+            LocalDate earliestFrom = toPastOrFutureTradeDate(FROM, 5, d -> d.minusDays(1));
+            LocalDate latestToWithLookahead = toPastOrFutureTradeDate(TO, 5, d -> d.plusDays(1));
+
+            Set<LocalDate> allDates = earliestFrom.datesUntil(latestToWithLookahead).collect(Collectors.toSet());
+            allMarketData = new HashSet<>(marketDataRepository.findBySymbol_IdInAndDateIn(allSymbolIds, allDates));
+        }
+    }
+
     @Test
     @Transactional
     void runMidnightTask() throws Exception {
@@ -175,12 +213,14 @@ class ManualRunTest extends BaseTest {
     void assertRecommendationsPrecisionAtCloseOfNthDay(int daysAfter, Sector sector) {
         assertTrue(true); // useless assertion so Sonar doesn't cry
 
+        initializeMarketData();
         Set<Long> allSymbolIds = getSymbolIdsFor(sector);
         LocalDate from = toPastOrFutureTradeDate(FROM, daysAfter, d -> d.minusDays(1));
         LocalDate to = toPastOrFutureTradeDate(TO, daysAfter, d -> d.minusDays(1));
         Set<LocalDate> dates = from.datesUntil(to).collect(Collectors.toSet());
 
-        Map<SymDate, MarketData> mdByKey = marketDataRepository.findBySymbol_IdInAndDateIn(allSymbolIds, dates).stream()
+        Map<SymDate, MarketData> mdByKey = allMarketData.stream()
+                .filter(md -> allSymbolIds.contains(md.getSymbol().getId()) && dates.contains(md.getDate()))
                 .collect(Collectors.toMap(
                         md -> new SymDate(md.getSymbol().getId(), md.getDate()),
                         Function.identity()
@@ -201,7 +241,8 @@ class ManualRunTest extends BaseTest {
         Set<LocalDate> nextDatesWindow = firstDateForCurrentPriceNeeded.datesUntil(lastDateForCurrentPriceNeeded)
                 .collect(Collectors.toSet());
 
-        Map<SymDate, MarketData> nextDayMd = marketDataRepository.findBySymbol_IdInAndDateIn(symbolsNeeded, nextDatesWindow).stream()
+        Map<SymDate, MarketData> nextDayMd = allMarketData.stream()
+                .filter(md -> symbolsNeeded.contains(md.getSymbol().getId()) && nextDatesWindow.contains(md.getDate()))
                 .collect(Collectors.toMap(
                         md -> new SymDate(md.getSymbol().getId(), md.getDate()),
                         Function.identity()
@@ -232,6 +273,7 @@ class ManualRunTest extends BaseTest {
     void assertRecommendationsPrecisionAtSnapshot(LocalTime time, Sector sector) {
         assertTrue(true); // useless assertion so Sonar doesn't cry
 
+        initializeMarketData();
         Set<Long> allSymbolIds = getSymbolIdsFor(sector);
         Set<LocalDate> dates = FROM.datesUntil(TO).collect(Collectors.toSet());
 
@@ -242,7 +284,7 @@ class ManualRunTest extends BaseTest {
                         .stream())
                 .collect(Collectors.toMap(
                         ms -> new SymDate(ms.getSymbol().getId(), ms.getDate().toLocalDate()),
-                        Function.identity(), (a, b) -> a, HashMap::new
+                        Function.identity(), (a, b) -> a
                 ));
 
         Set<Long> symbolsNeeded = msByKey.values().stream()
@@ -260,7 +302,8 @@ class ManualRunTest extends BaseTest {
         Set<LocalDate> previousDatesWindow = firstDateForPreviousCloseNeeded.datesUntil(lastDateForPreviousCloseNeeded)
                 .collect(Collectors.toSet());
 
-        Map<SymDate, MarketData> previousDayMd = marketDataRepository.findBySymbol_IdInAndDateIn(symbolsNeeded, previousDatesWindow).stream()
+        Map<SymDate, MarketData> previousDayMd = allMarketData.stream()
+                .filter(md -> symbolsNeeded.contains(md.getSymbol().getId()) && previousDatesWindow.contains(md.getDate()))
                 .collect(Collectors.toMap(
                         md -> new SymDate(md.getSymbol().getId(), md.getDate()),
                         Function.identity()
@@ -307,8 +350,8 @@ class ManualRunTest extends BaseTest {
             BigDecimal relDiff = 0 == denominator.compareTo(BigDecimal.ZERO)
                     ? BigDecimal.ZERO
                     : filteredAverageClose.subtract(allAverageClose)
-                    .divide(denominator, 8, RoundingMode.HALF_UP)
-                    .multiply(BigDecimal.valueOf(100));
+                      .divide(denominator, 8, RoundingMode.HALF_UP)
+                      .multiply(BigDecimal.valueOf(100));
 
             System.out.printf("Absolute avg-%s difference (filtered - all): %+.2f%%%n", exitLabel, absDiff);
             System.out.println("Relative difference vs all: " + relDiff.setScale(2, RoundingMode.HALF_UP) + "%");
@@ -387,9 +430,10 @@ class ManualRunTest extends BaseTest {
 
 
     private Map<Recommendation, MarketData> getBaseline(Map<SymDate, MarketData> mdByKey, LocalDate from, LocalDate to) {
-        return recommendationsRepository
-                .findByDateBetween(from, to)
-                .stream()
+        initializeRecommendations();
+
+        return allRecommendations.stream()
+                .filter(r -> !r.getDate().isBefore(from) && r.getDate().isBefore(to))
                 .filter(r -> isTradingDate(r.getDate()))
                 .flatMap(r -> Optional.ofNullable(mdByKey.get(new SymDate(r.getSymbol().getId(), r.getDate())))
                         .map(md -> Map.entry(r, md))
