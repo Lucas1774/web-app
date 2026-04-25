@@ -110,7 +110,7 @@ class AssetReportToMustacheMapperTest {
                   • 10.2412 shares ($101.4887)
                   • Avg Entry Price: $11.5874
                   • Unrealized PnL: $50 (80%)
-                • Pre-market: O100 H110 L90 P105 Gap: 7.5%
+                • This morning's pre-market: O100 H110 L90 Last price105 Gap: 7.5%
                 • Price History (last 1 days):
                   • 2025-05-01: O100 H110 L90 C105 V1234
                 • Technical Indicators at last close:
