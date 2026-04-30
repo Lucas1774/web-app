@@ -3,19 +3,25 @@ set -euo pipefail
 
 export LC_ALL=C.UTF-8
 
-if [[ $# -ne 3 ]]; then
-  echo "Usage: $0 <user> <password> <api-key>"
+if [[ $# -lt 3 ]]; then
+  echo "Usage: $0 <user> <password> <api-key> [--skip-git-check]"
   exit 1
 fi
 
 USER="$1"
 PASSWORD="$2"
 API_KEY="$3"
+SKIP_GIT_CHECK="${4:-}"
 VM_HOST="ferafera.ddns.net"
 
-if ! git diff-index HEAD --quiet; then
-  echo "Uncommitted changes detected. Commit or stash them before running this script"
-  exit 1
+if [[ "$SKIP_GIT_CHECK" != "--skip-git-check" ]]; then
+  if ! git diff-index HEAD --quiet; then
+    echo "Uncommitted changes detected. Commit or stash them before running this script"
+    echo "Use --skip-git-check to bypass this check"
+    exit 1
+  fi
+else
+  echo -e "\033[0;31mWARNING: This script will deploy with uncommitted changes.\033[0m"
 fi
 
 CONSTANTS_FILE="src/main/java/com/lucas/server/common/Constants.java"

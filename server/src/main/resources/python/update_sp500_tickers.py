@@ -52,9 +52,8 @@ def main():
     if any(v is None for v in mapping.values()):
         print("ERROR: some sectors are null. Parsing is probably incorrect")
         sys.exit(1)
-    java_declaration = f"public static final Map<String, Sector> SYMBOL_TO_SECTOR = Map.<String, Sector>ofEntries({", ".join(
-        f'Map.entry("{java_escape(k)}", {java_escape(v).replace(' ', '_').upper()})' for k, v in mapping.items()
-    )});"
+    java_declaration = 'public static final Map<String, Sector> SYMBOL_TO_SECTOR = Map.<String, Sector>ofEntries(' + ", ".join(
+        f'Map.entry("{java_escape(k)}", {java_escape(v).replace(" ", "_").upper()})' for k, v in mapping.items()) + ');'
 
     # Make replacements in java file
     java_path = sys.argv[1]
