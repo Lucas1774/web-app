@@ -38,6 +38,7 @@ public class Constants {
     public static final int REQUEST_MAX_ATTEMPTS = 2;
     public static final int RECOMMENDATION_MAX_ATTEMPTS = 5;
     public static final int MAX_REQUESTS_PER_SECOND = 10;
+    public static final int CLIENT_ROTATION_DEBOUNCE_MS = 200;
 
     public static final BigDecimal RECOMMENDATION_MEDIUM_GRAIN_THRESHOLD = BigDecimal.valueOf(0.75);
     public static final BigDecimal RECOMMENDATION_FINE_GRAIN_THRESHOLD = BigDecimal.valueOf(0.75);

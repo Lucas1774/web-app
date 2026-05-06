@@ -13,6 +13,7 @@ import com.lucas.server.components.tradingbot.recommendation.jpa.Recommendation;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.AssetReportRaw;
 import com.lucas.server.components.tradingbot.recommendation.mapper.RecommendationChatCompletionResponseMapper;
+import com.lucas.utils.Interrupts;
 import com.lucas.utils.exception.MappingException;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import org.slf4j.Logger;
@@ -28,6 +29,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -81,42 +83,64 @@ public class RecommendationChatCompletionClient {
         this.mapper = mapper;
     }
 
-    public Set<Recommendation> getRecommendations(Set<DataManager.SymbolPayload> payload, AIClient client, boolean useOldNews) throws ClientException, JsonProcessingException, MappingException {
+    /**
+     * Retrieves recommendations for the given symbol payloads using the provided AI clients.
+     * Cycles through all clients indefinitely until one successfully acquires rate limit permits.
+     *
+     * @param payload    the symbol payloads to generate recommendations for
+     * @param clients    the AI clients to use (must share the same chunk size)
+     * @param useOldNews whether to use old news or filter by recent dates
+     * @return set of recommendations
+     * @throws ClientException         if the AI client request fails
+     * @throws JsonProcessingException if JSON processing fails
+     * @throws MappingException        if mapping the response fails
+     */
+    public Set<Recommendation> getRecommendations(Set<DataManager.SymbolPayload> payload, Set<AIClient> clients, boolean useOldNews) throws ClientException, JsonProcessingException, MappingException {
         Set<AssetReportRaw> reports = payload.stream()
                 .map(assertReportDataProvider::provide)
                 .collect(Collectors.toSet());
         ObjectNode rawReportMessage = objectMapper.readValue(assetReportToMustacheMapper.map(reports), ObjectNode.class);
-        ObjectNode reportMessage;
-        if (!client.getConfig().fixMe()) {
-            reportMessage = rawReportMessage;
-        } else {
-            reportMessage = objectMapper.readValue(fixMeMessage.get(CONTENT).asText()
-                    .replace("{placeholder}", rawReportMessage.get(CONTENT).asText()), ObjectNode.class);
-        }
         Set<Symbol> symbols = payload.stream().map(DataManager.SymbolPayload::getSymbol).collect(Collectors.toSet());
         ObjectNode contextMessage = context.deepCopy().put(CONTENT, context.get(CONTENT).asText().replace("{date}",
                 ZonedDateTime.now(NY_ZONE).format(DateTimeFormatter.ofPattern("EEEE, yyyy-MM-dd HH:mm:ss z", Locale.ENGLISH))));
         ObjectNode usedSystemMessage = useOldNews ? systemLongTermMessage : systemMessage;
-        OrderedIndexedSet<JsonNode> prompt = OrderedIndexedSet.of(usedSystemMessage, contextMessage, fewShotMessage, reportMessage);
 
         logger.info(RETRIEVING_DATA_INFO, RECOMMENDATION, symbols);
         AtomicReference<String> completion = new AtomicReference<>();
-        try {
-            return client.getRateLimiter().call(() -> client.getConcurrentRequestsRateLimiter().call(() -> {
-                client.getApiKeyRateLimiter().acquirePermission();
-                logger.info(PROMPTING_MODEL_INFO, client.getConfig().name());
-                completion.set(client.complete(prompt));
-                return mapper.mapAll(payload,
-                        objectMapper.readTree(completion.get()),
-                        prompt.stream().map(p -> sanitizeHtml(p.get(CONTENT).asText())).collect(Collectors.joining("\n\n\n")),
-                        client.getConfig().name());
-            }));
-        } catch (MappingException | JsonProcessingException e) {
-            throw new ClientException(MessageFormat.format(RECOMMENDATION_COMPLETION_ERROR, completion.get()), e);
-        } catch (ClientException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new ClientException(e);
+
+        while (true) {
+            for (AIClient client : clients) {
+                try {
+                    ObjectNode reportMessage;
+                    if (!client.getConfig().fixMe()) {
+                        reportMessage = rawReportMessage;
+                    } else {
+                        reportMessage = objectMapper.readValue(fixMeMessage.get(CONTENT).asText()
+                                .replace("{placeholder}", rawReportMessage.get(CONTENT).asText()), ObjectNode.class);
+                    }
+                    OrderedIndexedSet<JsonNode> prompt = OrderedIndexedSet.of(usedSystemMessage, contextMessage, fewShotMessage, reportMessage);
+                    Optional<Set<Recommendation>> res = client.getRateLimiter().tryCall(() -> client.getConcurrentRequestsRateLimiter().call(() -> {
+                        client.getApiKeyRateLimiter().acquirePermission();
+                        logger.info(PROMPTING_MODEL_INFO, client.getConfig().name());
+                        completion.set(client.complete(prompt));
+                        return mapper.mapAll(payload,
+                                objectMapper.readTree(completion.get()),
+                                prompt.stream().map(p -> sanitizeHtml(p.get(CONTENT).asText())).collect(Collectors.joining("\n\n\n")),
+                                client.getConfig().name());
+                    }));
+                    if (res.isPresent()) {
+                        return res.get();
+                    }
+
+                    Interrupts.runOrSwallow(() -> Thread.sleep(CLIENT_ROTATION_DEBOUNCE_MS), e -> logger.debug(e.getMessage(), e));
+                } catch (MappingException | JsonProcessingException e) {
+                    throw new ClientException(MessageFormat.format(RECOMMENDATION_COMPLETION_ERROR, completion.get()), e);
+                } catch (ClientException e) {
+                    throw e;
+                } catch (Exception e) {
+                    throw new ClientException(e);
+                }
+            }
         }
     }
 }

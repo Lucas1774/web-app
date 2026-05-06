@@ -152,6 +152,7 @@ public class DataManager {
         Deque<AIClient> mutableClients = new ConcurrentLinkedDeque<>(clients);
         IPortfolioJpaService<PortfolioBase> portfolioService = getService(type);
         Supplier<PortfolioBase> portfolioSupplier = portfolioTypeToNewPortfolio.get(type);
+        int minChunkSize = clients.stream().mapToInt(c -> c.getConfig().chunkSize()).min().orElseThrow();
 
         LocalDateTime startUtc;
         if (useOldNews) {
@@ -200,17 +201,15 @@ public class DataManager {
                         }
                     }
                     recommendationBuffer.add(payload);
-                    AIClient client = mutableClients.peekFirst();
-                    if (recommendationBuffer.size() == Objects.requireNonNull(client).getConfig().chunkSize()) {
-                        submitChunk(new HashSet<>(recommendationBuffer), client, executor, resultsQueue, overwrite, useOldNews);
+                    if (recommendationBuffer.size() == minChunkSize) {
+                        submitChunk(Set.copyOf(recommendationBuffer), OrderedIndexedSet.copyOf(mutableClients), executor, resultsQueue, overwrite, useOldNews);
                         submitted++;
                         mutableClients.add(mutableClients.pollFirst());
                         recommendationBuffer.clear();
                     }
                 }
                 if (!recommendationBuffer.isEmpty()) {
-                    AIClient client = mutableClients.peekFirst();
-                    submitChunk(new HashSet<>(recommendationBuffer), client, executor, resultsQueue, overwrite, useOldNews);
+                    submitChunk(Set.copyOf(recommendationBuffer), OrderedIndexedSet.copyOf(mutableClients), executor, resultsQueue, overwrite, useOldNews);
                     submitted++;
                     mutableClients.add(mutableClients.pollFirst());
                 }
@@ -272,11 +271,11 @@ public class DataManager {
         }
     }
 
-    private void submitChunk(Set<SymbolPayload> buffer, AIClient client, ExecutorService executor,
+    private void submitChunk(Set<SymbolPayload> buffer, Set<AIClient> clients, ExecutorService executor,
                              BlockingQueue<Set<Recommendation>> resultsQueue, boolean overwrite, boolean useOldNews) {
         executor.submit(() -> {
             try {
-                Set<Recommendation> partial = recommendationClient.getRecommendations(buffer, client, useOldNews);
+                Set<Recommendation> partial = recommendationClient.getRecommendations(buffer, clients, useOldNews);
                 logger.info(GENERATION_SUCCESSFUL_INFO, RECOMMENDATION);
                 Set<Recommendation> finalPartial;
                 synchronized (newsPersistLock) {
