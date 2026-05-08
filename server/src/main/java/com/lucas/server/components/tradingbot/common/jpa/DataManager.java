@@ -171,7 +171,7 @@ public class DataManager {
         }
 
         Set<Symbol> remainingSymbols = new HashSet<>(symbols);
-        try (ExecutorService executor = Executors.newCachedThreadPool()) {
+        try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
             int attempts = 0;
             while (!remainingSymbols.isEmpty() && RECOMMENDATION_MAX_ATTEMPTS > attempts) {
                 BlockingQueue<Set<Recommendation>> resultsQueue = new LinkedBlockingQueue<>();
