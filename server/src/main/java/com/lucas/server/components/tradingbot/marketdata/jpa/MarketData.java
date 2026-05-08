@@ -20,7 +20,6 @@ import java.util.Set;
 @Accessors(chain = true)
 @NoArgsConstructor
 @Entity
-@EntityListeners(MarketDataListener.class)
 @Table(name = "market_data", uniqueConstraints = @UniqueConstraint(columnNames = {"symbol_id", "trade_date"}))
 public class MarketData implements JpaEntity {
 

@@ -377,13 +377,17 @@ public class DataManager {
                                               MarketDataType type,
                                               boolean override) throws ClientException, MappingException {
         Set<Symbol> symbols = symbolService.getOrCreateByName(symbolNames);
-        OrderedIndexedSet<MarketData> mds = typeToRunner.get(type).apply(symbols);
-        logger.info(GENERATION_SUCCESSFUL_INFO, MARKET_DATA);
-        if (override) {
-            marketDataService.createOrUpdate(mds);
-        } else {
-            marketDataService.createIgnoringDuplicates(mds);
+        Set<MarketData> mds = new HashSet<>();
+        for (Symbol symbol : symbols) {
+            OrderedIndexedSet<MarketData> retrieved = typeToRunner.get(type).apply(Set.of(symbol));
+            if (override) {
+                marketDataService.createOrUpdate(retrieved);
+            } else {
+                marketDataService.createIgnoringDuplicates(retrieved);
+            }
+            mds.addAll(retrieved);
         }
+        logger.info(GENERATION_SUCCESSFUL_INFO, MARKET_DATA);
         return mds;
     }
 

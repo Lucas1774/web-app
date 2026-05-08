@@ -5,6 +5,7 @@ import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataJpaService;
+import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataRepository;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import jakarta.transaction.Transactional;
 import nl.altindag.log.LogCaptor;
@@ -36,6 +37,9 @@ class MarketDataKpiGeneratorTest extends ConfiguredTest {
 
     @MockitoSpyBean
     private MarketDataJpaService marketDataService;
+
+    @MockitoSpyBean
+    private MarketDataRepository marketDataRepository;
 
     @Autowired
     private SymbolJpaService symbolService;
@@ -83,7 +87,7 @@ class MarketDataKpiGeneratorTest extends ConfiguredTest {
         assertThat(currentData.getChange()).isEqualByComparingTo(BigDecimal.valueOf(10.00));
         assertThat(currentData.getPreviousClose()).isEqualByComparingTo(BigDecimal.valueOf(140.00));
         assertThat(currentData.getChangePercent()).isEqualByComparingTo(BigDecimal.valueOf(7.1429));
-        verify(marketDataService, atLeastOnce()).findTop14BySymbolIdAndDateBeforeOrderByDateDesc(symbol.getId(), currentDate);
+        verify(marketDataRepository, atLeastOnce()).findTop14BySymbol_IdAndDateBeforeOrderByDateDesc(symbol.getId(), currentDate);
     }
 
     @Test
@@ -106,7 +110,7 @@ class MarketDataKpiGeneratorTest extends ConfiguredTest {
         assertThat(currentData.getChange()).isNull();
         assertThat(currentData.getPreviousClose()).isNull();
         assertThat(currentData.getChangePercent()).isNull();
-        verify(marketDataService, atLeastOnce()).findTop14BySymbolIdAndDateBeforeOrderByDateDesc(symbol.getId(), currentDate);
+        verify(marketDataRepository, atLeastOnce()).findTop14BySymbol_IdAndDateBeforeOrderByDateDesc(symbol.getId(), currentDate);
     }
 
     @Test
@@ -136,7 +140,7 @@ class MarketDataKpiGeneratorTest extends ConfiguredTest {
         assertThat(currentData.getPreviousClose()).isEqualByComparingTo(BigDecimal.ZERO);
         assertThat(currentData.getChange()).isEqualByComparingTo("150.00");
         assertThat(currentData.getChangePercent()).isNull();
-        verify(marketDataService, atLeastOnce()).findTop14BySymbolIdAndDateBeforeOrderByDateDesc(symbol.getId(), currentDate);
+        verify(marketDataRepository, atLeastOnce()).findTop14BySymbol_IdAndDateBeforeOrderByDateDesc(symbol.getId(), currentDate);
     }
 
     @Test

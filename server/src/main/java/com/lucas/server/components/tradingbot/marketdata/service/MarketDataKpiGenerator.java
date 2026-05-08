@@ -1,7 +1,7 @@
 package com.lucas.server.components.tradingbot.marketdata.service;
 
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
-import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataJpaService;
+import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataRepository;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,15 +23,15 @@ import static com.lucas.utils.Utils.computeIfAbsent;
 public class MarketDataKpiGenerator {
 
     private static final Logger logger = LoggerFactory.getLogger(MarketDataKpiGenerator.class);
-    private final MarketDataJpaService service;
+    private final MarketDataRepository repository;
 
-    public MarketDataKpiGenerator(MarketDataJpaService service) {
-        this.service = service;
+    public MarketDataKpiGenerator(MarketDataRepository repository) {
+        this.repository = repository;
     }
 
     @SuppressWarnings("UnusedReturnValue")
     public MarketData computeDerivedFields(MarketData md) {
-        List<MarketData> previous14 = new ArrayList<>(service.findTop14BySymbolIdAndDateBeforeOrderByDateDesc(md.getSymbol().getId(), md.getDate()));
+        List<MarketData> previous14 = new ArrayList<>(repository.findTop14BySymbol_IdAndDateBeforeOrderByDateDesc(md.getSymbol().getId(), md.getDate()));
         if (previous14.isEmpty()) {
             logger.warn(NON_COMPUTABLE_KPI_WARN, "anything", md);
             return md;

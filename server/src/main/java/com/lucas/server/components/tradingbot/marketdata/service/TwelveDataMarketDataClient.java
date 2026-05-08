@@ -16,7 +16,6 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.function.UnaryOperator;
@@ -51,9 +50,7 @@ public class TwelveDataMarketDataClient {
         this.apiKey = apiKey;
         typeToMapper = new EnumMap<>(Map.of(
                 MarketDataType.LAST, (s, j) -> OrderedIndexedSet.of(mapper.map(j, s)),
-                MarketDataType.HISTORIC, (s, j) -> mapper.mapAll(j, s).stream()
-                        .sorted(Comparator.comparing(MarketData::getDate))
-                        .collect(OrderedIndexedSet.toUnmodifiableOrderedIndexedSet())
+                MarketDataType.HISTORIC, (s, j) -> mapper.mapAll(j, s)
         ));
     }
 

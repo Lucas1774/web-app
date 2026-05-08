@@ -3,13 +3,14 @@ package com.lucas.server.components.tradingbot.marketdata.jpa;
 import com.lucas.server.common.jpa.GenericJpaServiceDelegate;
 import com.lucas.server.common.jpa.JpaService;
 import com.lucas.server.common.jpa.UniqueConstraintWearyJpaServiceDelegate;
+import com.lucas.server.components.tradingbot.marketdata.service.MarketDataKpiGenerator;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import lombok.experimental.Delegate;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -21,24 +22,34 @@ public class MarketDataJpaService implements JpaService<MarketData> {
     private final GenericJpaServiceDelegate<MarketData, MarketDataRepository> delegate;
     private final UniqueConstraintWearyJpaServiceDelegate<MarketData> uniqueConstraintDelegate;
     private final MarketDataRepository repository;
+    private final MarketDataKpiGenerator kpiGenerator;
 
-    public MarketDataJpaService(MarketDataRepository repository) {
+    public MarketDataJpaService(MarketDataRepository repository, MarketDataKpiGenerator kpiGenerator) {
         delegate = new GenericJpaServiceDelegate<>(repository);
         uniqueConstraintDelegate = new UniqueConstraintWearyJpaServiceDelegate<>(repository);
         this.repository = repository;
+        this.kpiGenerator = kpiGenerator;
     }
 
     /**
-     * @param entities marketData. Need to be sorted so callbacks correctly calculate previous and change
-     * @return the newly saved entities
+     * Saves all entities first, then updates them one by one (oldest first) with KPI computation.
      */
+    @SuppressWarnings("UnusedReturnValue")
     public Set<MarketData> createIgnoringDuplicates(OrderedIndexedSet<MarketData> entities) {
-        return uniqueConstraintDelegate.createIgnoringDuplicates(this::findUnique, entities);
+        Set<MarketData> saved = uniqueConstraintDelegate.createIgnoringDuplicates(this::findUnique, entities);
+        for (MarketData md : saved.stream().sorted(Comparator.comparing(MarketData::getDate)).toList()) {
+            kpiGenerator.computeDerivedFields(md);
+            repository.saveAndFlush(md);
+        }
+        return saved;
     }
 
+    /**
+     * Saves or updates all entities first, then updates them one by one (oldest first) with KPI computation.
+     */
     @SuppressWarnings("UnusedReturnValue")
     public Set<MarketData> createOrUpdate(OrderedIndexedSet<MarketData> entities) {
-        return uniqueConstraintDelegate.createOrUpdate(this::findUnique,
+        Set<MarketData> saved = uniqueConstraintDelegate.createOrUpdate(this::findUnique,
                 (oldEntity, newEntity) -> oldEntity
                         .setOpen(newEntity.getOpen())
                         .setHigh(newEntity.getHigh())
@@ -49,6 +60,11 @@ public class MarketDataJpaService implements JpaService<MarketData> {
                         .setChange(newEntity.getChange())
                         .setChangePercent(newEntity.getChangePercent())
                 , entities);
+        for (MarketData md : saved.stream().sorted(Comparator.comparing(MarketData::getDate)).toList()) {
+            kpiGenerator.computeDerivedFields(md);
+            repository.saveAndFlush(md);
+        }
+        return saved;
     }
 
     private Set<MarketData> findUnique(Set<MarketData> marketData) {
@@ -56,10 +72,6 @@ public class MarketDataJpaService implements JpaService<MarketData> {
                 marketData.stream().map(md -> md.getSymbol().getId()).collect(Collectors.toSet()),
                 marketData.stream().map(MarketData::getDate).collect(Collectors.toSet())
         );
-    }
-
-    public OrderedIndexedSet<MarketData> findTop14BySymbolIdAndDateBeforeOrderByDateDesc(Long id, LocalDate date) {
-        return repository.findTop14BySymbol_IdAndDateBeforeOrderByDateDesc(id, date);
     }
 
     // TODO: batch
