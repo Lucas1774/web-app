@@ -2,8 +2,8 @@ package com.lucas.server.components.tradingbot.news.service;
 
 import com.lucas.server.common.HttpRequestClient;
 import com.lucas.server.common.exception.ClientException;
-import com.lucas.server.components.tradingbot.common.jpa.Symbol;
-import com.lucas.server.components.tradingbot.news.jpa.News;
+import com.lucas.server.components.tradingbot.common.dto.SymbolDomain;
+import com.lucas.server.components.tradingbot.news.dto.NewsDomain;
 import com.lucas.server.components.tradingbot.news.mapper.YahooFinanceNewsResponseMapper;
 import com.lucas.utils.exception.MappingException;
 import com.lucas.utils.ratelimiter.SlidingWindowRateLimiter;
@@ -37,7 +37,7 @@ public class YahooFinanceNewsClient {
     }
 
     @Retryable(retryFor = {ClientException.class, MappingException.class}, maxAttempts = REQUEST_MAX_ATTEMPTS)
-    public Set<News> retrieveNews(Symbol symbol) throws ClientException, MappingException {
+    public Set<NewsDomain> retrieveNews(SymbolDomain symbol) throws ClientException, MappingException {
         rateLimiter.acquirePermission();
         logger.info(RETRIEVING_DATA_INFO, NEWS, symbol);
         String symbolName = symbol.getName().replace('.', '-');

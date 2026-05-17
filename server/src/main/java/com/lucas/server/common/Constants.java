@@ -11,13 +11,13 @@ import java.time.ZoneId;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 import static com.lucas.server.common.Constants.Clients.*;
 import static com.lucas.server.common.Constants.Sector.*;
 
 public class Constants {
-
 
     public static final int CORNERS_LAST_ROW = 441;
     public static final int EDGES_LAST_ROW = 484;
@@ -39,6 +39,7 @@ public class Constants {
     public static final int RECOMMENDATION_MAX_ATTEMPTS = 5;
     public static final int MAX_REQUESTS_PER_SECOND = 10;
     public static final int CLIENT_ROTATION_DEBOUNCE_MS = 200;
+    public static final int FINNHUB_RATE_LIMITER_ROTATION_DEBOUNCE_MS = 50;
 
     public static final BigDecimal RECOMMENDATION_MEDIUM_GRAIN_THRESHOLD = BigDecimal.valueOf(0.75);
     public static final BigDecimal RECOMMENDATION_FINE_GRAIN_THRESHOLD = BigDecimal.valueOf(0.75);
@@ -72,6 +73,7 @@ public class Constants {
     public static final String CLIENT_FAILED_BACKUP_WARN = "{} failed when trying to process {}";
     public static final String MARKET_STILL_OPEN_WARN = "Market is still open!";
     public static final String RETRIEVAL_FAILED_WARN = "Error generating {} {}";
+    public static final String NEWS_SERIALIZATION_WARN = "Some news were lost in conversion for symbol {}";
     public static final String SCHEDULED_TASK_SUCCESS_INFO = "Successfully {}: {}";
     public static final String RETRIEVING_DATA_INFO = "Retrieving {} for {}";
     public static final String PROMPTING_MODEL_INFO = "Prompting model {}";
@@ -180,6 +182,16 @@ public class Constants {
 
     public static OrderedIndexedSet<String> getFinnhubRateLimiterNames() {
         return FINNHUB_RATE_LIMITERS;
+    }
+
+    public static LocalDate toPastOrFutureTradeDate(LocalDate start, int tradeDaysElapsed, UnaryOperator<LocalDate> step) {
+        LocalDate d = start;
+        for (int i = 0; i < tradeDaysElapsed; i++) {
+            do {
+                d = step.apply(d);
+            } while (!isTradingDate(d));
+        }
+        return d;
     }
 
     public static int[] getDigits() {

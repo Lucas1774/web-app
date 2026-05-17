@@ -3,12 +3,14 @@ package com.lucas.server.components.tradingbot.marketdata.jpa;
 import com.lucas.server.common.jpa.GenericJpaServiceDelegate;
 import com.lucas.server.common.jpa.JpaService;
 import com.lucas.server.common.jpa.UniqueConstraintWearyJpaServiceDelegate;
+import com.lucas.server.components.tradingbot.marketdata.dto.MarketDataDomain;
+import com.lucas.server.components.tradingbot.marketdata.mapper.MarketDataMapper;
 import com.lucas.server.components.tradingbot.marketdata.service.MarketDataKpiGenerator;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
-import lombok.experimental.Delegate;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.Optional;
@@ -16,39 +18,43 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
-public class MarketDataJpaService implements JpaService<MarketData> {
+public class MarketDataJpaService implements JpaService<MarketDataDomain> {
 
-    @Delegate
-    private final GenericJpaServiceDelegate<MarketData, MarketDataRepository> delegate;
+    private final GenericJpaServiceDelegate<MarketData, MarketDataDomain, MarketDataRepository> delegate;
     private final UniqueConstraintWearyJpaServiceDelegate<MarketData> uniqueConstraintDelegate;
     private final MarketDataRepository repository;
     private final MarketDataKpiGenerator kpiGenerator;
+    private final MarketDataMapper marketDataMapper;
 
-    public MarketDataJpaService(MarketDataRepository repository, MarketDataKpiGenerator kpiGenerator) {
-        delegate = new GenericJpaServiceDelegate<>(repository);
+    public MarketDataJpaService(MarketDataRepository repository, MarketDataMapper marketDataMapper, MarketDataKpiGenerator kpiGenerator) {
+        delegate = new GenericJpaServiceDelegate<>(repository, marketDataMapper);
         uniqueConstraintDelegate = new UniqueConstraintWearyJpaServiceDelegate<>(repository);
         this.repository = repository;
         this.kpiGenerator = kpiGenerator;
+        this.marketDataMapper = marketDataMapper;
     }
 
     /**
      * Saves all entities first, then updates them one by one (oldest first) with KPI computation.
      */
-    @SuppressWarnings("UnusedReturnValue")
-    public Set<MarketData> createIgnoringDuplicates(OrderedIndexedSet<MarketData> entities) {
-        Set<MarketData> saved = uniqueConstraintDelegate.createIgnoringDuplicates(this::findUnique, entities);
-        for (MarketData md : saved.stream().sorted(Comparator.comparing(MarketData::getDate)).toList()) {
+    @Transactional
+    public Set<MarketDataDomain> createIgnoringDuplicates(OrderedIndexedSet<MarketDataDomain> dtos) {
+        Set<MarketData> entitySet = dtos.stream().map(marketDataMapper::toEntity).collect(Collectors.toSet());
+        Set<MarketData> saved = uniqueConstraintDelegate.createIgnoringDuplicates(this::findUnique, entitySet);
+        for (MarketDataDomain md : saved.stream().sorted(Comparator.comparing(MarketData::getDate)).map(marketDataMapper::toDto).toList()) {
             kpiGenerator.computeDerivedFields(md);
-            repository.saveAndFlush(md);
+            repository.saveAndFlush(marketDataMapper.toEntity(md));
         }
-        return saved;
+        return saved.stream().map(marketDataMapper::toDto).collect(Collectors.toSet());
     }
 
     /**
      * Saves or updates all entities first, then updates them one by one (oldest first) with KPI computation.
      */
+    @Transactional
     @SuppressWarnings("UnusedReturnValue")
-    public Set<MarketData> createOrUpdate(OrderedIndexedSet<MarketData> entities) {
+    public Set<MarketDataDomain> createOrUpdate(OrderedIndexedSet<MarketDataDomain> dtos) {
+        Set<MarketData> entitySet = dtos.stream().map(marketDataMapper::toEntity).collect(Collectors.toSet());
         Set<MarketData> saved = uniqueConstraintDelegate.createOrUpdate(this::findUnique,
                 (oldEntity, newEntity) -> oldEntity
                         .setOpen(newEntity.getOpen())
@@ -59,32 +65,54 @@ public class MarketDataJpaService implements JpaService<MarketData> {
                         .setPreviousClose(newEntity.getPreviousClose())
                         .setChange(newEntity.getChange())
                         .setChangePercent(newEntity.getChangePercent())
-                , entities);
-        for (MarketData md : saved.stream().sorted(Comparator.comparing(MarketData::getDate)).toList()) {
+                , entitySet);
+        for (MarketDataDomain md : saved.stream().sorted(Comparator.comparing(MarketData::getDate)).map(marketDataMapper::toDto).toList()) {
             kpiGenerator.computeDerivedFields(md);
-            repository.saveAndFlush(md);
+            repository.saveAndFlush(marketDataMapper.toEntity(md));
         }
-        return saved;
+        return saved.stream().map(marketDataMapper::toDto).collect(Collectors.toSet());
     }
 
-    private Set<MarketData> findUnique(Set<MarketData> marketData) {
+    private Set<MarketData> findUnique(Set<MarketData> marketDataEntities) {
         return repository.findBySymbol_IdInAndDateIn(
-                marketData.stream().map(md -> md.getSymbol().getId()).collect(Collectors.toSet()),
-                marketData.stream().map(MarketData::getDate).collect(Collectors.toSet())
+                marketDataEntities.stream().map(md -> md.getSymbol().getId()).collect(Collectors.toSet()),
+                marketDataEntities.stream().map(MarketData::getDate).collect(Collectors.toSet())
         );
     }
 
     // TODO: batch
-    public OrderedIndexedSet<MarketData> getTopForSymbolId(Long symbolId, int limit) {
-        return repository.findBySymbol_Id(symbolId, PageRequest.of(0, limit, Sort.by("date").descending()));
+    @Transactional(readOnly = true)
+    public OrderedIndexedSet<MarketDataDomain> getTopForSymbolId(Long symbolId, int limit) {
+        return repository.findBySymbol_Id(symbolId, PageRequest.of(0, limit, Sort.by("date").descending())).stream()
+                .map(marketDataMapper::toDto).collect(OrderedIndexedSet.toUnmodifiableOrderedIndexedSet());
     }
 
     // TODO: batch
-    public Set<MarketData> findBySymbolId(Long id) {
-        return repository.findBySymbol_Id(id);
+    @Transactional(readOnly = true)
+    public Set<MarketDataDomain> findBySymbolId(Long id) {
+        return repository.findBySymbol_Id(id).stream().map(marketDataMapper::toDto).collect(Collectors.toSet());
     }
 
-    public Optional<MarketData> findLatestBySymbolId(Long id) {
-        return repository.findTopBySymbol_IdOrderByDateDesc(id);
+    @Transactional(readOnly = true)
+    public Optional<MarketDataDomain> findLatestBySymbolId(Long id) {
+        return repository.findTopBySymbol_IdOrderByDateDesc(id).map(marketDataMapper::toDto);
+    }
+
+    @Override
+    @Transactional
+    public Set<MarketDataDomain> saveAll(Set<MarketDataDomain> elements) {
+        return delegate.saveAll(elements);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Set<MarketDataDomain> findAll() {
+        return delegate.findAll();
+    }
+
+    @Override
+    @Transactional
+    public void deleteAll(Set<MarketDataDomain> elements) {
+        delegate.deleteAll(elements);
     }
 }

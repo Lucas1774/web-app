@@ -14,7 +14,6 @@ public interface Sortable {
 
     Long getId();
 
-    @SuppressWarnings("unused")
     Integer getOrder();
 
     @SuppressWarnings("UnusedReturnValue")

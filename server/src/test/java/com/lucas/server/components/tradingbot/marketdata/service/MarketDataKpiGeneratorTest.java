@@ -1,13 +1,13 @@
 package com.lucas.server.components.tradingbot.marketdata.service;
 
 import com.lucas.server.ConfiguredTest;
-import com.lucas.server.components.tradingbot.common.jpa.Symbol;
+import com.lucas.server.components.tradingbot.common.dto.SymbolDomain;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
+import com.lucas.server.components.tradingbot.marketdata.dto.MarketDataDomain;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataJpaService;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataRepository;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
-import jakarta.transaction.Transactional;
 import nl.altindag.log.LogCaptor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,6 +16,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -35,14 +36,14 @@ class MarketDataKpiGeneratorTest extends ConfiguredTest {
             md(14, 13, 15, 13, 0)
     );
 
+    @Autowired
+    private SymbolJpaService symbolService;
+
     @MockitoSpyBean
     private MarketDataJpaService marketDataService;
 
     @MockitoSpyBean
     private MarketDataRepository marketDataRepository;
-
-    @Autowired
-    private SymbolJpaService symbolService;
 
     @MockitoSpyBean
     private MarketDataKpiGenerator kpiGenerator;
@@ -62,19 +63,18 @@ class MarketDataKpiGeneratorTest extends ConfiguredTest {
     }
 
     @Test
-    @Transactional
     void whenComputeDerivedFieldsOnCurrentMarketData_thenCorrectlyReflectsKPIs() {
         // given
-        Symbol symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
+        SymbolDomain symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
         LocalDate currentDate = LocalDate.of(2023, 12, 15);
         LocalDate previousDate = LocalDate.of(2023, 12, 14);
 
-        MarketData currentData = new MarketData()
+        MarketDataDomain currentData = new MarketDataDomain()
                 .setSymbol(symbol)
                 .setDate(currentDate)
                 .setPrice(BigDecimal.valueOf(150.00));
 
-        MarketData previousData = new MarketData()
+        MarketDataDomain previousData = new MarketDataDomain()
                 .setSymbol(symbol)
                 .setDate(previousDate)
                 .setPrice(BigDecimal.valueOf(140.00));
@@ -84,20 +84,20 @@ class MarketDataKpiGeneratorTest extends ConfiguredTest {
         kpiGenerator.computeDerivedFields(currentData);
 
         // then
-        assertThat(currentData.getChange()).isEqualByComparingTo(BigDecimal.valueOf(10.00));
-        assertThat(currentData.getPreviousClose()).isEqualByComparingTo(BigDecimal.valueOf(140.00));
-        assertThat(currentData.getChangePercent()).isEqualByComparingTo(BigDecimal.valueOf(7.1429));
+        MarketDataDomain saved = marketDataService.findAll().stream().max(Comparator.comparing(MarketDataDomain::getDate)).orElseThrow();
+        assertThat(saved.getChange()).isEqualByComparingTo(BigDecimal.valueOf(10.00));
+        assertThat(saved.getPreviousClose()).isEqualByComparingTo(BigDecimal.valueOf(140.00));
+        assertThat(saved.getChangePercent()).isEqualByComparingTo(BigDecimal.valueOf(7.1429));
         verify(marketDataRepository, atLeastOnce()).findTop14BySymbol_IdAndDateBeforeOrderByDateDesc(symbol.getId(), currentDate);
     }
 
     @Test
-    @Transactional
     void whenComputeDerivedFieldsWithoutPreviousData_thenNothingHappens() {
         // given
         LocalDate currentDate = LocalDate.of(2023, 12, 15);
-        Symbol symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
+        SymbolDomain symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
 
-        MarketData currentData = new MarketData()
+        MarketDataDomain currentData = new MarketDataDomain()
                 .setSymbol(symbol)
                 .setDate(currentDate)
                 .setPrice(BigDecimal.valueOf(150.00));
@@ -114,20 +114,19 @@ class MarketDataKpiGeneratorTest extends ConfiguredTest {
     }
 
     @Test
-    @Transactional
     void whenComputeDerivedFieldsWithZeroPreviousPrice_thenPercentageIsNull() {
         // given
-        Symbol symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
+        SymbolDomain symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
         symbolService.getOrCreateByName(Set.of(symbol.getName()));
         LocalDate currentDate = LocalDate.of(2023, 12, 15);
         LocalDate previousDate = LocalDate.of(2023, 12, 14);
 
-        MarketData currentData = new MarketData()
+        MarketDataDomain currentData = new MarketDataDomain()
                 .setSymbol(symbol)
                 .setDate(currentDate)
                 .setPrice(BigDecimal.valueOf(150.00));
 
-        MarketData previousData = new MarketData()
+        MarketDataDomain previousData = new MarketDataDomain()
                 .setSymbol(symbol)
                 .setDate(previousDate)
                 .setPrice(BigDecimal.ZERO);
@@ -137,9 +136,10 @@ class MarketDataKpiGeneratorTest extends ConfiguredTest {
         kpiGenerator.computeDerivedFields(currentData);
 
         // then
-        assertThat(currentData.getPreviousClose()).isEqualByComparingTo(BigDecimal.ZERO);
-        assertThat(currentData.getChange()).isEqualByComparingTo("150.00");
-        assertThat(currentData.getChangePercent()).isNull();
+        MarketDataDomain saved = marketDataService.findAll().stream().max(Comparator.comparing(MarketDataDomain::getDate)).orElseThrow();
+        assertThat(saved.getPreviousClose()).isEqualByComparingTo(BigDecimal.ZERO);
+        assertThat(saved.getChange()).isEqualByComparingTo("150.00");
+        assertThat(saved.getChangePercent()).isNull();
         verify(marketDataRepository, atLeastOnce()).findTop14BySymbol_IdAndDateBeforeOrderByDateDesc(symbol.getId(), currentDate);
     }
 

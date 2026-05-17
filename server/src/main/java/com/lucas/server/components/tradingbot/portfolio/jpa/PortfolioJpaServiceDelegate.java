@@ -1,7 +1,10 @@
 package com.lucas.server.components.tradingbot.portfolio.jpa;
 
 import com.lucas.server.common.exception.IllegalStateException;
+import com.lucas.server.common.mapper.EntityMapper;
+import com.lucas.server.components.tradingbot.common.dto.SymbolDomain;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
+import com.lucas.server.components.tradingbot.portfolio.dto.PortfolioDomain;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.math.BigDecimal;
@@ -21,36 +24,38 @@ import static com.lucas.server.common.Constants.INSUFFICIENT_STOCK_ERROR;
 public class PortfolioJpaServiceDelegate<T extends PortfolioBase, R extends JpaRepository<T, Long>> {
 
     private final R repository;
-    private final Function<Symbol, Optional<T>> findLatestBySymbol;
+    private final Function<Long, Optional<T>> findLatestBySymbol;
     private final Supplier<T> builder;
+    private final EntityMapper<T, PortfolioDomain> entityMapper;
 
-    public PortfolioJpaServiceDelegate(R repository, Function<Symbol, Optional<T>> findLatestBySymbol, Supplier<T> builder) {
+    public PortfolioJpaServiceDelegate(R repository,
+                                       Function<Long, Optional<T>> findLatestBySymbol,
+                                       Supplier<T> builder, EntityMapper<T, PortfolioDomain> entityMapper) {
         this.repository = repository;
         this.findLatestBySymbol = findLatestBySymbol;
         this.builder = builder;
+        this.entityMapper = entityMapper;
     }
 
-    public T save(T entity) {
-        return repository.save(entity);
+    public PortfolioDomain save(PortfolioDomain entity) {
+        return entityMapper.toDto(repository.save(entityMapper.toEntity(entity)));
     }
 
     // TODO: batch
-    public Optional<T> findBySymbol(Symbol symbol) {
-        return findLatestBySymbol.apply(symbol);
+    public Optional<PortfolioDomain> findBySymbol(SymbolDomain symbol) {
+        return findLatestBySymbol.apply(symbol.getId()).map(entityMapper::toDto);
     }
 
-    @SuppressWarnings("unused")
-    public T executePortfolioAction(Symbol symbol, BigDecimal price, BigDecimal quantity, BigDecimal commission,
-                                    LocalDateTime timestamp, boolean isBuy) throws IllegalStateException {
-        T last = findBySymbol(symbol)
+    public PortfolioDomain executePortfolioAction(SymbolDomain symbol, BigDecimal price, BigDecimal quantity, BigDecimal commission,
+                                                  LocalDateTime timestamp, boolean isBuy) throws IllegalStateException {
+        PortfolioDomain last = findBySymbol(symbol)
                 .orElseGet(() -> {
                     T res = builder.get();
-                    res.setSymbol(symbol)
-                            .setQuantity(BigDecimal.ZERO)
+                    res.setQuantity(BigDecimal.ZERO)
                             .setAverageCost(BigDecimal.ZERO)
                             .setAverageCommission(BigDecimal.ZERO)
                             .setEffectiveTimestamp(timestamp);
-                    return res;
+                    return entityMapper.toDto(res);
                 });
         BigDecimal oldQuantity = last.getQuantity();
         BigDecimal newQuantity = oldQuantity.add(isBuy ? quantity : quantity.negate());
@@ -75,16 +80,15 @@ public class PortfolioJpaServiceDelegate<T extends PortfolioBase, R extends JpaR
         }
 
         T res = builder.get();
-        res.setSymbol(symbol)
+        res.setSymbol(new Symbol().setId(symbol.getId()))
                 .setQuantity(newQuantity)
                 .setAverageCost(newAverageCost)
                 .setAverageCommission(newAverageCommission)
                 .setEffectiveTimestamp(timestamp);
-        return save(res);
+        return save(entityMapper.toDto(res)).setSymbol(symbol);
     }
 
-    @SuppressWarnings("unused")
-    public Set<T> findActivePortfolio() {
+    public Set<PortfolioDomain> findActivePortfolio() {
         return repository.findAll().stream()
                 .collect(Collectors.toMap(
                         T::getSymbol,
@@ -94,6 +98,7 @@ public class PortfolioJpaServiceDelegate<T extends PortfolioBase, R extends JpaR
                 .values()
                 .stream()
                 .filter(p -> 0 < p.getQuantity().compareTo(BigDecimal.ZERO))
+                .map(entityMapper::toDto)
                 .collect(Collectors.toSet());
     }
 }

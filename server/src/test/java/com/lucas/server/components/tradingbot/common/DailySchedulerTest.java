@@ -2,7 +2,6 @@ package com.lucas.server.components.tradingbot.common;
 
 import com.lucas.server.ConfiguredTest;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +38,6 @@ class DailySchedulerTest extends ConfiguredTest {
     }
 
     @Test
-    @Transactional
     void schedulerInvokesDataManagerRepeatedly() {
         doReturn(true).when(dailyScheduler).shouldRun(any());
         doNothing().when(dailyScheduler).sleep();

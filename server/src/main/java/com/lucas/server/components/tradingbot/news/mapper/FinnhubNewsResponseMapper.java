@@ -1,8 +1,8 @@
 package com.lucas.server.components.tradingbot.news.mapper;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.lucas.server.components.tradingbot.common.jpa.Symbol;
-import com.lucas.server.components.tradingbot.news.jpa.News;
+import com.lucas.server.components.tradingbot.common.dto.SymbolDomain;
+import com.lucas.server.components.tradingbot.news.dto.NewsDomain;
 import com.lucas.utils.Mapper;
 import com.lucas.utils.exception.MappingException;
 import org.flywaydb.core.internal.util.StringUtils;
@@ -19,12 +19,12 @@ import static com.lucas.server.common.Constants.MAPPING_ERROR;
 import static com.lucas.server.common.Constants.NEWS;
 
 @Component
-public class FinnhubNewsResponseMapper implements Mapper<JsonNode, News> {
+public class FinnhubNewsResponseMapper implements Mapper<JsonNode, NewsDomain> {
 
     @Override
-    public News map(JsonNode json) throws MappingException {
+    public NewsDomain map(JsonNode json) throws MappingException {
         try {
-            return new News()
+            return new NewsDomain()
                     .setExternalId(json.get("id").asLong())
                     .setDate(Instant
                             .ofEpochSecond(json.get("datetime").asLong())
@@ -41,12 +41,12 @@ public class FinnhubNewsResponseMapper implements Mapper<JsonNode, News> {
         }
     }
 
-    public Set<News> mapAll(JsonNode json, Symbol symbol) throws MappingException {
+    public Set<NewsDomain> mapAll(JsonNode json, SymbolDomain symbol) throws MappingException {
         if (!json.isArray()) {
             return Collections.emptySet();
         }
 
-        Set<News> newsList = new HashSet<>();
+        Set<NewsDomain> newsList = new HashSet<>();
         for (JsonNode node : json) {
             newsList.add(map(node).addSymbol(symbol));
         }

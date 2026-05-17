@@ -2,7 +2,7 @@ package com.lucas.server.components.tradingbot.recommendation.mapper;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lucas.server.components.tradingbot.recommendation.jpa.Recommendation;
+import com.lucas.server.components.tradingbot.recommendation.dto.RecommendationDomain;
 import com.lucas.utils.exception.MappingException;
 import org.junit.jupiter.api.Test;
 
@@ -24,7 +24,7 @@ class RecommendationChatCompletionResponseMapperTest {
         JsonNode node = objectMapper.readTree(json);
 
         // when
-        Recommendation result = mapper.map(node);
+        RecommendationDomain result = mapper.map(node);
 
         // then
         assertThat(result.getDate()).isEqualTo(LocalDate.now());
@@ -40,7 +40,7 @@ class RecommendationChatCompletionResponseMapperTest {
         JsonNode node = objectMapper.readTree(json);
 
         // when
-        Recommendation result = mapper.map(node);
+        RecommendationDomain result = mapper.map(node);
 
         // then
         assertThat(result.getAction()).isEqualTo("HOLD");
@@ -54,7 +54,7 @@ class RecommendationChatCompletionResponseMapperTest {
         JsonNode node = objectMapper.readTree(json);
 
         // when
-        Recommendation result = mapper.map(node);
+        RecommendationDomain result = mapper.map(node);
 
         // then
         assertThat(result.getAction()).isEqualTo("SELL");
@@ -69,7 +69,7 @@ class RecommendationChatCompletionResponseMapperTest {
         JsonNode node = objectMapper.readTree(json);
 
         // when
-        Recommendation result = mapper.map(node);
+        RecommendationDomain result = mapper.map(node);
 
         // then
         assertThat(result.getRationale()).hasSize(1024);

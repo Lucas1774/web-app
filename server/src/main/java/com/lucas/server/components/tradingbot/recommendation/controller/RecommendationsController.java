@@ -3,7 +3,7 @@ package com.lucas.server.components.tradingbot.recommendation.controller;
 import com.lucas.server.common.controller.ControllerUtil;
 import com.lucas.server.components.tradingbot.common.AIClient;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;
-import com.lucas.server.components.tradingbot.recommendation.jpa.Recommendation;
+import com.lucas.server.components.tradingbot.recommendation.dto.RecommendationDomain;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -34,12 +34,12 @@ public class RecommendationsController {
     }
 
     @GetMapping("/{symbols}")
-    public ResponseEntity<Set<Recommendation>> generateRecommendations(HttpServletRequest request,
-                                                                       @PathVariable Set<Long> symbols,
-                                                                       @RequestParam boolean overwrite,
-                                                                       @RequestParam boolean afterHoursContext,
-                                                                       @RequestParam boolean useOldNews,
-                                                                       @RequestParam(required = false) Set<String> models) {
+    public ResponseEntity<Set<RecommendationDomain>> generateRecommendations(HttpServletRequest request,
+                                                                             @PathVariable Set<Long> symbols,
+                                                                             @RequestParam boolean overwrite,
+                                                                             @RequestParam boolean afterHoursContext,
+                                                                             @RequestParam boolean useOldNews,
+                                                                             @RequestParam(required = false) Set<String> models) {
         String username = controllerUtil.retrieveUsername(request.getCookies());
         if (DEFAULT_USERNAME.equals(username)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -52,12 +52,12 @@ public class RecommendationsController {
     }
 
     @GetMapping("/random/{count}")
-    public ResponseEntity<Set<Recommendation>> generateRandomRecommendations(HttpServletRequest request,
-                                                                             @PathVariable int count,
-                                                                             @RequestParam boolean overwrite,
-                                                                             @RequestParam boolean afterHoursContext,
-                                                                             @RequestParam boolean useOldNews,
-                                                                             @RequestParam(required = false) Set<String> models) {
+    public ResponseEntity<Set<RecommendationDomain>> generateRandomRecommendations(HttpServletRequest request,
+                                                                                   @PathVariable int count,
+                                                                                   @RequestParam boolean overwrite,
+                                                                                   @RequestParam boolean afterHoursContext,
+                                                                                   @RequestParam boolean useOldNews,
+                                                                                   @RequestParam(required = false) Set<String> models) {
         String username = controllerUtil.retrieveUsername(request.getCookies());
         if (DEFAULT_USERNAME.equals(username)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -75,10 +75,10 @@ public class RecommendationsController {
     }
 
     @GetMapping("/daily/{confidenceThreshold}")
-    public ResponseEntity<Set<Recommendation>> getDailyRecommendations(@PathVariable BigDecimal confidenceThreshold,
-                                                                       @RequestParam(required = false) LocalDate date,
-                                                                       @RequestParam(required = false) String action,
-                                                                       @RequestParam(required = false) Set<String> models) {
+    public ResponseEntity<Set<RecommendationDomain>> getDailyRecommendations(@PathVariable BigDecimal confidenceThreshold,
+                                                                             @RequestParam(required = false) LocalDate date,
+                                                                             @RequestParam(required = false) String action,
+                                                                             @RequestParam(required = false) Set<String> models) {
         LocalDate selectedDate = null == date ? LocalDate.now() : date;
         String selectedAction = null == action ? BUY : action;
         Set<String> selectedClients = null == models
@@ -89,8 +89,8 @@ public class RecommendationsController {
     }
 
     @DeleteMapping("/purge")
-    public ResponseEntity<Set<Recommendation>> purge(HttpServletRequest request, @RequestParam int toKeep) {
-        return controllerUtil.<Set<Recommendation>>getUnauthorizedResponseIfInvalidUser(request.getCookies())
+    public ResponseEntity<Set<RecommendationDomain>> purge(HttpServletRequest request, @RequestParam int toKeep) {
+        return controllerUtil.<Set<RecommendationDomain>>getUnauthorizedResponseIfInvalidUser(request.getCookies())
                 .orElseGet(() -> ResponseEntity.ok(jpaService.removeOldRecommendations(toKeep)));
     }
 

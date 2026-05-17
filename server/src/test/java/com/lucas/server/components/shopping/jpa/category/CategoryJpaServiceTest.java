@@ -2,7 +2,6 @@ package com.lucas.server.components.shopping.jpa.category;
 
 import com.lucas.server.ConfiguredTest;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -18,7 +17,6 @@ class CategoryJpaServiceTest extends ConfiguredTest {
     private CategoryJpaService categoryService;
 
     @Test
-    @Transactional
     void findAllByOrderByOrderAsc() {
         // given
         Category category1 = new Category()
@@ -27,7 +25,7 @@ class CategoryJpaServiceTest extends ConfiguredTest {
         Category category2 = new Category()
                 .setName("y")
                 .setOrder(20);
-        categoryService.createAll(Set.of(category2, category1));
+        categoryService.saveAll(Set.of(category2, category1));
 
         // when
         OrderedIndexedSet<Category> result = categoryService.findAllByOrderByOrderAsc();
@@ -47,12 +45,11 @@ class CategoryJpaServiceTest extends ConfiguredTest {
     }
 
     @Test
-    @Transactional
     void updateOrders() {
         // given: two categories with reversed order values
         Category c1 = new Category().setName("A").setOrder(2);
         Category c2 = new Category().setName("B").setOrder(1);
-        Set<Category> saved = categoryService.createAll(Set.of(c1, c2));
+        Set<Category> saved = categoryService.saveAll(Set.of(c1, c2));
         assertThat(saved)
                 .extracting(Category::getName, Category::getOrder)
                 .containsExactlyInAnyOrder(

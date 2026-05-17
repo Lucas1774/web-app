@@ -4,13 +4,14 @@ import com.lucas.server.components.tradingbot.common.AIClient;
 import com.lucas.server.components.tradingbot.common.DailyScheduler;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolRepository;
-import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
+import com.lucas.server.components.tradingbot.marketdata.dto.MarketDataDomain;
+import com.lucas.server.components.tradingbot.marketdata.dto.MarketSnapshotDomain;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataRepository;
-import com.lucas.server.components.tradingbot.marketdata.jpa.MarketSnapshot;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketSnapshotRepository;
+import com.lucas.server.components.tradingbot.marketdata.mapper.MarketDataMapper;
+import com.lucas.server.components.tradingbot.marketdata.mapper.MarketSnapshotMapper;
 import com.lucas.server.components.tradingbot.recommendation.jpa.Recommendation;
 import com.lucas.server.components.tradingbot.recommendation.jpa.RecommendationsRepository;
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -18,6 +19,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
@@ -27,7 +29,6 @@ import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.function.Function;
-import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -52,13 +53,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 @TestPropertySource(properties = "spring.jpa.show-sql=false")
 @Disabled("Manual run only")
+@SuppressWarnings("java:S5976")
 class ManualRunTest extends BaseTest {
 
     private static final Set<String> SYMBOL_NAMES = Set.of("AAPL", "NVDA", "MSFT", "AMZN", "META", "TSLA", "GOOGL");
-    private static final LocalDate FROM = LocalDate.of(2026, 4, 13); // inclusive
+    private static final LocalDate FROM = LocalDate.of(2026, 4, 25); // inclusive
     private static final LocalDate TO = LocalDate.now().plusDays(1); // exclusive
     private static Set<Recommendation> allRecommendations;
-    private static Set<MarketData> allMarketData;
+    private static Set<MarketDataDomain> allMarketData;
 
     @Autowired
     private SymbolRepository symbolRepository;
@@ -78,7 +80,13 @@ class ManualRunTest extends BaseTest {
     @Autowired
     private Map<String, AIClient> allClients;
 
-    private static Stats computeStats(Set<MarketData> mds) {
+    @Autowired
+    private MarketDataMapper marketDataMapper;
+
+    @Autowired
+    private MarketSnapshotMapper marketSnapshotMapper;
+
+    private static Stats computeStats(Set<MarketDataDomain> mds) {
         return mds.stream()
                 .map(d -> {
                     BigDecimal open = d.getOpen();
@@ -121,16 +129,6 @@ class ManualRunTest extends BaseTest {
                 s.maxLow.multiply(BigDecimal.valueOf(100)),
                 s.minLow.multiply(BigDecimal.valueOf(100))
         );
-    }
-
-    private static LocalDate toPastOrFutureTradeDate(LocalDate start, int tradeDaysElapsed, UnaryOperator<LocalDate> step) {
-        LocalDate d = start;
-        for (int i = 0; i < tradeDaysElapsed; i++) {
-            do {
-                d = step.apply(d);
-            } while (!isTradingDate(d));
-        }
-        return d;
     }
 
     private static Stream<Sector> sectorsWithNullFirst() {
@@ -180,12 +178,13 @@ class ManualRunTest extends BaseTest {
             LocalDate latestToWithLookahead = toPastOrFutureTradeDate(TO, 5, d -> d.plusDays(1));
 
             Set<LocalDate> allDates = earliestFrom.datesUntil(latestToWithLookahead).collect(Collectors.toSet());
-            allMarketData = new HashSet<>(marketDataRepository.findBySymbol_IdInAndDateIn(allSymbolIds, allDates));
+            allMarketData = new HashSet<>(marketDataRepository.findBySymbol_IdInAndDateIn(allSymbolIds, allDates)).stream()
+                    .map(marketDataMapper::toDto)
+                    .collect(Collectors.toSet());
         }
     }
 
     @Test
-    @Transactional
     void runMidnightTask() throws Exception {
         assertTrue(true); // useless assertion so Sonar doesn't cry
         Method method = DailyScheduler.class.getDeclaredMethod("doMidnightTask", Set.class);
@@ -194,10 +193,25 @@ class ManualRunTest extends BaseTest {
     }
 
     @Test
-    @Transactional
     void runMorningTask() throws Exception {
         assertTrue(true); // useless assertion so Sonar doesn't cry
         Method method = DailyScheduler.class.getDeclaredMethod("doMorningTask", Set.class);
+        method.setAccessible(true);
+        method.invoke(dailyScheduler, SYMBOL_NAMES);
+    }
+
+    @Test
+    void runEarlyMorningTask() throws Exception {
+        assertTrue(true); // useless assertion so Sonar doesn't cry
+        Method method = DailyScheduler.class.getDeclaredMethod("doEarlyMorningTask", Set.class);
+        method.setAccessible(true);
+        method.invoke(dailyScheduler, SYMBOL_NAMES);
+    }
+
+    @Test
+    void runBeforeMorningTask() throws Exception {
+        assertTrue(true); // useless assertion so Sonar doesn't cry
+        Method method = DailyScheduler.class.getDeclaredMethod("doBeforeMorningTask", Set.class);
         method.setAccessible(true);
         method.invoke(dailyScheduler, SYMBOL_NAMES);
     }
@@ -209,7 +223,7 @@ class ManualRunTest extends BaseTest {
      */
     @ParameterizedTest
     @MethodSource("daysAndSectors")
-    @Transactional
+    @Transactional(readOnly = true)
     void assertRecommendationsPrecisionAtCloseOfNthDay(int daysAfter, Sector sector) {
         assertTrue(true); // useless assertion so Sonar doesn't cry
 
@@ -219,7 +233,7 @@ class ManualRunTest extends BaseTest {
         LocalDate to = toPastOrFutureTradeDate(TO, daysAfter, d -> d.minusDays(1));
         Set<LocalDate> dates = from.datesUntil(to).collect(Collectors.toSet());
 
-        Map<SymDate, MarketData> mdByKey = allMarketData.stream()
+        Map<SymDate, MarketDataDomain> mdByKey = allMarketData.stream()
                 .filter(md -> allSymbolIds.contains(md.getSymbol().getId()) && dates.contains(md.getDate()))
                 .collect(Collectors.toMap(
                         md -> new SymDate(md.getSymbol().getId(), md.getDate()),
@@ -241,18 +255,18 @@ class ManualRunTest extends BaseTest {
         Set<LocalDate> nextDatesWindow = firstDateForCurrentPriceNeeded.datesUntil(lastDateForCurrentPriceNeeded)
                 .collect(Collectors.toSet());
 
-        Map<SymDate, MarketData> nextDayMd = allMarketData.stream()
+        Map<SymDate, MarketDataDomain> nextDayMd = allMarketData.stream()
                 .filter(md -> symbolsNeeded.contains(md.getSymbol().getId()) && nextDatesWindow.contains(md.getDate()))
                 .collect(Collectors.toMap(
                         md -> new SymDate(md.getSymbol().getId(), md.getDate()),
                         Function.identity()
                 ));
 
-        Map<SymDate, MarketData> mdsWithNextDayPrice = mdByKey.entrySet().stream()
+        Map<SymDate, MarketDataDomain> mdsWithNextDayPrice = mdByKey.entrySet().stream()
                 .flatMap(e -> Optional.ofNullable(nextDayMd.get(
                                 new SymDate(e.getKey().symbolId(), toPastOrFutureTradeDate(e.getKey().date, daysAfter, d -> d.plusDays(1)))
                         ))
-                        .map(next -> Map.entry(e.getKey(), new MarketData().setSymbol(e.getValue().getSymbol())
+                        .map(next -> Map.entry(e.getKey(), new MarketDataDomain().setSymbol(e.getValue().getSymbol())
                                 .setDate(e.getValue().getDate())
                                 .setOpen(e.getValue().getOpen())
                                 .setHigh(e.getValue().getHigh().max(next.getHigh()))
@@ -269,7 +283,7 @@ class ManualRunTest extends BaseTest {
 
     @ParameterizedTest
     @MethodSource("timesAndSectors")
-    @Transactional
+    @Transactional(readOnly = true)
     void assertRecommendationsPrecisionAtSnapshot(LocalTime time, Sector sector) {
         assertTrue(true); // useless assertion so Sonar doesn't cry
 
@@ -277,11 +291,12 @@ class ManualRunTest extends BaseTest {
         Set<Long> allSymbolIds = getSymbolIdsFor(sector);
         Set<LocalDate> dates = FROM.datesUntil(TO).collect(Collectors.toSet());
 
-        Map<SymDate, MarketSnapshot> msByKey = dates.stream()
+        Map<SymDate, MarketSnapshotDomain> msByKey = dates.stream()
                 .flatMap(date -> marketSnapshotRepository.findAllBySymbol_IdInAndDateBetween(allSymbolIds,
                                 date.atTime(time).minusMinutes(4).atZone(NY_ZONE).withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime(),
                                 date.atTime(time).plusMinutes(4).atZone(NY_ZONE).withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime())
-                        .stream())
+                        .stream()
+                        .map(marketSnapshotMapper::toDto))
                 .collect(Collectors.toMap(
                         ms -> new SymDate(ms.getSymbol().getId(), ms.getDate().toLocalDate()),
                         Function.identity(), (a, b) -> a
@@ -302,18 +317,18 @@ class ManualRunTest extends BaseTest {
         Set<LocalDate> previousDatesWindow = firstDateForPreviousCloseNeeded.datesUntil(lastDateForPreviousCloseNeeded)
                 .collect(Collectors.toSet());
 
-        Map<SymDate, MarketData> previousDayMd = allMarketData.stream()
+        Map<SymDate, MarketDataDomain> previousDayMd = allMarketData.stream()
                 .filter(md -> symbolsNeeded.contains(md.getSymbol().getId()) && previousDatesWindow.contains(md.getDate()))
                 .collect(Collectors.toMap(
                         md -> new SymDate(md.getSymbol().getId(), md.getDate()),
                         Function.identity()
                 ));
 
-        Map<SymDate, MarketData> msAsMdByKey = msByKey.entrySet().stream()
+        Map<SymDate, MarketDataDomain> msAsMdByKey = msByKey.entrySet().stream()
                 .flatMap(e -> Optional.ofNullable(previousDayMd.get(
                                 new SymDate(e.getKey().symbolId(), toPastOrFutureTradeDate(e.getKey().date(), 1, d -> d.minusDays(1)))
                         ))
-                        .map(prev -> Map.entry(e.getKey(), MarketData.from(e.getValue())
+                        .map(prev -> Map.entry(e.getKey(), MarketDataDomain.from(e.getValue())
                                 .setPreviousClose(prev.getPrice())))
                         .stream())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
@@ -328,14 +343,14 @@ class ManualRunTest extends BaseTest {
                 .collect(Collectors.toSet());
     }
 
-    private void processAndPrintResults(Map<SymDate, MarketData> mdByKey, LocalDate from, LocalDate to, Sector sector, String exitLabel) {
+    private void processAndPrintResults(Map<SymDate, MarketDataDomain> mdByKey, LocalDate from, LocalDate to, Sector sector, String exitLabel) {
         System.out.println("=================================================");
         System.out.println("SECTOR: " + (null == sector ? "GLOBAL" : sector.name()));
         System.out.println("Range: " + from + " - " + to);
         System.out.println("-------------------------------------------------");
 
-        Map<Recommendation, MarketData> baseline = getBaseline(mdByKey, from, to);
-        Map<Recommendation, MarketData> filtered = getFiltered(baseline);
+        Map<Recommendation, MarketDataDomain> baseline = getBaseline(mdByKey, from, to);
+        Map<Recommendation, MarketDataDomain> filtered = getFiltered(baseline);
 
         Stats filteredStats = computeStats(new HashSet<>(filtered.values()));
         Stats allStats = computeStats(new HashSet<>(mdByKey.values()));
@@ -350,8 +365,8 @@ class ManualRunTest extends BaseTest {
             BigDecimal relDiff = 0 == denominator.compareTo(BigDecimal.ZERO)
                     ? BigDecimal.ZERO
                     : filteredAverageClose.subtract(allAverageClose)
-                      .divide(denominator, 8, RoundingMode.HALF_UP)
-                      .multiply(BigDecimal.valueOf(100));
+                    .divide(denominator, 8, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100));
 
             System.out.printf("Absolute avg-%s difference (filtered - all): %+.2f%%%n", exitLabel, absDiff);
             System.out.println("Relative difference vs all: " + relDiff.setScale(2, RoundingMode.HALF_UP) + "%");
@@ -428,8 +443,7 @@ class ManualRunTest extends BaseTest {
         );
     }
 
-
-    private Map<Recommendation, MarketData> getBaseline(Map<SymDate, MarketData> mdByKey, LocalDate from, LocalDate to) {
+    private Map<Recommendation, MarketDataDomain> getBaseline(Map<SymDate, MarketDataDomain> mdByKey, LocalDate from, LocalDate to) {
         initializeRecommendations();
 
         return allRecommendations.stream()
@@ -441,7 +455,7 @@ class ManualRunTest extends BaseTest {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    private Map<Recommendation, MarketData> getFiltered(Map<Recommendation, MarketData> baseline) {
+    private Map<Recommendation, MarketDataDomain> getFiltered(Map<Recommendation, MarketDataDomain> baseline) {
         return baseline.entrySet()
                 .stream()
                 .filter(e -> {

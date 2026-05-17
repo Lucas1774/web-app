@@ -1,9 +1,12 @@
 package com.lucas.server.components.tradingbot.common;
 
+import com.lucas.utils.Interrupts;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSetImpl;
 import com.lucas.utils.orderedindexedset.UnmodifiableOrderedIndexedSet;
 import com.lucas.utils.ratelimiter.SlidingWindowRateLimiter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -11,11 +14,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.lucas.server.common.Constants.FINNHUB_RATE_LIMITER_ROTATION_DEBOUNCE_MS;
 import static com.lucas.server.common.Constants.getFinnhubRateLimiterNames;
 
 @Component
 public class FinnhubRateLimiter {
 
+    private static final Logger logger = LoggerFactory.getLogger(FinnhubRateLimiter.class);
     private final OrderedIndexedSet<Map.Entry<String, SlidingWindowRateLimiter>> keyToLimiterEntries;
     private final AtomicInteger pointer = new AtomicInteger();
 
@@ -37,9 +42,12 @@ public class FinnhubRateLimiter {
             for (int i = 0; i < size; i++) {
                 int idx = pointer.getAndIncrement() % size;
                 Map.Entry<String, SlidingWindowRateLimiter> entry = keyToLimiterEntries.get(idx);
-                if (entry.getValue().acquirePermission()) {
+                if (entry.getValue().tryAcquirePermission()) {
                     return entry.getKey();
                 }
+
+                Interrupts.runOrSwallow(() -> Thread.sleep(FINNHUB_RATE_LIMITER_ROTATION_DEBOUNCE_MS),
+                        e -> logger.debug(e.getMessage(), e));
             }
         }
     }

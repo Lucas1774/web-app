@@ -7,9 +7,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.common.exception.ConfigurationException;
 import com.lucas.server.components.tradingbot.common.AIClient;
+import com.lucas.server.components.tradingbot.common.dto.SymbolDomain;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;
-import com.lucas.server.components.tradingbot.common.jpa.Symbol;
-import com.lucas.server.components.tradingbot.recommendation.jpa.Recommendation;
+import com.lucas.server.components.tradingbot.recommendation.dto.RecommendationDomain;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.AssetReportRaw;
 import com.lucas.server.components.tradingbot.recommendation.mapper.RecommendationChatCompletionResponseMapper;
@@ -95,12 +95,12 @@ public class RecommendationChatCompletionClient {
      * @throws JsonProcessingException if JSON processing fails
      * @throws MappingException        if mapping the response fails
      */
-    public Set<Recommendation> getRecommendations(Set<DataManager.SymbolPayload> payload, Set<AIClient> clients, boolean useOldNews) throws ClientException, JsonProcessingException, MappingException {
+    public Set<RecommendationDomain> getRecommendations(Set<DataManager.SymbolPayload> payload, Set<AIClient> clients, boolean useOldNews) throws ClientException, JsonProcessingException, MappingException {
         Set<AssetReportRaw> reports = payload.stream()
                 .map(assertReportDataProvider::provide)
                 .collect(Collectors.toSet());
         ObjectNode rawReportMessage = objectMapper.readValue(assetReportToMustacheMapper.map(reports), ObjectNode.class);
-        Set<Symbol> symbols = payload.stream().map(DataManager.SymbolPayload::getSymbol).collect(Collectors.toSet());
+        Set<SymbolDomain> symbols = payload.stream().map(DataManager.SymbolPayload::getSymbol).collect(Collectors.toSet());
         ObjectNode contextMessage = context.deepCopy().put(CONTENT, context.get(CONTENT).asText().replace("{date}",
                 ZonedDateTime.now(NY_ZONE).format(DateTimeFormatter.ofPattern("EEEE, yyyy-MM-dd HH:mm:ss z", Locale.ENGLISH))));
         ObjectNode usedSystemMessage = useOldNews ? systemLongTermMessage : systemMessage;
@@ -119,7 +119,7 @@ public class RecommendationChatCompletionClient {
                                 .replace("{placeholder}", rawReportMessage.get(CONTENT).asText()), ObjectNode.class);
                     }
                     OrderedIndexedSet<JsonNode> prompt = OrderedIndexedSet.of(usedSystemMessage, contextMessage, fewShotMessage, reportMessage);
-                    Optional<Set<Recommendation>> res = client.getRateLimiter().tryCall(() -> client.getConcurrentRequestsRateLimiter().call(() -> {
+                    Optional<Set<RecommendationDomain>> res = client.getRateLimiter().tryCall(() -> client.getConcurrentRequestsRateLimiter().call(() -> {
                         client.getApiKeyRateLimiter().acquirePermission();
                         logger.info(PROMPTING_MODEL_INFO, client.getConfig().name());
                         completion.set(client.complete(prompt));

@@ -43,7 +43,7 @@ public class HttpClientConfig {
         res.put(TWELVEDATA_RATE_LIMITER, new SlidingWindowRateLimiter(8, Duration.ofMinutes(1)));
         res.put(YAHOO_FINANCE_RATE_LIMITER, new SlidingWindowRateLimiter(1, Duration.ofSeconds(1).dividedBy(4)));
         getFinnhubRateLimiterNames().forEach(name -> res.put(name,
-                new SlidingWindowRateLimiter(60, Duration.ofMinutes(1), Duration.ofMinutes(1))));
+                new SlidingWindowRateLimiter(56, Duration.ofMinutes(1))));
 
         return res;
     }

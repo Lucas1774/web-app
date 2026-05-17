@@ -1,9 +1,9 @@
 package com.lucas.server.components.tradingbot.portfolio.service;
 
-import com.lucas.server.components.tradingbot.common.jpa.Symbol;
-import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
-import com.lucas.server.components.tradingbot.portfolio.jpa.PortfolioBase;
-import com.lucas.server.components.tradingbot.recommendation.jpa.Recommendation;
+import com.lucas.server.components.tradingbot.common.dto.SymbolDomain;
+import com.lucas.server.components.tradingbot.marketdata.dto.MarketDataDomain;
+import com.lucas.server.components.tradingbot.portfolio.dto.PortfolioDomain;
+import com.lucas.server.components.tradingbot.recommendation.dto.RecommendationDomain;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -19,7 +19,7 @@ public class PortfolioManager {
      * @param last      last market data for the portfolio's symbol
      * @return current stand of the portfolio
      */
-    public SymbolStand computeStand(PortfolioBase portfolio, MarketData last) {
+    public SymbolStand computeStand(PortfolioDomain portfolio, MarketDataDomain last) {
         BigDecimal quantity = portfolio.getQuantity();
         BigDecimal averageCost = null == quantity || 0 == quantity.signum() ? null : portfolio.getAverageCost();
         BigDecimal averageCommission = portfolio.getAverageCommission();
@@ -52,12 +52,12 @@ public class PortfolioManager {
         return new SymbolStand(portfolio.getSymbol(), last.getPrice(), last.getOpen(), last.getHigh(), last.getLow(), percentDayChange, last.getVolume(),
                 portfolio.getEffectiveTimestamp(), quantity, averageCost, positionValue, pnL, percentPnL, netRelativePosition,
                 last.getRecommendations().stream()
-                        .max(Comparator.comparing(Recommendation::getDate))
+                        .max(Comparator.comparing(RecommendationDomain::getDate))
                         .orElse(null));
     }
 
     public record SymbolStand(
-            Symbol symbol,
+            SymbolDomain symbol,
             BigDecimal price,
             BigDecimal open,
             BigDecimal high,
@@ -71,7 +71,7 @@ public class PortfolioManager {
             BigDecimal pnL,
             BigDecimal percentPnl,
             BigDecimal netRelativePosition,
-            Recommendation recommendation
+            RecommendationDomain recommendation
     ) {
     }
 }

@@ -1,7 +1,7 @@
 package com.lucas.server.components.tradingbot.news.mapper;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.lucas.server.components.tradingbot.news.jpa.News;
+import com.lucas.server.components.tradingbot.news.dto.NewsDomain;
 import com.lucas.utils.Mapper;
 import com.lucas.utils.exception.MappingException;
 import org.springframework.stereotype.Component;
@@ -13,12 +13,12 @@ import static com.lucas.server.common.Constants.MAPPING_ERROR;
 import static com.lucas.server.common.Constants.SENTIMENT;
 
 @Component
-public class FinbertResponseMapper implements Mapper<JsonNode, News> {
+public class FinbertResponseMapper implements Mapper<JsonNode, NewsDomain> {
 
     @Override
-    public News map(JsonNode json) throws MappingException {
+    public NewsDomain map(JsonNode json) throws MappingException {
         try {
-            return new News()
+            return new NewsDomain()
                     .setSentiment(json.get("label").asText())
                     .setSentimentConfidence(new BigDecimal(json.get("score").asText()).multiply(BigDecimal.valueOf(100)));
         } catch (Exception e) {
@@ -26,8 +26,8 @@ public class FinbertResponseMapper implements Mapper<JsonNode, News> {
         }
     }
 
-    public News map(JsonNode json, News news) throws MappingException {
-        News sentiment = map(json);
+    public NewsDomain map(JsonNode json, NewsDomain news) throws MappingException {
+        NewsDomain sentiment = map(json);
         return news.setSentiment(sentiment.getSentiment()).setSentimentConfidence(sentiment.getSentimentConfidence());
     }
 }
