@@ -3,11 +3,10 @@ package com.lucas.server.components.tradingbot.marketdata.mapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lucas.server.ConfiguredTest;
-import com.lucas.server.components.tradingbot.common.jpa.Symbol;
+import com.lucas.server.components.tradingbot.common.dto.SymbolDomain;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
-import com.lucas.server.components.tradingbot.marketdata.jpa.MarketSnapshot;
+import com.lucas.server.components.tradingbot.marketdata.dto.MarketSnapshotDomain;
 import com.lucas.utils.exception.MappingException;
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -34,7 +33,6 @@ class YahooFinanceMarketResponseMapperTest extends ConfiguredTest {
     private ObjectMapper objectMapper;
 
     @Test
-    @Transactional
     void whenMapValidJson_thenReturnMarketData() throws MappingException, JsonProcessingException {
         // given
         String json = """
@@ -170,10 +168,10 @@ class YahooFinanceMarketResponseMapperTest extends ConfiguredTest {
                   }
                 }
                 """;
-        Symbol symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
+        SymbolDomain symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
 
         // when
-        MarketSnapshot result = mapper.map(objectMapper.readTree(json), symbol);
+        MarketSnapshotDomain result = mapper.map(objectMapper.readTree(json), symbol);
 
         // then
         assertThat(result).isNotNull();
@@ -187,7 +185,6 @@ class YahooFinanceMarketResponseMapperTest extends ConfiguredTest {
     }
 
     @Test
-    @Transactional
     void whenMapInvalidJson_thenThrowException() {
         // given
         String invalidJson = "{}";
@@ -197,7 +194,6 @@ class YahooFinanceMarketResponseMapperTest extends ConfiguredTest {
     }
 
     @Test
-    @Transactional
     void whenMapMissingFields_thenThrowsException() {
         // given
         String json = """

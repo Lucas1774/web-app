@@ -6,7 +6,6 @@ import com.lucas.server.components.shopping.jpa.category.Category;
 import com.lucas.server.components.shopping.jpa.category.CategoryJpaService;
 import com.lucas.server.components.shopping.jpa.product.Product;
 import com.lucas.server.components.shopping.jpa.product.ProductJpaService;
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -30,11 +29,10 @@ class ShoppingItemJpaServiceTest extends ConfiguredTest {
     private UserJpaService userService;
 
     @Test
-    @Transactional
     void findAllByUsername() {
         Category c1 = new Category().setName("C1").setOrder(1);
         Category c2 = new Category().setName("C2").setOrder(2);
-        categoryService.createAll(Set.of(c1, c2));
+        categoryService.saveAll(Set.of(c1, c2));
 
         Product prodA = new Product()
                 .setName("ProdA")
@@ -46,9 +44,9 @@ class ShoppingItemJpaServiceTest extends ConfiguredTest {
                 .setIsRare(false)
                 .setCategory(c2)
                 .setOrder(200);
-        productService.createAll(Set.of(prodA, prodB));
+        productService.saveAll(Set.of(prodA, prodB));
 
-        shoppingItemService.createAll(Set.of(
+        shoppingItemService.saveAll(Set.of(
                 new ShoppingItem()
                         .setUser(userService.findByUsername("admin").orElseThrow())
                         .setProduct(prodB)
@@ -71,7 +69,6 @@ class ShoppingItemJpaServiceTest extends ConfiguredTest {
     }
 
     @Test
-    @Transactional
     void updateAllShoppingItemQuantities() {
         // given: multiple items for admin
         Product p1 = productService.createProductAndOrLinkToUser("P1", "admin").orElseThrow();
@@ -94,11 +91,10 @@ class ShoppingItemJpaServiceTest extends ConfiguredTest {
     }
 
     @Test
-    @Transactional
     void updateShoppingItemQuantity() {
         // given: admin item auto-created and an item for default user
         Product prod = productService.createProductAndOrLinkToUser("P", "admin").orElseThrow();
-        shoppingItemService.createAll(
+        shoppingItemService.saveAll(
                 Set.of(new ShoppingItem()
                         .setUser(userService.findByUsername("default").orElseThrow())
                         .setProduct(prod).setQuantity(2))
@@ -117,11 +113,10 @@ class ShoppingItemJpaServiceTest extends ConfiguredTest {
     }
 
     @Test
-    @Transactional
     void deleteByProductAndUsernameRemoveOrphanedProductIfNecessary() {
         // given: one item per user
         Product p = productService.createProductAndOrLinkToUser("ToDel", "admin").orElseThrow();
-        shoppingItemService.createAll(
+        shoppingItemService.saveAll(
                 Set.of(new ShoppingItem().setUser(userService.findByUsername("default").orElseThrow())
                         .setProduct(p).setQuantity(5))
         );

@@ -3,9 +3,7 @@ package com.lucas.server.components.tradingbot.news.jpa;
 import com.lucas.server.common.jpa.JpaEntity;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.Accessors;
 import org.hibernate.annotations.Array;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -14,31 +12,38 @@ import org.hibernate.type.SqlTypes;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 @Getter
 @Setter
-@Accessors(chain = true)
+@AllArgsConstructor
 @NoArgsConstructor
+@ToString(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@Accessors(chain = true)
 @Entity
 @Table(name = "news")
 public class News implements JpaEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @ToString.Include
     private Long id;
 
     @Column(name = "external_id", nullable = false, unique = true)
+    @EqualsAndHashCode.Include
+    @ToString.Include
     private Long externalId;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "news_symbol",
             joinColumns = @JoinColumn(name = "news_id"),
             inverseJoinColumns = @JoinColumn(name = "symbol_id"))
+    @ToString.Include
     private Set<Symbol> symbols = new HashSet<>();
 
     @Column(name = "publication_date", nullable = false)
+    @ToString.Include
     private LocalDateTime date;
 
     @Column(nullable = false, length = 512)
@@ -70,39 +75,10 @@ public class News implements JpaEntity {
     @Array(length = 3072)
     private float[] embeddings;
 
+    @SuppressWarnings("UnusedReturnValue")
     public News addSymbol(Symbol symbol) {
         symbols.add(symbol);
         symbol.getNews().add(this);
         return this;
-    }
-
-    @Override
-    public String toString() {
-        return "News{" +
-                "id=" + id +
-                ", externalId=" + externalId +
-                ", symbols=" + symbols +
-                ", date=" + date +
-                ", headline='" + headline + '\'' +
-                ", summary='" + summary + '\'' +
-                ", url='" + url + '\'' +
-                ", source='" + source + '\'' +
-                ", category='" + category + '\'' +
-                ", image='" + image + '\'' +
-                ", sentiment='" + sentiment + '\'' +
-                ", sentimentConfidence=" + sentimentConfidence +
-                '}';
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (null == o || getClass() != o.getClass()) return false;
-        News news = (News) o;
-        return Objects.equals(externalId, news.externalId);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(externalId);
     }
 }

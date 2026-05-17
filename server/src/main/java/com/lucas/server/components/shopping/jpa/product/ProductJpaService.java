@@ -1,27 +1,26 @@
 package com.lucas.server.components.shopping.jpa.product;
 
-
 import com.lucas.server.common.jpa.GenericJpaServiceDelegate;
 import com.lucas.server.common.jpa.JpaService;
 import com.lucas.server.common.jpa.OrderColumnJpaService;
 import com.lucas.server.common.jpa.user.OrderColumnServiceDelegate;
 import com.lucas.server.common.jpa.user.UserRepository;
+import com.lucas.server.common.mapper.IdentityEntityMapper;
 import com.lucas.server.components.shopping.jpa.category.Category;
 import com.lucas.server.components.shopping.jpa.category.CategoryRepository;
 import com.lucas.server.components.shopping.jpa.shopping.ShoppingItem;
 import com.lucas.server.components.shopping.jpa.shopping.ShoppingItemRepository;
-import jakarta.transaction.Transactional;
-import lombok.experimental.Delegate;
+import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class ProductJpaService implements JpaService<Product>, OrderColumnJpaService<Product> {
 
-    @Delegate
-    private final GenericJpaServiceDelegate<Product, ProductRepository> delegate;
-    @Delegate
+    private final GenericJpaServiceDelegate<Product, Product, ProductRepository> delegate;
     private final OrderColumnServiceDelegate<Product> orderColumnDelegate;
     private final ProductRepository repository;
     private final UserRepository userRepository;
@@ -29,8 +28,8 @@ public class ProductJpaService implements JpaService<Product>, OrderColumnJpaSer
     private final CategoryRepository categoryRepository;
 
     public ProductJpaService(ProductRepository repository, UserRepository userRepository,
-                             ShoppingItemRepository shoppingItemRepository, CategoryRepository categoryRepository) {
-        delegate = new GenericJpaServiceDelegate<>(repository);
+                             ShoppingItemRepository shoppingItemRepository, CategoryRepository categoryRepository, IdentityEntityMapper<Product> identityEntityMapper) {
+        delegate = new GenericJpaServiceDelegate<>(repository, identityEntityMapper);
         orderColumnDelegate = new OrderColumnServiceDelegate<>(repository);
         this.repository = repository;
         this.userRepository = userRepository;
@@ -79,5 +78,29 @@ public class ProductJpaService implements JpaService<Product>, OrderColumnJpaSer
         }
 
         return product.setCategory(category);
+    }
+
+    @Override
+    @Transactional
+    public Set<Product> updateOrders(OrderedIndexedSet<Product> newlySortedElements) {
+        return orderColumnDelegate.updateOrders(newlySortedElements);
+    }
+
+    @Override
+    @Transactional
+    public Set<Product> saveAll(Set<Product> elements) {
+        return delegate.saveAll(elements);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Set<Product> findAll() {
+        return delegate.findAll();
+    }
+
+    @Override
+    @Transactional
+    public void deleteAll(Set<Product> elements) {
+        delegate.deleteAll(elements);
     }
 }

@@ -3,27 +3,24 @@ package com.lucas.server.common.jpa;
 import java.util.Set;
 
 /**
- * Generic CRUD service for JPA entities.
+ * Generic CRUD service for domain elements of JPA entities.
  *
- * @param <E> entity type
+ * @param <D> element type
  */
-public interface JpaService<E extends JpaEntity> {
+public interface JpaService<D> {
 
     /**
-     * Saves all entities
+     * Saves all elements
      *
-     * @param entities entities
-     * @return the saved entities
+     * @param elements elements
+     * @return the saved elements
      */
-    @SuppressWarnings("unused")
-    Set<E> createAll(Set<E> entities);
+    Set<D> saveAll(Set<D> elements);
 
     /**
      * @return all entities
      */
-    @SuppressWarnings("unused")
-    Set<E> findAll();
+    Set<D> findAll();
 
-    @SuppressWarnings("unused")
-    void deleteAll(Set<E> entities);
+    void deleteAll(Set<D> elements);
 }

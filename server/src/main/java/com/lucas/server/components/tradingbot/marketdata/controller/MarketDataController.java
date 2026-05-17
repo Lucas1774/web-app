@@ -3,7 +3,7 @@ package com.lucas.server.components.tradingbot.marketdata.controller;
 import com.lucas.server.common.controller.ControllerUtil;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;
-import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
+import com.lucas.server.components.tradingbot.marketdata.dto.MarketDataDomain;
 import com.lucas.utils.exception.MappingException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
@@ -35,8 +35,8 @@ public class MarketDataController {
     }
 
     @GetMapping("last")
-    public ResponseEntity<Set<MarketData>> fetchAndSaveAll(HttpServletRequest request) {
-        return controllerUtil.<Set<MarketData>>getUnauthorizedResponseIfInvalidUser(request.getCookies())
+    public ResponseEntity<Set<MarketDataDomain>> fetchAndSaveAll(HttpServletRequest request) {
+        return controllerUtil.<Set<MarketDataDomain>>getUnauthorizedResponseIfInvalidUser(request.getCookies())
                 .orElseGet(() -> {
                     try {
                         return ResponseEntity.ok(jpaService.retrieveMarketData(SP500_SYMBOLS, MarketDataType.LAST, false));
@@ -48,8 +48,8 @@ public class MarketDataController {
     }
 
     @GetMapping("last/{symbols}")
-    public ResponseEntity<Set<MarketData>> fetchAndSaveSome(HttpServletRequest request, @PathVariable Set<String> symbols) {
-        return controllerUtil.<Set<MarketData>>getUnauthorizedResponseIfInvalidUser(request.getCookies())
+    public ResponseEntity<Set<MarketDataDomain>> fetchAndSaveSome(HttpServletRequest request, @PathVariable Set<String> symbols) {
+        return controllerUtil.<Set<MarketDataDomain>>getUnauthorizedResponseIfInvalidUser(request.getCookies())
                 .orElseGet(() -> {
                     try {
                         return ResponseEntity.ok(jpaService.retrieveMarketData(new HashSet<>(symbols), MarketDataType.LAST, false));
@@ -61,8 +61,8 @@ public class MarketDataController {
     }
 
     @GetMapping("/historic")
-    public ResponseEntity<Set<MarketData>> fetchAndSaveHistoricAll(HttpServletRequest request) {
-        return controllerUtil.<Set<MarketData>>getUnauthorizedResponseIfInvalidUser(request.getCookies())
+    public ResponseEntity<Set<MarketDataDomain>> fetchAndSaveHistoricAll(HttpServletRequest request) {
+        return controllerUtil.<Set<MarketDataDomain>>getUnauthorizedResponseIfInvalidUser(request.getCookies())
                 .orElseGet(() -> {
                     try {
                         return ResponseEntity.ok(jpaService.retrieveMarketData(SP500_SYMBOLS, MarketDataType.HISTORIC, false));
@@ -74,8 +74,8 @@ public class MarketDataController {
     }
 
     @GetMapping("/historic/{symbols}")
-    public ResponseEntity<Set<MarketData>> fetchAndSaveHistoricSome(HttpServletRequest request, @PathVariable Set<String> symbols) {
-        return controllerUtil.<Set<MarketData>>getUnauthorizedResponseIfInvalidUser(request.getCookies())
+    public ResponseEntity<Set<MarketDataDomain>> fetchAndSaveHistoricSome(HttpServletRequest request, @PathVariable Set<String> symbols) {
+        return controllerUtil.<Set<MarketDataDomain>>getUnauthorizedResponseIfInvalidUser(request.getCookies())
                 .orElseGet(() -> {
                     try {
                         return ResponseEntity.ok(jpaService.retrieveMarketData(new HashSet<>(symbols), MarketDataType.HISTORIC, false));
@@ -87,7 +87,7 @@ public class MarketDataController {
     }
 
     @GetMapping("/historic/api/{symbols}")
-    public ResponseEntity<Set<MarketData>> fetchAndSaveHistoricSomeApi(@RequestHeader("X-API-Key") String requestApiKey, @PathVariable Set<String> symbols) {
+    public ResponseEntity<Set<MarketDataDomain>> fetchAndSaveHistoricSomeApi(@RequestHeader("X-API-Key") String requestApiKey, @PathVariable Set<String> symbols) {
         if (!apiKey.equals(requestApiKey)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -100,8 +100,8 @@ public class MarketDataController {
     }
 
     @DeleteMapping("/purge")
-    public ResponseEntity<Set<MarketData>> purge(HttpServletRequest request, @RequestParam int toKeep) {
-        return controllerUtil.<Set<MarketData>>getUnauthorizedResponseIfInvalidUser(request.getCookies())
+    public ResponseEntity<Set<MarketDataDomain>> purge(HttpServletRequest request, @RequestParam int toKeep) {
+        return controllerUtil.<Set<MarketDataDomain>>getUnauthorizedResponseIfInvalidUser(request.getCookies())
                 .orElseGet(() -> ResponseEntity.ok(jpaService.removeOldMarketData(toKeep)));
     }
 }

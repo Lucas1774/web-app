@@ -10,7 +10,6 @@ import com.lucas.server.components.shopping.jpa.shopping.ShoppingItemJpaService;
 import com.lucas.server.components.sudoku.jpa.Sudoku;
 import com.lucas.server.components.sudoku.jpa.SudokuJpaService;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -39,7 +38,6 @@ class DataAccessTest extends ConfiguredTest {
     private NamedParameterJdbcTemplate jdbcTemplate;
 
     @Test
-    @Transactional
     void shoppingCRUD() {
         // seed user and category
         jdbcTemplate.getJdbcOperations().execute(
@@ -66,7 +64,6 @@ class DataAccessTest extends ConfiguredTest {
     }
 
     @Test
-    @Transactional
     void insertAndRetrieveSudoku() {
         Sudoku s1 = Sudoku.withDefaultValues();
         sudokuService.createIgnoringDuplicates(Collections.singleton(s1));
@@ -77,7 +74,6 @@ class DataAccessTest extends ConfiguredTest {
     }
 
     @Test
-    @Transactional
     void getPossibleCategories() {
         jdbcTemplate.getJdbcOperations().execute(
                 "INSERT INTO categories(name, category_order) VALUES('x',10),( 'y',20 )"
@@ -87,7 +83,6 @@ class DataAccessTest extends ConfiguredTest {
     }
 
     @Test
-    @Transactional
     void updateOrders() {
         // seed categories
         jdbcTemplate.getJdbcOperations().execute(
@@ -109,7 +104,6 @@ class DataAccessTest extends ConfiguredTest {
     }
 
     @Test
-    @Transactional
     void updateProductWithExistingCategory() {
         // seed user, category, and product
         jdbcTemplate.getJdbcOperations().execute(
@@ -137,7 +131,6 @@ class DataAccessTest extends ConfiguredTest {
     }
 
     @Test
-    @Transactional
     void updateProductWithNewCategory() {
         // seed user and initial product
         jdbcTemplate.getJdbcOperations().execute(
@@ -167,7 +160,6 @@ class DataAccessTest extends ConfiguredTest {
     }
 
     @Test
-    @Transactional
     void updateAllProductQuantity() {
         // seed user, categories, and two products
         jdbcTemplate.getJdbcOperations().execute(

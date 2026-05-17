@@ -1,11 +1,10 @@
 package com.lucas.server.components.tradingbot.news.mapper;
 
 import com.lucas.server.ConfiguredTest;
-import com.lucas.server.components.tradingbot.common.jpa.Symbol;
+import com.lucas.server.components.tradingbot.common.dto.SymbolDomain;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
-import com.lucas.server.components.tradingbot.news.jpa.News;
+import com.lucas.server.components.tradingbot.news.dto.NewsDomain;
 import com.lucas.utils.exception.MappingException;
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.w3c.dom.Document;
@@ -17,6 +16,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.util.Set;
+import java.util.UUID;
 
 import static com.lucas.server.common.Constants.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,7 +34,6 @@ class YahooFinanceNewsResponseMapperTest extends ConfiguredTest {
     private DocumentBuilderFactory factory;
 
     @Test
-    @Transactional
     void whenMapValidXml_thenReturnNewsEntity() throws Exception {
         // given
         String itemXml = """
@@ -51,13 +50,14 @@ class YahooFinanceNewsResponseMapperTest extends ConfiguredTest {
                 .getElementsByTagName("item").item(0);
 
         // when
-        News news = mapper.map(item);
+        NewsDomain news = mapper.map(item);
 
         // then
+        UUID uuid = UUID.fromString("d7c02a66-936a-32e1-b631-65fbc838c25d");
         assertThat(news)
                 .isNotNull()
                 .satisfies(n -> {
-                    assertThat(news.getExternalId()).isEqualTo("d7c02a66-936a-32e1-b631-65fbc838c25d".hashCode());
+                    assertThat(news.getExternalId()).isEqualTo(uuid.getMostSignificantBits() ^ uuid.getLeastSignificantBits());
                     assertThat(news.getDate()).isEqualTo(LocalDateTime.of(2025, 7, 25, 20, 36, 4));
                     assertThat(news.getHeadline()).isEqualTo("Stock Market Today: Dow, S&P Climb On Trump-China Deal Hopes; Cathie Wood Loads Up On Tesla Stock (Live Coverage)");
                     assertThat(news.getSummary()).isEqualTo("The Dow Jones index rose after surprise economic data. Tesla stock rallied on new plans to launch its robotaxi service.");
@@ -70,10 +70,9 @@ class YahooFinanceNewsResponseMapperTest extends ConfiguredTest {
     }
 
     @Test
-    @Transactional
     void whenMapAllValidArray_thenReturnNewsList() throws Exception {
         // given
-        Symbol symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
+        SymbolDomain symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
 
         String xml = """
                 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -237,17 +236,17 @@ class YahooFinanceNewsResponseMapperTest extends ConfiguredTest {
                 """;
 
         // when
-        Set<News> list = mapper.mapAll(parseXml(xml), symbol);
+        Set<NewsDomain> list = mapper.mapAll(parseXml(xml), symbol);
 
         // then
         assertThat(list)
                 .isNotNull()
                 .hasSize(20)
-                .allSatisfy(n -> assertThat(n.getSymbols().stream().map(Symbol::getName))
+                .allSatisfy(n -> assertThat(n.getSymbols().stream().map(SymbolDomain::getName))
                         .hasSize(1)
                         .containsExactly(symbol.getName())
                 )
-                .extracting(News::getHeadline)
+                .extracting(NewsDomain::getHeadline)
                 .containsExactlyInAnyOrder(
                         "Prediction: 1 EV Stock That Will Be Worth More Than Lucid 1 Year From Now",
                         "Why Tesla Deliveries Could Hit Yet Another Speed Bump",
@@ -273,7 +272,6 @@ class YahooFinanceNewsResponseMapperTest extends ConfiguredTest {
     }
 
     @Test
-    @Transactional
     void whenMapAllEmptyOrNonArray_thenThrowsException() throws Exception {
         // given: valid XML structure but no <item> elements
         String xmlWithoutItems = """
@@ -297,7 +295,6 @@ class YahooFinanceNewsResponseMapperTest extends ConfiguredTest {
     }
 
     @Test
-    @Transactional
     void whenMapAllMissingFields_thenThrowsException() throws Exception {
         // given
         String invalidXml = """

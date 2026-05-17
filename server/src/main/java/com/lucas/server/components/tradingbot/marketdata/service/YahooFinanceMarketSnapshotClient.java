@@ -2,8 +2,8 @@ package com.lucas.server.components.tradingbot.marketdata.service;
 
 import com.lucas.server.common.HttpRequestClient;
 import com.lucas.server.common.exception.ClientException;
-import com.lucas.server.components.tradingbot.common.jpa.Symbol;
-import com.lucas.server.components.tradingbot.marketdata.jpa.MarketSnapshot;
+import com.lucas.server.components.tradingbot.common.dto.SymbolDomain;
+import com.lucas.server.components.tradingbot.marketdata.dto.MarketSnapshotDomain;
 import com.lucas.server.components.tradingbot.marketdata.mapper.YahooFinanceMarketResponseMapper;
 import com.lucas.utils.exception.MappingException;
 import com.lucas.utils.ratelimiter.SlidingWindowRateLimiter;
@@ -36,7 +36,7 @@ public class YahooFinanceMarketSnapshotClient {
     }
 
     @Retryable(retryFor = {ClientException.class, MappingException.class}, maxAttempts = REQUEST_MAX_ATTEMPTS)
-    public MarketSnapshot retrieveMarketSnapshot(Symbol symbol) throws ClientException, MappingException {
+    public MarketSnapshotDomain retrieveMarketSnapshot(SymbolDomain symbol) throws ClientException, MappingException {
         rateLimiter.acquirePermission();
         logger.info(RETRIEVING_DATA_INFO, MARKET_SNAPSHOT, symbol);
         String url = UriComponentsBuilder.fromUriString(endpoint + "/" + symbol.getName().replace('.', '-'))

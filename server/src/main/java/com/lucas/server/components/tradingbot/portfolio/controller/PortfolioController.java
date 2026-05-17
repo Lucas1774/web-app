@@ -4,7 +4,7 @@ import com.lucas.server.common.controller.ControllerUtil;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.common.exception.IllegalStateException;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;
-import com.lucas.server.components.tradingbot.portfolio.jpa.PortfolioBase;
+import com.lucas.server.components.tradingbot.portfolio.dto.PortfolioDomain;
 import com.lucas.server.components.tradingbot.portfolio.service.PortfolioManager;
 import com.lucas.utils.exception.MappingException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,12 +35,12 @@ public class PortfolioController {
     }
 
     @PostMapping("/buy")
-    public ResponseEntity<PortfolioBase> buy(HttpServletRequest request,
-                                             @RequestParam Long symbolId,
-                                             @RequestParam BigDecimal price,
-                                             @RequestParam BigDecimal quantity,
-                                             @RequestParam BigDecimal commission,
-                                             @RequestParam(required = false) LocalDate date) {
+    public ResponseEntity<PortfolioDomain> buy(HttpServletRequest request,
+                                               @RequestParam Long symbolId,
+                                               @RequestParam BigDecimal price,
+                                               @RequestParam BigDecimal quantity,
+                                               @RequestParam BigDecimal commission,
+                                               @RequestParam(required = false) LocalDate date) {
         String username = controllerUtil.retrieveUsername(request.getCookies());
         if (DEFAULT_USERNAME.equals(username)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -56,11 +56,11 @@ public class PortfolioController {
     }
 
     @PostMapping("/sell")
-    public ResponseEntity<PortfolioBase> sell(HttpServletRequest request,
-                                              @RequestParam Long symbolId,
-                                              @RequestParam BigDecimal price,
-                                              @RequestParam BigDecimal quantity,
-                                              @RequestParam(required = false) LocalDate date) {
+    public ResponseEntity<PortfolioDomain> sell(HttpServletRequest request,
+                                                @RequestParam Long symbolId,
+                                                @RequestParam BigDecimal price,
+                                                @RequestParam BigDecimal quantity,
+                                                @RequestParam(required = false) LocalDate date) {
         String username = controllerUtil.retrieveUsername(request.getCookies());
         if (DEFAULT_USERNAME.equals(username)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();

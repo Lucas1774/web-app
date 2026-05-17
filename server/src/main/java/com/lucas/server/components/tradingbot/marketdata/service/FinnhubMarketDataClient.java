@@ -3,8 +3,8 @@ package com.lucas.server.components.tradingbot.marketdata.service;
 import com.lucas.server.common.HttpRequestClient;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.components.tradingbot.common.FinnhubRateLimiter;
-import com.lucas.server.components.tradingbot.common.jpa.Symbol;
-import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
+import com.lucas.server.components.tradingbot.common.dto.SymbolDomain;
+import com.lucas.server.components.tradingbot.marketdata.dto.MarketDataDomain;
 import com.lucas.server.components.tradingbot.marketdata.mapper.FinnhubMarketResponseMapper;
 import com.lucas.utils.exception.MappingException;
 import org.slf4j.Logger;
@@ -34,7 +34,7 @@ public class FinnhubMarketDataClient {
     }
 
     @Retryable(retryFor = {ClientException.class, MappingException.class}, maxAttempts = REQUEST_MAX_ATTEMPTS)
-    public MarketData retrieveMarketData(Symbol symbol) throws ClientException, MappingException {
+    public MarketDataDomain retrieveMarketData(SymbolDomain symbol) throws ClientException, MappingException {
         String apiKey = finnhubRateLimiter.acquirePermission();
         logger.info(RETRIEVING_DATA_INFO, MARKET_DATA, symbol);
         String url = UriComponentsBuilder.fromUriString(endpoint + QUOTE)

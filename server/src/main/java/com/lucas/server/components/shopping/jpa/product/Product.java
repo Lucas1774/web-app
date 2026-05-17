@@ -30,7 +30,7 @@ public class Product implements JpaEntity, Sortable {
     @Column(name = "is_rare", nullable = false)
     private Boolean isRare = false;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id")
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Category category;

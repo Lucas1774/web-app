@@ -1,8 +1,8 @@
 package com.lucas.server.components.tradingbot.marketdata.mapper;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.lucas.server.components.tradingbot.common.jpa.Symbol;
-import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
+import com.lucas.server.components.tradingbot.common.dto.SymbolDomain;
+import com.lucas.server.components.tradingbot.marketdata.dto.MarketDataDomain;
 import com.lucas.utils.Mapper;
 import com.lucas.utils.exception.MappingException;
 import org.springframework.stereotype.Component;
@@ -16,12 +16,12 @@ import static com.lucas.server.common.Constants.MAPPING_ERROR;
 import static com.lucas.server.common.Constants.MARKET_DATA;
 
 @Component
-public class FinnhubMarketResponseMapper implements Mapper<JsonNode, MarketData> {
+public class FinnhubMarketResponseMapper implements Mapper<JsonNode, MarketDataDomain> {
 
     @Override
-    public MarketData map(JsonNode json) throws MappingException {
+    public MarketDataDomain map(JsonNode json) throws MappingException {
         try {
-            return new MarketData()
+            return new MarketDataDomain()
                     .setOpen(new BigDecimal(json.get("o").asText()))
                     .setHigh(new BigDecimal(json.get("h").asText()))
                     .setLow(new BigDecimal(json.get("l").asText()))
@@ -37,7 +37,7 @@ public class FinnhubMarketResponseMapper implements Mapper<JsonNode, MarketData>
         }
     }
 
-    public MarketData map(JsonNode json, Symbol symbol) throws MappingException {
+    public MarketDataDomain map(JsonNode json, SymbolDomain symbol) throws MappingException {
         return map(json).setSymbol(symbol);
     }
 }

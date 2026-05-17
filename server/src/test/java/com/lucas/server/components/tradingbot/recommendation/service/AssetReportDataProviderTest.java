@@ -1,16 +1,16 @@
 package com.lucas.server.components.tradingbot.recommendation.service;
 
 import com.lucas.server.ConfiguredTest;
+import com.lucas.server.components.tradingbot.common.dto.SymbolDomain;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;
-import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
-import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
+import com.lucas.server.components.tradingbot.marketdata.dto.MarketDataDomain;
+import com.lucas.server.components.tradingbot.marketdata.dto.MarketSnapshotDomain;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataJpaService;
-import com.lucas.server.components.tradingbot.marketdata.jpa.MarketSnapshot;
 import com.lucas.server.components.tradingbot.marketdata.service.MarketDataKpiGenerator;
-import com.lucas.server.components.tradingbot.news.jpa.News;
+import com.lucas.server.components.tradingbot.news.dto.NewsDomain;
 import com.lucas.server.components.tradingbot.news.jpa.NewsJpaService;
-import com.lucas.server.components.tradingbot.portfolio.jpa.Portfolio;
+import com.lucas.server.components.tradingbot.portfolio.dto.PortfolioDomain;
 import com.lucas.server.components.tradingbot.portfolio.jpa.PortfolioJpaService;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.AssetReportRaw;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.NewsItemRaw;
@@ -56,11 +56,11 @@ class AssetReportDataProviderTest extends ConfiguredTest {
     @Test
     void provide() {
         // given: insert 34 days of market data. Needs to be at least 34 and greater than the history days
-        Symbol symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
+        SymbolDomain symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
         LocalDate today = LocalDate.now();
-        OrderedIndexedSet<MarketData> modifiableMds = new OrderedIndexedSetImpl<>();
+        OrderedIndexedSet<MarketDataDomain> modifiableMds = new OrderedIndexedSetImpl<>();
         for (int i = MARKET_DATA_RELEVANT_DAYS_COUNT; 0 <= i; i--) {
-            MarketData md = new MarketData()
+            MarketDataDomain md = new MarketDataDomain()
                     .setSymbol(symbolService.getOrCreateByName(Set.of(symbol.getName())).stream().findFirst().orElseThrow())
                     .setDate(today.minusDays(i))
                     .setOpen(BigDecimal.valueOf(10 + i))
@@ -70,10 +70,10 @@ class AssetReportDataProviderTest extends ConfiguredTest {
                     .setVolume(1_000L * (i + 1));
             modifiableMds.add(md);
         }
-        OrderedIndexedSet<MarketData> mds = new UnmodifiableOrderedIndexedSet<>(modifiableMds);
+        OrderedIndexedSet<MarketDataDomain> mds = new UnmodifiableOrderedIndexedSet<>(modifiableMds);
         marketDataService.createIgnoringDuplicates(mds);
-        BigDecimal lastPrice = mds.stream().max(Comparator.comparing(MarketData::getDate)).orElseThrow().getPrice();
-        MarketSnapshot premarket = new MarketSnapshot()
+        BigDecimal lastPrice = mds.stream().max(Comparator.comparing(MarketDataDomain::getDate)).orElseThrow().getPrice();
+        MarketSnapshotDomain premarket = new MarketSnapshotDomain()
                 .setSymbol(symbol)
                 .setOpen(lastPrice)
                 .setHigh(lastPrice.add(BigDecimal.valueOf(1)))
@@ -81,12 +81,12 @@ class AssetReportDataProviderTest extends ConfiguredTest {
                 .setPrice(lastPrice.add(new BigDecimal("0.5")));
 
         // given: insert 15 news items. Needs to be greater than the news per symbol and day
-        Set<News> articles = new HashSet<>();
+        Set<NewsDomain> articles = new HashSet<>();
         LocalDateTime todayDateTime = LocalDateTime.now()
                 .atZone(ZoneOffset.UTC)
                 .toLocalDateTime();
         for (int i = 1; 15 >= i; i++) {
-            News news = new News()
+            NewsDomain news = new NewsDomain()
                     .addSymbol(symbol)
                     .setExternalId((long) i)
                     .setUrl("https://example.com/news/" + i)
@@ -100,18 +100,18 @@ class AssetReportDataProviderTest extends ConfiguredTest {
         newsService.createOrUpdate(articles);
 
         // given: a portfolio for the symbol
-        Portfolio portfolio = new Portfolio();
+        PortfolioDomain portfolio = new PortfolioDomain();
         portfolio.setSymbol(symbol);
         portfolio.setQuantity(BigDecimal.valueOf(1.1111));
         portfolio.setAverageCost(BigDecimal.valueOf(2.2222));
         portfolio.setAverageCommission(BigDecimal.ZERO);
         portfolio.setEffectiveTimestamp(today.atStartOfDay());
-        portfolioService.save(portfolio);
+        portfolioService.saveAll(Set.of(portfolio));
 
         // when
-        OrderedIndexedSet<MarketData> filteredMds = marketDataService.getTopForSymbolId(symbol.getId(), MARKET_DATA_RELEVANT_DAYS_COUNT);
-        OrderedIndexedSet<News> filteredNews = newsService.getTopForSymbolId(symbol.getId(), NEWS_COUNT);
-        Portfolio portfolioData = portfolioService.findBySymbol(symbol).orElseThrow();
+        OrderedIndexedSet<MarketDataDomain> filteredMds = marketDataService.getTopForSymbolId(symbol.getId(), MARKET_DATA_RELEVANT_DAYS_COUNT);
+        OrderedIndexedSet<NewsDomain> filteredNews = newsService.getTopForSymbolId(symbol.getId(), NEWS_COUNT);
+        PortfolioDomain portfolioData = portfolioService.findBySymbol(symbol).orElseThrow();
         AssetReportRaw report = provider.provide(new DataManager.SymbolPayload(symbol, filteredMds, portfolioData)
                 .setNews(filteredNews)
                 .setPremarket(premarket));
@@ -145,7 +145,7 @@ class AssetReportDataProviderTest extends ConfiguredTest {
                         "Headline 9", "Headline 11", "Headline 12", "Headline 13", "Headline 15");
 
         // then: KPIs match the kpiGenerator calculations
-        OrderedIndexedSet<MarketData> mdHistory = marketDataService.getTopForSymbolId(
+        OrderedIndexedSet<MarketDataDomain> mdHistory = marketDataService.getTopForSymbolId(
                 symbolService.getOrCreateByName(Set.of(symbol.getName())).stream().findFirst().orElseThrow().getId(), 100);
 
         BigDecimal expectedEma20 = kpiGenerator.computeEma(mdHistory, 20).orElseThrow();

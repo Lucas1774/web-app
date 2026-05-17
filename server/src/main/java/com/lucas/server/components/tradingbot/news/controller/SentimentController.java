@@ -2,7 +2,7 @@ package com.lucas.server.components.tradingbot.news.controller;
 
 import com.lucas.server.common.controller.ControllerUtil;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;
-import com.lucas.server.components.tradingbot.news.jpa.News;
+import com.lucas.server.components.tradingbot.news.dto.NewsDomain;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,20 +26,20 @@ public class SentimentController {
     }
 
     @GetMapping("/historic")
-    public ResponseEntity<Set<News>> fetchAndSaveHistoricAll(HttpServletRequest request,
-                                                             @RequestParam(required = false) LocalDate from) {
+    public ResponseEntity<Set<NewsDomain>> fetchAndSaveHistoricAll(HttpServletRequest request,
+                                                                   @RequestParam(required = false) LocalDate from) {
         return fetchAndSaveHistoric(request, SP500_SYMBOLS, from);
     }
 
     @GetMapping("/historic/{symbols}")
-    public ResponseEntity<Set<News>> fetchAndSaveHistoricSome(HttpServletRequest request,
-                                                              @PathVariable Set<String> symbols,
-                                                              @RequestParam(required = false) LocalDate from) {
+    public ResponseEntity<Set<NewsDomain>> fetchAndSaveHistoricSome(HttpServletRequest request,
+                                                                    @PathVariable Set<String> symbols,
+                                                                    @RequestParam(required = false) LocalDate from) {
         return fetchAndSaveHistoric(request, symbols, from);
     }
 
-    private ResponseEntity<Set<News>> fetchAndSaveHistoric(HttpServletRequest request, Set<String> symbols, LocalDate from) {
-        return controllerUtil.<Set<News>>getUnauthorizedResponseIfInvalidUser(request.getCookies())
+    private ResponseEntity<Set<NewsDomain>> fetchAndSaveHistoric(HttpServletRequest request, Set<String> symbols, LocalDate from) {
+        return controllerUtil.<Set<NewsDomain>>getUnauthorizedResponseIfInvalidUser(request.getCookies())
                 .orElseGet(() -> {
                     LocalDateTime effectiveDate = null == from ? LocalDate.now().minusDays(1).atStartOfDay() : from.atStartOfDay();
                     return ResponseEntity.ok(jpaService.generateSentiment(symbols, effectiveDate, LocalDate.now().plusDays(1).atStartOfDay()));

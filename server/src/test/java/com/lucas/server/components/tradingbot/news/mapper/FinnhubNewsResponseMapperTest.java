@@ -3,11 +3,10 @@ package com.lucas.server.components.tradingbot.news.mapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lucas.server.ConfiguredTest;
-import com.lucas.server.components.tradingbot.common.jpa.Symbol;
+import com.lucas.server.components.tradingbot.common.dto.SymbolDomain;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
-import com.lucas.server.components.tradingbot.news.jpa.News;
+import com.lucas.server.components.tradingbot.news.dto.NewsDomain;
 import com.lucas.utils.exception.MappingException;
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -35,7 +34,6 @@ class FinnhubNewsResponseMapperTest extends ConfiguredTest {
     private ObjectMapper objectMapper;
 
     @Test
-    @Transactional
     void whenMapValidJson_thenReturnNewsEntity() throws Exception {
         // given
         long epoch = 1745463072L;
@@ -55,7 +53,7 @@ class FinnhubNewsResponseMapperTest extends ConfiguredTest {
         JsonNode node = objectMapper.readTree(json);
 
         // when
-        News news = mapper.map(node);
+        NewsDomain news = mapper.map(node);
 
         // then
         LocalDateTime expectedDate = Instant.ofEpochSecond(epoch)
@@ -78,7 +76,6 @@ class FinnhubNewsResponseMapperTest extends ConfiguredTest {
     }
 
     @Test
-    @Transactional
     void whenMapAllValidArray_thenReturnNewsList() throws Exception {
         // given
         long now = 1745463072L;
@@ -88,21 +85,21 @@ class FinnhubNewsResponseMapperTest extends ConfiguredTest {
                   { "id": %d, "datetime": %d, "headline": "H2", "summary": "S2", "url": "u2", "source": "src2", "category": "cat2", "image": "i2" }
                 ]
                 """, now, now, now + 60, now + 60);
-        Symbol symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
+        SymbolDomain symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
 
         JsonNode arrayNode = objectMapper.readTree(jsonArray);
 
         // when
-        Set<News> list = mapper.mapAll(arrayNode, symbol);
+        Set<NewsDomain> list = mapper.mapAll(arrayNode, symbol);
 
         // then
         assertThat(list)
                 .isNotNull()
                 .hasSize(2)
-                .allSatisfy(n -> assertThat(n.getSymbols().stream().map(Symbol::getName))
+                .allSatisfy(n -> assertThat(n.getSymbols().stream().map(SymbolDomain::getName))
                         .hasSize(1)
                         .containsExactly(symbol.getName()))
-                .extracting(News::getExternalId, News::getHeadline)
+                .extracting(NewsDomain::getExternalId, NewsDomain::getHeadline)
                 .containsExactlyInAnyOrder(
                         tuple(now, "H1"),
                         tuple(now + 60, "H2")
@@ -110,12 +107,11 @@ class FinnhubNewsResponseMapperTest extends ConfiguredTest {
     }
 
     @Test
-    @Transactional
     void whenMapAllEmptyOrNonArray_thenReturnEmptyList() throws Exception {
         // given
         JsonNode emptyArray = objectMapper.createArrayNode();
         JsonNode objNode = objectMapper.createObjectNode();
-        Symbol symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
+        SymbolDomain symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
 
         // when & then
         assertThat(mapper.mapAll(emptyArray, symbol)).isEmpty();
@@ -123,7 +119,6 @@ class FinnhubNewsResponseMapperTest extends ConfiguredTest {
     }
 
     @Test
-    @Transactional
     void whenMapAllMissingFields_thenThrowsException() throws Exception {
         // given
         String jsonArray = """

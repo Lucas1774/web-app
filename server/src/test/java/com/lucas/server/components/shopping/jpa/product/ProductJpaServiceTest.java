@@ -7,7 +7,6 @@ import com.lucas.server.components.shopping.jpa.category.CategoryJpaService;
 import com.lucas.server.components.shopping.jpa.shopping.ShoppingItem;
 import com.lucas.server.components.shopping.jpa.shopping.ShoppingItemJpaService;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -32,7 +31,6 @@ class ProductJpaServiceTest extends ConfiguredTest {
     private CategoryJpaService categoryService;
 
     @Test
-    @Transactional
     void createProductAndOrLinkToUser() {
         // given: no products, admin user
         assertThat(productService.findAll()).isEmpty();
@@ -79,9 +77,7 @@ class ProductJpaServiceTest extends ConfiguredTest {
                 );
     }
 
-
     @Test
-    @Transactional
     void updateProductCreateCategoryIfNecessary() {
         // given: an existing product for admin
         Product original = productService.createProductAndOrLinkToUser("Original", "admin").orElseThrow();
@@ -126,12 +122,11 @@ class ProductJpaServiceTest extends ConfiguredTest {
     }
 
     @Test
-    @Transactional
     void updateOrders() {
         // given: two categories with reversed order values
         Product p1 = new Product().setName("A").setOrder(2);
         Product p2 = new Product().setName("B").setOrder(1);
-        Set<Product> saved = productService.createAll(Set.of(p1, p2));
+        Set<Product> saved = productService.saveAll(Set.of(p1, p2));
         assertThat(saved)
                 .extracting(Product::getName, Product::getOrder)
                 .containsExactlyInAnyOrder(

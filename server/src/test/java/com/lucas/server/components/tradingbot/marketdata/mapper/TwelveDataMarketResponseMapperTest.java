@@ -3,12 +3,11 @@ package com.lucas.server.components.tradingbot.marketdata.mapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lucas.server.ConfiguredTest;
-import com.lucas.server.components.tradingbot.common.jpa.Symbol;
+import com.lucas.server.components.tradingbot.common.dto.SymbolDomain;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
-import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
+import com.lucas.server.components.tradingbot.marketdata.dto.MarketDataDomain;
 import com.lucas.utils.exception.MappingException;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -34,7 +33,6 @@ class TwelveDataMarketResponseMapperTest extends ConfiguredTest {
     private ObjectMapper objectMapper;
 
     @Test
-    @Transactional
     void whenMapValidJson_thenReturnMarketData() throws MappingException, JsonProcessingException {
         // given
         String json = """
@@ -75,10 +73,10 @@ class TwelveDataMarketResponseMapperTest extends ConfiguredTest {
                   "last_quote_at": 1631772000
                 }
                 """;
-        Symbol symbol = symbolService.getOrCreateByName(Set.of("IBM")).stream().findFirst().orElseThrow();
+        SymbolDomain symbol = symbolService.getOrCreateByName(Set.of("IBM")).stream().findFirst().orElseThrow();
 
         // when
-        MarketData result = mapper.map(objectMapper.readTree(json), symbol);
+        MarketDataDomain result = mapper.map(objectMapper.readTree(json), symbol);
 
         // then
         assertThat(result).isNotNull();
@@ -95,7 +93,6 @@ class TwelveDataMarketResponseMapperTest extends ConfiguredTest {
     }
 
     @Test
-    @Transactional
     void whenMapInvalidJson_thenThrowException() {
         // given
         String invalidJson = "{}";
@@ -105,7 +102,6 @@ class TwelveDataMarketResponseMapperTest extends ConfiguredTest {
     }
 
     @Test
-    @Transactional
     void whenMapMissingFields_thenThrowsException() {
         // given
         String json = """
@@ -153,7 +149,6 @@ class TwelveDataMarketResponseMapperTest extends ConfiguredTest {
     }
 
     @Test
-    @Transactional
     void whenMapMismatchingSymbolField_thenThrowsException() {
         // given
         String json = """
@@ -202,7 +197,6 @@ class TwelveDataMarketResponseMapperTest extends ConfiguredTest {
     }
 
     @Test
-    @Transactional
     void whenMapAllValidJson_thenReturnMarketDataList() throws MappingException, JsonProcessingException {
         // given
         String json = """
@@ -261,15 +255,15 @@ class TwelveDataMarketResponseMapperTest extends ConfiguredTest {
                   "status": "ok"
                 }
                 """;
-        Symbol symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
+        SymbolDomain symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
 
         // when
-        OrderedIndexedSet<MarketData> result = mapper.mapAll(objectMapper.readTree(json), symbol);
+        OrderedIndexedSet<MarketDataDomain> result = mapper.mapAll(objectMapper.readTree(json), symbol);
 
         // then
         assertThat(result).isNotNull().hasSize(5);
 
-        MarketData firstEntry = result.getFirst();
+        MarketDataDomain firstEntry = result.getFirst();
         assertThat(firstEntry.getOpen()).isEqualByComparingTo(BigDecimal.valueOf(148.735));
         assertThat(firstEntry.getHigh()).isEqualByComparingTo(BigDecimal.valueOf(148.86));
         assertThat(firstEntry.getLow()).isEqualByComparingTo(BigDecimal.valueOf(148.73));
@@ -277,7 +271,7 @@ class TwelveDataMarketResponseMapperTest extends ConfiguredTest {
         assertThat(firstEntry.getVolume()).isEqualByComparingTo(624277L);
         assertThat(firstEntry.getDate()).isEqualTo(LocalDate.parse("2021-09-16"));
 
-        MarketData secondEntry = result.get(1);
+        MarketDataDomain secondEntry = result.get(1);
         assertThat(secondEntry.getOpen()).isEqualByComparingTo(BigDecimal.valueOf(148.72));
         assertThat(secondEntry.getHigh()).isEqualByComparingTo(BigDecimal.valueOf(148.78));
         assertThat(secondEntry.getLow()).isEqualByComparingTo(BigDecimal.valueOf(148.7));
@@ -287,7 +281,6 @@ class TwelveDataMarketResponseMapperTest extends ConfiguredTest {
     }
 
     @Test
-    @Transactional
     void whenMapAllEmptyTimeSeries_thenReturnEmptyList() throws MappingException, JsonProcessingException {
         // given
         String json = """
@@ -306,10 +299,10 @@ class TwelveDataMarketResponseMapperTest extends ConfiguredTest {
                   "status": "ok"
                 }
                 """;
-        Symbol symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
+        SymbolDomain symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
 
         // when
-        Set<MarketData> result = mapper.mapAll(objectMapper.readTree(json), symbol);
+        Set<MarketDataDomain> result = mapper.mapAll(objectMapper.readTree(json), symbol);
 
         // then
         assertThat(result).isNotNull().isEmpty();

@@ -3,8 +3,8 @@ package com.lucas.server.components.tradingbot.marketdata.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.lucas.server.common.HttpRequestClient;
 import com.lucas.server.common.exception.ClientException;
-import com.lucas.server.components.tradingbot.common.jpa.Symbol;
-import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
+import com.lucas.server.components.tradingbot.common.dto.SymbolDomain;
+import com.lucas.server.components.tradingbot.marketdata.dto.MarketDataDomain;
 import com.lucas.server.components.tradingbot.marketdata.mapper.TwelveDataMarketResponseMapper;
 import com.lucas.utils.exception.MappingException;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
@@ -55,7 +55,7 @@ public class TwelveDataMarketDataClient {
     }
 
     @Retryable(retryFor = {ClientException.class, MappingException.class}, maxAttempts = REQUEST_MAX_ATTEMPTS)
-    public OrderedIndexedSet<MarketData> retrieveMarketData(Symbol symbol, MarketDataType type) throws ClientException, MappingException {
+    public OrderedIndexedSet<MarketDataDomain> retrieveMarketData(SymbolDomain symbol, MarketDataType type) throws ClientException, MappingException {
         rateLimiter.acquirePermission();
         logger.info(RETRIEVING_DATA_INFO, MARKET_DATA, symbol);
         String url = typeToBuilderCustomizer.get(type).apply(UriComponentsBuilder.fromUriString(endpoint + typeToEndpoint.get(type)))
@@ -69,6 +69,6 @@ public class TwelveDataMarketDataClient {
 
     @FunctionalInterface
     private interface JsonToMarketDataFunction {
-        OrderedIndexedSet<MarketData> apply(Symbol symbol, JsonNode jsonNode) throws MappingException;
+        OrderedIndexedSet<MarketDataDomain> apply(SymbolDomain symbol, JsonNode jsonNode) throws MappingException;
     }
 }

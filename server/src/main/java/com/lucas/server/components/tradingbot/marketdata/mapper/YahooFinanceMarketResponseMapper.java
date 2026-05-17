@@ -1,8 +1,8 @@
 package com.lucas.server.components.tradingbot.marketdata.mapper;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.lucas.server.components.tradingbot.common.jpa.Symbol;
-import com.lucas.server.components.tradingbot.marketdata.jpa.MarketSnapshot;
+import com.lucas.server.components.tradingbot.common.dto.SymbolDomain;
+import com.lucas.server.components.tradingbot.marketdata.dto.MarketSnapshotDomain;
 import com.lucas.utils.Mapper;
 import com.lucas.utils.exception.MappingException;
 import org.springframework.stereotype.Component;
@@ -15,10 +15,10 @@ import java.time.ZoneOffset;
 import static com.lucas.server.common.Constants.*;
 
 @Component
-public class YahooFinanceMarketResponseMapper implements Mapper<JsonNode, MarketSnapshot> {
+public class YahooFinanceMarketResponseMapper implements Mapper<JsonNode, MarketSnapshotDomain> {
 
     @Override
-    public MarketSnapshot map(JsonNode json) throws MappingException {
+    public MarketSnapshotDomain map(JsonNode json) throws MappingException {
         try {
             JsonNode quote = json.get("indicators").get("quote").get(0);
             JsonNode timeStamps = json.get("timestamp");
@@ -39,7 +39,7 @@ public class YahooFinanceMarketResponseMapper implements Mapper<JsonNode, Market
                 }
             }
 
-            return new MarketSnapshot()
+            return new MarketSnapshotDomain()
                     .setDate(Instant.ofEpochSecond(timeStamps.get(timeStamps.size() - 1).asLong())
                             .atZone(ZoneOffset.UTC)
                             .toLocalDateTime())
@@ -52,7 +52,7 @@ public class YahooFinanceMarketResponseMapper implements Mapper<JsonNode, Market
         }
     }
 
-    public MarketSnapshot map(JsonNode json, Symbol symbol) throws MappingException {
+    public MarketSnapshotDomain map(JsonNode json, SymbolDomain symbol) throws MappingException {
         try {
             JsonNode result = json.get("chart").get("result").get(0);
             if (!symbol.getName().equals(result.get("meta").get(SYMBOL).asText().replace('-', '.'))) {

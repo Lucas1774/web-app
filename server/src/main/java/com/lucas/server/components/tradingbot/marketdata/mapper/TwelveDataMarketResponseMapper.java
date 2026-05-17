@@ -1,8 +1,8 @@
 package com.lucas.server.components.tradingbot.marketdata.mapper;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.lucas.server.components.tradingbot.common.jpa.Symbol;
-import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
+import com.lucas.server.components.tradingbot.common.dto.SymbolDomain;
+import com.lucas.server.components.tradingbot.marketdata.dto.MarketDataDomain;
 import com.lucas.utils.Mapper;
 import com.lucas.utils.exception.MappingException;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
@@ -19,17 +19,17 @@ import java.time.LocalDate;
 import static com.lucas.server.common.Constants.*;
 
 @Component
-public class TwelveDataMarketResponseMapper implements Mapper<JsonNode, MarketData> {
+public class TwelveDataMarketResponseMapper implements Mapper<JsonNode, MarketDataDomain> {
 
     private static final Logger logger = LoggerFactory.getLogger(TwelveDataMarketResponseMapper.class);
 
     @Override
-    public MarketData map(JsonNode json) throws MappingException {
+    public MarketDataDomain map(JsonNode json) throws MappingException {
         try {
             if (json.path("is_market_open").asBoolean(false)) {
                 logger.warn(MARKET_STILL_OPEN_WARN);
             }
-            return new MarketData()
+            return new MarketDataDomain()
                     .setOpen(new BigDecimal(json.get("open").asText()))
                     .setHigh(new BigDecimal(json.get("high").asText()))
                     .setLow(new BigDecimal(json.get("low").asText()))
@@ -44,24 +44,24 @@ public class TwelveDataMarketResponseMapper implements Mapper<JsonNode, MarketDa
         }
     }
 
-    public MarketData map(JsonNode json, Symbol symbol) throws MappingException {
+    public MarketDataDomain map(JsonNode json, SymbolDomain symbol) throws MappingException {
         if (!symbol.getName().equals(json.path(SYMBOL).asText(null))) {
             throw new MappingException(MessageFormat.format(MAPPING_ERROR, MARKET_DATA));
         }
         return map(json).setSymbol(symbol);
     }
 
-    public OrderedIndexedSet<MarketData> mapAll(JsonNode json, Symbol symbol) throws MappingException {
+    public OrderedIndexedSet<MarketDataDomain> mapAll(JsonNode json, SymbolDomain symbol) throws MappingException {
         try {
             if (!symbol.getName().equals(json.at("/meta/symbol").asText(null))) {
                 throw new MappingException(MessageFormat.format(MAPPING_ERROR, MARKET_DATA));
             }
             JsonNode series = json.get("values");
 
-            OrderedIndexedSet<MarketData> history = new OrderedIndexedSetImpl<>();
+            OrderedIndexedSet<MarketDataDomain> history = new OrderedIndexedSetImpl<>();
             for (JsonNode node : series) {
                 LocalDate date = LocalDate.parse(node.get("datetime").asText().substring(0, 10));
-                MarketData md = new MarketData()
+                MarketDataDomain md = new MarketDataDomain()
                         .setSymbol(symbol)
                         .setDate(date)
                         .setOpen(new BigDecimal(node.get("open").asText()))

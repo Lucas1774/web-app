@@ -2,7 +2,7 @@ package com.lucas.server.components.tradingbot.news.mapper;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lucas.server.components.tradingbot.news.jpa.News;
+import com.lucas.server.components.tradingbot.news.dto.NewsDomain;
 import com.lucas.utils.exception.MappingException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -43,7 +43,7 @@ class FinbertResponseMapperTest {
         JsonNode node = objectMapper.readTree(json);
 
         // when
-        News result = mapper.map(node);
+        NewsDomain result = mapper.map(node);
 
         // then
         assertThat(result.getSentiment()).isEqualTo(label);
@@ -55,10 +55,10 @@ class FinbertResponseMapperTest {
         // given
         String json = "{\"label\": \"positive\", \"score\": \"0.90\"}";
         JsonNode node = objectMapper.readTree(json);
-        News existing = new News().setHeadline("Test headline");
+        NewsDomain existing = new NewsDomain().setHeadline("Test headline");
 
         // when
-        News result = mapper.map(node, existing);
+        NewsDomain result = mapper.map(node, existing);
 
         // then
         assertThat(result.getHeadline()).isEqualTo("Test headline");

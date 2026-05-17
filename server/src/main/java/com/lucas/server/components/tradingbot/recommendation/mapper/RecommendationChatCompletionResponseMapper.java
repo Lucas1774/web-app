@@ -1,11 +1,11 @@
 package com.lucas.server.components.tradingbot.recommendation.mapper;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.lucas.server.components.tradingbot.common.dto.SymbolDomain;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;
-import com.lucas.server.components.tradingbot.common.jpa.Symbol;
-import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
-import com.lucas.server.components.tradingbot.news.jpa.News;
-import com.lucas.server.components.tradingbot.recommendation.jpa.Recommendation;
+import com.lucas.server.components.tradingbot.marketdata.dto.MarketDataDomain;
+import com.lucas.server.components.tradingbot.news.dto.NewsDomain;
+import com.lucas.server.components.tradingbot.recommendation.dto.RecommendationDomain;
 import com.lucas.utils.Mapper;
 import com.lucas.utils.exception.MappingException;
 import org.flywaydb.core.internal.util.StringUtils;
@@ -20,12 +20,12 @@ import static com.lucas.server.common.Constants.*;
 import static com.lucas.utils.Utils.EMPTY_STRING;
 
 @Component
-public class RecommendationChatCompletionResponseMapper implements Mapper<JsonNode, Recommendation> {
+public class RecommendationChatCompletionResponseMapper implements Mapper<JsonNode, RecommendationDomain> {
 
     @Override
-    public Recommendation map(JsonNode json) throws MappingException {
+    public RecommendationDomain map(JsonNode json) throws MappingException {
         try {
-            return new Recommendation()
+            return new RecommendationDomain()
                     .setDate(LocalDate.now())
                     .setAction(json.get("action").asText())
                     .setConfidence(new BigDecimal(json.get("confidence").asText()))
@@ -35,17 +35,17 @@ public class RecommendationChatCompletionResponseMapper implements Mapper<JsonNo
         }
     }
 
-    public Set<Recommendation> mapAll(Set<DataManager.SymbolPayload> payload, JsonNode jsonNode, String message,
-                                      String model) throws MappingException {
+    public Set<RecommendationDomain> mapAll(Set<DataManager.SymbolPayload> payload, JsonNode jsonNode, String message,
+                                            String model) throws MappingException {
         try {
-            Set<Recommendation> recommendations = new HashSet<>();
-            Map<String, Symbol> symbolByName = new HashMap<>();
-            Map<String, MarketData> latestMarketDataByName = new HashMap<>();
-            Map<String, Set<News>> newsByName = new HashMap<>();
+            Set<RecommendationDomain> recommendations = new HashSet<>();
+            Map<String, SymbolDomain> symbolByName = new HashMap<>();
+            Map<String, MarketDataDomain> latestMarketDataByName = new HashMap<>();
+            Map<String, Set<NewsDomain>> newsByName = new HashMap<>();
             for (DataManager.SymbolPayload p : payload) {
                 String name = p.getSymbol().getName();
                 symbolByName.put(name, p.getSymbol());
-                MarketData latest = p.getMarketData().stream().max(Comparator.comparing(MarketData::getDate)).orElseThrow();
+                MarketDataDomain latest = p.getMarketData().stream().max(Comparator.comparing(MarketDataDomain::getDate)).orElseThrow();
                 latestMarketDataByName.put(name, latest);
                 newsByName.put(name, p.getNews());
             }
@@ -56,7 +56,7 @@ public class RecommendationChatCompletionResponseMapper implements Mapper<JsonNo
                         .setModel(model)
                         .setInput(message)
                         .setErrors(EMPTY_STRING)
-                        .setMarketData(latestMarketDataByName.get(symbolName))
+                        .setMarketDataId(latestMarketDataByName.get(symbolName).getId())
                         .setSymbol(symbolByName.get(symbolName))
                         .addNews(newsByName.get(symbolName)));
             }
@@ -68,7 +68,7 @@ public class RecommendationChatCompletionResponseMapper implements Mapper<JsonNo
                         .setModel(model)
                         .setInput(message)
                         .setErrors(EMPTY_STRING)
-                        .setMarketData(latestMarketDataByName.get(symbolName))
+                        .setMarketDataId(latestMarketDataByName.get(symbolName).getId())
                         .setSymbol(symbolByName.get(symbolName))
                         .addNews(newsByName.get(symbolName)));
             }
