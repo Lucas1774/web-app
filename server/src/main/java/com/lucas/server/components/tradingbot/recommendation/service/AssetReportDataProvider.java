@@ -9,8 +9,8 @@ import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportT
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.NewsItemRaw;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.PricePointRaw;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -20,16 +20,12 @@ import static com.lucas.server.common.Constants.NEWS_SERIALIZATION_WARN;
 import static java.lang.Math.min;
 
 @Component
+@RequiredArgsConstructor
+@Slf4j
 public class AssetReportDataProvider {
 
-    private static final Logger logger = LoggerFactory.getLogger(AssetReportDataProvider.class);
     private final MarketDataKpiGenerator kpiGenerator;
     private final PortfolioManager portfolioManager;
-
-    public AssetReportDataProvider(MarketDataKpiGenerator kpiGenerator, PortfolioManager portfolioManager) {
-        this.kpiGenerator = kpiGenerator;
-        this.portfolioManager = portfolioManager;
-    }
 
     public AssetReportRaw provide(DataManager.SymbolPayload payload) {
         OrderedIndexedSet<MarketDataDomain> mdHistory = payload.getMarketData();
@@ -56,7 +52,7 @@ public class AssetReportDataProvider {
                 .map(a -> new NewsItemRaw(a.getHeadline(), a.getSentiment(), a.getSentimentConfidence(), a.getSummary(), a.getDate()))
                 .collect(OrderedIndexedSet.toUnmodifiableOrderedIndexedSet());
         if (news.size() != payload.getNews().size()) {
-            logger.warn(NEWS_SERIALIZATION_WARN, payload.getSymbol().getName());
+            log.warn(NEWS_SERIALIZATION_WARN, payload.getSymbol().getName());
         }
 
         PortfolioManager.SymbolStand stand = portfolioManager.computeStand(payload.getPortfolio(), current);

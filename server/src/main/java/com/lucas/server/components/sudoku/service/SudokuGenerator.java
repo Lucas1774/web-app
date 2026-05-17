@@ -1,6 +1,7 @@
 package com.lucas.server.components.sudoku.service;
 
 import com.lucas.server.components.sudoku.jpa.Sudoku;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -12,15 +13,11 @@ import java.util.stream.IntStream;
 import static com.lucas.server.common.Constants.*;
 
 @Component
+@RequiredArgsConstructor
 public class SudokuGenerator {
 
     private final SudokuSolver solver;
     private final Random random;
-
-    public SudokuGenerator(SudokuSolver solver, Random random) {
-        this.solver = solver;
-        this.random = random;
-    }
 
     public Sudoku generate(int difficulty) {
         Sudoku sudoku = Sudoku.withZeros();

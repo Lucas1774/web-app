@@ -6,6 +6,7 @@ import com.lucas.server.components.tradingbot.common.jpa.DataManager;
 import com.lucas.server.components.tradingbot.recommendation.dto.RecommendationDomain;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,17 +22,12 @@ import static com.lucas.server.common.Constants.*;
 
 @RestController
 @RequestMapping("/recommendations")
+@RequiredArgsConstructor
 public class RecommendationsController {
 
     private final ControllerUtil controllerUtil;
     private final DataManager jpaService;
     private final Map<String, AIClient> clients;
-
-    public RecommendationsController(ControllerUtil controllerUtil, DataManager jpaService, Map<String, AIClient> clients) {
-        this.controllerUtil = controllerUtil;
-        this.jpaService = jpaService;
-        this.clients = clients;
-    }
 
     @GetMapping("/{symbols}")
     public ResponseEntity<Set<RecommendationDomain>> generateRecommendations(HttpServletRequest request,

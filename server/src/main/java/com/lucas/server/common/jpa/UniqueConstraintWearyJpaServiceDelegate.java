@@ -1,5 +1,6 @@
 package com.lucas.server.common.jpa;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.HashSet;
@@ -16,13 +17,10 @@ import java.util.stream.Collectors;
  *
  * @param <T> entity type
  */
+@RequiredArgsConstructor
 public class UniqueConstraintWearyJpaServiceDelegate<T extends JpaEntity> {
 
     private final JpaRepository<T, ?> repository;
-
-    public UniqueConstraintWearyJpaServiceDelegate(JpaRepository<T, ?> repository) {
-        this.repository = repository;
-    }
 
     /**
      * @param existingFinder unique entity finder function. Usually findByPrimaryKey

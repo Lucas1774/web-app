@@ -1,20 +1,17 @@
 package com.lucas.server.common.jpa;
 
 import com.lucas.server.common.mapper.EntityMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@RequiredArgsConstructor
 public class GenericJpaServiceDelegate<T extends JpaEntity, D, R extends JpaRepository<T, ?>> {
 
     private final R repository;
     private final EntityMapper<T, D> mapper;
-
-    public GenericJpaServiceDelegate(R repository, EntityMapper<T, D> mapper) {
-        this.repository = repository;
-        this.mapper = mapper;
-    }
 
     public Set<D> saveAll(Set<D> dtos) {
         Set<T> entities = dtos.stream()

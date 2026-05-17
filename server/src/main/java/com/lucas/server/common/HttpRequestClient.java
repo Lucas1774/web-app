@@ -2,6 +2,7 @@ package com.lucas.server.common;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.lucas.server.common.exception.ClientException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -17,15 +18,11 @@ import java.util.List;
 import java.util.Objects;
 
 @Component
+@RequiredArgsConstructor
 public class HttpRequestClient {
 
     private final RestTemplate restTemplate;
     private final DocumentBuilderFactory documentBuilderFactory;
-
-    public HttpRequestClient(RestTemplate restTemplate, DocumentBuilderFactory documentBuilderFactory) {
-        this.restTemplate = restTemplate;
-        this.documentBuilderFactory = documentBuilderFactory;
-    }
 
     private static void mockUserAgent(HttpHeaders headers) {
         headers.set(HttpHeaders.USER_AGENT,

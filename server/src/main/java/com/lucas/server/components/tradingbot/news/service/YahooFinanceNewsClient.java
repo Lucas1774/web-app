@@ -7,8 +7,7 @@ import com.lucas.server.components.tradingbot.news.dto.NewsDomain;
 import com.lucas.server.components.tradingbot.news.mapper.YahooFinanceNewsResponseMapper;
 import com.lucas.utils.exception.MappingException;
 import com.lucas.utils.ratelimiter.SlidingWindowRateLimiter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
@@ -20,9 +19,9 @@ import java.util.Set;
 import static com.lucas.server.common.Constants.*;
 
 @Component
+@Slf4j
 public class YahooFinanceNewsClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(YahooFinanceNewsClient.class);
     private final YahooFinanceNewsResponseMapper mapper;
     private final HttpRequestClient httpRequestClient;
     private final SlidingWindowRateLimiter rateLimiter;
@@ -39,7 +38,7 @@ public class YahooFinanceNewsClient {
     @Retryable(retryFor = {ClientException.class, MappingException.class}, maxAttempts = REQUEST_MAX_ATTEMPTS)
     public Set<NewsDomain> retrieveNews(SymbolDomain symbol) throws ClientException, MappingException {
         rateLimiter.acquirePermission();
-        logger.info(RETRIEVING_DATA_INFO, NEWS, symbol);
+        log.info(RETRIEVING_DATA_INFO, NEWS, symbol);
         String symbolName = symbol.getName().replace('.', '-');
         String url = UriComponentsBuilder.fromUriString(endpoint)
                 .queryParam("s", symbolName)

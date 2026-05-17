@@ -3,8 +3,8 @@ package com.lucas.server.components.sudoku.mapper;
 import com.lucas.server.components.sudoku.jpa.Sudoku;
 import com.lucas.utils.Mapper;
 import com.lucas.utils.exception.MappingException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.text.MessageFormat;
@@ -16,14 +16,11 @@ import static com.lucas.server.common.Constants.SUDOKU_IGNORED_MALFORMED_JSON_WA
 import static com.lucas.utils.Utils.EMPTY_STRING;
 
 @Component
+@RequiredArgsConstructor
+@Slf4j
 public class SudokuFileToSudokuMapper implements Mapper<String, Set<Sudoku>> {
 
-    private static final Logger logger = LoggerFactory.getLogger(SudokuFileToSudokuMapper.class);
     private final StringToSudokuMapper sudokuMapper;
-
-    public SudokuFileToSudokuMapper(StringToSudokuMapper sudokuMapper) {
-        this.sudokuMapper = sudokuMapper;
-    }
 
     /**
      * Dumps a string representing sudoku into a list of sudoku
@@ -48,7 +45,7 @@ public class SudokuFileToSudokuMapper implements Mapper<String, Set<Sudoku>> {
                 try {
                     sudoku.add(sudokuMapper.map(newRawData));
                 } catch (MappingException e) {
-                    logger.warn(SUDOKU_IGNORED_MALFORMED_JSON_WARN, newRawData, e);
+                    log.warn(SUDOKU_IGNORED_MALFORMED_JSON_WARN, newRawData, e);
                 }
                 newRawData = EMPTY_STRING;
             } else if (i != lines.length) {

@@ -2,20 +2,19 @@ package com.lucas.server.common;
 
 import com.lucas.server.common.exception.ConfigurationException;
 import com.lucas.server.config.MqttProperties;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
 
 @Service
+@Slf4j
 public class MqttPublisher implements AutoCloseable {
 
-    private static final Logger logger = LoggerFactory.getLogger(MqttPublisher.class);
     private final Map<String, String> topics;
     private final MqttClient client;
 
@@ -29,7 +28,7 @@ public class MqttPublisher implements AutoCloseable {
             client.connect(options);
             for (String t : topics.values()) {
                 client.subscribe(t, 1);
-                logger.info("Subscribed to topic '{}'", t);
+                log.info("Subscribed to topic '{}'", t);
             }
         } catch (MqttException e) {
             throw new ConfigurationException(e);
@@ -41,9 +40,9 @@ public class MqttPublisher implements AutoCloseable {
         message.setQos(1);
         try {
             client.publish(topics.get(topic), message);
-            logger.info("Published message to topic: {}", topic);
+            log.info("Published message to topic: {}", topic);
         } catch (MqttException e) {
-            logger.error("Error publishing message to topic: {}", topic, e);
+            log.error("Error publishing message to topic: {}", topic, e);
         }
     }
 
@@ -55,7 +54,7 @@ public class MqttPublisher implements AutoCloseable {
                 client.disconnect();
                 client.close();
             } catch (MqttException e) {
-                logger.warn("Error closing MQTT client", e);
+                log.warn("Error closing MQTT client", e);
             }
         }
     }

@@ -7,8 +7,7 @@ import com.lucas.server.components.tradingbot.marketdata.dto.MarketSnapshotDomai
 import com.lucas.server.components.tradingbot.marketdata.mapper.YahooFinanceMarketResponseMapper;
 import com.lucas.utils.exception.MappingException;
 import com.lucas.utils.ratelimiter.SlidingWindowRateLimiter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
@@ -19,9 +18,9 @@ import java.util.Map;
 import static com.lucas.server.common.Constants.*;
 
 @Component
+@Slf4j
 public class YahooFinanceMarketSnapshotClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(YahooFinanceMarketSnapshotClient.class);
     private final YahooFinanceMarketResponseMapper mapper;
     private final HttpRequestClient httpRequestClient;
     private final SlidingWindowRateLimiter rateLimiter;
@@ -38,7 +37,7 @@ public class YahooFinanceMarketSnapshotClient {
     @Retryable(retryFor = {ClientException.class, MappingException.class}, maxAttempts = REQUEST_MAX_ATTEMPTS)
     public MarketSnapshotDomain retrieveMarketSnapshot(SymbolDomain symbol) throws ClientException, MappingException {
         rateLimiter.acquirePermission();
-        logger.info(RETRIEVING_DATA_INFO, MARKET_SNAPSHOT, symbol);
+        log.info(RETRIEVING_DATA_INFO, MARKET_SNAPSHOT, symbol);
         String url = UriComponentsBuilder.fromUriString(endpoint + "/" + symbol.getName().replace('.', '-'))
                 .queryParam("interval", "1h")
                 .queryParam("includePrePost", true)

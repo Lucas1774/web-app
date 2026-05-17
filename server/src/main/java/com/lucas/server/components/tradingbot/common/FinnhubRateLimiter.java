@@ -5,8 +5,7 @@ import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSetImpl;
 import com.lucas.utils.orderedindexedset.UnmodifiableOrderedIndexedSet;
 import com.lucas.utils.ratelimiter.SlidingWindowRateLimiter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -18,9 +17,9 @@ import static com.lucas.server.common.Constants.FINNHUB_RATE_LIMITER_ROTATION_DE
 import static com.lucas.server.common.Constants.getFinnhubRateLimiterNames;
 
 @Component
+@Slf4j
 public class FinnhubRateLimiter {
 
-    private static final Logger logger = LoggerFactory.getLogger(FinnhubRateLimiter.class);
     private final OrderedIndexedSet<Map.Entry<String, SlidingWindowRateLimiter>> keyToLimiterEntries;
     private final AtomicInteger pointer = new AtomicInteger();
 
@@ -47,7 +46,7 @@ public class FinnhubRateLimiter {
                 }
 
                 Interrupts.runOrSwallow(() -> Thread.sleep(FINNHUB_RATE_LIMITER_ROTATION_DEBOUNCE_MS),
-                        e -> logger.debug(e.getMessage(), e));
+                        e -> log.debug(e.getMessage(), e));
             }
         }
     }

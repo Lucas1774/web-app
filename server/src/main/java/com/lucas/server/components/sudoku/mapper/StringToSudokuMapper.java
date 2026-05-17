@@ -3,6 +3,7 @@ package com.lucas.server.components.sudoku.mapper;
 import com.lucas.server.components.sudoku.jpa.Sudoku;
 import com.lucas.utils.Mapper;
 import com.lucas.utils.exception.MappingException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.text.MessageFormat;
@@ -11,13 +12,10 @@ import static com.lucas.server.common.Constants.MAPPING_ERROR;
 import static com.lucas.server.common.Constants.SUDOKU_NUMBER_OF_CELLS;
 
 @Component
+@RequiredArgsConstructor
 public class StringToSudokuMapper implements Mapper<String, Sudoku> {
 
     private final SudokuAttributeConverter attributeConverter;
-
-    public StringToSudokuMapper(SudokuAttributeConverter attributeConverter) {
-        this.attributeConverter = attributeConverter;
-    }
 
     @Override
     public Sudoku map(String sudoku) throws MappingException {
