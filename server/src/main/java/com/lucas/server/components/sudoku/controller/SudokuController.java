@@ -7,6 +7,7 @@ import com.lucas.server.components.sudoku.service.SudokuGenerator;
 import com.lucas.server.components.sudoku.service.SudokuSolver;
 import com.lucas.utils.exception.MappingException;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +22,7 @@ import static com.lucas.utils.Utils.EMPTY_STRING;
 
 @RestController
 @RequestMapping("/sudoku")
+@RequiredArgsConstructor
 public class SudokuController {
 
     private final SudokuJpaService sudokuService;
@@ -28,15 +30,6 @@ public class SudokuController {
     private final SudokuGenerator generator;
     private final SudokuSolver solver;
     private final Random random;
-
-    public SudokuController(SudokuJpaService sudokuService, SudokuGenerator generator, SudokuSolver solver,
-                            SudokuFileToSudokuMapper fromFileMapper, Random random) {
-        this.sudokuService = sudokuService;
-        this.generator = generator;
-        this.fromFileMapper = fromFileMapper;
-        this.solver = solver;
-        this.random = random;
-    }
 
     @PostMapping("/upload/sudokus")
     public ResponseEntity<Set<Sudoku>> handleFileUpload(@RequestBody String file) {

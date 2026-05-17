@@ -33,8 +33,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,9 +49,9 @@ import static com.lucas.server.common.Constants.*;
 
 @SuppressWarnings("LoggingSimilarMessage")
 @Service
+@Slf4j
 public class DataManager {
 
-    private static final Logger logger = LoggerFactory.getLogger(DataManager.class);
     private final Object newsPersistLock = new Object();
     private final SymbolJpaService symbolService;
     private final MarketDataJpaService marketDataService;
@@ -174,7 +173,7 @@ public class DataManager {
                 BlockingQueue<Set<RecommendationDomain>> resultsQueue = new LinkedBlockingQueue<>();
                 int submitted = 0;
                 Set<SymbolPayload> recommendationBuffer = new HashSet<>();
-                logger.info(RETRIEVING_DATA_INFO, RECOMMENDATION, remainingSymbols.size());
+                log.info(RETRIEVING_DATA_INFO, RECOMMENDATION, remainingSymbols.size());
                 for (SymbolDomain symbol : new HashSet<>(remainingSymbols)) {
                     OrderedIndexedSet<MarketDataDomain> marketData = marketDataService.getTopForSymbolId(symbol.getId(), MARKET_DATA_RELEVANT_DAYS_COUNT);
                     if (marketData.isEmpty()) {
@@ -194,7 +193,7 @@ public class DataManager {
                         try {
                             payload.setPremarket(yahooFinanceMarketSnapshotClient.retrieveMarketSnapshot(symbol));
                         } catch (ClientException | MappingException e) {
-                            logger.warn(RETRIEVAL_FAILED_WARN, MARKET_SNAPSHOT, symbol, e);
+                            log.warn(RETRIEVAL_FAILED_WARN, MARKET_SNAPSHOT, symbol, e);
                         }
                     }
                     recommendationBuffer.add(payload);
@@ -214,7 +213,7 @@ public class DataManager {
                 for (int i = 0; i < submitted; i++) {
                     Set<RecommendationDomain> fetched = Interrupts.callOrSwallow(resultsQueue::take,
                             Collections::emptySet,
-                            e -> logger.error(e.getMessage(), e));
+                            e -> log.error(e.getMessage(), e));
                     if (!Objects.requireNonNull(fetched).isEmpty()) {
                         res.addAll(fetched);
                         Set<SymbolDomain> fetchedSymbols = fetched.stream()
@@ -228,7 +227,7 @@ public class DataManager {
         }
 
         if (!remainingSymbols.isEmpty()) {
-            logger.warn(RETRIEVAL_FAILED_WARN, RECOMMENDATION, remainingSymbols);
+            log.warn(RETRIEVAL_FAILED_WARN, RECOMMENDATION, remainingSymbols);
         }
         return res;
     }
@@ -239,7 +238,7 @@ public class DataManager {
             try {
                 newsService.createOrUpdate(retrieveYahooNews(Set.of(symbol)));
             } catch (ClientException | MappingException e) {
-                logger.warn(RETRIEVAL_FAILED_WARN, NEWS, symbol, e);
+                log.warn(RETRIEVAL_FAILED_WARN, NEWS, symbol, e);
             }
         }
 
@@ -253,7 +252,7 @@ public class DataManager {
         executor.submit(() -> {
             try {
                 Set<RecommendationDomain> partial = recommendationClient.getRecommendations(buffer, clients, useOldNews);
-                logger.info(GENERATION_SUCCESSFUL_INFO, RECOMMENDATION);
+                log.info(GENERATION_SUCCESSFUL_INFO, RECOMMENDATION);
                 Set<NewsDomain> mergedNews = new HashSet<>(partial.stream()
                         .flatMap(r -> r.getNews().stream())
                         .collect(Collectors.toMap(
@@ -280,12 +279,12 @@ public class DataManager {
                     finalPartial = partial;
                     recommendationsService.createIgnoringDuplicates(partial);
                 }
-                Interrupts.runOrThrow(() -> resultsQueue.put(finalPartial), e -> logger.error(e.getMessage(), e));
+                Interrupts.runOrThrow(() -> resultsQueue.put(finalPartial), e -> log.error(e.getMessage(), e));
             } catch (JsonProcessingException | ClientException | MappingException e) {
-                logger.warn(RETRIEVAL_FAILED_WARN, RECOMMENDATION, buffer.stream().map(SymbolPayload::getSymbol).toList(), e);
-                Interrupts.runOrThrow(() -> resultsQueue.put(Collections.emptySet()), ie -> logger.error(ie.getMessage(), ie));
+                log.warn(RETRIEVAL_FAILED_WARN, RECOMMENDATION, buffer.stream().map(SymbolPayload::getSymbol).toList(), e);
+                Interrupts.runOrThrow(() -> resultsQueue.put(Collections.emptySet()), ie -> log.error(ie.getMessage(), ie));
             } catch (Exception e) {
-                logger.error(e.getMessage(), e);
+                log.error(e.getMessage(), e);
             }
         });
     }
@@ -293,7 +292,7 @@ public class DataManager {
     @Transactional
     public Set<NewsDomain> generateSentiment(Set<String> symbolNames, LocalDateTime from, LocalDateTime to) {
         Set<SymbolDomain> symbols = symbolService.getOrCreateByName(symbolNames);
-        logger.info(GENERATION_SUCCESSFUL_INFO, SENTIMENT);
+        log.info(GENERATION_SUCCESSFUL_INFO, SENTIMENT);
         return newsService.generateSentiment(symbols.stream().map(SymbolDomain::getId).collect(Collectors.toSet()), from, to);
     }
 
@@ -311,7 +310,7 @@ public class DataManager {
 
     private Set<NewsDomain> retrieveNews(Set<SymbolDomain> symbols) throws ClientException, MappingException {
         Set<NewsDomain> news = retrieveYahooNews(symbols);
-        logger.info(GENERATION_SUCCESSFUL_INFO, NEWS);
+        log.info(GENERATION_SUCCESSFUL_INFO, NEWS);
         newsService.createOrUpdate(news);
         return news;
     }
@@ -357,7 +356,7 @@ public class DataManager {
         }
         Set<NewsDomain> res = newsByExternalId.values().stream()
                 .filter(n -> withYahooNews || !"Yahoo".equals(n.getSource())).collect(Collectors.toSet());
-        logger.info(GENERATION_SUCCESSFUL_INFO, NEWS);
+        log.info(GENERATION_SUCCESSFUL_INFO, NEWS);
         newsService.createOrUpdate(res);
         return res;
     }
@@ -377,7 +376,7 @@ public class DataManager {
             }
             mds.addAll(retrieved);
         }
-        logger.info(GENERATION_SUCCESSFUL_INFO, MARKET_DATA);
+        log.info(GENERATION_SUCCESSFUL_INFO, MARKET_DATA);
         return mds;
     }
 
@@ -393,10 +392,10 @@ public class DataManager {
             try {
                 mss.add(yahooFinanceMarketSnapshotClient.retrieveMarketSnapshot(symbol));
             } catch (ClientException | MappingException e) {
-                logger.warn(RETRIEVAL_FAILED_WARN, MARKET_SNAPSHOT, symbol, e);
+                log.warn(RETRIEVAL_FAILED_WARN, MARKET_SNAPSHOT, symbol, e);
             }
         }
-        logger.info(GENERATION_SUCCESSFUL_INFO, MARKET_SNAPSHOT);
+        log.info(GENERATION_SUCCESSFUL_INFO, MARKET_SNAPSHOT);
         return marketSnapshotService.saveAll(mss);
     }
 
@@ -561,7 +560,7 @@ public class DataManager {
             try {
                 res.add(twelveDataMarketDataClient.retrieveMarketData(symbol, MarketDataType.LAST).getFirst());
             } catch (ClientException | MappingException e) {
-                logger.warn(CLIENT_FAILED_BACKUP_WARN, twelveDataMarketDataClient.getClass().getSimpleName(), symbol, e);
+                log.warn(CLIENT_FAILED_BACKUP_WARN, twelveDataMarketDataClient.getClass().getSimpleName(), symbol, e);
                 res.add(finnhubMarketDataClient.retrieveMarketData(symbol));
             }
         }

@@ -4,6 +4,7 @@ import com.lucas.server.common.controller.ControllerUtil;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;
 import com.lucas.server.components.tradingbot.news.dto.NewsDomain;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,15 +16,11 @@ import static com.lucas.server.common.Constants.SP500_SYMBOLS;
 
 @RestController
 @RequestMapping("/sentiment")
+@RequiredArgsConstructor
 public class SentimentController {
 
     private final ControllerUtil controllerUtil;
     private final DataManager jpaService;
-
-    public SentimentController(ControllerUtil controllerUtil, DataManager jpaService) {
-        this.controllerUtil = controllerUtil;
-        this.jpaService = jpaService;
-    }
 
     @GetMapping("/historic")
     public ResponseEntity<Set<NewsDomain>> fetchAndSaveHistoricAll(HttpServletRequest request,

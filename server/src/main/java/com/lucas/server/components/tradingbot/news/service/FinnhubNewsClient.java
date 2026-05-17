@@ -7,8 +7,7 @@ import com.lucas.server.components.tradingbot.common.dto.SymbolDomain;
 import com.lucas.server.components.tradingbot.news.dto.NewsDomain;
 import com.lucas.server.components.tradingbot.news.mapper.FinnhubNewsResponseMapper;
 import com.lucas.utils.exception.MappingException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
@@ -20,9 +19,9 @@ import java.util.Set;
 import static com.lucas.server.common.Constants.*;
 
 @Component
+@Slf4j
 public class FinnhubNewsClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(FinnhubNewsClient.class);
     private final FinnhubNewsResponseMapper mapper;
     private final HttpRequestClient httpRequestClient;
     private final FinnhubRateLimiter finnhubRateLimiter;
@@ -39,7 +38,7 @@ public class FinnhubNewsClient {
     @Retryable(retryFor = {ClientException.class, MappingException.class}, maxAttempts = REQUEST_MAX_ATTEMPTS)
     public Set<NewsDomain> retrieveNewsByDateRange(SymbolDomain symbol, LocalDate from, LocalDate to) throws ClientException, MappingException {
         String apiKey = finnhubRateLimiter.acquirePermission();
-        logger.info(RETRIEVING_DATA_INFO, NEWS, symbol);
+        log.info(RETRIEVING_DATA_INFO, NEWS, symbol);
         String url = UriComponentsBuilder.fromUriString(endpoint + COMPANY_NEWS)
                 .queryParam(SYMBOL, symbol.getName())
                 .queryParam("from", from)

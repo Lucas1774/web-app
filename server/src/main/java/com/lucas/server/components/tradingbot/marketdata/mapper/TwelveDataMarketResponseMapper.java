@@ -8,8 +8,7 @@ import com.lucas.utils.exception.MappingException;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSetImpl;
 import com.lucas.utils.orderedindexedset.UnmodifiableOrderedIndexedSet;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -19,15 +18,14 @@ import java.time.LocalDate;
 import static com.lucas.server.common.Constants.*;
 
 @Component
+@Slf4j
 public class TwelveDataMarketResponseMapper implements Mapper<JsonNode, MarketDataDomain> {
-
-    private static final Logger logger = LoggerFactory.getLogger(TwelveDataMarketResponseMapper.class);
 
     @Override
     public MarketDataDomain map(JsonNode json) throws MappingException {
         try {
             if (json.path("is_market_open").asBoolean(false)) {
-                logger.warn(MARKET_STILL_OPEN_WARN);
+                log.warn(MARKET_STILL_OPEN_WARN);
             }
             return new MarketDataDomain()
                     .setOpen(new BigDecimal(json.get("open").asText()))

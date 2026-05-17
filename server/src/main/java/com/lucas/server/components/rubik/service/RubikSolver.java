@@ -4,6 +4,7 @@ import com.lucas.server.components.rubik.jpa.AlgorithmMapping;
 import com.lucas.server.components.rubik.jpa.AlgorithmMappingJpaService;
 import com.lucas.server.components.rubik.jpa.LetterPairs;
 import com.lucas.server.components.rubik.jpa.LetterPairsJpaService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +16,7 @@ import static com.lucas.server.common.Constants.*;
 import static com.lucas.server.common.Constants.AlgorithmKind.*;
 
 @Service
+@RequiredArgsConstructor
 public class RubikSolver {
 
     private static final int[][] PERMS_CORNERS = {
@@ -71,11 +73,6 @@ public class RubikSolver {
 
     private final AlgorithmMappingJpaService algorithmMappingJpaService;
     private final LetterPairsJpaService letterPairsJpaService;
-
-    public RubikSolver(AlgorithmMappingJpaService algorithmMappingJpaService, LetterPairsJpaService letterPairsJpaService) {
-        this.algorithmMappingJpaService = algorithmMappingJpaService;
-        this.letterPairsJpaService = letterPairsJpaService;
-    }
 
     public List<RubikStep> solve(String scramble, boolean withLetterPairs) {
         String[] tokens = scramble.trim().split("\\s+");

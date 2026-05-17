@@ -8,8 +8,8 @@ import com.lucas.server.components.tradingbot.portfolio.dto.PortfolioDomain;
 import com.lucas.server.components.tradingbot.portfolio.service.PortfolioManager;
 import com.lucas.utils.exception.MappingException;
 import jakarta.servlet.http.HttpServletRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,16 +23,12 @@ import static com.lucas.server.common.Constants.*;
 
 @RestController
 @RequestMapping("/portfolio")
+@RequiredArgsConstructor
+@Slf4j
 public class PortfolioController {
 
-    private static final Logger logger = LoggerFactory.getLogger(PortfolioController.class);
     private final ControllerUtil controllerUtil;
     private final DataManager jpaService;
-
-    public PortfolioController(ControllerUtil controllerUtil, DataManager jpaService) {
-        this.controllerUtil = controllerUtil;
-        this.jpaService = jpaService;
-    }
 
     @PostMapping("/buy")
     public ResponseEntity<PortfolioDomain> buy(HttpServletRequest request,
@@ -50,7 +46,7 @@ public class PortfolioController {
             return ResponseEntity.ok(jpaService.executePortfolioAction(getPortfolioType(username), symbolId, price,
                     quantity, commission, effectiveDate, true));
         } catch (IllegalStateException e) {
-            logger.error(e.getMessage(), e);
+            log.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
         }
     }
@@ -70,7 +66,7 @@ public class PortfolioController {
             return ResponseEntity.ok(jpaService.executePortfolioAction(getPortfolioType(username), symbolId, price,
                     quantity, null, effectiveDate, false));
         } catch (IllegalStateException e) {
-            logger.error(e.getMessage(), e);
+            log.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
         }
     }
@@ -98,7 +94,7 @@ public class PortfolioController {
         try {
             return ResponseEntity.ok(jpaService.getAllAsPortfolioStandById(symbols, getPortfolioType(username), dynamic));
         } catch (ClientException | MappingException e) {
-            logger.error(e.getMessage(), e);
+            log.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

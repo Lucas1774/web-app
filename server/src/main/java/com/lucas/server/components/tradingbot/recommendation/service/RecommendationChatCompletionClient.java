@@ -16,8 +16,7 @@ import com.lucas.server.components.tradingbot.recommendation.mapper.Recommendati
 import com.lucas.utils.Interrupts;
 import com.lucas.utils.exception.MappingException;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -37,9 +36,9 @@ import java.util.stream.Collectors;
 import static com.lucas.server.common.Constants.*;
 
 @Component
+@Slf4j
 public class RecommendationChatCompletionClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(RecommendationChatCompletionClient.class);
     private final ObjectNode systemMessage;
     private final ObjectNode systemLongTermMessage;
     private final ObjectNode context;
@@ -105,7 +104,7 @@ public class RecommendationChatCompletionClient {
                 ZonedDateTime.now(NY_ZONE).format(DateTimeFormatter.ofPattern("EEEE, yyyy-MM-dd HH:mm:ss z", Locale.ENGLISH))));
         ObjectNode usedSystemMessage = useOldNews ? systemLongTermMessage : systemMessage;
 
-        logger.info(RETRIEVING_DATA_INFO, RECOMMENDATION, symbols);
+        log.info(RETRIEVING_DATA_INFO, RECOMMENDATION, symbols);
         AtomicReference<String> completion = new AtomicReference<>();
 
         while (true) {
@@ -121,7 +120,7 @@ public class RecommendationChatCompletionClient {
                     OrderedIndexedSet<JsonNode> prompt = OrderedIndexedSet.of(usedSystemMessage, contextMessage, fewShotMessage, reportMessage);
                     Optional<Set<RecommendationDomain>> res = client.getRateLimiter().tryCall(() -> client.getConcurrentRequestsRateLimiter().call(() -> {
                         client.getApiKeyRateLimiter().acquirePermission();
-                        logger.info(PROMPTING_MODEL_INFO, client.getConfig().name());
+                        log.info(PROMPTING_MODEL_INFO, client.getConfig().name());
                         completion.set(client.complete(prompt));
                         return mapper.mapAll(payload,
                                 objectMapper.readTree(completion.get()),
@@ -132,7 +131,7 @@ public class RecommendationChatCompletionClient {
                         return res.get();
                     }
 
-                    Interrupts.runOrSwallow(() -> Thread.sleep(CLIENT_ROTATION_DEBOUNCE_MS), e -> logger.debug(e.getMessage(), e));
+                    Interrupts.runOrSwallow(() -> Thread.sleep(CLIENT_ROTATION_DEBOUNCE_MS), e -> log.debug(e.getMessage(), e));
                 } catch (MappingException | JsonProcessingException e) {
                     throw new ClientException(MessageFormat.format(RECOMMENDATION_COMPLETION_ERROR, completion.get()), e);
                 } catch (ClientException e) {

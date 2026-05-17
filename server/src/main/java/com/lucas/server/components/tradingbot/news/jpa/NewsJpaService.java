@@ -8,8 +8,7 @@ import com.lucas.server.components.tradingbot.news.dto.NewsDomain;
 import com.lucas.server.components.tradingbot.news.mapper.NewsMapper;
 import com.lucas.server.components.tradingbot.news.service.NewsSentimentClient;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -25,9 +24,8 @@ import static com.lucas.server.common.Constants.RETRIEVAL_FAILED_WARN;
 import static com.lucas.server.common.Constants.SENTIMENT;
 
 @Service
+@Slf4j
 public class NewsJpaService implements JpaService<NewsDomain> {
-
-    private static final Logger logger = LoggerFactory.getLogger(NewsJpaService.class);
     private final GenericJpaServiceDelegate<News, NewsDomain, NewsRepository> delegate;
     private final UniqueConstraintWearyJpaServiceDelegate<News> uniqueConstraintDelegate;
     private final NewsRepository repository;
@@ -83,7 +81,7 @@ public class NewsJpaService implements JpaService<NewsDomain> {
                         NewsDomain newsDto = newsMapper.toDto(newsEntity);
                         return Stream.of(sentimentClient.generateSentiment(newsDto));
                     } catch (Exception e) {
-                        logger.warn(RETRIEVAL_FAILED_WARN, SENTIMENT, newsEntity);
+                        log.warn(RETRIEVAL_FAILED_WARN, SENTIMENT, newsEntity);
                         return Stream.empty();
                     }
                 })

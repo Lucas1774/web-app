@@ -6,8 +6,7 @@ import com.lucas.server.components.tradingbot.common.jpa.DataManager;
 import com.lucas.server.components.tradingbot.marketdata.dto.MarketDataDomain;
 import com.lucas.utils.exception.MappingException;
 import jakarta.servlet.http.HttpServletRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,9 +20,9 @@ import static com.lucas.server.common.Constants.SP500_SYMBOLS;
 
 @RestController
 @RequestMapping("/market")
+@Slf4j
 public class MarketDataController {
 
-    private static final Logger logger = LoggerFactory.getLogger(MarketDataController.class);
     private final ControllerUtil controllerUtil;
     private final DataManager jpaService;
     private final String apiKey;
@@ -41,7 +40,7 @@ public class MarketDataController {
                     try {
                         return ResponseEntity.ok(jpaService.retrieveMarketData(SP500_SYMBOLS, MarketDataType.LAST, false));
                     } catch (ClientException | MappingException e) {
-                        logger.error(e.getMessage(), e);
+                        log.error(e.getMessage(), e);
                         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
                     }
                 });
@@ -54,7 +53,7 @@ public class MarketDataController {
                     try {
                         return ResponseEntity.ok(jpaService.retrieveMarketData(new HashSet<>(symbols), MarketDataType.LAST, false));
                     } catch (ClientException | MappingException e) {
-                        logger.error(e.getMessage(), e);
+                        log.error(e.getMessage(), e);
                         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
                     }
                 });
@@ -67,7 +66,7 @@ public class MarketDataController {
                     try {
                         return ResponseEntity.ok(jpaService.retrieveMarketData(SP500_SYMBOLS, MarketDataType.HISTORIC, false));
                     } catch (MappingException | ClientException e) {
-                        logger.error(e.getMessage(), e);
+                        log.error(e.getMessage(), e);
                         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
                     }
                 });
@@ -80,7 +79,7 @@ public class MarketDataController {
                     try {
                         return ResponseEntity.ok(jpaService.retrieveMarketData(new HashSet<>(symbols), MarketDataType.HISTORIC, false));
                     } catch (MappingException | ClientException e) {
-                        logger.error(e.getMessage(), e);
+                        log.error(e.getMessage(), e);
                         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
                     }
                 });
@@ -94,7 +93,7 @@ public class MarketDataController {
         try {
             return ResponseEntity.ok(jpaService.retrieveMarketData(new HashSet<>(symbols), MarketDataType.HISTORIC, false));
         } catch (MappingException | ClientException e) {
-            logger.error(e.getMessage(), e);
+            log.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

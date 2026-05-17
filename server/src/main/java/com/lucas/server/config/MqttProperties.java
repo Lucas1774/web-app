@@ -10,6 +10,7 @@ import java.util.Map;
 @Setter
 @ConfigurationProperties(prefix = "mqtt")
 public class MqttProperties {
+
     private String broker;
     private String username;
     private String password;

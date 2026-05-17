@@ -5,8 +5,8 @@ import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataRepository;
 import com.lucas.server.components.tradingbot.marketdata.mapper.MarketDataMapper;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,16 +23,12 @@ import static com.lucas.utils.Utils.computeIfAbsent;
 
 @SuppressWarnings("LoggingSimilarMessage")
 @Component
+@RequiredArgsConstructor
+@Slf4j
 public class MarketDataKpiGenerator {
 
-    private static final Logger logger = LoggerFactory.getLogger(MarketDataKpiGenerator.class);
     private final MarketDataRepository repository;
     private final MarketDataMapper marketDataMapper;
-
-    public MarketDataKpiGenerator(MarketDataRepository repository, MarketDataMapper marketDataMapper) {
-        this.repository = repository;
-        this.marketDataMapper = marketDataMapper;
-    }
 
     @SuppressWarnings("UnusedReturnValue")
     @Transactional(readOnly = true)
@@ -42,7 +38,7 @@ public class MarketDataKpiGenerator {
                 .map(marketDataMapper::toDto)
                 .toList());
         if (previous14.isEmpty()) {
-            logger.warn(NON_COMPUTABLE_KPI_WARN, "anything", md);
+            log.warn(NON_COMPUTABLE_KPI_WARN, "anything", md);
             return md;
         }
         MarketDataDomain previous = previous14.getFirst();
@@ -52,7 +48,7 @@ public class MarketDataKpiGenerator {
         computeIfAbsent(md::getPreviousAverageGain, md::setPreviousAverageGain, previous::getAverageGain);
         computeIfAbsent(md::getPreviousAverageLoss, md::setPreviousAverageLoss, previous::getAverageLoss);
         if (14 > previous14.size()) {
-            logger.warn(NON_COMPUTABLE_KPI_WARN, "RSI, ATR", previous14);
+            log.warn(NON_COMPUTABLE_KPI_WARN, "RSI, ATR", previous14);
             return md;
         }
         previous14.removeLast();
@@ -85,14 +81,14 @@ public class MarketDataKpiGenerator {
      */
     public Optional<BigDecimal> computeMovingAverage(OrderedIndexedSet<MarketData> history, int n) {
         if (history.size() < n) {
-            logger.warn(NON_COMPUTABLE_KPI_WARN, "moving average", history);
+            log.warn(NON_COMPUTABLE_KPI_WARN, "moving average", history);
             return Optional.empty();
         }
         OrderedIndexedSet<MarketData> cropped = history.subList(0, n);
         BigDecimal average = computeMean(cropped.stream().map(MarketData::getPrice).toList());
 
         if (0 == average.compareTo(BigDecimal.ZERO)) {
-            logger.warn(KPI_RETURNED_ZERO_WARN, "moving average", cropped);
+            log.warn(KPI_RETURNED_ZERO_WARN, "moving average", cropped);
         }
         return Optional.of(average);
     }
@@ -104,14 +100,14 @@ public class MarketDataKpiGenerator {
      */
     public Optional<BigDecimal> computeEma(OrderedIndexedSet<MarketDataDomain> history, int n) {
         if (history.size() < n) {
-            logger.warn(NON_COMPUTABLE_KPI_WARN, "exponential moving average", history);
+            log.warn(NON_COMPUTABLE_KPI_WARN, "exponential moving average", history);
             return Optional.empty();
         }
         OrderedIndexedSet<MarketDataDomain> cropped = history.subList(0, n).reversed();
         BigDecimal ema = computeEma(cropped.stream().map(MarketDataDomain::getPrice).toList());
 
         if (0 == ema.compareTo(BigDecimal.ZERO)) {
-            logger.warn(KPI_RETURNED_ZERO_WARN, "exponential moving average", cropped);
+            log.warn(KPI_RETURNED_ZERO_WARN, "exponential moving average", cropped);
         }
         return Optional.of(ema.setScale(4, RoundingMode.HALF_UP));
     }
@@ -124,7 +120,7 @@ public class MarketDataKpiGenerator {
      */
     public Optional<BigDecimal> computeMacdLine(OrderedIndexedSet<MarketDataDomain> history, int fastEmaSize, int slowEmaSize) {
         if (history.size() < slowEmaSize) {
-            logger.warn(NON_COMPUTABLE_KPI_WARN, "MACD", history);
+            log.warn(NON_COMPUTABLE_KPI_WARN, "MACD", history);
             return Optional.empty();
         }
         return computeEma(history, fastEmaSize)
@@ -142,7 +138,7 @@ public class MarketDataKpiGenerator {
      */
     public Optional<BigDecimal> computeSignalLine(OrderedIndexedSet<MarketDataDomain> history, int n, int fastEmaSize, int slowEmaSize) {
         if (history.size() < slowEmaSize + (n - 1)) {
-            logger.warn(NON_COMPUTABLE_KPI_WARN, "signal line", history);
+            log.warn(NON_COMPUTABLE_KPI_WARN, "signal line", history);
             return Optional.empty();
         }
 
@@ -206,7 +202,7 @@ public class MarketDataKpiGenerator {
 
         if (0 == averageLoss.compareTo(BigDecimal.ZERO)) {
             if (0 == averageGain.compareTo(BigDecimal.ZERO)) {
-                logger.warn(KPI_RETURNED_ZERO_WARN, "RSI", md);
+                log.warn(KPI_RETURNED_ZERO_WARN, "RSI", md);
             }
             return BigDecimal.valueOf(100).setScale(4, RoundingMode.HALF_UP);
         }
@@ -251,7 +247,7 @@ public class MarketDataKpiGenerator {
         }
 
         if (0 == atr.compareTo(BigDecimal.ZERO)) {
-            logger.warn(KPI_RETURNED_ZERO_WARN, "ATR", history);
+            log.warn(KPI_RETURNED_ZERO_WARN, "ATR", history);
         }
         return Optional.of(atr.setScale(4, RoundingMode.HALF_UP));
     }
@@ -274,12 +270,12 @@ public class MarketDataKpiGenerator {
      */
     public Optional<BigDecimal> computeVolatility(OrderedIndexedSet<MarketData> history, int n) {
         if (history.size() < n) {
-            logger.warn(NON_COMPUTABLE_KPI_WARN, VOLATILITY, history);
+            log.warn(NON_COMPUTABLE_KPI_WARN, VOLATILITY, history);
             return Optional.empty();
         }
         OrderedIndexedSet<MarketData> cropped = history.subList(0, n).reversed();
         if (!cropped.stream().allMatch(md -> null != md.getPreviousClose())) {
-            logger.warn(NON_COMPUTABLE_KPI_WARN, VOLATILITY, cropped);
+            log.warn(NON_COMPUTABLE_KPI_WARN, VOLATILITY, cropped);
             return Optional.empty();
         }
 
@@ -299,7 +295,7 @@ public class MarketDataKpiGenerator {
         BigDecimal standardDeviation = BigDecimal.valueOf(Math.sqrt(variance.doubleValue()));
 
         if (0 == standardDeviation.compareTo(BigDecimal.ZERO)) {
-            logger.warn(KPI_RETURNED_ZERO_WARN, VOLATILITY, cropped);
+            log.warn(KPI_RETURNED_ZERO_WARN, VOLATILITY, cropped);
         }
         return Optional.of(standardDeviation.multiply(BigDecimal.valueOf(Math.sqrt(252)))
                 .multiply(BigDecimal.valueOf(100)).setScale(4, RoundingMode.HALF_UP));
@@ -313,12 +309,12 @@ public class MarketDataKpiGenerator {
     @SuppressWarnings({"ExtractMethodRecommender"})
     public Optional<BigDecimal> computeObv(OrderedIndexedSet<MarketDataDomain> history, int n) {
         if (history.size() < n) {
-            logger.warn(NON_COMPUTABLE_KPI_WARN, OBV, history);
+            log.warn(NON_COMPUTABLE_KPI_WARN, OBV, history);
             return Optional.empty();
         }
         OrderedIndexedSet<MarketDataDomain> cropped = history.subList(0, n).reversed();
         if (!cropped.stream().allMatch(md -> null != md.getPreviousClose())) {
-            logger.warn(NON_COMPUTABLE_KPI_WARN, OBV, cropped);
+            log.warn(NON_COMPUTABLE_KPI_WARN, OBV, cropped);
             return Optional.empty();
         }
 
@@ -338,7 +334,7 @@ public class MarketDataKpiGenerator {
         }
 
         if (0 == obv.compareTo(BigDecimal.ZERO)) {
-            logger.warn(KPI_RETURNED_ZERO_WARN, OBV, cropped);
+            log.warn(KPI_RETURNED_ZERO_WARN, OBV, cropped);
         }
         return Optional.of(obv);
     }

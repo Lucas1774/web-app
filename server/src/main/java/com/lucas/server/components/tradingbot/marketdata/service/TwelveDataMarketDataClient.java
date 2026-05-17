@@ -9,8 +9,7 @@ import com.lucas.server.components.tradingbot.marketdata.mapper.TwelveDataMarket
 import com.lucas.utils.exception.MappingException;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import com.lucas.utils.ratelimiter.SlidingWindowRateLimiter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
@@ -23,9 +22,9 @@ import java.util.function.UnaryOperator;
 import static com.lucas.server.common.Constants.*;
 
 @Component
+@Slf4j
 public class TwelveDataMarketDataClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(TwelveDataMarketDataClient.class);
     private static final EnumMap<MarketDataType, String> typeToEndpoint = new EnumMap<>(Map.of(
             MarketDataType.LAST, QUOTE,
             MarketDataType.HISTORIC, TIME_SERIES
@@ -57,7 +56,7 @@ public class TwelveDataMarketDataClient {
     @Retryable(retryFor = {ClientException.class, MappingException.class}, maxAttempts = REQUEST_MAX_ATTEMPTS)
     public OrderedIndexedSet<MarketDataDomain> retrieveMarketData(SymbolDomain symbol, MarketDataType type) throws ClientException, MappingException {
         rateLimiter.acquirePermission();
-        logger.info(RETRIEVING_DATA_INFO, MARKET_DATA, symbol);
+        log.info(RETRIEVING_DATA_INFO, MARKET_DATA, symbol);
         String url = typeToBuilderCustomizer.get(type).apply(UriComponentsBuilder.fromUriString(endpoint + typeToEndpoint.get(type)))
                 .queryParam(SYMBOL, symbol.getName())
                 .queryParam("apikey", apiKey)

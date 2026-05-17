@@ -4,8 +4,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.JWTVerifier;
 import jakarta.servlet.http.Cookie;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,9 +19,9 @@ import java.util.concurrent.Callable;
 import static com.lucas.server.common.Constants.DEFAULT_USERNAME;
 
 @Component
+@Slf4j
 public class ControllerUtil {
 
-    private static final Logger logger = LoggerFactory.getLogger(ControllerUtil.class);
     private final Set<String> admin;
     private final JWTVerifier verifier;
     private final Algorithm algorithm;
@@ -42,7 +41,7 @@ public class ControllerUtil {
             return ResponseEntity.ok(action.call());
         } catch (Exception e) {
             String message = e.getMessage();
-            logger.error(message);
+            log.error(message);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(message);
         }
     }

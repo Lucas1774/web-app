@@ -9,12 +9,14 @@ import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import com.lucas.utils.ratelimiter.CompletionSlidingWindowRateLimiter;
 import com.lucas.utils.ratelimiter.SlidingWindowRateLimiter;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 import java.util.Map;
 import java.util.function.UnaryOperator;
 
 import static com.lucas.server.common.Constants.*;
 
+@RequiredArgsConstructor
 public class AIClient {
 
     @Getter
@@ -28,22 +30,6 @@ public class AIClient {
     private final ObjectMapper objectMapper;
     private final HttpRequestClient httpClient;
     private final UnaryOperator<String> responseSanitizer;
-
-    public AIClient(AIProperties.DeploymentProperties config,
-                    CompletionSlidingWindowRateLimiter rateLimiter,
-                    CompletionSlidingWindowRateLimiter concurrentRequestsRateLimiter,
-                    SlidingWindowRateLimiter apiKeyRateLimiter,
-                    ObjectMapper objectMapper,
-                    HttpRequestClient httpClient,
-                    UnaryOperator<String> responseSanitizer) {
-        this.config = config;
-        this.rateLimiter = rateLimiter;
-        this.concurrentRequestsRateLimiter = concurrentRequestsRateLimiter;
-        this.apiKeyRateLimiter = apiKeyRateLimiter;
-        this.objectMapper = objectMapper;
-        this.httpClient = httpClient;
-        this.responseSanitizer = responseSanitizer;
-    }
 
     public String complete(OrderedIndexedSet<JsonNode> prompt) throws ClientException {
         JsonNode body = objectMapper.valueToTree(

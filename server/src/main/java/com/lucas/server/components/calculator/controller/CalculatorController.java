@@ -3,6 +3,7 @@ package com.lucas.server.components.calculator.controller;
 import com.lucas.server.common.controller.ControllerUtil;
 import com.lucas.server.components.calculator.jpa.Calculator;
 import com.lucas.server.components.calculator.jpa.CalculatorJpaService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,15 +12,11 @@ import static com.lucas.utils.Utils.EMPTY_STRING;
 
 @RestController
 @RequestMapping("/calculator")
+@RequiredArgsConstructor
 public class CalculatorController {
 
     private final ControllerUtil controllerUtil;
     private final CalculatorJpaService calculatorService;
-
-    public CalculatorController(ControllerUtil controllerUtil, CalculatorJpaService calculatorService) {
-        this.controllerUtil = controllerUtil;
-        this.calculatorService = calculatorService;
-    }
 
     @PostMapping("/ans")
     public ResponseEntity<String> post(@RequestBody String number) {
