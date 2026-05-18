@@ -1,11 +1,13 @@
 package com.lucas.server.components.tradingbot.portfolio.jpa;
 
 import com.lucas.server.common.exception.IllegalStateException;
+import com.lucas.server.common.jpa.GenericJpaServiceDelegate;
 import com.lucas.server.common.mapper.EntityMapper;
 import com.lucas.server.components.tradingbot.common.dto.SymbolDomain;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.portfolio.dto.PortfolioDomain;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -21,41 +23,39 @@ import java.util.stream.Collectors;
 
 import static com.lucas.server.common.Constants.INSUFFICIENT_STOCK_ERROR;
 
-public class PortfolioJpaServiceDelegate<T extends PortfolioBase, R extends JpaRepository<T, Long>> {
+public abstract class PortfolioJpaServiceDelegate<T extends PortfolioBase, R extends JpaRepository<T, Long>> extends GenericJpaServiceDelegate<T, PortfolioDomain, R> implements IPortfolioJpaService {
 
-    private final R repository;
     private final Function<Long, Optional<T>> findLatestBySymbol;
     private final Supplier<T> builder;
-    private final EntityMapper<T, PortfolioDomain> entityMapper;
 
     public PortfolioJpaServiceDelegate(R repository,
+                                       EntityMapper<T, PortfolioDomain> mapper,
                                        Function<Long, Optional<T>> findLatestBySymbol,
-                                       Supplier<T> builder, EntityMapper<T, PortfolioDomain> entityMapper) {
-        this.repository = repository;
+                                       Supplier<T> builder) {
+        super(repository, mapper);
         this.findLatestBySymbol = findLatestBySymbol;
         this.builder = builder;
-        this.entityMapper = entityMapper;
     }
 
-    public PortfolioDomain save(PortfolioDomain entity) {
-        return entityMapper.toDto(repository.save(entityMapper.toEntity(entity)));
-    }
-
+    @Override
+    @Transactional(readOnly = true)
     // TODO: batch
     public Optional<PortfolioDomain> findBySymbol(SymbolDomain symbol) {
-        return findLatestBySymbol.apply(symbol.getId()).map(entityMapper::toDto);
+        return findLatestBySymbol.apply(symbol.getId()).map(mapper::toDto);
     }
 
+    @Override
+    @Transactional
     public PortfolioDomain executePortfolioAction(SymbolDomain symbol, BigDecimal price, BigDecimal quantity, BigDecimal commission,
                                                   LocalDateTime timestamp, boolean isBuy) throws IllegalStateException {
-        PortfolioDomain last = findBySymbol(symbol)
+        PortfolioDomain last = findLatestBySymbol.apply(symbol.getId()).map(mapper::toDto)
                 .orElseGet(() -> {
                     T res = builder.get();
                     res.setQuantity(BigDecimal.ZERO)
                             .setAverageCost(BigDecimal.ZERO)
                             .setAverageCommission(BigDecimal.ZERO)
                             .setEffectiveTimestamp(timestamp);
-                    return entityMapper.toDto(res);
+                    return mapper.toDto(res);
                 });
         BigDecimal oldQuantity = last.getQuantity();
         BigDecimal newQuantity = oldQuantity.add(isBuy ? quantity : quantity.negate());
@@ -85,9 +85,11 @@ public class PortfolioJpaServiceDelegate<T extends PortfolioBase, R extends JpaR
                 .setAverageCost(newAverageCost)
                 .setAverageCommission(newAverageCommission)
                 .setEffectiveTimestamp(timestamp);
-        return save(entityMapper.toDto(res)).setSymbol(symbol);
+        return mapper.toDto(repository.save(res)).setSymbol(symbol);
     }
 
+    @Override
+    @Transactional(readOnly = true)
     public Set<PortfolioDomain> findActivePortfolio() {
         return repository.findAll().stream()
                 .collect(Collectors.toMap(
@@ -98,7 +100,7 @@ public class PortfolioJpaServiceDelegate<T extends PortfolioBase, R extends JpaR
                 .values()
                 .stream()
                 .filter(p -> 0 < p.getQuantity().compareTo(BigDecimal.ZERO))
-                .map(entityMapper::toDto)
+                .map(mapper::toDto)
                 .collect(Collectors.toSet());
     }
 }

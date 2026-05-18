@@ -2,9 +2,8 @@ package com.lucas.server.components.rubik.jpa;
 
 import com.lucas.server.common.Constants.AlgorithmKind;
 import com.lucas.server.common.jpa.GenericJpaServiceDelegate;
-import com.lucas.server.common.jpa.JpaService;
 import com.lucas.server.common.jpa.UniqueConstraintWearyJpaServiceDelegate;
-import com.lucas.server.common.mapper.IdentityEntityMapper;
+import com.lucas.server.common.mapper.EntityMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,16 +13,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
-public class AlgorithmMappingJpaService implements JpaService<AlgorithmMapping> {
+public class AlgorithmMappingJpaService extends GenericJpaServiceDelegate<AlgorithmMapping, AlgorithmMapping, AlgorithmMappingRepository> {
 
-    private final GenericJpaServiceDelegate<AlgorithmMapping, AlgorithmMapping, AlgorithmMappingRepository> delegate;
-    private final UniqueConstraintWearyJpaServiceDelegate<AlgorithmMapping> uniqueConstraintDelegate;
-    private final AlgorithmMappingRepository repository;
+    private final UniqueConstraintWearyJpaServiceDelegate<AlgorithmMapping> delegate;
 
-    public AlgorithmMappingJpaService(AlgorithmMappingRepository repository, IdentityEntityMapper<AlgorithmMapping> identityEntityMapper) {
-        delegate = new GenericJpaServiceDelegate<>(repository, identityEntityMapper);
-        uniqueConstraintDelegate = new UniqueConstraintWearyJpaServiceDelegate<>(repository);
-        this.repository = repository;
+    public AlgorithmMappingJpaService(AlgorithmMappingRepository repository, EntityMapper<AlgorithmMapping, AlgorithmMapping> mapper) {
+        super(repository, mapper);
+        delegate = new UniqueConstraintWearyJpaServiceDelegate<>(repository);
     }
 
     @Transactional(readOnly = true)
@@ -40,7 +36,7 @@ public class AlgorithmMappingJpaService implements JpaService<AlgorithmMapping> 
     public Set<AlgorithmMapping> createOrUpdate(Set<AlgorithmMapping> entities) {
         Set<Integer> firstStickers = entities.stream().map(AlgorithmMapping::getFirstSticker).collect(Collectors.toSet());
         Set<Integer> secondStickers = entities.stream().map(AlgorithmMapping::getSecondSticker).collect(Collectors.toSet());
-        return uniqueConstraintDelegate.createOrUpdate(
+        return delegate.createOrUpdate(
                 all -> repository.findByFirstStickerInAndSecondStickerIn(firstStickers, secondStickers).stream()
                         .filter(existing -> all.stream().anyMatch(e ->
                                 Objects.equals(e.getFirstSticker(), existing.getFirstSticker()) &&
@@ -57,23 +53,5 @@ public class AlgorithmMappingJpaService implements JpaService<AlgorithmMapping> 
                         .setParityType(incoming.getParityType())
                         .setParityTechnique(incoming.getParityTechnique()),
                 entities);
-    }
-
-    @Override
-    @Transactional
-    public Set<AlgorithmMapping> saveAll(Set<AlgorithmMapping> elements) {
-        return delegate.saveAll(elements);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Set<AlgorithmMapping> findAll() {
-        return delegate.findAll();
-    }
-
-    @Override
-    @Transactional
-    public void deleteAll(Set<AlgorithmMapping> elements) {
-        delegate.deleteAll(elements);
     }
 }

@@ -1,11 +1,10 @@
 package com.lucas.server.components.tradingbot.news.jpa;
 
 import com.lucas.server.common.jpa.GenericJpaServiceDelegate;
-import com.lucas.server.common.jpa.JpaService;
 import com.lucas.server.common.jpa.UniqueConstraintWearyJpaServiceDelegate;
+import com.lucas.server.common.mapper.EntityMapper;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.news.dto.NewsDomain;
-import com.lucas.server.components.tradingbot.news.mapper.NewsMapper;
 import com.lucas.server.components.tradingbot.news.service.NewsSentimentClient;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import lombok.extern.slf4j.Slf4j;
@@ -25,19 +24,17 @@ import static com.lucas.server.common.Constants.SENTIMENT;
 
 @Service
 @Slf4j
-public class NewsJpaService implements JpaService<NewsDomain> {
-    private final GenericJpaServiceDelegate<News, NewsDomain, NewsRepository> delegate;
-    private final UniqueConstraintWearyJpaServiceDelegate<News> uniqueConstraintDelegate;
-    private final NewsRepository repository;
-    private final NewsSentimentClient sentimentClient;
-    private final NewsMapper newsMapper;
+public class NewsJpaService extends GenericJpaServiceDelegate<News, NewsDomain, NewsRepository> {
 
-    public NewsJpaService(NewsRepository repository, NewsMapper newsMapper, NewsSentimentClient sentimentClient) {
-        delegate = new GenericJpaServiceDelegate<>(repository, newsMapper);
-        uniqueConstraintDelegate = new UniqueConstraintWearyJpaServiceDelegate<>(repository);
-        this.repository = repository;
+    private final UniqueConstraintWearyJpaServiceDelegate<News> delegate;
+    private final NewsSentimentClient sentimentClient;
+
+    public NewsJpaService(NewsRepository repository,
+                          EntityMapper<News, NewsDomain> mapper,
+                          NewsSentimentClient sentimentClient) {
+        super(repository, mapper);
+        delegate = new UniqueConstraintWearyJpaServiceDelegate<>(repository);
         this.sentimentClient = sentimentClient;
-        this.newsMapper = newsMapper;
     }
 
     // TODO: batch
@@ -47,7 +44,7 @@ public class NewsJpaService implements JpaService<NewsDomain> {
                         symbolId, "neutral", symbolId, PageRequest.of(
                                 0, limit, Sort.by("date").descending()
                         )).stream()
-                .map(newsMapper::toDto)
+                .map(mapper::toDto)
                 .collect(OrderedIndexedSet.toUnmodifiableOrderedIndexedSet());
     }
 
@@ -55,9 +52,9 @@ public class NewsJpaService implements JpaService<NewsDomain> {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Set<NewsDomain> createOrUpdate(Set<NewsDomain> entities) {
         Set<News> newsEntities = entities.stream()
-                .map(newsMapper::toEntity)
+                .map(mapper::toEntity)
                 .collect(Collectors.toSet());
-        return uniqueConstraintDelegate.createOrUpdate(allEntities -> repository.findByExternalIdIn(
+        return delegate.createOrUpdate(allEntities -> repository.findByExternalIdIn(
                                 allEntities.stream().map(News::getExternalId).collect(Collectors.toSet())
                         ),
                         (oldEntity, newEntity) -> {
@@ -68,7 +65,7 @@ public class NewsJpaService implements JpaService<NewsDomain> {
                             return oldEntity;
                         },
                         newsEntities).stream()
-                .map(newsMapper::toDto)
+                .map(mapper::toDto)
                 .collect(Collectors.toSet());
     }
 
@@ -78,7 +75,7 @@ public class NewsJpaService implements JpaService<NewsDomain> {
                 .filter(news -> null == news.getSentiment() || null == news.getSentimentConfidence())
                 .flatMap(newsEntity -> {
                     try {
-                        NewsDomain newsDto = newsMapper.toDto(newsEntity);
+                        NewsDomain newsDto = mapper.toDto(newsEntity);
                         return Stream.of(sentimentClient.generateSentiment(newsDto));
                     } catch (Exception e) {
                         log.warn(RETRIEVAL_FAILED_WARN, SENTIMENT, newsEntity);
@@ -91,32 +88,14 @@ public class NewsJpaService implements JpaService<NewsDomain> {
     @Transactional(readOnly = true)
     public Set<NewsDomain> findOrphanedNews() {
         return repository.findBySymbolsIsEmpty().stream()
-                .map(newsMapper::toDto)
+                .map(mapper::toDto)
                 .collect(Collectors.toSet());
     }
 
     @Transactional(readOnly = true)
     public Set<NewsDomain> findByIdIn(Set<Long> newsIds) {
         return repository.findByIdIn(newsIds).stream()
-                .map(newsMapper::toDto)
+                .map(mapper::toDto)
                 .collect(Collectors.toSet());
-    }
-
-    @Override
-    @Transactional
-    public Set<NewsDomain> saveAll(Set<NewsDomain> elements) {
-        return delegate.saveAll(elements);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Set<NewsDomain> findAll() {
-        return delegate.findAll();
-    }
-
-    @Override
-    @Transactional
-    public void deleteAll(Set<NewsDomain> elements) {
-        delegate.deleteAll(elements);
     }
 }
