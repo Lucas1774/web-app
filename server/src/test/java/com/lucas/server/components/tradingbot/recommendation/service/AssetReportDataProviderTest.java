@@ -17,7 +17,6 @@ import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportT
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.PricePointRaw;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSetImpl;
-import com.lucas.utils.orderedindexedset.UnmodifiableOrderedIndexedSet;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -30,7 +29,9 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 
-import static com.lucas.server.common.Constants.*;
+import static com.lucas.server.common.Constants.HISTORY_DAYS_COUNT;
+import static com.lucas.server.common.Constants.MARKET_DATA_RELEVANT_DAYS_COUNT;
+import static com.lucas.server.common.Constants.NEWS_COUNT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class AssetReportDataProviderTest extends ConfiguredTest {
@@ -60,34 +61,27 @@ class AssetReportDataProviderTest extends ConfiguredTest {
         LocalDate today = LocalDate.now();
         OrderedIndexedSet<MarketDataDomain> modifiableMds = new OrderedIndexedSetImpl<>();
         for (int i = MARKET_DATA_RELEVANT_DAYS_COUNT; 0 <= i; i--) {
-            MarketDataDomain md = new MarketDataDomain()
-                    .setSymbol(symbolService.getOrCreateByName(Set.of(symbol.getName())).stream().findFirst().orElseThrow())
-                    .setDate(today.minusDays(i))
-                    .setOpen(BigDecimal.valueOf(10 + i))
-                    .setHigh(BigDecimal.valueOf(11 + i))
-                    .setLow(BigDecimal.valueOf(9 + i))
-                    .setPrice(BigDecimal.valueOf(10 + i))
-                    .setVolume(1_000L * (i + 1));
+            MarketDataDomain md =
+                    new MarketDataDomain().setSymbol(symbolService.getOrCreateByName(Set.of(symbol.getName()))
+                                    .stream()
+                                    .findFirst()
+                                    .orElseThrow())
+                            .setDate(today.minusDays(i))
+                            .setOpen(BigDecimal.valueOf(10 + i))
+                            .setHigh(BigDecimal.valueOf(11 + i))
+                            .setLow(BigDecimal.valueOf(9 + i))
+                            .setPrice(BigDecimal.valueOf(10 + i))
+                            .setVolume(1_000L * (i + 1));
             modifiableMds.add(md);
         }
-        OrderedIndexedSet<MarketDataDomain> mds = new UnmodifiableOrderedIndexedSet<>(modifiableMds);
+        OrderedIndexedSet<MarketDataDomain> mds = OrderedIndexedSet.copyOf(modifiableMds);
         marketDataService.createIgnoringDuplicates(mds);
-        BigDecimal lastPrice = mds.stream().max(Comparator.comparing(MarketDataDomain::getDate)).orElseThrow().getPrice();
-        MarketSnapshotDomain premarket = new MarketSnapshotDomain()
-                .setSymbol(symbol)
-                .setOpen(lastPrice)
-                .setHigh(lastPrice.add(BigDecimal.valueOf(1)))
-                .setLow(lastPrice.subtract(BigDecimal.valueOf(1)))
-                .setPrice(lastPrice.add(new BigDecimal("0.5")));
 
         // given: insert 15 news items. Needs to be greater than the news per symbol and day
         Set<NewsDomain> articles = new HashSet<>();
-        LocalDateTime todayDateTime = LocalDateTime.now()
-                .atZone(ZoneOffset.UTC)
-                .toLocalDateTime();
+        LocalDateTime todayDateTime = LocalDateTime.now().atZone(ZoneOffset.UTC).toLocalDateTime();
         for (int i = 1; 15 >= i; i++) {
-            NewsDomain news = new NewsDomain()
-                    .addSymbol(symbol)
+            NewsDomain news = new NewsDomain().addSymbol(symbol)
                     .setExternalId((long) i)
                     .setUrl("https://example.com/news/" + i)
                     .setHeadline("Headline " + i)
@@ -107,46 +101,70 @@ class AssetReportDataProviderTest extends ConfiguredTest {
         portfolio.setAverageCommission(BigDecimal.ZERO);
         portfolio.setEffectiveTimestamp(today.atStartOfDay());
         portfolioService.saveAll(Set.of(portfolio));
+        BigDecimal lastPrice =
+                mds.stream().max(Comparator.comparing(MarketDataDomain::getDate)).orElseThrow().getPrice();
+        MarketSnapshotDomain premarket = new MarketSnapshotDomain().setSymbol(symbol)
+                .setOpen(lastPrice)
+                .setHigh(lastPrice.add(BigDecimal.valueOf(1)))
+                .setLow(lastPrice.subtract(BigDecimal.valueOf(1)))
+                .setPrice(lastPrice.add(new BigDecimal("0.5")));
 
         // when
-        OrderedIndexedSet<MarketDataDomain> filteredMds = marketDataService.getTopForSymbolId(symbol.getId(), MARKET_DATA_RELEVANT_DAYS_COUNT);
+        OrderedIndexedSet<MarketDataDomain> filteredMds =
+                marketDataService.getTopForSymbolId(symbol.getId(), MARKET_DATA_RELEVANT_DAYS_COUNT);
         OrderedIndexedSet<NewsDomain> filteredNews = newsService.getTopForSymbolId(symbol.getId(), NEWS_COUNT);
         PortfolioDomain portfolioData = portfolioService.findBySymbol(symbol).orElseThrow();
-        AssetReportRaw report = provider.provide(new DataManager.SymbolPayload(symbol, filteredMds, portfolioData)
-                .setNews(filteredNews)
-                .setPremarket(premarket));
+        AssetReportRaw report =
+                provider.provide(new DataManager.SymbolPayload(symbol, filteredMds, portfolioData).setNews(filteredNews)
+                        .setPremarket(premarket));
 
         // then: symbol & premarket & history & news
         assertThat(report.symbol()).isEqualTo(symbol.getName());
-        assertThat(report.premarket()).isNotNull()
-                .satisfies(p -> {
-                    assertThat(p.open()).isEqualByComparingTo(premarket.getOpen());
-                    assertThat(p.high()).isEqualByComparingTo(premarket.getHigh());
-                    assertThat(p.low()).isEqualByComparingTo(premarket.getLow());
-                    assertThat(p.close()).isEqualByComparingTo(premarket.getPrice());
-                    assertThat(p.gap()).isEqualByComparingTo(premarket.getPrice().subtract(lastPrice)
-                            .divide(lastPrice, 4, RoundingMode.HALF_UP)
-                            .multiply(BigDecimal.valueOf(100)));
-                });
+        assertThat(report.premarket()).isNotNull().satisfies(p -> {
+            assertThat(p.open()).isEqualByComparingTo(premarket.getOpen());
+            assertThat(p.high()).isEqualByComparingTo(premarket.getHigh());
+            assertThat(p.low()).isEqualByComparingTo(premarket.getLow());
+            assertThat(p.close()).isEqualByComparingTo(premarket.getPrice());
+            assertThat(p.gap()).isEqualByComparingTo(premarket.getPrice()
+                    .subtract(lastPrice)
+                    .divide(lastPrice, 4, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100)));
+        });
         assertThat(report.historyDays()).isEqualTo(HISTORY_DAYS_COUNT);
-        assertThat(report.priceHistory())
-                .hasSize(HISTORY_DAYS_COUNT)
+        assertThat(report.priceHistory()).hasSize(HISTORY_DAYS_COUNT)
                 .extracting(PricePointRaw::date)
-                .containsExactly(today, today.minusDays(1), today.minusDays(2), today.minusDays(3),
-                        today.minusDays(4), today.minusDays(5), today.minusDays(6),
-                        today.minusDays(7), today.minusDays(8), today.minusDays(9)
-                );
+                .containsExactly(today,
+                        today.minusDays(1),
+                        today.minusDays(2),
+                        today.minusDays(3),
+                        today.minusDays(4),
+                        today.minusDays(5),
+                        today.minusDays(6),
+                        today.minusDays(7),
+                        today.minusDays(8),
+                        today.minusDays(9));
 
         assertThat(report.newsCount()).isEqualTo(10); // 5 have neutral sentiment
-        assertThat(report.news())
-                .hasSize(10)
+        assertThat(report.news()).hasSize(10)
                 .extracting(NewsItemRaw::headline)
-                .containsExactly("Headline 1", "Headline 3", "Headline 5", "Headline 6", "Headline 7",
-                        "Headline 9", "Headline 11", "Headline 12", "Headline 13", "Headline 15");
+                .containsExactly("Headline 1",
+                        "Headline 3",
+                        "Headline 5",
+                        "Headline 6",
+                        "Headline 7",
+                        "Headline 9",
+                        "Headline 11",
+                        "Headline 12",
+                        "Headline 13",
+                        "Headline 15");
 
         // then: KPIs match the kpiGenerator calculations
-        OrderedIndexedSet<MarketDataDomain> mdHistory = marketDataService.getTopForSymbolId(
-                symbolService.getOrCreateByName(Set.of(symbol.getName())).stream().findFirst().orElseThrow().getId(), 100);
+        OrderedIndexedSet<MarketDataDomain> mdHistory =
+                marketDataService.getTopForSymbolId(symbolService.getOrCreateByName(Set.of(symbol.getName()))
+                        .stream()
+                        .findFirst()
+                        .orElseThrow()
+                        .getId(), 100);
 
         BigDecimal expectedEma20 = kpiGenerator.computeEma(mdHistory, 20).orElseThrow();
         BigDecimal macdLine1226 = kpiGenerator.computeMacdLine(mdHistory, 12, 26).orElseThrow();
@@ -165,9 +183,8 @@ class AssetReportDataProviderTest extends ConfiguredTest {
         // then: position fields match
         assertThat(report.position()).isEqualByComparingTo(BigDecimal.valueOf(1.1111));
         assertThat(report.entryPrice()).isEqualByComparingTo(BigDecimal.valueOf(2.2222));
-        BigDecimal expectedPositionValue = BigDecimal.valueOf(1.1111)
-                .multiply(BigDecimal.valueOf(2.2222))
-                .setScale(4, RoundingMode.HALF_UP);
+        BigDecimal expectedPositionValue =
+                BigDecimal.valueOf(1.1111).multiply(BigDecimal.valueOf(2.2222)).setScale(4, RoundingMode.HALF_UP);
         assertThat(report.positionValue()).isEqualByComparingTo(expectedPositionValue);
         BigDecimal expectedUnrealizedPnL = mdHistory.getFirst()
                 .getPrice()
@@ -175,6 +192,7 @@ class AssetReportDataProviderTest extends ConfiguredTest {
                 .multiply(report.position())
                 .setScale(4, RoundingMode.HALF_UP);
         assertThat(report.unrealizedPnL()).isEqualByComparingTo(expectedUnrealizedPnL);
-        assertThat(report.unrealizedPercentPnL()).isEqualByComparingTo(BigDecimal.valueOf(350.0045)); // roughly (10 / 2.2) - 2.2
+        assertThat(report.unrealizedPercentPnL()).isEqualByComparingTo(BigDecimal.valueOf(350.0045)); // roughly (10
+        // / 2.2) - 2.2
     }
 }

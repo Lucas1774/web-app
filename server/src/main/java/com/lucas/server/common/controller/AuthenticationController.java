@@ -8,7 +8,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Optional;
 
@@ -22,7 +26,9 @@ public class AuthenticationController {
     private final UserJpaService userService;
     private final boolean secure;
 
-    public AuthenticationController(ControllerUtil controllerUtil, UserJpaService userService, @Value("${spring.security.jwt.secure}") boolean secure) {
+    public AuthenticationController(ControllerUtil controllerUtil,
+                                    UserJpaService userService,
+                                    @Value("${spring.security.jwt.secure}") boolean secure) {
         this.controllerUtil = controllerUtil;
         this.userService = userService;
         this.secure = secure;
@@ -30,8 +36,8 @@ public class AuthenticationController {
 
     @PostMapping("/login")
     public ResponseEntity<Void> handleLogin(@RequestBody User user, HttpServletResponse response) {
-        Optional<User> auth = userService.findByUsername(user.getUsername())
-                .filter(u -> u.getPassword().equals(user.getPassword()));
+        Optional<User> auth =
+                userService.findByUsername(user.getUsername()).filter(u -> u.getPassword().equals(user.getPassword()));
         if (auth.isEmpty()) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }

@@ -20,36 +20,6 @@ class FinbertResponseMapperTest {
     private final FinbertResponseMapper mapper = new FinbertResponseMapper();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private static Stream<Arguments> getSentimentData() {
-        return Stream.of(
-                Arguments.of("positive", "0.95", "95"),
-                Arguments.of("negative", "0.85", "85"),
-                Arguments.of("neutral", "0.60", "60")
-        );
-    }
-
-    private static Stream<Arguments> getInvalidJson() {
-        return Stream.of(
-                Arguments.of("{}"),
-                Arguments.of("{\"label\": \"positive\"}")
-        );
-    }
-
-    @ParameterizedTest
-    @MethodSource("getSentimentData")
-    void mapSentiment(String label, String score, String expectedConfidence) throws Exception {
-        // given
-        String json = String.format("{\"label\": \"%s\", \"score\": \"%s\"}", label, score);
-        JsonNode node = objectMapper.readTree(json);
-
-        // when
-        NewsDomain result = mapper.map(node);
-
-        // then
-        assertThat(result.getSentiment()).isEqualTo(label);
-        assertThat(result.getSentimentConfidence()).isEqualByComparingTo(new BigDecimal(expectedConfidence));
-    }
-
     @Test
     void mapWithExistingNews() throws Exception {
         // given
@@ -67,13 +37,37 @@ class FinbertResponseMapperTest {
     }
 
     @ParameterizedTest
+    @MethodSource("getSentimentData")
+    void mapSentiment(String label, String score, String expectedConfidence) throws Exception {
+        // given
+        String json = String.format("{\"label\": \"%s\", \"score\": \"%s\"}", label, score);
+        JsonNode node = objectMapper.readTree(json);
+
+        // when
+        NewsDomain result = mapper.map(node);
+
+        // then
+        assertThat(result.getSentiment()).isEqualTo(label);
+        assertThat(result.getSentimentConfidence()).isEqualByComparingTo(new BigDecimal(expectedConfidence));
+    }
+
+    @ParameterizedTest
     @MethodSource("getInvalidJson")
     void mapInvalidJson(String json) throws Exception {
         // given
         JsonNode node = objectMapper.readTree(json);
 
         // when & then
-        assertThatThrownBy(() -> mapper.map(node))
-                .isInstanceOf(MappingException.class);
+        assertThatThrownBy(() -> mapper.map(node)).isInstanceOf(MappingException.class);
+    }
+
+    private static Stream<Arguments> getSentimentData() {
+        return Stream.of(Arguments.of("positive", "0.95", "95"),
+                Arguments.of("negative", "0.85", "85"),
+                Arguments.of("neutral", "0.60", "60"));
+    }
+
+    private static Stream<Arguments> getInvalidJson() {
+        return Stream.of(Arguments.of("{}"), Arguments.of("{\"label\": \"positive\"}"));
     }
 }

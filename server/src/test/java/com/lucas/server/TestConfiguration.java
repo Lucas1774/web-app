@@ -15,8 +15,8 @@ import static org.mockito.Mockito.mock;
 public class TestConfiguration {
 
     @SuppressWarnings("resource")
-    private static final PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer<>(DockerImageName.parse("pgvector/pgvector:pg17"))
-            .withInitScript("init.sql");
+    private static final PostgreSQLContainer<?> postgresContainer =
+            new PostgreSQLContainer<>(DockerImageName.parse("pgvector/pgvector:pg17")).withInitScript("init.sql");
 
     @Bean
     @ServiceConnection

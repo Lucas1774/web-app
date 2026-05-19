@@ -17,11 +17,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
-public class RecommendationsJpaService extends GenericJpaServiceDelegate<Recommendation, RecommendationDomain, RecommendationsRepository> {
+public class RecommendationsJpaService
+        extends GenericJpaServiceDelegate<Recommendation, RecommendationDomain, RecommendationsRepository> {
 
     private final UniqueConstraintWearyJpaServiceDelegate<Recommendation> delegate;
 
-    public RecommendationsJpaService(RecommendationsRepository repository, EntityMapper<Recommendation, RecommendationDomain> mapper) {
+    public RecommendationsJpaService(RecommendationsRepository repository,
+                                     EntityMapper<Recommendation, RecommendationDomain> mapper) {
         super(repository, mapper);
         delegate = new UniqueConstraintWearyJpaServiceDelegate<>(repository);
     }
@@ -29,66 +31,59 @@ public class RecommendationsJpaService extends GenericJpaServiceDelegate<Recomme
     @SuppressWarnings("UnusedReturnValue")
     @Transactional
     public Set<RecommendationDomain> createIgnoringDuplicates(Set<RecommendationDomain> entities) {
-        Set<Recommendation> recommendationEntities = entities.stream()
-                .map(mapper::toEntity)
-                .collect(Collectors.toSet());
-        return delegate.createIgnoringDuplicates(this::findUnique, recommendationEntities).stream()
+        Set<Recommendation> recommendationEntities =
+                entities.stream().map(mapper::toEntity).collect(Collectors.toSet());
+        return delegate.createIgnoringDuplicates(this::findUnique, recommendationEntities)
+                .stream()
                 .map(mapper::toDto)
-                .collect(Collectors.toSet());
-    }
-
-    private Set<Recommendation> findUnique(Set<Recommendation> recommendations) {
-        return repository.findBySymbol_IdInAndDateIn(
-                recommendations.stream().map(r -> r.getSymbol().getId()).collect(Collectors.toSet()),
-                recommendations.stream().map(Recommendation::getDate).collect(Collectors.toSet())
-        );
+                .collect(Collectors.toUnmodifiableSet());
     }
 
     @Transactional(readOnly = true)
     public Set<RecommendationDomain> findByDateBetween(LocalDate from, LocalDate to) {
-        return repository.findByDateBetween(from, to).stream()
+        return repository.findByDateBetween(from, to)
+                .stream()
                 .map(mapper::toDto)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toUnmodifiableSet());
     }
 
     // TODO: batch
     @Transactional(readOnly = true)
     public Set<RecommendationDomain> getTopForSymbolId(Long symbolId, int limit) {
-        return repository.findBySymbol_Id(symbolId, PageRequest.of(0, limit, Sort.by("date").descending())).stream()
+        return repository.findBySymbol_Id(symbolId, PageRequest.of(0, limit, Sort.by("date").descending()))
+                .stream()
                 .map(mapper::toDto)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toUnmodifiableSet());
     }
 
     @Transactional(readOnly = true)
     public Set<RecommendationDomain> findBySymbolId(Long id) {
-        return repository.findBySymbol_Id(id).stream()
-                .map(mapper::toDto)
-                .collect(Collectors.toSet());
+        return repository.findBySymbol_Id(id).stream().map(mapper::toDto).collect(Collectors.toUnmodifiableSet());
     }
 
     @Transactional
     public Set<RecommendationDomain> createOrUpdate(Set<RecommendationDomain> entities) {
-        Set<Recommendation> recommendationEntities = entities.stream()
-                .map(mapper::toEntity)
-                .collect(Collectors.toSet());
+        Set<Recommendation> recommendationEntities =
+                entities.stream().map(mapper::toEntity).collect(Collectors.toSet());
         return delegate.createOrUpdate(this::findUnique,
-                        (oldEntity, newEntity) -> oldEntity
-                                .setModel(newEntity.getModel())
-                                .setAction(newEntity.getAction())
-                                .setConfidence(newEntity.getConfidence())
-                                .setRationale(newEntity.getRationale())
-                                .setMarketData(newEntity.getMarketData())
-                                .setInput(newEntity.getInput())
-                                .setErrors(newEntity.getErrors())
-                                .addNews(newEntity.getNews()),
-                        recommendationEntities).stream()
-                .map(mapper::toDto)
-                .collect(Collectors.toSet());
+                (oldEntity, newEntity) -> oldEntity.setModel(newEntity.getModel())
+                        .setAction(newEntity.getAction())
+                        .setConfidence(newEntity.getConfidence())
+                        .setRationale(newEntity.getRationale())
+                        .setMarketData(newEntity.getMarketData())
+                        .setInput(newEntity.getInput())
+                        .setErrors(newEntity.getErrors())
+                        .addNews(newEntity.getNews()),
+                recommendationEntities).stream().map(mapper::toDto).collect(Collectors.toUnmodifiableSet());
     }
 
     @Transactional(readOnly = true)
-    public OrderedIndexedSet<Long> getTopRecommendedSymbols(String action, BigDecimal confidenceThreshold, LocalDate recommendationDate) {
-        return repository.findByActionAndConfidenceGreaterThanEqualAndDate(action, confidenceThreshold, recommendationDate)
+    public OrderedIndexedSet<Long> getTopRecommendedSymbols(String action,
+                                                            BigDecimal confidenceThreshold,
+                                                            LocalDate recommendationDate) {
+        return repository.findByActionAndConfidenceGreaterThanEqualAndDate(action,
+                        confidenceThreshold,
+                        recommendationDate)
                 .stream()
                 .sorted(Comparator.comparing(Recommendation::getConfidence).reversed())
                 .map(r -> r.getSymbol().getId())
@@ -96,16 +91,25 @@ public class RecommendationsJpaService extends GenericJpaServiceDelegate<Recomme
     }
 
     @Transactional(readOnly = true)
-    public Set<RecommendationDomain> getDailyRecommendations(BigDecimal confidenceThreshold, LocalDate date, String action, Set<String> models) {
-        return repository.findByConfidenceGreaterThanEqualAndDateAndActionAndModelIn(confidenceThreshold, date, action, models).stream()
-                .map(mapper::toDto)
-                .collect(Collectors.toSet());
+    public Set<RecommendationDomain> getDailyRecommendations(BigDecimal confidenceThreshold,
+                                                             LocalDate date,
+                                                             String action,
+                                                             Set<String> models) {
+        return repository.findByConfidenceGreaterThanEqualAndDateAndActionAndModelIn(confidenceThreshold,
+                date,
+                action,
+                models).stream().map(mapper::toDto).collect(Collectors.toUnmodifiableSet());
     }
 
     @Transactional(readOnly = true)
     public Set<RecommendationDomain> findByNewsId(Set<Long> newsIds) {
-        return repository.findByNews_IdIn(newsIds).stream()
-                .map(mapper::toDto)
-                .collect(Collectors.toSet());
+        return repository.findByNews_IdIn(newsIds).stream().map(mapper::toDto).collect(Collectors.toUnmodifiableSet());
+    }
+
+    private Set<Recommendation> findUnique(Set<Recommendation> recommendations) {
+        return repository.findBySymbol_IdInAndDateIn(recommendations.stream()
+                        .map(r -> r.getSymbol().getId())
+                        .collect(Collectors.toUnmodifiableSet()),
+                recommendations.stream().map(Recommendation::getDate).collect(Collectors.toSet()));
     }
 }

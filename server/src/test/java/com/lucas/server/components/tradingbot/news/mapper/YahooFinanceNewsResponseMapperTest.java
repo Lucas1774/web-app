@@ -18,7 +18,9 @@ import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.UUID;
 
-import static com.lucas.server.common.Constants.*;
+import static com.lucas.server.common.Constants.MAPPING_ERROR;
+import static com.lucas.server.common.Constants.NEWS;
+import static com.lucas.server.common.Constants.NO_YAHOO_NEWS_ERROR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -36,7 +38,8 @@ class YahooFinanceNewsResponseMapperTest extends ConfiguredTest {
     @Test
     void whenMapValidXml_thenReturnNewsEntity() throws Exception {
         // given
-        String itemXml = """
+        String itemXml =
+                """
                 <item>
                     <description>The Dow Jones index rose after surprise economic data. Tesla stock rallied on new plans to launch its robotaxi service.</description>
                     <guid isPermaLink="false">d7c02a66-936a-32e1-b631-65fbc838c25d</guid>
@@ -46,27 +49,30 @@ class YahooFinanceNewsResponseMapperTest extends ConfiguredTest {
                 </item>
                 """;
 
-        Element item = (Element) parseXml("<?xml version=\"1.0\"?><rss><channel>" + itemXml + "</channel></rss>")
-                .getElementsByTagName("item").item(0);
+        Element item = (Element) parseXml(
+                "<?xml version=\"1.0\"?><rss><channel>" + itemXml + "</channel></rss>").getElementsByTagName("item")
+                .item(0);
 
         // when
         NewsDomain news = mapper.map(item);
 
         // then
         UUID uuid = UUID.fromString("d7c02a66-936a-32e1-b631-65fbc838c25d");
-        assertThat(news)
-                .isNotNull()
-                .satisfies(n -> {
-                    assertThat(news.getExternalId()).isEqualTo(uuid.getMostSignificantBits() ^ uuid.getLeastSignificantBits());
-                    assertThat(news.getDate()).isEqualTo(LocalDateTime.of(2025, 7, 25, 20, 36, 4));
-                    assertThat(news.getHeadline()).isEqualTo("Stock Market Today: Dow, S&P Climb On Trump-China Deal Hopes; Cathie Wood Loads Up On Tesla Stock (Live Coverage)");
-                    assertThat(news.getSummary()).isEqualTo("The Dow Jones index rose after surprise economic data. Tesla stock rallied on new plans to launch its robotaxi service.");
-                    assertThat(news.getUrl()).isEqualTo("https://finance.yahoo.com/m/d7c02a66-936a-32e1-b631-65fbc838c25d/stock-market-today%3A-dow%2C-s%26p.html?.tsrc=rss");
-                    assertThat(news.getSource()).isEqualTo("Yahoo Finance RSS");
-                    assertThat(news.getCategory()).isNull();
-                    assertThat(news.getImage()).isNull();
-                    assertThat(news.getSymbols()).isEmpty();
-                });
+        assertThat(news).isNotNull().satisfies(n -> {
+            assertThat(news.getExternalId()).isEqualTo(uuid.getMostSignificantBits() ^ uuid.getLeastSignificantBits());
+            assertThat(news.getDate()).isEqualTo(LocalDateTime.of(2025, 7, 25, 20, 36, 4));
+            assertThat(news.getHeadline()).isEqualTo("Stock Market Today: Dow, S&P Climb On Trump-China Deal Hopes;"
+                                                     + " Cathie Wood Loads Up On Tesla Stock (Live Coverage)");
+            assertThat(news.getSummary()).isEqualTo("The Dow Jones index rose after surprise economic data. Tesla"
+                                                    + " stock rallied on new plans to launch its robotaxi service.");
+            assertThat(news.getUrl()).isEqualTo(
+                    "https://finance.yahoo.com/m/d7c02a66-936a-32e1-b631-65fbc838c25d/stock-market-today%3A-dow%2C-s"
+                    + "%26p.html?.tsrc=rss");
+            assertThat(news.getSource()).isEqualTo("Yahoo Finance RSS");
+            assertThat(news.getCategory()).isNull();
+            assertThat(news.getImage()).isNull();
+            assertThat(news.getSymbols()).isEmpty();
+        });
     }
 
     @Test
@@ -74,7 +80,8 @@ class YahooFinanceNewsResponseMapperTest extends ConfiguredTest {
         // given
         SymbolDomain symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
 
-        String xml = """
+        String xml =
+                """
                 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
                 <rss version="2.0">
                     <channel>
@@ -239,16 +246,12 @@ class YahooFinanceNewsResponseMapperTest extends ConfiguredTest {
         Set<NewsDomain> list = mapper.mapAll(parseXml(xml), symbol);
 
         // then
-        assertThat(list)
-                .isNotNull()
+        assertThat(list).isNotNull()
                 .hasSize(20)
-                .allSatisfy(n -> assertThat(n.getSymbols().stream().map(SymbolDomain::getName))
-                        .hasSize(1)
-                        .containsExactly(symbol.getName())
-                )
+                .allSatisfy(n -> assertThat(n.getSymbols().stream().map(SymbolDomain::getName)).hasSize(1)
+                        .containsExactly(symbol.getName()))
                 .extracting(NewsDomain::getHeadline)
-                .containsExactlyInAnyOrder(
-                        "Prediction: 1 EV Stock That Will Be Worth More Than Lucid 1 Year From Now",
+                .containsExactlyInAnyOrder("Prediction: 1 EV Stock That Will Be Worth More Than Lucid 1 Year From Now",
                         "Why Tesla Deliveries Could Hit Yet Another Speed Bump",
                         "What Does It Cost To Charge a Tesla Monthly Compared To Gas for a BMW 3 Series?",
                         "Should You Buy This Magnificent Autonomous Driving Stock Before Aug. 6?",
@@ -261,20 +264,23 @@ class YahooFinanceNewsResponseMapperTest extends ConfiguredTest {
                         "Why Solana Is Sinking Today",
                         "Tesla gets multiple shareholder proposals related to investment in xAI",
                         "China's $733 Billion Warning: Why Investors Can't Ignore This Red Flag",
-                        "US Equity Indexes Rise This Week as Japan Trade Deal, Corporate Earnings Boost Investors' Sentiment",
+                        "US Equity Indexes Rise This Week as Japan Trade Deal,"
+                        + " Corporate Earnings Boost Investors' Sentiment",
                         "Tesla Stock Is Rising. Robo-taxi Trumps a Lack of New Models.",
                         "Booz Allen Earnings, Outlook a Relief in Post-DOGE World. The Stock Is Dropping.",
-                        "Stock Market Today: Dow, S&P Climb On Trump-China Deal Hopes; Cathie Wood Loads Up On Tesla Stock (Live Coverage)",
+                        "Stock Market Today: Dow, S&P Climb On Trump-China Deal Hopes;"
+                        + " Cathie Wood Loads Up On Tesla Stock (Live Coverage)",
                         "Tesla plans to expand chartered transport service, California regulator says",
-                        "These Stocks Moved the Most Today: Intel, Centene, Charter, Newmont, Deckers, Boston Beer, Tesla, and More",
-                        "As Tesla Stock Sank On Earnings, Cathie Wood Loaded Up"
-                );
+                        "These Stocks Moved the Most Today:"
+                        + " Intel, Centene, Charter, Newmont, Deckers, Boston Beer, Tesla, and More",
+                        "As Tesla Stock Sank On Earnings, Cathie Wood Loaded Up");
     }
 
     @Test
     void whenMapAllEmptyOrNonArray_thenThrowsException() throws Exception {
         // given: valid XML structure but no <item> elements
-        String xmlWithoutItems = """
+        String xmlWithoutItems =
+                """
                 <?xml version="1.0" encoding="UTF-8"?>
                 <rss version="2.0">
                     <channel>
@@ -288,16 +294,16 @@ class YahooFinanceNewsResponseMapperTest extends ConfiguredTest {
         Document doc = parseXml(xmlWithoutItems);
 
         // when & then
-        assertThatThrownBy(() -> mapper.mapAll(doc, symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow()))
-                .isInstanceOf(MappingException.class)
-                .cause()
-                .hasMessageContaining(MessageFormat.format(NO_YAHOO_NEWS_ERROR, doc));
+        assertThatThrownBy(() -> mapper.mapAll(doc,
+                symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow())).isInstanceOf(
+                MappingException.class).cause().hasMessageContaining(MessageFormat.format(NO_YAHOO_NEWS_ERROR, doc));
     }
 
     @Test
     void whenMapAllMissingFields_thenThrowsException() throws Exception {
         // given
-        String invalidXml = """
+        String invalidXml =
+                """
                 <?xml version="1.0" encoding="UTF-8"?>
                 <rss version="2.0">
                     <channel>
@@ -312,14 +318,12 @@ class YahooFinanceNewsResponseMapperTest extends ConfiguredTest {
         Document doc = parseXml(invalidXml);
 
         // when & then
-        assertThatThrownBy(() -> mapper.mapAll(doc, symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow()))
-                .isInstanceOf(MappingException.class)
-                .hasMessageContaining(MessageFormat.format(MAPPING_ERROR, NEWS));
+        assertThatThrownBy(() -> mapper.mapAll(doc,
+                symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow())).isInstanceOf(
+                MappingException.class).hasMessageContaining(MessageFormat.format(MAPPING_ERROR, NEWS));
     }
 
     private Document parseXml(String xml) throws Exception {
-        return factory
-                .newDocumentBuilder()
-                .parse(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
+        return factory.newDocumentBuilder().parse(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
     }
 }

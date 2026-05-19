@@ -15,27 +15,23 @@ public class SymbolMapper implements EntityMapper<Symbol, SymbolDomain> {
 
     @Override
     public SymbolDomain toDto(Symbol entity) {
-        if (null == entity) return null;
-        return new SymbolDomain(
-                entity.getId(),
+        if (null == entity) {
+            return null;
+        }
+        return new SymbolDomain(entity.getId(),
                 entity.getName(),
                 entity.getSector(),
-                entity.getNews().stream()
-                        .map(News::getId)
-                        .collect(Collectors.toSet())
-        );
+                entity.getNews().stream().map(News::getId).collect(Collectors.toSet()));
     }
 
     @Override
     public Symbol toEntity(SymbolDomain dto) {
-        if (null == dto) return null;
-        return new Symbol()
-                .setId(dto.getId())
+        if (null == dto) {
+            return null;
+        }
+        return new Symbol().setId(dto.getId())
                 .setName(dto.getName())
                 .setSector(dto.getSector())
-                .setNews(dto.getNewsIds().stream()
-                        .map(id -> new News().setId(id))
-                        .collect(Collectors.toSet())
-                );
+                .setNews(dto.getNewsIds().stream().map(id -> new News().setId(id)).collect(Collectors.toSet()));
     }
 }

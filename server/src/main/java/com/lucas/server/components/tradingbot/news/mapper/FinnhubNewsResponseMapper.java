@@ -21,26 +21,6 @@ import static com.lucas.server.common.Constants.NEWS;
 @Component
 public class FinnhubNewsResponseMapper implements Mapper<JsonNode, NewsDomain> {
 
-    @Override
-    public NewsDomain map(JsonNode json) throws MappingException {
-        try {
-            return new NewsDomain()
-                    .setExternalId(json.get("id").asLong())
-                    .setDate(Instant
-                            .ofEpochSecond(json.get("datetime").asLong())
-                            .atZone(ZoneOffset.UTC)
-                            .toLocalDateTime())
-                    .setHeadline(json.get("headline").asText())
-                    .setSummary(StringUtils.left(json.get("summary").asText(), 1024))
-                    .setUrl(json.get("url").asText())
-                    .setSource(json.get("source").asText())
-                    .setCategory(json.get("category").asText())
-                    .setImage(json.get("image").asText());
-        } catch (Exception e) {
-            throw new MappingException(MessageFormat.format(MAPPING_ERROR, NEWS), e);
-        }
-    }
-
     public Set<NewsDomain> mapAll(JsonNode json, SymbolDomain symbol) throws MappingException {
         if (!json.isArray()) {
             return Collections.emptySet();
@@ -52,5 +32,23 @@ public class FinnhubNewsResponseMapper implements Mapper<JsonNode, NewsDomain> {
         }
 
         return newsList;
+    }
+
+    @Override
+    public NewsDomain map(JsonNode json) throws MappingException {
+        try {
+            return new NewsDomain().setExternalId(json.get("id").asLong())
+                    .setDate(Instant.ofEpochSecond(json.get("datetime").asLong())
+                            .atZone(ZoneOffset.UTC)
+                            .toLocalDateTime())
+                    .setHeadline(json.get("headline").asText())
+                    .setSummary(StringUtils.left(json.get("summary").asText(), 1024))
+                    .setUrl(json.get("url").asText())
+                    .setSource(json.get("source").asText())
+                    .setCategory(json.get("category").asText())
+                    .setImage(json.get("image").asText());
+        } catch (Exception e) {
+            throw new MappingException(MessageFormat.format(MAPPING_ERROR, NEWS), e);
+        }
     }
 }

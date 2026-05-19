@@ -17,13 +17,12 @@ public class NewsMapper implements EntityMapper<News, NewsDomain> {
 
     @Override
     public NewsDomain toDto(News entity) {
-        if (null == entity) return null;
-        return new NewsDomain(
-                entity.getId(),
+        if (null == entity) {
+            return null;
+        }
+        return new NewsDomain(entity.getId(),
                 entity.getExternalId(),
-                entity.getSymbols().stream()
-                        .map(symbolMapper::toDto)
-                        .collect(Collectors.toSet()),
+                entity.getSymbols().stream().map(symbolMapper::toDto).collect(Collectors.toSet()),
                 entity.getDate(),
                 entity.getHeadline(),
                 entity.getSummary(),
@@ -33,15 +32,15 @@ public class NewsMapper implements EntityMapper<News, NewsDomain> {
                 entity.getImage(),
                 entity.getSentiment(),
                 entity.getSentimentConfidence(),
-                entity.getEmbeddings()
-        );
+                entity.getEmbeddings());
     }
 
     @Override
     public News toEntity(NewsDomain dto) {
-        if (null == dto) return null;
-        News news = new News()
-                .setId(dto.getId())
+        if (null == dto) {
+            return null;
+        }
+        News news = new News().setId(dto.getId())
                 .setExternalId(dto.getExternalId())
                 .setDate(dto.getDate())
                 .setHeadline(dto.getHeadline())
@@ -55,9 +54,7 @@ public class NewsMapper implements EntityMapper<News, NewsDomain> {
                 .setEmbeddings(dto.getEmbeddings());
 
         if (null != dto.getSymbols()) {
-            dto.getSymbols().stream()
-                    .map(symbolMapper::toEntity)
-                    .forEach(news::addSymbol);
+            dto.getSymbols().stream().map(symbolMapper::toEntity).forEach(news::addSymbol);
         }
         return news;
     }

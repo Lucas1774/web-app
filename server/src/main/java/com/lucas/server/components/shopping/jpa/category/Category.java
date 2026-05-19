@@ -2,7 +2,12 @@ package com.lucas.server.components.shopping.jpa.category;
 
 import com.lucas.server.common.jpa.JpaEntity;
 import com.lucas.server.components.shopping.dto.Sortable;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -29,23 +34,21 @@ public class Category implements JpaEntity, Sortable {
     private Integer order;
 
     @Override
-    public String toString() {
-        return "Category{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", order=" + order +
-                '}';
+    public int hashCode() {
+        return Objects.hashCode(name);
     }
 
     @Override
     public boolean equals(Object o) {
-        if (null == o || getClass() != o.getClass()) return false;
+        if (null == o || getClass() != o.getClass()) {
+            return false;
+        }
         Category category = (Category) o;
         return Objects.equals(name, category.name);
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hashCode(name);
+    public String toString() {
+        return "Category{" + "id=" + id + ", name='" + name + '\'' + ", order=" + order + '}';
     }
 }

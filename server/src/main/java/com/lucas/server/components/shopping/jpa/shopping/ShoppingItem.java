@@ -5,7 +5,16 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.lucas.server.common.jpa.JpaEntity;
 import com.lucas.server.common.jpa.user.User;
 import com.lucas.server.components.shopping.jpa.product.Product;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -40,24 +49,22 @@ public class ShoppingItem implements JpaEntity {
     private Integer quantity;
 
     @Override
-    public String toString() {
-        return "ShoppingItem{" +
-                "id=" + id +
-                ", user=" + user +
-                ", product=" + product +
-                ", quantity=" + quantity +
-                '}';
+    public int hashCode() {
+        return Objects.hash(user, product);
     }
 
     @Override
     public boolean equals(Object o) {
-        if (null == o || getClass() != o.getClass()) return false;
+        if (null == o || getClass() != o.getClass()) {
+            return false;
+        }
         ShoppingItem that = (ShoppingItem) o;
         return Objects.equals(user, that.user) && Objects.equals(product, that.product);
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(user, product);
+    public String toString() {
+        return "ShoppingItem{" + "id=" + id + ", user=" + user + ", product=" + product + ", quantity=" + quantity
+               + '}';
     }
 }

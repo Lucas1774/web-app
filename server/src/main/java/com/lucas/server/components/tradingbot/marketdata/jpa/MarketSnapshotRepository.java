@@ -12,7 +12,7 @@ public interface MarketSnapshotRepository extends JpaRepository<MarketSnapshot, 
 
     Set<MarketSnapshot> findBySymbol_Id(Long symbolId, PageRequest page);
 
-    Set<MarketSnapshot> findAllBySymbol_IdInAndDateBetween(Set<Long> symbolIds, LocalDateTime from, LocalDateTime to);
-
     Set<MarketSnapshot> findBySymbol_Id(Long id);
+
+    Set<MarketSnapshot> findAllBySymbol_IdInAndDateBetween(Set<Long> symbolIds, LocalDateTime from, LocalDateTime to);
 }

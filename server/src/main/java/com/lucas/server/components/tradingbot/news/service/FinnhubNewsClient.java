@@ -16,7 +16,11 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.time.LocalDate;
 import java.util.Set;
 
-import static com.lucas.server.common.Constants.*;
+import static com.lucas.server.common.Constants.COMPANY_NEWS;
+import static com.lucas.server.common.Constants.NEWS;
+import static com.lucas.server.common.Constants.REQUEST_MAX_ATTEMPTS;
+import static com.lucas.server.common.Constants.RETRIEVING_DATA_INFO;
+import static com.lucas.server.common.Constants.SYMBOL;
 
 @Component
 @Slf4j
@@ -27,8 +31,10 @@ public class FinnhubNewsClient {
     private final FinnhubRateLimiter finnhubRateLimiter;
     private final String endpoint;
 
-    public FinnhubNewsClient(FinnhubNewsResponseMapper mapper, HttpRequestClient httpRequestClient,
-                             FinnhubRateLimiter finnhubRateLimiter, @Value("${finnhub.endpoint}") String endpoint) {
+    public FinnhubNewsClient(FinnhubNewsResponseMapper mapper,
+                             HttpRequestClient httpRequestClient,
+                             FinnhubRateLimiter finnhubRateLimiter,
+                             @Value("${finnhub.endpoint}") String endpoint) {
         this.httpRequestClient = httpRequestClient;
         this.mapper = mapper;
         this.finnhubRateLimiter = finnhubRateLimiter;
@@ -36,7 +42,8 @@ public class FinnhubNewsClient {
     }
 
     @Retryable(retryFor = {ClientException.class, MappingException.class}, maxAttempts = REQUEST_MAX_ATTEMPTS)
-    public Set<NewsDomain> retrieveNewsByDateRange(SymbolDomain symbol, LocalDate from, LocalDate to) throws ClientException, MappingException {
+    public Set<NewsDomain> retrieveNewsByDateRange(SymbolDomain symbol, LocalDate from, LocalDate to)
+            throws ClientException, MappingException {
         String apiKey = finnhubRateLimiter.acquirePermission();
         log.info(RETRIEVING_DATA_INFO, NEWS, symbol);
         String url = UriComponentsBuilder.fromUriString(endpoint + COMPANY_NEWS)

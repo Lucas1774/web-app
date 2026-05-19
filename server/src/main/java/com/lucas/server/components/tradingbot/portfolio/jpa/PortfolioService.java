@@ -12,7 +12,7 @@ import java.util.Set;
 /**
  * JPA service for portfolio management operations.
  */
-public interface IPortfolioJpaService {
+public interface PortfolioService {
 
     /**
      * @param symbol the symbol to search by
@@ -32,8 +32,11 @@ public interface IPortfolioJpaService {
      * @return the updated portfolio entry
      * @throws IllegalStateException if the action is invalid given the current portfolio state
      */
-    PortfolioDomain executePortfolioAction(SymbolDomain symbol, BigDecimal price, BigDecimal quantity,
-                                           BigDecimal commission, LocalDateTime timestamp,
+    PortfolioDomain executePortfolioAction(SymbolDomain symbol,
+                                           BigDecimal price,
+                                           BigDecimal quantity,
+                                           BigDecimal commission,
+                                           LocalDateTime timestamp,
                                            boolean isBuy) throws IllegalStateException;
 
     /**

@@ -15,10 +15,12 @@ import java.util.stream.IntStream;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @TestPropertySource(properties = "spring.jpa.show-sql=false")
-@Sql(scripts = {"/seed__algorithms.sql", "/seed__letter__pairs.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(scripts = {"/seed__algorithms.sql", "/seed__letter__pairs.sql"},
+        executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 class RubikSolverTest extends ConfiguredTest {
 
-    private static final boolean WITH_LETTER_PAIRS = true; // disable this to easily check solution validity on tools like http://alg.cubing.net
+    private static final boolean WITH_LETTER_PAIRS = true;
+    // disable this to easily check solution validity on tools like http://alg.cubing.net
     private static final int NUM_RUNS = 100;
     private static final int SCRAMBLE_LENGTH = 20;
     private static final String[][] MOVE_NAMES;
@@ -39,12 +41,6 @@ class RubikSolverTest extends ConfiguredTest {
     @Autowired
     private RubikSolver solver;
 
-    private String generateScramble() {
-        return IntStream.range(0, SCRAMBLE_LENGTH)
-                .mapToObj(i -> MOVE_NAMES[random.nextInt(MOVE_NAMES.length)][random.nextInt(3)])
-                .collect(Collectors.joining(" "));
-    }
-
     @Test
     void solveProducesValidSolution() {
         for (int i = 0; NUM_RUNS > i; i++) {
@@ -59,8 +55,14 @@ class RubikSolverTest extends ConfiguredTest {
             });
             System.out.println("\n");
             assertThat(solution).isNotEmpty()
-                    .allMatch(s -> !s.letterPair().isBlank() && null != s.type() && !s.algorithm().isBlank()
-                            && !s.o().isBlank() && !s.audioLoop().isBlank());
+                    .allMatch(s -> !s.letterPair().isBlank() && null != s.type() && !s.algorithm().isBlank() && !s.o()
+                            .isBlank() && !s.audioLoop().isBlank());
         }
+    }
+
+    private String generateScramble() {
+        return IntStream.range(0, SCRAMBLE_LENGTH)
+                .mapToObj(i -> MOVE_NAMES[random.nextInt(MOVE_NAMES.length)][random.nextInt(3)])
+                .collect(Collectors.joining(" "));
     }
 }

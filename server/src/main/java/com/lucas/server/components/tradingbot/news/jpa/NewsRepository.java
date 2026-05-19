@@ -11,9 +11,10 @@ import java.util.Set;
 @Repository
 public interface NewsRepository extends JpaRepository<News, Long> {
 
-    List<News> findBySymbols_IdAndSentimentNotOrSymbols_IdAndSentimentIsNull(
-            Long symbolId1, String sentiment, Long symbolId2, Pageable pageable
-    );
+    List<News> findBySymbols_IdAndSentimentNotOrSymbols_IdAndSentimentIsNull(Long symbolId1,
+                                                                             String sentiment,
+                                                                             Long symbolId2,
+                                                                             Pageable pageable);
 
     Set<News> findByExternalIdIn(Set<Long> externalIds);
 

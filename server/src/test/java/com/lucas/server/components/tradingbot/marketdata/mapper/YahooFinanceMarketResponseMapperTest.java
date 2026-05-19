@@ -35,7 +35,8 @@ class YahooFinanceMarketResponseMapperTest extends ConfiguredTest {
     @Test
     void whenMapValidJson_thenReturnMarketData() throws MappingException, JsonProcessingException {
         // given
-        String json = """
+        String json =
+                """
                 {
                   "chart": {
                     "result": [
@@ -181,7 +182,9 @@ class YahooFinanceMarketResponseMapperTest extends ConfiguredTest {
         assertThat(result.getLow()).isEqualByComparingTo(BigDecimal.valueOf(211.27));
         assertThat(result.getPrice()).isEqualByComparingTo(BigDecimal.valueOf(211.44));
         assertThat(result.getVolume()).isNull();
-        assertThat(result.getDate()).isEqualTo(Instant.ofEpochSecond(1753864520).atZone(ZoneOffset.UTC).toLocalDateTime());
+        assertThat(result.getDate()).isEqualTo(Instant.ofEpochSecond(1753864520)
+                .atZone(ZoneOffset.UTC)
+                .toLocalDateTime());
     }
 
     @Test
@@ -190,13 +193,16 @@ class YahooFinanceMarketResponseMapperTest extends ConfiguredTest {
         String invalidJson = "{}";
 
         // when & then
-        assertThatThrownBy(() -> mapper.map(objectMapper.readTree(invalidJson), symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow())).isInstanceOf(MappingException.class);
+        assertThatThrownBy(() -> mapper.map(objectMapper.readTree(invalidJson),
+                symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow())).isInstanceOf(
+                MappingException.class);
     }
 
     @Test
     void whenMapMissingFields_thenThrowsException() {
         // given
-        String json = """
+        String json =
+                """
                 {
                   "c" : 198.53,
                   "d" : 1.04,
@@ -209,8 +215,8 @@ class YahooFinanceMarketResponseMapperTest extends ConfiguredTest {
                 """;
 
         // when & then
-        assertThatThrownBy(() -> mapper.map(objectMapper.readTree(json), symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow()))
-                .isInstanceOf(MappingException.class)
-                .hasMessageContaining(MessageFormat.format(MAPPING_ERROR, MARKET_SNAPSHOT));
+        assertThatThrownBy(() -> mapper.map(objectMapper.readTree(json),
+                symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow())).isInstanceOf(
+                MappingException.class).hasMessageContaining(MessageFormat.format(MAPPING_ERROR, MARKET_SNAPSHOT));
     }
 }

@@ -8,7 +8,9 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.IntStream;
 
-import static com.lucas.server.common.Constants.*;
+import static com.lucas.server.common.Constants.SUDOKU_NUMBER_OF_CELLS;
+import static com.lucas.server.common.Constants.SUDOKU_SIZE;
+import static com.lucas.server.common.Constants.getDigits;
 import static com.lucas.server.components.sudoku.jpa.Sudoku.withValues;
 
 @Component
@@ -39,6 +41,44 @@ public class SudokuSolver {
             maxRisk++;
         }
         return isSolved(sudoku) && isSolvable(sudoku);
+    }
+
+    /**
+     * Check block acceptance only after checking row and column acceptance since it
+     * is considerably slower
+     */
+    public boolean acceptsNumberInPlace(Sudoku sudoku, int place, int digit) {
+        int rowIndexOffset = place / SUDOKU_SIZE * SUDOKU_SIZE;
+        int columnIndex = place % SUDOKU_SIZE;
+        for (int i = 0; SUDOKU_SIZE > i; i++) {
+            if (sudoku.getState()[rowIndexOffset + i] == digit
+                || sudoku.getState()[columnIndex + i * SUDOKU_SIZE] == digit) {
+                return false;
+            }
+        }
+        int blockFirstRow = place / (3 * SUDOKU_SIZE) * 3;
+        int blockFirstColumn = columnIndex / 3 * 3;
+        for (int i = 0; 3 > i; i++) {
+            int rowInBlockOffset = (blockFirstRow + i) * SUDOKU_SIZE;
+            for (int j = 0; 3 > j; j++) {
+                if (sudoku.getState()[rowInBlockOffset + blockFirstColumn + j] == digit) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public boolean isValid(Sudoku sudoku, int difficulty) {
+        long clueCount = Arrays.stream(sudoku.getState()).filter(cell -> 0 != cell).count();
+        boolean hasEightOrMoreUniqueDigits = 8 <= IntStream.rangeClosed(1, 9)
+                .filter(digit -> Arrays.stream(sudoku.getState()).anyMatch(cell -> cell == digit))
+                .count();
+        if (-1 == difficulty) {
+            return 17 <= clueCount && hasEightOrMoreUniqueDigits;
+        } else {
+            return hasEightOrMoreUniqueDigits && clueCount == 17 + ((9 - difficulty) * 6L);
+        }
     }
 
     /**
@@ -150,44 +190,5 @@ public class SudokuSolver {
             }
         }
         return -1;
-    }
-
-    /**
-     * Check block acceptance only after checking row and column acceptance since it
-     * is considerably slower
-     */
-    public boolean acceptsNumberInPlace(Sudoku sudoku, int place, int digit) {
-        int rowIndexOffset = place / SUDOKU_SIZE * SUDOKU_SIZE;
-        int columnIndex = place % SUDOKU_SIZE;
-        for (int i = 0; SUDOKU_SIZE > i; i++) {
-            if (sudoku.getState()[rowIndexOffset + i] == digit || sudoku.getState()[columnIndex + i * SUDOKU_SIZE] == digit) {
-                return false;
-            }
-        }
-        int blockFirstRow = place / (3 * SUDOKU_SIZE) * 3;
-        int blockFirstColumn = columnIndex / 3 * 3;
-        for (int i = 0; 3 > i; i++) {
-            int rowInBlockOffset = (blockFirstRow + i) * SUDOKU_SIZE;
-            for (int j = 0; 3 > j; j++) {
-                if (sudoku.getState()[rowInBlockOffset + blockFirstColumn + j] == digit) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    public boolean isValid(Sudoku sudoku, int difficulty) {
-        long clueCount = Arrays.stream(sudoku.getState())
-                .filter(cell -> 0 != cell)
-                .count();
-        boolean hasEightOrMoreUniqueDigits = 8 <= IntStream.rangeClosed(1, 9)
-                .filter(digit -> Arrays.stream(sudoku.getState()).anyMatch(cell -> cell == digit))
-                .count();
-        if (-1 == difficulty) {
-            return 17 <= clueCount && hasEightOrMoreUniqueDigits;
-        } else {
-            return hasEightOrMoreUniqueDigits && clueCount == 17 + ((9 - difficulty) * 6L);
-        }
     }
 }

@@ -43,20 +43,53 @@ public class AssetReportDataProvider {
         if (null != pm) {
             MarketDataDomain pmmd = MarketDataDomain.from(pm);
             kpiGenerator.computeChange(pmmd, current.getPrice());
-            premarket = new PricePointRaw(null, pmmd.getOpen(), pmmd.getHigh(), pmmd.getLow(), pmmd.getPrice(), null, pmmd.getChangePercent());
+            premarket = new PricePointRaw(null,
+                    pmmd.getOpen(),
+                    pmmd.getHigh(),
+                    pmmd.getLow(),
+                    pmmd.getPrice(),
+                    null,
+                    pmmd.getChangePercent());
         }
-        OrderedIndexedSet<PricePointRaw> priceHistory = mdHistory.subList(0, min(mdHistory.size(), HISTORY_DAYS_COUNT)).stream()
-                .map(md -> new PricePointRaw(md.getDate(), md.getOpen(), md.getHigh(), md.getLow(), md.getPrice(), md.getVolume(), null))
+        OrderedIndexedSet<PricePointRaw> priceHistory = mdHistory.subList(0, min(mdHistory.size(), HISTORY_DAYS_COUNT))
+                .stream()
+                .map(md -> new PricePointRaw(md.getDate(),
+                        md.getOpen(),
+                        md.getHigh(),
+                        md.getLow(),
+                        md.getPrice(),
+                        md.getVolume(),
+                        null))
                 .collect(OrderedIndexedSet.toUnmodifiableOrderedIndexedSet());
-        OrderedIndexedSet<NewsItemRaw> news = payload.getNews().stream()
-                .map(a -> new NewsItemRaw(a.getHeadline(), a.getSentiment(), a.getSentimentConfidence(), a.getSummary(), a.getDate()))
+        OrderedIndexedSet<NewsItemRaw> news = payload.getNews()
+                .stream()
+                .map(a -> new NewsItemRaw(a.getHeadline(),
+                        a.getSentiment(),
+                        a.getSentimentConfidence(),
+                        a.getSummary(),
+                        a.getDate()))
                 .collect(OrderedIndexedSet.toUnmodifiableOrderedIndexedSet());
         if (news.size() != payload.getNews().size()) {
             log.warn(NEWS_SERIALIZATION_WARN, payload.getSymbol().getName());
         }
 
         PortfolioManager.SymbolStand stand = portfolioManager.computeStand(payload.getPortfolio(), current);
-        return new AssetReportRaw(payload.getSymbol().getName(), stand.quantity(), stand.positionValue(), stand.averageCost(), stand.pnL(), stand.percentPnl(),
-                priceHistory.size(), premarket, priceHistory, ema20, macdLine1226, macdSignalLine9, rsi14, atr14, obv20, news.size(), news);
+        return new AssetReportRaw(payload.getSymbol().getName(),
+                stand.quantity(),
+                stand.positionValue(),
+                stand.averageCost(),
+                stand.pnL(),
+                stand.percentPnl(),
+                priceHistory.size(),
+                premarket,
+                priceHistory,
+                ema20,
+                macdLine1226,
+                macdSignalLine9,
+                rsi14,
+                atr14,
+                obv20,
+                news.size(),
+                news);
     }
 }

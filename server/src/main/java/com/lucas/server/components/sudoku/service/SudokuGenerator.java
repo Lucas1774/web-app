@@ -10,7 +10,9 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.IntStream;
 
-import static com.lucas.server.common.Constants.*;
+import static com.lucas.server.common.Constants.SUDOKU_NUMBER_OF_CELLS;
+import static com.lucas.server.common.Constants.SUDOKU_SIZE;
+import static com.lucas.server.common.Constants.getDigits;
 
 @Component
 @RequiredArgsConstructor
@@ -50,7 +52,6 @@ public class SudokuGenerator {
     }
 
     private void setDifficulty(Sudoku sudoku, int difficulty) {
-        int cellsToSetToZero = (SUDOKU_NUMBER_OF_CELLS - (17 + ((9 - difficulty) * 6)));
         List<Integer> possibleCells = new ArrayList<>();
         for (int i = 0; SUDOKU_NUMBER_OF_CELLS > i; i++) {
             possibleCells.add(i);
@@ -61,10 +62,12 @@ public class SudokuGenerator {
             possibleCells.remove(possibleCells.get(IntStream.range(0, possibleCells.size())
                     .filter(cellIndex -> digit == sudoku.getState()[possibleCells.get(cellIndex)])
                     .boxed()
-                    .toList().get(random.nextInt(SUDOKU_SIZE))));
+                    .toList()
+                    .get(random.nextInt(SUDOKU_SIZE))));
         }
 
         Collections.shuffle(possibleCells);
+        int cellsToSetToZero = (SUDOKU_NUMBER_OF_CELLS - (17 + ((9 - difficulty) * 6)));
         for (int i = 0; i < cellsToSetToZero; i++) {
             sudoku.set(possibleCells.get(i), 0);
         }

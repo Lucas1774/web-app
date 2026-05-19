@@ -15,19 +15,19 @@ import static com.lucas.server.common.Constants.SENTIMENT;
 @Component
 public class FinbertResponseMapper implements Mapper<JsonNode, NewsDomain> {
 
-    @Override
-    public NewsDomain map(JsonNode json) throws MappingException {
-        try {
-            return new NewsDomain()
-                    .setSentiment(json.get("label").asText())
-                    .setSentimentConfidence(new BigDecimal(json.get("score").asText()).multiply(BigDecimal.valueOf(100)));
-        } catch (Exception e) {
-            throw new MappingException(MessageFormat.format(MAPPING_ERROR, SENTIMENT), e);
-        }
-    }
-
     public NewsDomain map(JsonNode json, NewsDomain news) throws MappingException {
         NewsDomain sentiment = map(json);
         return news.setSentiment(sentiment.getSentiment()).setSentimentConfidence(sentiment.getSentimentConfidence());
+    }
+
+    @Override
+    public NewsDomain map(JsonNode json) throws MappingException {
+        try {
+            return new NewsDomain().setSentiment(json.get("label").asText())
+                    .setSentimentConfidence(new BigDecimal(json.get("score")
+                            .asText()).multiply(BigDecimal.valueOf(100)));
+        } catch (Exception e) {
+            throw new MappingException(MessageFormat.format(MAPPING_ERROR, SENTIMENT), e);
+        }
     }
 }

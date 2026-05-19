@@ -20,14 +20,12 @@ class PortfolioManagerTest {
     void computeStandWithProfit() {
         // given
         SymbolDomain symbol = new SymbolDomain().setId(1L).setName("AAPL");
-        PortfolioDomain portfolio = new PortfolioDomain()
-                .setSymbol(symbol)
+        PortfolioDomain portfolio = new PortfolioDomain().setSymbol(symbol)
                 .setQuantity(new BigDecimal("10"))
                 .setAverageCost(new BigDecimal("100"))
                 .setEffectiveTimestamp(LocalDateTime.of(2024, 1, 1, 0, 0));
 
-        MarketDataDomain last = new MarketDataDomain()
-                .setSymbol(symbol)
+        MarketDataDomain last = new MarketDataDomain().setSymbol(symbol)
                 .setPrice(new BigDecimal("110"))
                 .setOpen(new BigDecimal("108"))
                 .setHigh(new BigDecimal("112"))
@@ -52,14 +50,12 @@ class PortfolioManagerTest {
     void computeStandWithLoss() {
         // given
         SymbolDomain symbol = new SymbolDomain().setId(1L).setName("IBM");
-        PortfolioDomain portfolio = new PortfolioDomain()
-                .setSymbol(symbol)
+        PortfolioDomain portfolio = new PortfolioDomain().setSymbol(symbol)
                 .setQuantity(new BigDecimal("5"))
                 .setAverageCost(new BigDecimal("200"))
                 .setEffectiveTimestamp(LocalDateTime.of(2024, 1, 1, 0, 0));
 
-        MarketDataDomain last = new MarketDataDomain()
-                .setSymbol(symbol)
+        MarketDataDomain last = new MarketDataDomain().setSymbol(symbol)
                 .setPrice(new BigDecimal("180"))
                 .setOpen(new BigDecimal("185"))
                 .setHigh(new BigDecimal("190"))
@@ -81,13 +77,11 @@ class PortfolioManagerTest {
     void computeStandWithZeroQuantity() {
         // given
         SymbolDomain symbol = new SymbolDomain().setId(1L).setName("GOOG");
-        PortfolioDomain portfolio = new PortfolioDomain()
-                .setSymbol(symbol)
+        PortfolioDomain portfolio = new PortfolioDomain().setSymbol(symbol)
                 .setQuantity(BigDecimal.ZERO)
                 .setEffectiveTimestamp(LocalDateTime.of(2024, 1, 1, 0, 0));
 
-        MarketDataDomain last = new MarketDataDomain()
-                .setSymbol(symbol)
+        MarketDataDomain last = new MarketDataDomain().setSymbol(symbol)
                 .setPrice(new BigDecimal("150"))
                 .setPreviousClose(new BigDecimal("145"))
                 .setOpen(new BigDecimal("146"))
@@ -109,15 +103,13 @@ class PortfolioManagerTest {
     void computeStandWithCommission() {
         // given
         SymbolDomain symbol = new SymbolDomain().setId(1L).setName("MSFT");
-        PortfolioDomain portfolio = new PortfolioDomain()
-                .setSymbol(symbol)
+        PortfolioDomain portfolio = new PortfolioDomain().setSymbol(symbol)
                 .setQuantity(new BigDecimal("10"))
                 .setAverageCost(new BigDecimal("100"))
                 .setAverageCommission(new BigDecimal("0.01"))
                 .setEffectiveTimestamp(LocalDateTime.of(2024, 1, 1, 0, 0));
 
-        MarketDataDomain last = new MarketDataDomain()
-                .setSymbol(symbol)
+        MarketDataDomain last = new MarketDataDomain().setSymbol(symbol)
                 .setPrice(new BigDecimal("110"))
                 .setPreviousClose(new BigDecimal("105"))
                 .setOpen(new BigDecimal("106"))

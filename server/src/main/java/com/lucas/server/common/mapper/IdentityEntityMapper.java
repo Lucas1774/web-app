@@ -4,10 +4,9 @@ import org.springframework.stereotype.Component;
 
 /**
  * Identity mapper that performs no transformation.
- * <p>
- * Use this mapper in JPA services for entities that don't have a separate domain model/DTO yet.
+ *
+ * <p>Use this mapper in JPA services for entities that don't have a separate domain model/DTO yet.
  * The entity type is used as both the entity and DTO type in the generic service.
- * <p>
  *
  * @param <T> the entity type (also used as the DTO type)
  */

@@ -7,7 +7,6 @@ import com.lucas.utils.Mapper;
 import com.lucas.utils.exception.MappingException;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSetImpl;
-import com.lucas.utils.orderedindexedset.UnmodifiableOrderedIndexedSet;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -15,11 +14,21 @@ import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 
-import static com.lucas.server.common.Constants.*;
+import static com.lucas.server.common.Constants.MAPPING_ERROR;
+import static com.lucas.server.common.Constants.MARKET_DATA;
+import static com.lucas.server.common.Constants.MARKET_STILL_OPEN_WARN;
+import static com.lucas.server.common.Constants.SYMBOL;
 
 @Component
 @Slf4j
 public class TwelveDataMarketResponseMapper implements Mapper<JsonNode, MarketDataDomain> {
+
+    public MarketDataDomain map(JsonNode json, SymbolDomain symbol) throws MappingException {
+        if (!symbol.getName().equals(json.path(SYMBOL).asText(null))) {
+            throw new MappingException(MessageFormat.format(MAPPING_ERROR, MARKET_DATA));
+        }
+        return map(json).setSymbol(symbol);
+    }
 
     @Override
     public MarketDataDomain map(JsonNode json) throws MappingException {
@@ -27,8 +36,7 @@ public class TwelveDataMarketResponseMapper implements Mapper<JsonNode, MarketDa
             if (json.path("is_market_open").asBoolean(false)) {
                 log.warn(MARKET_STILL_OPEN_WARN);
             }
-            return new MarketDataDomain()
-                    .setOpen(new BigDecimal(json.get("open").asText()))
+            return new MarketDataDomain().setOpen(new BigDecimal(json.get("open").asText()))
                     .setHigh(new BigDecimal(json.get("high").asText()))
                     .setLow(new BigDecimal(json.get("low").asText()))
                     .setPrice(new BigDecimal(json.get("close").asText()))
@@ -42,13 +50,6 @@ public class TwelveDataMarketResponseMapper implements Mapper<JsonNode, MarketDa
         }
     }
 
-    public MarketDataDomain map(JsonNode json, SymbolDomain symbol) throws MappingException {
-        if (!symbol.getName().equals(json.path(SYMBOL).asText(null))) {
-            throw new MappingException(MessageFormat.format(MAPPING_ERROR, MARKET_DATA));
-        }
-        return map(json).setSymbol(symbol);
-    }
-
     public OrderedIndexedSet<MarketDataDomain> mapAll(JsonNode json, SymbolDomain symbol) throws MappingException {
         try {
             if (!symbol.getName().equals(json.at("/meta/symbol").asText(null))) {
@@ -59,8 +60,7 @@ public class TwelveDataMarketResponseMapper implements Mapper<JsonNode, MarketDa
             OrderedIndexedSet<MarketDataDomain> history = new OrderedIndexedSetImpl<>();
             for (JsonNode node : series) {
                 LocalDate date = LocalDate.parse(node.get("datetime").asText().substring(0, 10));
-                MarketDataDomain md = new MarketDataDomain()
-                        .setSymbol(symbol)
+                MarketDataDomain md = new MarketDataDomain().setSymbol(symbol)
                         .setDate(date)
                         .setOpen(new BigDecimal(node.get("open").asText()))
                         .setHigh(new BigDecimal(node.get("high").asText()))
@@ -70,7 +70,7 @@ public class TwelveDataMarketResponseMapper implements Mapper<JsonNode, MarketDa
                 history.add(md);
             }
 
-            return new UnmodifiableOrderedIndexedSet<>(history);
+            return OrderedIndexedSet.copyOf(history);
         } catch (Exception e) {
             throw new MappingException(MessageFormat.format(MAPPING_ERROR, MARKET_DATA), e);
         }

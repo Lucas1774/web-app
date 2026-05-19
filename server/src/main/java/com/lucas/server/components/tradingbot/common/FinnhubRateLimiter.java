@@ -3,7 +3,6 @@ package com.lucas.server.components.tradingbot.common;
 import com.lucas.utils.Interrupts;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSetImpl;
-import com.lucas.utils.orderedindexedset.UnmodifiableOrderedIndexedSet;
 import com.lucas.utils.ratelimiter.SlidingWindowRateLimiter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,8 +22,10 @@ public class FinnhubRateLimiter {
     private final OrderedIndexedSet<Map.Entry<String, SlidingWindowRateLimiter>> keyToLimiterEntries;
     private final AtomicInteger pointer = new AtomicInteger();
 
-    public FinnhubRateLimiter(@Value("${finnhub.api-keys}") List<String> apiKeys, Map<String, SlidingWindowRateLimiter> rateLimiters) {
-        OrderedIndexedSetImpl<Map.Entry<String, SlidingWindowRateLimiter>> orderedIndexedSet = new OrderedIndexedSetImpl<>();
+    public FinnhubRateLimiter(@Value("${finnhub.api-keys}") List<String> apiKeys,
+                              Map<String, SlidingWindowRateLimiter> rateLimiters) {
+        OrderedIndexedSetImpl<Map.Entry<String, SlidingWindowRateLimiter>> orderedIndexedSet =
+                new OrderedIndexedSetImpl<>();
         OrderedIndexedSet<String> finnhubRateLimiterNames = getFinnhubRateLimiterNames();
         for (int i = 0; i < apiKeys.size(); i++) {
             String apiKey = apiKeys.get(i);
@@ -32,7 +33,7 @@ public class FinnhubRateLimiter {
             SlidingWindowRateLimiter rateLimiter = rateLimiters.get(limiterKey);
             orderedIndexedSet.add(Map.entry(apiKey, rateLimiter));
         }
-        keyToLimiterEntries = new UnmodifiableOrderedIndexedSet<>(orderedIndexedSet);
+        keyToLimiterEntries = OrderedIndexedSet.copyOf(orderedIndexedSet);
     }
 
     public String acquirePermission() {
@@ -46,7 +47,7 @@ public class FinnhubRateLimiter {
                 }
 
                 Interrupts.runOrSwallow(() -> Thread.sleep(FINNHUB_RATE_LIMITER_ROTATION_DEBOUNCE_MS),
-                        e -> log.debug(e.getMessage(), e));
+                        e -> log.error(e.getMessage(), e));
             }
         }
     }

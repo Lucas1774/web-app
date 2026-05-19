@@ -16,7 +16,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.util.Map;
 import java.util.Set;
 
-import static com.lucas.server.common.Constants.*;
+import static com.lucas.server.common.Constants.NEWS;
+import static com.lucas.server.common.Constants.REQUEST_MAX_ATTEMPTS;
+import static com.lucas.server.common.Constants.RETRIEVING_DATA_INFO;
+import static com.lucas.server.common.Constants.YAHOO_FINANCE_RATE_LIMITER;
 
 @Component
 @Slf4j
@@ -27,8 +30,10 @@ public class YahooFinanceNewsClient {
     private final SlidingWindowRateLimiter rateLimiter;
     private final String endpoint;
 
-    public YahooFinanceNewsClient(YahooFinanceNewsResponseMapper mapper, HttpRequestClient httpRequestClient,
-                                  Map<String, SlidingWindowRateLimiter> rateLimiters, @Value("${yahoo.news.endpoint}") String endpoint) {
+    public YahooFinanceNewsClient(YahooFinanceNewsResponseMapper mapper,
+                                  HttpRequestClient httpRequestClient,
+                                  Map<String, SlidingWindowRateLimiter> rateLimiters,
+                                  @Value("${yahoo.news.endpoint}") String endpoint) {
         this.mapper = mapper;
         this.httpRequestClient = httpRequestClient;
         rateLimiter = rateLimiters.get(YAHOO_FINANCE_RATE_LIMITER);
@@ -46,6 +51,6 @@ public class YahooFinanceNewsClient {
                 .queryParam("lang", "en-US")
                 .toUriString();
 
-        return mapper.mapAll(httpRequestClient.fetchXml(url), symbol);
+        return mapper.mapAll(httpRequestClient.fetch(url), symbol);
     }
 }

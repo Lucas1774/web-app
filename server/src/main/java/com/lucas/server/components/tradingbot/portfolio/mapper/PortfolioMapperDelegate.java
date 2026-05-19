@@ -17,19 +17,21 @@ public class PortfolioMapperDelegate {
     private final SymbolMapper symbolMapper;
 
     public PortfolioDomain toDto(PortfolioBase entity) {
-        if (null == entity) return null;
-        return new PortfolioDomain(
-                entity.getId(),
+        if (null == entity) {
+            return null;
+        }
+        return new PortfolioDomain(entity.getId(),
                 null != entity.getSymbol() ? symbolMapper.toDto(entity.getSymbol()) : null,
                 entity.getQuantity(),
                 entity.getAverageCost(),
                 entity.getAverageCommission(),
-                entity.getEffectiveTimestamp()
-        );
+                entity.getEffectiveTimestamp());
     }
 
     public PortfolioBase toEntity(PortfolioDomain dto, PortfolioType type) {
-        if (null == dto) return null;
+        if (null == dto) {
+            return null;
+        }
         PortfolioBase res = switch (type) {
             case REAL -> new Portfolio();
             case MOCK -> new PortfolioMock();

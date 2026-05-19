@@ -4,7 +4,15 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.lucas.server.common.jpa.JpaEntity;
 import com.lucas.server.components.shopping.dto.Sortable;
 import com.lucas.server.components.shopping.jpa.category.Category;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -39,25 +47,22 @@ public class Product implements JpaEntity, Sortable {
     private Integer order;
 
     @Override
-    public String toString() {
-        return "Product{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", isRare=" + isRare +
-                ", order=" + order +
-                ", category=" + category +
-                '}';
+    public int hashCode() {
+        return Objects.hashCode(name);
     }
 
     @Override
     public boolean equals(Object o) {
-        if (null == o || getClass() != o.getClass()) return false;
+        if (null == o || getClass() != o.getClass()) {
+            return false;
+        }
         Product product = (Product) o;
         return Objects.equals(name, product.name);
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hashCode(name);
+    public String toString() {
+        return "Product{" + "id=" + id + ", name='" + name + '\'' + ", isRare=" + isRare + ", order=" + order
+               + ", category=" + category + '}';
     }
 }

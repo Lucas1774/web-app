@@ -10,9 +10,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import static com.lucas.server.common.Constants.MarketDataType;
@@ -27,7 +32,9 @@ public class MarketDataController {
     private final DataManager jpaService;
     private final String apiKey;
 
-    public MarketDataController(ControllerUtil controllerUtil, DataManager jpaService, @Value("${security.api-key}") String apiKey) {
+    public MarketDataController(ControllerUtil controllerUtil,
+                                DataManager jpaService,
+                                @Value("${security.api-key}") String apiKey) {
         this.controllerUtil = controllerUtil;
         this.jpaService = jpaService;
         this.apiKey = apiKey;
@@ -38,7 +45,9 @@ public class MarketDataController {
         return controllerUtil.<Set<MarketDataDomain>>getUnauthorizedResponseIfInvalidUser(request.getCookies())
                 .orElseGet(() -> {
                     try {
-                        return ResponseEntity.ok(jpaService.retrieveMarketData(SP500_SYMBOLS, MarketDataType.LAST, false));
+                        return ResponseEntity.ok(jpaService.retrieveMarketData(SP500_SYMBOLS,
+                                MarketDataType.LAST,
+                                false));
                     } catch (ClientException | MappingException e) {
                         log.error(e.getMessage(), e);
                         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -47,11 +56,12 @@ public class MarketDataController {
     }
 
     @GetMapping("last/{symbols}")
-    public ResponseEntity<Set<MarketDataDomain>> fetchAndSaveSome(HttpServletRequest request, @PathVariable Set<String> symbols) {
+    public ResponseEntity<Set<MarketDataDomain>> fetchAndSaveSome(HttpServletRequest request,
+                                                                  @PathVariable Set<String> symbols) {
         return controllerUtil.<Set<MarketDataDomain>>getUnauthorizedResponseIfInvalidUser(request.getCookies())
                 .orElseGet(() -> {
                     try {
-                        return ResponseEntity.ok(jpaService.retrieveMarketData(new HashSet<>(symbols), MarketDataType.LAST, false));
+                        return ResponseEntity.ok(jpaService.retrieveMarketData(symbols, MarketDataType.LAST, false));
                     } catch (ClientException | MappingException e) {
                         log.error(e.getMessage(), e);
                         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -64,7 +74,9 @@ public class MarketDataController {
         return controllerUtil.<Set<MarketDataDomain>>getUnauthorizedResponseIfInvalidUser(request.getCookies())
                 .orElseGet(() -> {
                     try {
-                        return ResponseEntity.ok(jpaService.retrieveMarketData(SP500_SYMBOLS, MarketDataType.HISTORIC, false));
+                        return ResponseEntity.ok(jpaService.retrieveMarketData(SP500_SYMBOLS,
+                                MarketDataType.HISTORIC,
+                                false));
                     } catch (MappingException | ClientException e) {
                         log.error(e.getMessage(), e);
                         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -73,11 +85,14 @@ public class MarketDataController {
     }
 
     @GetMapping("/historic/{symbols}")
-    public ResponseEntity<Set<MarketDataDomain>> fetchAndSaveHistoricSome(HttpServletRequest request, @PathVariable Set<String> symbols) {
+    public ResponseEntity<Set<MarketDataDomain>> fetchAndSaveHistoricSome(HttpServletRequest request,
+                                                                          @PathVariable Set<String> symbols) {
         return controllerUtil.<Set<MarketDataDomain>>getUnauthorizedResponseIfInvalidUser(request.getCookies())
                 .orElseGet(() -> {
                     try {
-                        return ResponseEntity.ok(jpaService.retrieveMarketData(new HashSet<>(symbols), MarketDataType.HISTORIC, false));
+                        return ResponseEntity.ok(jpaService.retrieveMarketData(symbols,
+                                MarketDataType.HISTORIC,
+                                false));
                     } catch (MappingException | ClientException e) {
                         log.error(e.getMessage(), e);
                         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -86,12 +101,13 @@ public class MarketDataController {
     }
 
     @GetMapping("/historic/api/{symbols}")
-    public ResponseEntity<Set<MarketDataDomain>> fetchAndSaveHistoricSomeApi(@RequestHeader("X-API-Key") String requestApiKey, @PathVariable Set<String> symbols) {
+    public ResponseEntity<Set<MarketDataDomain>> fetchAndSaveHistoricSomeApi(
+            @RequestHeader("X-API-Key") String requestApiKey, @PathVariable Set<String> symbols) {
         if (!apiKey.equals(requestApiKey)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         try {
-            return ResponseEntity.ok(jpaService.retrieveMarketData(new HashSet<>(symbols), MarketDataType.HISTORIC, false));
+            return ResponseEntity.ok(jpaService.retrieveMarketData(symbols, MarketDataType.HISTORIC, false));
         } catch (MappingException | ClientException e) {
             log.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

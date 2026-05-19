@@ -23,21 +23,12 @@ public class SymbolJpaService extends GenericJpaServiceDelegate<Symbol, SymbolDo
 
     @Transactional
     public Set<SymbolDomain> getOrCreateByName(Set<String> names) {
-        Set<Symbol> entities = names.stream()
-                .map(name -> new Symbol().setName(name).computeSector())
-                .collect(Collectors.toSet());
-        return delegate.createOrUpdate(this::findUnique,
-                        (oldEntity, newEntity) -> {
-                            oldEntity.computeSector();
-                            return oldEntity;
-                        },
-                        entities).stream()
-                .map(mapper::toDto)
-                .collect(Collectors.toSet());
-    }
-
-    private Set<Symbol> findUnique(Set<Symbol> symbols) {
-        return repository.findByNameIn(symbols.stream().map(Symbol::getName).collect(Collectors.toSet()));
+        Set<Symbol> entities =
+                names.stream().map(name -> new Symbol().setName(name).computeSector()).collect(Collectors.toSet());
+        return delegate.createOrUpdate(this::findUnique, (oldEntity, newEntity) -> {
+            oldEntity.computeSector();
+            return oldEntity;
+        }, entities).stream().map(mapper::toDto).collect(Collectors.toUnmodifiableSet());
     }
 
     @Transactional(readOnly = true)
@@ -47,8 +38,10 @@ public class SymbolJpaService extends GenericJpaServiceDelegate<Symbol, SymbolDo
 
     @Transactional(readOnly = true)
     public Set<SymbolDomain> findAllById(Set<Long> symbolIds) {
-        return repository.findAllById(symbolIds).stream()
-                .map(mapper::toDto)
-                .collect(Collectors.toSet());
+        return repository.findAllById(symbolIds).stream().map(mapper::toDto).collect(Collectors.toUnmodifiableSet());
+    }
+
+    private Set<Symbol> findUnique(Set<Symbol> symbols) {
+        return repository.findByNameIn(symbols.stream().map(Symbol::getName).collect(Collectors.toSet()));
     }
 }

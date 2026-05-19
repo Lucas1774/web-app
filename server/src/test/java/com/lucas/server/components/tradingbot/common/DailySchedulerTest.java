@@ -13,14 +13,20 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import java.time.Duration;
 
 import static org.awaitility.Awaitility.await;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyBoolean;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @TestPropertySource(properties = {
         "scheduler.market-data-cron=* * * * * *",
         "scheduler.news-recommendations-cron=* * * * * *",
         "scheduler.recommendation-inference-five-cron=* * * * * *",
-        "scheduler.recommendation-inference-fifteen-cron=* * * * * *"
-})
+        "scheduler.recommendation-inference-fifteen-cron=* * * * * *"})
 class DailySchedulerTest extends ConfiguredTest {
 
     @MockitoSpyBean
@@ -41,13 +47,18 @@ class DailySchedulerTest extends ConfiguredTest {
     void schedulerInvokesDataManagerRepeatedly() {
         doReturn(true).when(dailyScheduler).shouldRun(any());
         doNothing().when(dailyScheduler).sleep();
-        await().atMost(Duration.ofSeconds(10))
-                .untilAsserted(() -> {
-                    verify(dataManager, atLeastOnce()).retrieveMarketData(any(), any(), anyBoolean());
-                    verify(dataManager, atLeastOnce()).getRandomRecommendations(
-                            any(), any(), any(), anyInt(), anyBoolean(), anyBoolean(), anyBoolean(), anyBoolean(), anyBoolean()
-                    );
-                    verify(dataManager, times(2)).retrieveSnapshotsByName(any());
-                });
+        await().atMost(Duration.ofSeconds(10)).untilAsserted(() -> {
+            verify(dataManager, atLeastOnce()).retrieveMarketData(any(), any(), anyBoolean());
+            verify(dataManager, atLeastOnce()).getRandomRecommendations(any(),
+                    any(),
+                    any(),
+                    anyInt(),
+                    anyBoolean(),
+                    anyBoolean(),
+                    anyBoolean(),
+                    anyBoolean(),
+                    anyBoolean());
+            verify(dataManager, times(2)).retrieveSnapshotsByName(any());
+        });
     }
 }

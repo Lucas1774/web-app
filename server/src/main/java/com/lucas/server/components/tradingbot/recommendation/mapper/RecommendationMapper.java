@@ -22,29 +22,28 @@ public class RecommendationMapper implements EntityMapper<Recommendation, Recomm
 
     @Override
     public RecommendationDomain toDto(Recommendation entity) {
-        if (null == entity) return null;
-        return new RecommendationDomain(
-                entity.getId(),
+        if (null == entity) {
+            return null;
+        }
+        return new RecommendationDomain(entity.getId(),
                 null != entity.getSymbol() ? symbolMapper.toDto(entity.getSymbol()) : null,
                 null != entity.getMarketData() ? entity.getMarketData().getId() : null,
-                entity.getNews().stream()
-                        .map(newsMapper::toDto)
-                        .collect(Collectors.toSet()),
+                entity.getNews().stream().map(newsMapper::toDto).collect(Collectors.toSet()),
                 entity.getAction(),
                 entity.getConfidence(),
                 entity.getRationale(),
                 entity.getDate(),
                 entity.getModel(),
                 entity.getInput(),
-                entity.getErrors()
-        );
+                entity.getErrors());
     }
 
     @Override
     public Recommendation toEntity(RecommendationDomain dto) {
-        if (null == dto) return null;
-        Recommendation recommendation = new Recommendation()
-                .setId(dto.getId())
+        if (null == dto) {
+            return null;
+        }
+        Recommendation recommendation = new Recommendation().setId(dto.getId())
                 .setSymbol(null != dto.getSymbol() ? symbolMapper.toEntity(dto.getSymbol()) : null)
                 .setAction(dto.getAction())
                 .setConfidence(dto.getConfidence())
@@ -59,9 +58,7 @@ public class RecommendationMapper implements EntityMapper<Recommendation, Recomm
         }
 
         if (null != dto.getNews() && !dto.getNews().isEmpty()) {
-            Set<News> newsSet = dto.getNews().stream()
-                    .map(newsMapper::toEntity)
-                    .collect(Collectors.toSet());
+            Set<News> newsSet = dto.getNews().stream().map(newsMapper::toEntity).collect(Collectors.toSet());
             recommendation.addNews(newsSet);
         }
 

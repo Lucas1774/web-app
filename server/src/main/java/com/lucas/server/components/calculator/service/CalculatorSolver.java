@@ -16,11 +16,8 @@ public class CalculatorSolver {
             return new BigDecimal(expression).stripTrailingZeros().toPlainString();
         } catch (NumberFormatException e1) {
             try {
-                return BigDecimal.valueOf(new ExpressionBuilder(expression.replaceAll("\\s+", EMPTY_STRING))
-                                .build()
-                                .evaluate())
-                        .stripTrailingZeros()
-                        .toPlainString();
+                return BigDecimal.valueOf(new ExpressionBuilder(expression.replaceAll("\\s+", EMPTY_STRING)).build()
+                        .evaluate()).stripTrailingZeros().toPlainString();
             } catch (IllegalArgumentException e2) {
                 return INVALID_EXPRESSION;
             }

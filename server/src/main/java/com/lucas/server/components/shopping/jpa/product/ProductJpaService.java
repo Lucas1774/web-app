@@ -36,17 +36,11 @@ public class ProductJpaService extends OrderColumnServiceDelegate<Product, Produ
             return Optional.empty();
         }
 
-        Product product = repository.findByName(productName)
-                .orElseGet(() -> {
-                    int newOrder = repository.findTopByOrderByOrderDesc()
-                            .map(p -> p.getOrder() + 1)
-                            .orElse(1);
-                    return repository.save(new Product()
-                            .setName(productName)
-                            .setOrder(newOrder));
-                });
-        shoppingItemRepository.save(new ShoppingItem()
-                .setUser(userRepository.findByUsername(username).orElse(null))
+        Product product = repository.findByName(productName).orElseGet(() -> {
+            int newOrder = repository.findTopByOrderByOrderDesc().map(p -> p.getOrder() + 1).orElse(1);
+            return repository.save(new Product().setName(productName).setOrder(newOrder));
+        });
+        shoppingItemRepository.save(new ShoppingItem().setUser(userRepository.findByUsername(username).orElse(null))
                 .setProduct(product)
                 .setQuantity(0));
 
@@ -62,12 +56,9 @@ public class ProductJpaService extends OrderColumnServiceDelegate<Product, Produ
         if (null != input.getCategory().getId()) {
             category = categoryRepository.findById(input.getCategory().getId()).orElseThrow();
         } else {
-            Integer maxOrder = categoryRepository.findTopByOrderByOrderDesc()
-                    .map(c -> c.getOrder() + 1)
-                    .orElse(1);
-            category = categoryRepository.save(new Category()
-                    .setName(input.getCategory().getName())
-                    .setOrder(maxOrder));
+            Integer maxOrder = categoryRepository.findTopByOrderByOrderDesc().map(c -> c.getOrder() + 1).orElse(1);
+            category =
+                    categoryRepository.save(new Category().setName(input.getCategory().getName()).setOrder(maxOrder));
         }
 
         return product.setCategory(category);

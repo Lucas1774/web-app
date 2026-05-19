@@ -11,16 +11,28 @@ import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Stream;
 
-import static com.lucas.server.common.Constants.*;
+import static com.lucas.server.common.Constants.AlgorithmKind;
+import static com.lucas.server.common.Constants.CORNERS_LAST_ROW;
+import static com.lucas.server.common.Constants.EDGES_LAST_ROW;
+import static com.lucas.server.common.Constants.LETTER_PAIRS_LAST_ROW;
+import static com.lucas.server.common.Constants.MAPPING_ERROR;
+import static com.lucas.server.common.Constants.PARITY_LAST_ROW;
+import static com.lucas.server.common.Constants.SHEET_CORNERS;
+import static com.lucas.server.common.Constants.SHEET_EDGES;
+import static com.lucas.server.common.Constants.SHEET_LETTER_PAIRS;
+import static com.lucas.server.common.Constants.SHEET_PARITY;
 
 @Component
 public class XlsxToAlgorithmMappingsMapper implements Mapper<InputStream, XlsxToAlgorithmMappingsMapper.Result> {
 
-    private static final Map<String, Integer> CORNER_STICKERS = Map.ofEntries(
-            Map.entry("UFR", 0),
+    private static final Map<String, Integer> CORNER_STICKERS = Map.ofEntries(Map.entry("UFR", 0),
             Map.entry("RUF", 1),
             Map.entry("FUR", 2),
             Map.entry("UFL", 3),
@@ -43,11 +55,9 @@ public class XlsxToAlgorithmMappingsMapper implements Mapper<InputStream, XlsxTo
             Map.entry("BDR", 20),
             Map.entry("DBL", 21),
             Map.entry("BDL", 22),
-            Map.entry("LDB", 23)
-    );
+            Map.entry("LDB", 23));
 
-    private static final Map<String, Integer> EDGE_STICKERS = Map.ofEntries(
-            Map.entry("UF", 0),
+    private static final Map<String, Integer> EDGE_STICKERS = Map.ofEntries(Map.entry("UF", 0),
             Map.entry("FU", 1),
             Map.entry("UR", 2),
             Map.entry("RU", 3),
@@ -70,11 +80,9 @@ public class XlsxToAlgorithmMappingsMapper implements Mapper<InputStream, XlsxTo
             Map.entry("BR", 20),
             Map.entry("RB", 21),
             Map.entry("BL", 22),
-            Map.entry("LB", 23)
-    );
+            Map.entry("LB", 23));
 
-    private static final Map<Integer, String> LETTER_PAIR_EXCEL_INDEX = Map.ofEntries(
-            Map.entry(2, "A"),
+    private static final Map<Integer, String> LETTER_PAIR_EXCEL_INDEX = Map.ofEntries(Map.entry(2, "A"),
             Map.entry(3, "B"),
             Map.entry(4, "C"),
             Map.entry(5, "D"),
@@ -96,22 +104,36 @@ public class XlsxToAlgorithmMappingsMapper implements Mapper<InputStream, XlsxTo
             Map.entry(21, "V"),
             Map.entry(22, "Y"),
             Map.entry(23, "Z"),
-            Map.entry(24, "X")
-    );
+            Map.entry(24, "X"));
 
     // TODO: Migration script on tables. Front-end
     @Override
     public Result map(InputStream input) throws MappingException {
         Result result = new Result(new HashSet<>(), new HashSet<>());
         try (ReadableWorkbook wb = new ReadableWorkbook(input)) {
-            wb.findSheet(SHEET_CORNERS).orElseThrow().openStream().skip(1).limit(CORNERS_LAST_ROW)
+            wb.findSheet(SHEET_CORNERS)
+                    .orElseThrow()
+                    .openStream()
+                    .skip(1)
+                    .limit(CORNERS_LAST_ROW)
                     .forEach(row -> mapAlgsRow(row, result.mappings(), AlgorithmKind.CORNER));
-            wb.findSheet(SHEET_EDGES).orElseThrow().openStream().skip(1).limit(EDGES_LAST_ROW)
+            wb.findSheet(SHEET_EDGES)
+                    .orElseThrow()
+                    .openStream()
+                    .skip(1)
+                    .limit(EDGES_LAST_ROW)
                     .forEach(row -> mapAlgsRow(row, result.mappings(), AlgorithmKind.EDGE));
-            wb.findSheet(SHEET_PARITY).orElseThrow().openStream().skip(1).limit(PARITY_LAST_ROW)
+            wb.findSheet(SHEET_PARITY)
+                    .orElseThrow()
+                    .openStream()
+                    .skip(1)
+                    .limit(PARITY_LAST_ROW)
                     .forEach(row -> mapAlgsRow(row, result.mappings(), AlgorithmKind.PARITY));
-            mapLetterPairsSheet(wb.findSheet(SHEET_LETTER_PAIRS).orElseThrow().openStream()
-                    .skip(1).limit(LETTER_PAIRS_LAST_ROW), result.letterPairs());
+            mapLetterPairsSheet(wb.findSheet(SHEET_LETTER_PAIRS)
+                    .orElseThrow()
+                    .openStream()
+                    .skip(1)
+                    .limit(LETTER_PAIRS_LAST_ROW), result.letterPairs());
         } catch (Exception e) {
             throw new MappingException(MessageFormat.format(MAPPING_ERROR, "algorithm mappings"), e);
         }
@@ -141,21 +163,20 @@ public class XlsxToAlgorithmMappingsMapper implements Mapper<InputStream, XlsxTo
                 .filter(m -> m.getFirstSticker() == first && m.getSecondSticker() == second)
                 .findFirst()
                 .orElseGet(() -> {
-                    AlgorithmMapping m = new AlgorithmMapping()
-                            .setFirstSticker(first)
-                            .setSecondSticker(second);
+                    AlgorithmMapping m = new AlgorithmMapping().setFirstSticker(first).setSecondSticker(second);
                     result.add(m);
                     return m;
                 });
 
         switch (kind) {
             case CORNER -> existing.setCornerAlgorithm(algorithm)
-                    .setCornerType(Objects.requireNonNull(type)
-                    ).setCornerTechnique(Objects.requireNonNull(technique));
+                    .setCornerType(Objects.requireNonNull(type))
+                    .setCornerTechnique(Objects.requireNonNull(technique));
             case EDGE -> existing.setEdgeAlgorithm(algorithm)
                     .setEdgeType(Objects.requireNonNull(type))
                     .setEdgeTechnique(Objects.requireNonNull(technique));
             case PARITY -> existing.setParityAlgorithm(algorithm);
+            default -> throw new IllegalStateException();
         }
     }
 
@@ -169,9 +190,7 @@ public class XlsxToAlgorithmMappingsMapper implements Mapper<InputStream, XlsxTo
                 String secondLetter = LETTER_PAIR_EXCEL_INDEX.get(colIndex);
                 String value = cell(row, colIndex - 1);
 
-                result.add(new LetterPairs()
-                        .setLetterPair(firstLetter + secondLetter)
-                        .setObject(value));
+                result.add(new LetterPairs().setLetterPair(firstLetter + secondLetter).setObject(value));
             }
         }
     }
@@ -185,9 +204,6 @@ public class XlsxToAlgorithmMappingsMapper implements Mapper<InputStream, XlsxTo
         return null == text || text.trim().isEmpty() ? null : text;
     }
 
-    public record Result(
-            Set<AlgorithmMapping> mappings,
-            Set<LetterPairs> letterPairs
-    ) {
+    public record Result(Set<AlgorithmMapping> mappings, Set<LetterPairs> letterPairs) {
     }
 }

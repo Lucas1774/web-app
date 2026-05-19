@@ -19,14 +19,13 @@ public class MarketDataMapper implements EntityMapper<MarketData, MarketDataDoma
 
     @Override
     public MarketDataDomain toDto(MarketData entity) {
-        if (null == entity) return null;
-        return new MarketDataDomain(
-                entity.getId(),
+        if (null == entity) {
+            return null;
+        }
+        return new MarketDataDomain(entity.getId(),
                 null != entity.getSymbol() ? symbolMapper.toDto(entity.getSymbol()) : null,
                 entity.getDate(),
-                entity.getRecommendations().stream()
-                        .map(recommendationMapper::toDto)
-                        .collect(Collectors.toSet()),
+                entity.getRecommendations().stream().map(recommendationMapper::toDto).collect(Collectors.toSet()),
                 entity.getOpen(),
                 entity.getHigh(),
                 entity.getLow(),
@@ -40,15 +39,15 @@ public class MarketDataMapper implements EntityMapper<MarketData, MarketDataDoma
                 entity.getAverageLoss(),
                 entity.getPreviousAtr(),
                 entity.getPreviousAverageGain(),
-                entity.getPreviousAverageLoss()
-        );
+                entity.getPreviousAverageLoss());
     }
 
     @Override
     public MarketData toEntity(MarketDataDomain dto) {
-        if (null == dto) return null;
-        MarketData marketData = new MarketData()
-                .setId(dto.getId())
+        if (null == dto) {
+            return null;
+        }
+        MarketData marketData = new MarketData().setId(dto.getId())
                 .setSymbol(null != dto.getSymbol() ? symbolMapper.toEntity(dto.getSymbol()) : null)
                 .setDate(dto.getDate())
                 .setOpen(dto.getOpen())
@@ -67,7 +66,8 @@ public class MarketDataMapper implements EntityMapper<MarketData, MarketDataDoma
                 .setPreviousAverageLoss(dto.getPreviousAverageLoss());
 
         if (null != dto.getRecommendations()) {
-            dto.getRecommendations().stream()
+            dto.getRecommendations()
+                    .stream()
                     .map(recommendationMapper::toEntity)
                     .forEach(marketData::addRecommendation);
         }

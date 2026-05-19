@@ -37,7 +37,8 @@ class FinnhubNewsResponseMapperTest extends ConfiguredTest {
     void whenMapValidJson_thenReturnNewsEntity() throws Exception {
         // given
         long epoch = 1745463072L;
-        String json = String.format("""
+        String json = String.format(
+                """
                 {
                   "id": %d,
                   "datetime": %d,
@@ -56,30 +57,27 @@ class FinnhubNewsResponseMapperTest extends ConfiguredTest {
         NewsDomain news = mapper.map(node);
 
         // then
-        LocalDateTime expectedDate = Instant.ofEpochSecond(epoch)
-                .atZone(ZoneOffset.UTC)
-                .toLocalDateTime();
+        LocalDateTime expectedDate = Instant.ofEpochSecond(epoch).atZone(ZoneOffset.UTC).toLocalDateTime();
 
-        assertThat(news)
-                .isNotNull()
-                .satisfies(n -> {
-                    assertThat(n.getExternalId()).isEqualTo(epoch);
-                    assertThat(n.getDate()).isEqualTo(expectedDate);
-                    assertThat(n.getHeadline()).isEqualTo("Test Headline");
-                    assertThat(n.getSummary()).isEqualTo("Test Summary");
-                    assertThat(n.getUrl()).isEqualTo("https://example.com/article");
-                    assertThat(n.getSource()).isEqualTo("Finnhub");
-                    assertThat(n.getCategory()).isEqualTo("company");
-                    assertThat(n.getImage()).isEqualTo("https://example.com/image.jpg");
-                    assertThat(n.getSymbols()).isEmpty();
-                });
+        assertThat(news).isNotNull().satisfies(n -> {
+            assertThat(n.getExternalId()).isEqualTo(epoch);
+            assertThat(n.getDate()).isEqualTo(expectedDate);
+            assertThat(n.getHeadline()).isEqualTo("Test Headline");
+            assertThat(n.getSummary()).isEqualTo("Test Summary");
+            assertThat(n.getUrl()).isEqualTo("https://example.com/article");
+            assertThat(n.getSource()).isEqualTo("Finnhub");
+            assertThat(n.getCategory()).isEqualTo("company");
+            assertThat(n.getImage()).isEqualTo("https://example.com/image.jpg");
+            assertThat(n.getSymbols()).isEmpty();
+        });
     }
 
     @Test
     void whenMapAllValidArray_thenReturnNewsList() throws Exception {
         // given
         long now = 1745463072L;
-        String jsonArray = String.format("""
+        String jsonArray = String.format(
+                """
                 [
                   { "id": %d, "datetime": %d, "headline": "H1", "summary": "S1", "url": "u1", "source": "src1", "category": "cat1", "image": "i1" },
                   { "id": %d, "datetime": %d, "headline": "H2", "summary": "S2", "url": "u2", "source": "src2", "category": "cat2", "image": "i2" }
@@ -93,17 +91,12 @@ class FinnhubNewsResponseMapperTest extends ConfiguredTest {
         Set<NewsDomain> list = mapper.mapAll(arrayNode, symbol);
 
         // then
-        assertThat(list)
-                .isNotNull()
+        assertThat(list).isNotNull()
                 .hasSize(2)
-                .allSatisfy(n -> assertThat(n.getSymbols().stream().map(SymbolDomain::getName))
-                        .hasSize(1)
+                .allSatisfy(n -> assertThat(n.getSymbols().stream().map(SymbolDomain::getName)).hasSize(1)
                         .containsExactly(symbol.getName()))
                 .extracting(NewsDomain::getExternalId, NewsDomain::getHeadline)
-                .containsExactlyInAnyOrder(
-                        tuple(now, "H1"),
-                        tuple(now + 60, "H2")
-                );
+                .containsExactlyInAnyOrder(tuple(now, "H1"), tuple(now + 60, "H2"));
     }
 
     @Test
@@ -121,7 +114,8 @@ class FinnhubNewsResponseMapperTest extends ConfiguredTest {
     @Test
     void whenMapAllMissingFields_thenThrowsException() throws Exception {
         // given
-        String jsonArray = """
+        String jsonArray =
+                """
                 [
                   { "datetime": 1, "headline": "H1", "summary": "S1", "url": "u1", "source": "src1", "category": "cat1", "image": "i1" },
                   { "datetime": 2, "headline": "H2", "summary": "S2", "url": "u2", "source": "src2", "category": "cat2", "image": "i2" }
@@ -130,8 +124,8 @@ class FinnhubNewsResponseMapperTest extends ConfiguredTest {
         JsonNode arrayNode = objectMapper.readTree(jsonArray);
 
         // when & then
-        assertThatThrownBy(() -> mapper.mapAll(arrayNode, symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow()))
-                .isInstanceOf(MappingException.class)
-                .hasMessageContaining(MessageFormat.format(MAPPING_ERROR, NEWS));
+        assertThatThrownBy(() -> mapper.mapAll(arrayNode,
+                symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow())).isInstanceOf(
+                MappingException.class).hasMessageContaining(MessageFormat.format(MAPPING_ERROR, NEWS));
     }
 }

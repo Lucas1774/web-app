@@ -28,7 +28,7 @@ class SudokuSolverTest {
 
     @Test
     void benchmark() {
-        assertTrue(true); // useless assertion so Sonar doesn't cry
+        assertTrue(true);
         double totalGenerationDuration = 0;
         double totalDuration = 0;
         for (int i = 0; NUM_RUNS > i; i++) {

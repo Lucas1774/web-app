@@ -22,5 +22,8 @@ public interface JpaService<D> {
      */
     Set<D> findAll();
 
+    /**
+     * @param elements elements to delete
+     */
     void deleteAll(Set<D> elements);
 }

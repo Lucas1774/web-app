@@ -14,7 +14,9 @@ import java.util.Comparator;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.tuple;
 
 class ProductJpaServiceTest extends ConfiguredTest {
 
@@ -34,8 +36,7 @@ class ProductJpaServiceTest extends ConfiguredTest {
     void createProductAndOrLinkToUser() {
         // given: no products, admin user
         assertThat(productService.findAll()).isEmpty();
-        userService.findByUsername("admin")
-                .orElseThrow();
+        userService.findByUsername("admin").orElseThrow();
 
         // when & then
         // 1) first insertion of "X"
@@ -43,9 +44,8 @@ class ProductJpaServiceTest extends ConfiguredTest {
         // product should be created with order=1
         assertThat(p1.getOrder()).isEqualTo(1);
         // shopping item for admin & X should exist
-        assertThat(shoppingItemService.findAllByUsername("admin"))
-                .extracting(si -> si.getProduct().getName(), ShoppingItem::getQuantity)
-                .containsExactly(tuple("X", 0));
+        assertThat(shoppingItemService.findAllByUsername("admin")).extracting(si -> si.getProduct().getName(),
+                ShoppingItem::getQuantity).containsExactly(tuple("X", 0));
 
         assertThat(productService.createProductAndOrLinkToUser("X", "admin")).isEmpty();
 
@@ -60,21 +60,13 @@ class ProductJpaServiceTest extends ConfiguredTest {
         assertThat(p2.getOrder()).isEqualTo(2);
 
         // now two products exist
-        assertThat(productService.findAll())
-                .extracting(Product::getName, Product::getOrder)
-                .containsExactlyInAnyOrder(
-                        tuple("X", 1),
-                        tuple("Y", 2)
-                );
+        assertThat(productService.findAll()).extracting(Product::getName, Product::getOrder)
+                .containsExactlyInAnyOrder(tuple("X", 1), tuple("Y", 2));
 
         // and admin has two shopping items, one per product
-        assertThat(shoppingItemService.findAllByUsername("admin"))
-                .hasSize(2)
+        assertThat(shoppingItemService.findAllByUsername("admin")).hasSize(2)
                 .extracting(si -> si.getProduct().getName(), ShoppingItem::getQuantity)
-                .containsExactlyInAnyOrder(
-                        tuple("X", 0),
-                        tuple("Y", 0)
-                );
+                .containsExactlyInAnyOrder(tuple("X", 0), tuple("Y", 0));
     }
 
     @Test
@@ -84,20 +76,17 @@ class ProductJpaServiceTest extends ConfiguredTest {
 
         // when: update name, mark as rare, change to new
         Category newCategory = new Category().setName("NewCat");
-        Product updated = productService.updateProductCreateCategoryIfNecessary(
-                new Product().setId(original.getId())
-                        .setName("Updated").setIsRare(true)
-                        .setCategory(newCategory));
+        Product updated = productService.updateProductCreateCategoryIfNecessary(new Product().setId(original.getId())
+                .setName("Updated")
+                .setIsRare(true)
+                .setCategory(newCategory));
 
         // then: values updated correctly
         assertThat(updated.getName()).isEqualTo("Updated");
         assertThat(updated.getIsRare()).isTrue();
         assertThat(updated.getCategory().getName()).isEqualTo("NewCat");
         // no new category created
-        assertThat(categoryService.findAll())
-                .extracting(Category::getName)
-                .hasSize(1)
-                .contains("NewCat");
+        assertThat(categoryService.findAll()).extracting(Category::getName).hasSize(1).contains("NewCat");
 
         // when: update with a new category
         updated.setName("UpdatedAgain")
@@ -109,16 +98,13 @@ class ProductJpaServiceTest extends ConfiguredTest {
         assertThat(updated2.getName()).isEqualTo("UpdatedAgain");
         assertThat(updated2.getIsRare()).isFalse();
         assertThat(updated2.getCategory().getName()).isEqualTo("NewCat");
-        assertThat(categoryService.findAll())
-                .hasSize(1)
-                .extracting(Category::getName)
-                .contains("NewCat");
+        assertThat(categoryService.findAll()).hasSize(1).extracting(Category::getName).contains("NewCat");
 
         // when: update non-existent product id
         Product missing = new Product().setId(-999L);
         // then: throw exception
-        assertThatThrownBy(() -> productService.updateProductCreateCategoryIfNecessary(missing))
-                .isInstanceOf(NoSuchElementException.class);
+        assertThatThrownBy(() -> productService.updateProductCreateCategoryIfNecessary(missing)).isInstanceOf(
+                NoSuchElementException.class);
     }
 
     @Test
@@ -127,24 +113,17 @@ class ProductJpaServiceTest extends ConfiguredTest {
         Product p1 = new Product().setName("A").setOrder(2);
         Product p2 = new Product().setName("B").setOrder(1);
         Set<Product> saved = productService.saveAll(Set.of(p1, p2));
-        assertThat(saved)
-                .extracting(Product::getName, Product::getOrder)
-                .containsExactlyInAnyOrder(
-                        tuple("A", 2),
-                        tuple("B", 1)
-                );
+        assertThat(saved).extracting(Product::getName, Product::getOrder)
+                .containsExactlyInAnyOrder(tuple("A", 2), tuple("B", 1));
 
         // when: updating with "A" first "B" second
-        OrderedIndexedSet<Product> input = saved.stream().sorted(Comparator.comparing(Product::getOrder).reversed())
+        OrderedIndexedSet<Product> input = saved.stream()
+                .sorted(Comparator.comparing(Product::getOrder).reversed())
                 .collect(OrderedIndexedSet.toUnmodifiableOrderedIndexedSet());
         Set<Product> result = productService.updateOrders(input);
 
         // then: orders should be reassigned to [1,2]
-        assertThat(result)
-                .extracting(Product::getName, Product::getOrder)
-                .containsExactlyInAnyOrder(
-                        tuple("A", 1),
-                        tuple("B", 2)
-                );
+        assertThat(result).extracting(Product::getName, Product::getOrder)
+                .containsExactlyInAnyOrder(tuple("A", 1), tuple("B", 2));
     }
 }
