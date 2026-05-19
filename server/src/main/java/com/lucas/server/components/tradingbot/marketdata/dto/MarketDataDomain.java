@@ -2,7 +2,12 @@ package com.lucas.server.components.tradingbot.marketdata.dto;
 
 import com.lucas.server.components.tradingbot.common.dto.SymbolDomain;
 import com.lucas.server.components.tradingbot.recommendation.dto.RecommendationDomain;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.Accessors;
 
 import java.math.BigDecimal;
@@ -48,8 +53,7 @@ public class MarketDataDomain {
     private BigDecimal previousAverageLoss;
 
     public static MarketDataDomain from(MarketSnapshotDomain snapshot) {
-        return new MarketDataDomain()
-                .setId(snapshot.getId())
+        return new MarketDataDomain().setId(snapshot.getId())
                 .setSymbol(snapshot.getSymbol())
                 .setOpen(snapshot.getOpen())
                 .setHigh(snapshot.getHigh())

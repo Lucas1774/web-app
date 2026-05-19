@@ -35,7 +35,8 @@ class TwelveDataMarketResponseMapperTest extends ConfiguredTest {
     @Test
     void whenMapValidJson_thenReturnMarketData() throws MappingException, JsonProcessingException {
         // given
-        String json = """
+        String json =
+                """
                 {
                   "symbol": "IBM",
                   "name": "Apple Inc",
@@ -83,7 +84,8 @@ class TwelveDataMarketResponseMapperTest extends ConfiguredTest {
         assertThat(result.getSymbol()).isEqualTo(symbol);
         assertThat(result.getOpen()).isEqualByComparingTo(BigDecimal.valueOf(148.44));
         assertThat(result.getHigh()).isEqualByComparingTo(BigDecimal.valueOf(148.9684));
-        assertThat(result.getLow()).isEqualByComparingTo(BigDecimal.valueOf(147.22099)); // Postgres will later round these
+        assertThat(result.getLow()).isEqualByComparingTo(BigDecimal.valueOf(147.22099)); // Postgres will later round
+        // these
         assertThat(result.getPrice()).isEqualByComparingTo(BigDecimal.valueOf(148.85001));
         assertThat(result.getVolume()).isEqualByComparingTo(67903927L);
         assertThat(result.getDate()).isEqualTo(LocalDate.parse("2021-09-16"));
@@ -98,13 +100,16 @@ class TwelveDataMarketResponseMapperTest extends ConfiguredTest {
         String invalidJson = "{}";
 
         // when & then
-        assertThatThrownBy(() -> mapper.map(objectMapper.readTree(invalidJson), symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow())).isInstanceOf(MappingException.class);
+        assertThatThrownBy(() -> mapper.map(objectMapper.readTree(invalidJson),
+                symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow())).isInstanceOf(
+                MappingException.class);
     }
 
     @Test
     void whenMapMissingFields_thenThrowsException() {
         // given
-        String json = """
+        String json =
+                """
                 {
                   "symbol": "AAPL",
                   "name": "Apple Inc",
@@ -143,15 +148,16 @@ class TwelveDataMarketResponseMapperTest extends ConfiguredTest {
                 """;
 
         // when & then
-        assertThatThrownBy(() -> mapper.map(objectMapper.readTree(json), symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow()))
-                .isInstanceOf(MappingException.class)
-                .hasMessageContaining(MessageFormat.format(MAPPING_ERROR, MARKET_DATA));
+        assertThatThrownBy(() -> mapper.map(objectMapper.readTree(json),
+                symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow())).isInstanceOf(
+                MappingException.class).hasMessageContaining(MessageFormat.format(MAPPING_ERROR, MARKET_DATA));
     }
 
     @Test
     void whenMapMismatchingSymbolField_thenThrowsException() {
         // given
-        String json = """
+        String json =
+                """
                 {
                   "symbol": "IBM",
                   "name": "Apple Inc",
@@ -191,15 +197,16 @@ class TwelveDataMarketResponseMapperTest extends ConfiguredTest {
                 """;
 
         // when & then
-        assertThatThrownBy(() -> mapper.map(objectMapper.readTree(json), symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow()))
-                .isInstanceOf(MappingException.class)
-                .hasMessageContaining(MessageFormat.format(MAPPING_ERROR, MARKET_DATA));
+        assertThatThrownBy(() -> mapper.map(objectMapper.readTree(json),
+                symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow())).isInstanceOf(
+                MappingException.class).hasMessageContaining(MessageFormat.format(MAPPING_ERROR, MARKET_DATA));
     }
 
     @Test
     void whenMapAllValidJson_thenReturnMarketDataList() throws MappingException, JsonProcessingException {
         // given
-        String json = """
+        String json =
+                """
                 {
                   "meta": {
                     "symbol": "AAPL",
@@ -283,7 +290,8 @@ class TwelveDataMarketResponseMapperTest extends ConfiguredTest {
     @Test
     void whenMapAllEmptyTimeSeries_thenReturnEmptyList() throws MappingException, JsonProcessingException {
         // given
-        String json = """
+        String json =
+                """
                 {
                   "meta": {
                     "symbol": "AAPL",

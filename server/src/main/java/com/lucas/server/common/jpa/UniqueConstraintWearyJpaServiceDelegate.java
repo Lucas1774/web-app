@@ -29,9 +29,7 @@ public class UniqueConstraintWearyJpaServiceDelegate<T extends JpaEntity> {
      */
     public Set<T> createIgnoringDuplicates(UnaryOperator<Set<T>> existingFinder, Set<T> entities) {
         Set<T> existing = existingFinder.apply(entities);
-        return new HashSet<>(repository.saveAll(entities.stream()
-                .filter(e -> !existing.contains(e))
-                .toList()));
+        return new HashSet<>(repository.saveAll(entities.stream().filter(e -> !existing.contains(e)).toList()));
     }
 
     /**
@@ -41,14 +39,14 @@ public class UniqueConstraintWearyJpaServiceDelegate<T extends JpaEntity> {
      * @return the updated entities as well as the newly saved ones
      */
     public Set<T> createOrUpdate(UnaryOperator<Set<T>> existingFinder,
-                                 BinaryOperator<T> existingUpdater, Set<T> entities) {
+                                 BinaryOperator<T> existingUpdater,
+                                 Set<T> entities) {
         Set<T> existing = existingFinder.apply(entities);
-        Map<T, T> existingMap = existing.stream()
-                .collect(Collectors.toMap(Function.identity(), Function.identity()));
+        Map<T, T> existingMap =
+                existing.stream().collect(Collectors.toUnmodifiableMap(Function.identity(), Function.identity()));
         return new HashSet<>(repository.saveAll(entities.stream()
-                .map(incoming -> existingMap.containsKey(incoming)
-                        ? existingUpdater.apply(existingMap.get(incoming), incoming)
-                        : incoming)
+                .map(incoming -> existingMap.containsKey(incoming) ? existingUpdater.apply(existingMap.get(incoming),
+                        incoming) : incoming)
                 .toList()));
     }
 }

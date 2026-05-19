@@ -1,7 +1,12 @@
 package com.lucas.server.common.jpa.user;
 
 import com.lucas.server.common.jpa.JpaEntity;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -28,22 +33,21 @@ public class User implements JpaEntity {
     private String password;
 
     @Override
-    public String toString() {
-        return "user{" +
-                "id=" + id +
-                ", username='" + username + '\'' +
-                '}';
+    public int hashCode() {
+        return Objects.hashCode(username);
     }
 
     @Override
     public boolean equals(Object o) {
-        if (null == o || getClass() != o.getClass()) return false;
+        if (null == o || getClass() != o.getClass()) {
+            return false;
+        }
         User user = (User) o;
         return Objects.equals(username, user.username);
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hashCode(username);
+    public String toString() {
+        return "user{" + "id=" + id + ", username='" + username + '\'' + '}';
     }
 }

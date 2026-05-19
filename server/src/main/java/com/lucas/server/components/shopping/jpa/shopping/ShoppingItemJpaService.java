@@ -11,7 +11,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
-public class ShoppingItemJpaService extends GenericJpaServiceDelegate<ShoppingItem, ShoppingItem, ShoppingItemRepository> {
+public class ShoppingItemJpaService
+        extends GenericJpaServiceDelegate<ShoppingItem, ShoppingItem, ShoppingItemRepository> {
 
     private final ProductRepository productRepository;
 
@@ -29,21 +30,22 @@ public class ShoppingItemJpaService extends GenericJpaServiceDelegate<ShoppingIt
 
     @Transactional
     public ShoppingItem updateShoppingItemQuantity(ShoppingItem input, String username) {
-        ShoppingItem shoppingItem = repository.findByUser_UsernameAndProduct_Id(username, input.getProduct().getId())
-                .orElseThrow();
+        ShoppingItem shoppingItem =
+                repository.findByUser_UsernameAndProduct_Id(username, input.getProduct().getId()).orElseThrow();
         return shoppingItem.setQuantity(input.getQuantity());
     }
 
     @Transactional
     public Set<ShoppingItem> updateAllShoppingItemQuantities(String username, int quantity) {
-        return repository.findAllByUser_Username(username).stream()
-                .map(item -> item.setQuantity(quantity)).collect(Collectors.toSet());
+        return repository.findAllByUser_Username(username)
+                .stream()
+                .map(item -> item.setQuantity(quantity))
+                .collect(Collectors.toUnmodifiableSet());
     }
 
     @Transactional
     public ShoppingItem deleteByProductAndUsernameRemoveOrphanedProductIfNecessary(Product input, String username) {
-        ShoppingItem shoppingItem = repository.findByUser_UsernameAndProduct_Id(username, input.getId())
-                .orElseThrow();
+        ShoppingItem shoppingItem = repository.findByUser_UsernameAndProduct_Id(username, input.getId()).orElseThrow();
         repository.delete(shoppingItem);
         Long prodId = shoppingItem.getProduct().getId();
         long count = repository.countByProduct_Id(prodId);

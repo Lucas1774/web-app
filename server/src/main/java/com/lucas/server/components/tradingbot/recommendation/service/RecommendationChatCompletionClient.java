@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.common.exception.ConfigurationException;
-import com.lucas.server.components.tradingbot.common.AIClient;
+import com.lucas.server.components.tradingbot.common.AiClient;
 import com.lucas.server.components.tradingbot.common.dto.SymbolDomain;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;
 import com.lucas.server.components.tradingbot.recommendation.dto.RecommendationDomain;
@@ -33,7 +33,14 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-import static com.lucas.server.common.Constants.*;
+import static com.lucas.server.common.Constants.CLIENT_ROTATION_DEBOUNCE_MS;
+import static com.lucas.server.common.Constants.CONTENT;
+import static com.lucas.server.common.Constants.NY_ZONE;
+import static com.lucas.server.common.Constants.PROMPTING_MODEL_INFO;
+import static com.lucas.server.common.Constants.RECOMMENDATION;
+import static com.lucas.server.common.Constants.RECOMMENDATION_COMPLETION_ERROR;
+import static com.lucas.server.common.Constants.RETRIEVING_DATA_INFO;
+import static com.lucas.server.common.Constants.sanitizeHtml;
 
 @Component
 @Slf4j
@@ -53,21 +60,16 @@ public class RecommendationChatCompletionClient {
                                               AssetReportToMustacheMapper assetReportToMustacheMapper,
                                               ObjectMapper objectMapper,
                                               RecommendationChatCompletionResponseMapper mapper) {
-        try (Reader contextReader = new InputStreamReader(
-                Objects.requireNonNull(getClass().getResourceAsStream("/prompt/context.json")),
-                StandardCharsets.UTF_8);
-             Reader systemReader = new InputStreamReader(
-                     Objects.requireNonNull(getClass().getResourceAsStream("/prompt/system.json")),
-                     StandardCharsets.UTF_8);
-             Reader systemLongTermReader = new InputStreamReader(
-                     Objects.requireNonNull(getClass().getResourceAsStream("/prompt/system-long-term.json")),
-                     StandardCharsets.UTF_8);
-             Reader fewShotReader = new InputStreamReader(
-                     Objects.requireNonNull(getClass().getResourceAsStream("/prompt/few-shot.json")),
-                     StandardCharsets.UTF_8);
-             Reader fixMeReader = new InputStreamReader(
-                     Objects.requireNonNull(getClass().getResourceAsStream("/prompt/fix-me.json")),
-                     StandardCharsets.UTF_8)) {
+        try (Reader contextReader = new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream(
+                "/prompt/context.json")), StandardCharsets.UTF_8);
+             Reader systemReader = new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream(
+                     "/prompt/system.json")), StandardCharsets.UTF_8);
+             Reader systemLongTermReader = new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream(
+                     "/prompt/system-long-term.json")), StandardCharsets.UTF_8);
+             Reader fewShotReader = new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream(
+                     "/prompt/few-shot.json")), StandardCharsets.UTF_8);
+             Reader fixMeReader = new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream(
+                     "/prompt/fix-me.json")), StandardCharsets.UTF_8)) {
             context = objectMapper.readValue(contextReader, ObjectNode.class);
             systemMessage = objectMapper.readValue(systemReader, ObjectNode.class);
             systemLongTermMessage = objectMapper.readValue(systemLongTermReader, ObjectNode.class);
@@ -94,46 +96,63 @@ public class RecommendationChatCompletionClient {
      * @throws JsonProcessingException if JSON processing fails
      * @throws MappingException        if mapping the response fails
      */
-    public Set<RecommendationDomain> getRecommendations(Set<DataManager.SymbolPayload> payload, Set<AIClient> clients, boolean useOldNews) throws ClientException, JsonProcessingException, MappingException {
-        Set<AssetReportRaw> reports = payload.stream()
-                .map(assertReportDataProvider::provide)
-                .collect(Collectors.toSet());
-        ObjectNode rawReportMessage = objectMapper.readValue(assetReportToMustacheMapper.map(reports), ObjectNode.class);
-        Set<SymbolDomain> symbols = payload.stream().map(DataManager.SymbolPayload::getSymbol).collect(Collectors.toSet());
-        ObjectNode contextMessage = context.deepCopy().put(CONTENT, context.get(CONTENT).asText().replace("{date}",
-                ZonedDateTime.now(NY_ZONE).format(DateTimeFormatter.ofPattern("EEEE, yyyy-MM-dd HH:mm:ss z", Locale.ENGLISH))));
+    public Set<RecommendationDomain> getRecommendations(Set<DataManager.SymbolPayload> payload,
+                                                        Set<AiClient> clients,
+                                                        boolean useOldNews)
+            throws ClientException, JsonProcessingException, MappingException {
+        Set<AssetReportRaw> reports =
+                payload.stream().map(assertReportDataProvider::provide).collect(Collectors.toUnmodifiableSet());
+        ObjectNode rawReportMessage =
+                objectMapper.readValue(assetReportToMustacheMapper.map(reports), ObjectNode.class);
+        Set<SymbolDomain> symbols =
+                payload.stream().map(DataManager.SymbolPayload::getSymbol).collect(Collectors.toUnmodifiableSet());
+        ObjectNode contextMessage = context.deepCopy()
+                .put(CONTENT,
+                        context.get(CONTENT)
+                                .asText()
+                                .replace("{date}",
+                                        ZonedDateTime.now(NY_ZONE)
+                                                .format(DateTimeFormatter.ofPattern("EEEE, yyyy-MM-dd HH:mm:ss z",
+                                                        Locale.ENGLISH))));
         ObjectNode usedSystemMessage = useOldNews ? systemLongTermMessage : systemMessage;
 
         log.info(RETRIEVING_DATA_INFO, RECOMMENDATION, symbols);
         AtomicReference<String> completion = new AtomicReference<>();
 
         while (true) {
-            for (AIClient client : clients) {
+            for (AiClient client : clients) {
                 try {
                     ObjectNode reportMessage;
                     if (!client.getConfig().fixMe()) {
                         reportMessage = rawReportMessage;
                     } else {
-                        reportMessage = objectMapper.readValue(fixMeMessage.get(CONTENT).asText()
+                        reportMessage = objectMapper.readValue(fixMeMessage.get(CONTENT)
+                                .asText()
                                 .replace("{placeholder}", rawReportMessage.get(CONTENT).asText()), ObjectNode.class);
                     }
-                    OrderedIndexedSet<JsonNode> prompt = OrderedIndexedSet.of(usedSystemMessage, contextMessage, fewShotMessage, reportMessage);
-                    Optional<Set<RecommendationDomain>> res = client.getRateLimiter().tryCall(() -> client.getConcurrentRequestsRateLimiter().call(() -> {
-                        client.getApiKeyRateLimiter().acquirePermission();
-                        log.info(PROMPTING_MODEL_INFO, client.getConfig().name());
-                        completion.set(client.complete(prompt));
-                        return mapper.mapAll(payload,
-                                objectMapper.readTree(completion.get()),
-                                prompt.stream().map(p -> sanitizeHtml(p.get(CONTENT).asText())).collect(Collectors.joining("\n\n\n")),
-                                client.getConfig().name());
-                    }));
+                    OrderedIndexedSet<JsonNode> prompt =
+                            OrderedIndexedSet.of(usedSystemMessage, contextMessage, fewShotMessage, reportMessage);
+                    Optional<Set<RecommendationDomain>> res =
+                            client.getRateLimiter().tryCall(() -> client.getConcurrentRequestsRateLimiter().call(() -> {
+                                client.getApiKeyRateLimiter().acquirePermission();
+                                log.info(PROMPTING_MODEL_INFO, client.getConfig().name());
+                                completion.set(client.complete(prompt));
+                                return mapper.mapAll(payload,
+                                        objectMapper.readTree(completion.get()),
+                                        prompt.stream()
+                                                .map(p -> sanitizeHtml(p.get(CONTENT).asText()))
+                                                .collect(Collectors.joining("\n\n\n")),
+                                        client.getConfig().name());
+                            }));
                     if (res.isPresent()) {
                         return res.get();
                     }
 
-                    Interrupts.runOrSwallow(() -> Thread.sleep(CLIENT_ROTATION_DEBOUNCE_MS), e -> log.debug(e.getMessage(), e));
+                    Interrupts.runOrSwallow(() -> Thread.sleep(CLIENT_ROTATION_DEBOUNCE_MS),
+                            e -> log.error(e.getMessage(), e));
                 } catch (MappingException | JsonProcessingException e) {
-                    throw new ClientException(MessageFormat.format(RECOMMENDATION_COMPLETION_ERROR, completion.get()), e);
+                    throw new ClientException(MessageFormat.format(RECOMMENDATION_COMPLETION_ERROR, completion.get()),
+                            e);
                 } catch (ClientException e) {
                     throw e;
                 } catch (Exception e) {

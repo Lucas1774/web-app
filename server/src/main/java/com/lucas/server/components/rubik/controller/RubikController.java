@@ -11,7 +11,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -29,8 +33,11 @@ public class RubikController {
     private final RubikSolver solver;
 
     @PostMapping("/upload/algorithm-mappings")
-    public ResponseEntity<XlsxToAlgorithmMappingsMapper.Result> handleFileUpload(HttpServletRequest request, @RequestParam("file") MultipartFile file) {
-        return controllerUtil.<XlsxToAlgorithmMappingsMapper.Result>getUnauthorizedResponseIfInvalidUser(request.getCookies())
+    public ResponseEntity<XlsxToAlgorithmMappingsMapper.Result> handleFileUpload(HttpServletRequest request,
+                                                                                 @RequestParam("file")
+                                                                                 MultipartFile file) {
+        return controllerUtil
+                .<XlsxToAlgorithmMappingsMapper.Result>getUnauthorizedResponseIfInvalidUser(request.getCookies())
                 .orElseGet(() -> {
                     XlsxToAlgorithmMappingsMapper.Result result;
                     try {
@@ -42,15 +49,16 @@ public class RubikController {
                         log.error(e.getMessage(), e);
                         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
                     }
-                    return ResponseEntity.ok(new XlsxToAlgorithmMappingsMapper.Result(
-                            algorithmMappingJpaService.createOrUpdate(result.mappings()),
-                            letterPairsJpaService.createOrUpdate(result.letterPairs())
-                    ));
+                    return ResponseEntity.ok(new XlsxToAlgorithmMappingsMapper
+                            .Result(algorithmMappingJpaService.createOrUpdate(result.mappings()),
+                            letterPairsJpaService.createOrUpdate(result.letterPairs())));
                 });
     }
 
     @GetMapping("/solve")
-    public ResponseEntity<List<RubikSolver.RubikStep>> solve(HttpServletRequest request, @RequestParam("scramble") String scramble) {
-        return ResponseEntity.ok(solver.solve(scramble, controllerUtil.isAdmin(controllerUtil.retrieveUsername(request.getCookies()))));
+    public ResponseEntity<List<RubikSolver.RubikStep>> solve(HttpServletRequest request,
+                                                             @RequestParam("scramble") String scramble) {
+        return ResponseEntity.ok(solver.solve(scramble,
+                controllerUtil.isAdmin(controllerUtil.retrieveUsername(request.getCookies()))));
     }
 }

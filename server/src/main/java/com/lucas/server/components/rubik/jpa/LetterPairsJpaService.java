@@ -27,12 +27,10 @@ public class LetterPairsJpaService extends GenericJpaServiceDelegate<LetterPairs
 
     @Transactional
     public Set<LetterPairs> createOrUpdate(Set<LetterPairs> entities) {
-        return delegate.createOrUpdate(
-                all -> repository.findByLetterPairIn(
-                        entities.stream().map(LetterPairs::getLetterPair).collect(Collectors.toSet())
-                ),
-                (existing, incoming) -> existing
-                        .setPerson(incoming.getPerson())
+        return delegate.createOrUpdate(all -> repository.findByLetterPairIn(entities.stream()
+                        .map(LetterPairs::getLetterPair)
+                        .collect(Collectors.toUnmodifiableSet())),
+                (existing, incoming) -> existing.setPerson(incoming.getPerson())
                         .setAction(incoming.getAction())
                         .setObject(incoming.getObject()),
                 entities);

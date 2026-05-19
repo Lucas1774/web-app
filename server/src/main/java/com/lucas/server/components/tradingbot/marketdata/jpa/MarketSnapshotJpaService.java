@@ -13,7 +13,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
-public class MarketSnapshotJpaService extends GenericJpaServiceDelegate<MarketSnapshot, MarketSnapshotDomain, MarketSnapshotRepository> {
+public class MarketSnapshotJpaService
+        extends GenericJpaServiceDelegate<MarketSnapshot, MarketSnapshotDomain, MarketSnapshotRepository> {
 
     private final MarketSnapshotMapper marketSnapshotMapper;
 
@@ -27,13 +28,18 @@ public class MarketSnapshotJpaService extends GenericJpaServiceDelegate<MarketSn
     // TODO: batch
     @Transactional(readOnly = true)
     public Set<MarketSnapshotDomain> getTopForSymbolId(Long symbolId, int limit) {
-        return repository.findBySymbol_Id(symbolId, PageRequest.of(0, limit, Sort.by("date").descending())).stream().map(marketSnapshotMapper::toDto).collect(Collectors.toSet());
+        return repository.findBySymbol_Id(symbolId, PageRequest.of(0, limit, Sort.by("date").descending()))
+                .stream()
+                .map(marketSnapshotMapper::toDto)
+                .collect(Collectors.toUnmodifiableSet());
     }
 
     // TODO: batch
     @Transactional(readOnly = true)
     public Set<MarketSnapshotDomain> findBySymbolId(Long id) {
-        return repository.findBySymbol_Id(id).stream()
-                .map(marketSnapshotMapper::toDto).collect(Collectors.toSet());
+        return repository.findBySymbol_Id(id)
+                .stream()
+                .map(marketSnapshotMapper::toDto)
+                .collect(Collectors.toUnmodifiableSet());
     }
 }

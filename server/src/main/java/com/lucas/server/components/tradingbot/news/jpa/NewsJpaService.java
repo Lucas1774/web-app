@@ -40,10 +40,11 @@ public class NewsJpaService extends GenericJpaServiceDelegate<News, NewsDomain, 
     // TODO: batch
     @Transactional(readOnly = true)
     public OrderedIndexedSet<NewsDomain> getTopForSymbolId(Long symbolId, int limit) {
-        return repository.findBySymbols_IdAndSentimentNotOrSymbols_IdAndSentimentIsNull(
-                        symbolId, "neutral", symbolId, PageRequest.of(
-                                0, limit, Sort.by("date").descending()
-                        )).stream()
+        return repository.findBySymbols_IdAndSentimentNotOrSymbols_IdAndSentimentIsNull(symbolId,
+                        "neutral",
+                        symbolId,
+                        PageRequest.of(0, limit, Sort.by("date").descending()))
+                .stream()
                 .map(mapper::toDto)
                 .collect(OrderedIndexedSet.toUnmodifiableOrderedIndexedSet());
     }
@@ -51,27 +52,22 @@ public class NewsJpaService extends GenericJpaServiceDelegate<News, NewsDomain, 
     // Commit on finish so that nested threads that lost transactional context can see changes
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Set<NewsDomain> createOrUpdate(Set<NewsDomain> entities) {
-        Set<News> newsEntities = entities.stream()
-                .map(mapper::toEntity)
-                .collect(Collectors.toSet());
-        return delegate.createOrUpdate(allEntities -> repository.findByExternalIdIn(
-                                allEntities.stream().map(News::getExternalId).collect(Collectors.toSet())
-                        ),
-                        (oldEntity, newEntity) -> {
-                            for (Symbol symbol : newEntity.getSymbols()) {
-                                oldEntity.getSymbols().add(symbol);
-                                symbol.getNews().add(oldEntity);
-                            }
-                            return oldEntity;
-                        },
-                        newsEntities).stream()
-                .map(mapper::toDto)
-                .collect(Collectors.toSet());
+        Set<News> newsEntities = entities.stream().map(mapper::toEntity).collect(Collectors.toSet());
+        return delegate.createOrUpdate(allEntities -> repository.findByExternalIdIn(allEntities.stream()
+                .map(News::getExternalId)
+                .collect(Collectors.toUnmodifiableSet())), (oldEntity, newEntity) -> {
+            for (Symbol symbol : newEntity.getSymbols()) {
+                oldEntity.getSymbols().add(symbol);
+                symbol.getNews().add(oldEntity);
+            }
+            return oldEntity;
+        }, newsEntities).stream().map(mapper::toDto).collect(Collectors.toUnmodifiableSet());
     }
 
     @Transactional
     public Set<NewsDomain> generateSentiment(Set<Long> symbolIds, LocalDateTime from, LocalDateTime to) {
-        return repository.findAllBySymbols_IdInAndDateBetween(symbolIds, from, to).stream()
+        return repository.findAllBySymbols_IdInAndDateBetween(symbolIds, from, to)
+                .stream()
                 .filter(news -> null == news.getSentiment() || null == news.getSentimentConfidence())
                 .flatMap(newsEntity -> {
                     try {
@@ -82,20 +78,16 @@ public class NewsJpaService extends GenericJpaServiceDelegate<News, NewsDomain, 
                         return Stream.empty();
                     }
                 })
-                .collect(Collectors.toSet());
+                .collect(Collectors.toUnmodifiableSet());
     }
 
     @Transactional(readOnly = true)
     public Set<NewsDomain> findOrphanedNews() {
-        return repository.findBySymbolsIsEmpty().stream()
-                .map(mapper::toDto)
-                .collect(Collectors.toSet());
+        return repository.findBySymbolsIsEmpty().stream().map(mapper::toDto).collect(Collectors.toUnmodifiableSet());
     }
 
     @Transactional(readOnly = true)
     public Set<NewsDomain> findByIdIn(Set<Long> newsIds) {
-        return repository.findByIdIn(newsIds).stream()
-                .map(mapper::toDto)
-                .collect(Collectors.toSet());
+        return repository.findByIdIn(newsIds).stream().map(mapper::toDto).collect(Collectors.toUnmodifiableSet());
     }
 }

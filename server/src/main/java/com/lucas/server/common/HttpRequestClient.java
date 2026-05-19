@@ -24,14 +24,6 @@ public class HttpRequestClient {
     private final RestTemplate restTemplate;
     private final DocumentBuilderFactory documentBuilderFactory;
 
-    private static void mockUserAgent(HttpHeaders headers) {
-        headers.set(HttpHeaders.USER_AGENT,
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
-                        "AppleWebKit/537.36 (KHTML, like Gecko) " +
-                        "Chrome/115.0.0.0 Safari/537.36"
-        );
-    }
-
     public JsonNode fetch(String url, boolean mockUserAgent) throws ClientException {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
@@ -46,7 +38,13 @@ public class HttpRequestClient {
         }
     }
 
-    public JsonNode fetch(String url, String body) throws ClientException {
+    private static void mockUserAgent(HttpHeaders headers) {
+        headers.set(HttpHeaders.USER_AGENT,
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " + "AppleWebKit/537.36 (KHTML, like Gecko) "
+                + "Chrome/115.0.0.0 Safari/537.36");
+    }
+
+    public JsonNode fetchFromString(String url, String body) throws ClientException {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
         headers.setContentType(MediaType.TEXT_PLAIN);
@@ -58,7 +56,8 @@ public class HttpRequestClient {
         }
     }
 
-    public JsonNode fetch(String url, String apiKey, JsonNode body, boolean mockUserAgent) throws ClientException {
+    public JsonNode fetchFromJson(String url, String apiKey, JsonNode body, boolean mockUserAgent)
+            throws ClientException {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -80,11 +79,11 @@ public class HttpRequestClient {
         mockUserAgent(headers);
         HttpEntity<Void> request = new HttpEntity<>(headers);
         try {
-            return documentBuilderFactory.newDocumentBuilder().parse(
-                    new ByteArrayInputStream(Objects.requireNonNull(
-                            restTemplate.exchange(url, HttpMethod.GET, request, String.class).getBody()
-                    ).getBytes(StandardCharsets.UTF_8))
-            );
+            return documentBuilderFactory.newDocumentBuilder()
+                    .parse(new ByteArrayInputStream(Objects.requireNonNull(restTemplate.exchange(url,
+                            HttpMethod.GET,
+                            request,
+                            String.class).getBody()).getBytes(StandardCharsets.UTF_8)));
         } catch (Exception e) {
             throw new ClientException(e);
         }

@@ -3,7 +3,13 @@ package com.lucas.server.components.sudoku.jpa;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.lucas.server.common.jpa.JpaEntity;
 import com.lucas.server.components.sudoku.mapper.SudokuAttributeConverter;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -56,31 +62,35 @@ public class Sudoku implements JpaEntity {
     }
 
     @Override
+    public int hashCode() {
+        return Objects.hash(Arrays.hashCode(state));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (null == o || getClass() != o.getClass()) {
+            return false;
+        }
+        Sudoku sudoku = (Sudoku) o;
+        return Objects.deepEquals(state, sudoku.state);
+    }
+
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; SUDOKU_SIZE > i; i++) {
-            if (0 == i % 3)
+            if (0 == i % 3) {
                 sb.append("+-------+-------+-------+\n");
+            }
             for (int j = 0; SUDOKU_SIZE > j; j++) {
-                if (0 == j % 3)
+                if (0 == j % 3) {
                     sb.append("| ");
+                }
                 sb.append(state[i * SUDOKU_SIZE + j]).append(' ');
             }
             sb.append("|\n");
         }
         sb.append("+-------+-------+-------+\n");
         return sb.toString();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (null == o || getClass() != o.getClass()) return false;
-        Sudoku sudoku = (Sudoku) o;
-        return Objects.deepEquals(state, sudoku.state);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(Arrays.hashCode(state));
     }
 }

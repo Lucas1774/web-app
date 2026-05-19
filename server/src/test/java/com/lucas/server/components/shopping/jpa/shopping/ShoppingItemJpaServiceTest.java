@@ -34,37 +34,20 @@ class ShoppingItemJpaServiceTest extends ConfiguredTest {
         Category c2 = new Category().setName("C2").setOrder(2);
         categoryService.saveAll(Set.of(c1, c2));
 
-        Product prodA = new Product()
-                .setName("ProdA")
-                .setIsRare(false)
-                .setCategory(c1)
-                .setOrder(100);
-        Product prodB = new Product()
-                .setName("ProdB")
-                .setIsRare(false)
-                .setCategory(c2)
-                .setOrder(200);
+        Product prodA = new Product().setName("ProdA").setIsRare(false).setCategory(c1).setOrder(100);
+        Product prodB = new Product().setName("ProdB").setIsRare(false).setCategory(c2).setOrder(200);
         productService.saveAll(Set.of(prodA, prodB));
 
-        shoppingItemService.saveAll(Set.of(
-                new ShoppingItem()
-                        .setUser(userService.findByUsername("admin").orElseThrow())
+        shoppingItemService.saveAll(Set.of(new ShoppingItem().setUser(userService.findByUsername("admin").orElseThrow())
                         .setProduct(prodB)
                         .setQuantity(5),
-                new ShoppingItem()
-                        .setUser(userService.findByUsername("default").orElseThrow())
+                new ShoppingItem().setUser(userService.findByUsername("default").orElseThrow())
                         .setProduct(prodA)
-                        .setQuantity(3)
-        ));
+                        .setQuantity(3)));
 
         // when & then: only ProdB is returned
-        assertThat(shoppingItemService.findAllByUsername("admin"))
-                .hasSize(1)
-                .extracting(
-                        s -> s.getProduct().getName(),
-                        ShoppingItem::getQuantity,
-                        s -> s.getProduct().getOrder()
-                )
+        assertThat(shoppingItemService.findAllByUsername("admin")).hasSize(1)
+                .extracting(s -> s.getProduct().getName(), ShoppingItem::getQuantity, s -> s.getProduct().getOrder())
                 .containsExactly(tuple("ProdB", 5, 200));
     }
 
@@ -82,11 +65,8 @@ class ShoppingItemJpaServiceTest extends ConfiguredTest {
         Set<ShoppingItem> updated = shoppingItemService.updateAllShoppingItemQuantities("admin", 7);
 
         // then: both items have quantity 7
-        assertThat(updated).hasSize(2)
-                .extracting(ShoppingItem::getQuantity)
-                .containsExactlyInAnyOrder(7, 7);
-        assertThat(shoppingItemService.findAllByUsername("admin"))
-                .extracting(ShoppingItem::getQuantity)
+        assertThat(updated).hasSize(2).extracting(ShoppingItem::getQuantity).containsExactlyInAnyOrder(7, 7);
+        assertThat(shoppingItemService.findAllByUsername("admin")).extracting(ShoppingItem::getQuantity)
                 .containsExactlyInAnyOrder(7, 7);
     }
 
@@ -94,15 +74,13 @@ class ShoppingItemJpaServiceTest extends ConfiguredTest {
     void updateShoppingItemQuantity() {
         // given: admin item auto-created and an item for default user
         Product prod = productService.createProductAndOrLinkToUser("P", "admin").orElseThrow();
-        shoppingItemService.saveAll(
-                Set.of(new ShoppingItem()
-                        .setUser(userService.findByUsername("default").orElseThrow())
-                        .setProduct(prod).setQuantity(2))
-        );
+        shoppingItemService.saveAll(Set.of(new ShoppingItem().setUser(userService.findByUsername("default")
+                .orElseThrow()).setProduct(prod).setQuantity(2)));
 
         // when: update admin quantity to 10
-        ShoppingItem updated = shoppingItemService.updateShoppingItemQuantity(
-                new ShoppingItem().setProduct(prod).setQuantity(10), "admin");
+        ShoppingItem updated =
+                shoppingItemService.updateShoppingItemQuantity(new ShoppingItem().setProduct(prod).setQuantity(10),
+                        "admin");
 
         // then: only admin item updated
         assertThat(updated.getQuantity()).isEqualTo(10);
@@ -116,22 +94,20 @@ class ShoppingItemJpaServiceTest extends ConfiguredTest {
     void deleteByProductAndUsernameRemoveOrphanedProductIfNecessary() {
         // given: one item per user
         Product p = productService.createProductAndOrLinkToUser("ToDel", "admin").orElseThrow();
-        shoppingItemService.saveAll(
-                Set.of(new ShoppingItem().setUser(userService.findByUsername("default").orElseThrow())
-                        .setProduct(p).setQuantity(5))
-        );
+        shoppingItemService.saveAll(Set.of(new ShoppingItem().setUser(userService.findByUsername("default")
+                .orElseThrow()).setProduct(p).setQuantity(5)));
         // admin already has item from insertProduct
         assertThat(shoppingItemService.findAll()).hasSize(2);
         assertThat(productService.findAll()).hasSize(1);
 
         // when: delete admin's item
-        ShoppingItem deleted = shoppingItemService.deleteByProductAndUsernameRemoveOrphanedProductIfNecessary(p, "admin");
+        ShoppingItem deleted =
+                shoppingItemService.deleteByProductAndUsernameRemoveOrphanedProductIfNecessary(p, "admin");
 
         // then: product still exists, only default remains
         assertThat(deleted.getUser().getUsername()).isEqualTo("admin");
         assertThat(productService.findAll()).isNotEmpty();
-        assertThat(shoppingItemService.findAll())
-                .hasSize(1)
+        assertThat(shoppingItemService.findAll()).hasSize(1)
                 .extracting(si -> si.getUser().getUsername())
                 .containsExactly("default");
 

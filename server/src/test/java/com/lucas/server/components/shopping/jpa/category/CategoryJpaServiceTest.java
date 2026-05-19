@@ -19,29 +19,18 @@ class CategoryJpaServiceTest extends ConfiguredTest {
     @Test
     void findAllByOrderByOrderAsc() {
         // given
-        Category category1 = new Category()
-                .setName("x")
-                .setOrder(10);
-        Category category2 = new Category()
-                .setName("y")
-                .setOrder(20);
+        Category category1 = new Category().setName("x").setOrder(10);
+        Category category2 = new Category().setName("y").setOrder(20);
         categoryService.saveAll(Set.of(category2, category1));
 
         // when
         OrderedIndexedSet<Category> result = categoryService.findAllByOrderByOrderAsc();
 
         // then
-        assertThat(result)
-                .hasSize(2)
-                .extracting(Category::getOrder)
-                .containsExactly(10, 20);
+        assertThat(result).hasSize(2).extracting(Category::getOrder).containsExactly(10, 20);
 
-        assertThat(result)
-                .extracting(Category::getName, Category::getOrder)
-                .containsExactly(
-                        tuple("x", 10),
-                        tuple("y", 20)
-                );
+        assertThat(result).extracting(Category::getName, Category::getOrder)
+                .containsExactly(tuple("x", 10), tuple("y", 20));
     }
 
     @Test
@@ -50,24 +39,17 @@ class CategoryJpaServiceTest extends ConfiguredTest {
         Category c1 = new Category().setName("A").setOrder(2);
         Category c2 = new Category().setName("B").setOrder(1);
         Set<Category> saved = categoryService.saveAll(Set.of(c1, c2));
-        assertThat(saved)
-                .extracting(Category::getName, Category::getOrder)
-                .containsExactlyInAnyOrder(
-                        tuple("A", 2),
-                        tuple("B", 1)
-                );
+        assertThat(saved).extracting(Category::getName, Category::getOrder)
+                .containsExactlyInAnyOrder(tuple("A", 2), tuple("B", 1));
 
         // when: updating with "A" first "B" second
-        OrderedIndexedSet<Category> input = saved.stream().sorted(Comparator.comparing(Category::getOrder).reversed())
+        OrderedIndexedSet<Category> input = saved.stream()
+                .sorted(Comparator.comparing(Category::getOrder).reversed())
                 .collect(OrderedIndexedSet.toUnmodifiableOrderedIndexedSet());
         Set<Category> result = categoryService.updateOrders(input);
 
         // then: orders should be reassigned to [1,2]
-        assertThat(result)
-                .extracting(Category::getName, Category::getOrder)
-                .containsExactlyInAnyOrder(
-                        tuple("A", 1),
-                        tuple("B", 2)
-                );
+        assertThat(result).extracting(Category::getName, Category::getOrder)
+                .containsExactlyInAnyOrder(tuple("A", 1), tuple("B", 2));
     }
 }

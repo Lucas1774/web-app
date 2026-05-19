@@ -36,42 +36,60 @@ public class PortfolioManager {
             positionValue = quantity.multiply(averageCost).setScale(4, RoundingMode.HALF_UP);
             pnL = last.getPrice().subtract(averageCost).multiply(quantity).setScale(4, RoundingMode.HALF_UP);
             percentPnL = (last.getPrice().subtract(averageCost)).divide(averageCost, 8, RoundingMode.HALF_UP)
-                    .multiply(BigDecimal.valueOf(100)).setScale(4, RoundingMode.HALF_UP);
+                    .multiply(BigDecimal.valueOf(100))
+                    .setScale(4, RoundingMode.HALF_UP);
             if (null == averageCommission) {
                 netRelativePosition = null;
             } else {
-                BigDecimal averageCostNoCommission = averageCost
-                        .divide(BigDecimal.ONE.add(averageCommission), 8, RoundingMode.HALF_UP);
-                netRelativePosition = last.getPrice().subtract(averageCostNoCommission).divide(averageCostNoCommission, 8, RoundingMode.HALF_UP)
-                        .multiply(BigDecimal.valueOf(100)).setScale(4, RoundingMode.HALF_UP);
+                BigDecimal averageCostNoCommission =
+                        averageCost.divide(BigDecimal.ONE.add(averageCommission), 8, RoundingMode.HALF_UP);
+                netRelativePosition = last.getPrice()
+                        .subtract(averageCostNoCommission)
+                        .divide(averageCostNoCommission, 8, RoundingMode.HALF_UP)
+                        .multiply(BigDecimal.valueOf(100))
+                        .setScale(4, RoundingMode.HALF_UP);
             }
         }
-        BigDecimal percentDayChange = last.getPrice().subtract(last.getPreviousClose()).divide(last.getPreviousClose(), 8, RoundingMode.HALF_UP)
-                .multiply(BigDecimal.valueOf(100)).setScale(4, RoundingMode.HALF_UP);
+        BigDecimal percentDayChange = last.getPrice()
+                .subtract(last.getPreviousClose())
+                .divide(last.getPreviousClose(), 8, RoundingMode.HALF_UP)
+                .multiply(BigDecimal.valueOf(100))
+                .setScale(4, RoundingMode.HALF_UP);
 
-        return new SymbolStand(portfolio.getSymbol(), last.getPrice(), last.getOpen(), last.getHigh(), last.getLow(), percentDayChange, last.getVolume(),
-                portfolio.getEffectiveTimestamp(), quantity, averageCost, positionValue, pnL, percentPnL, netRelativePosition,
-                last.getRecommendations().stream()
+        return new SymbolStand(portfolio.getSymbol(),
+                last.getPrice(),
+                last.getOpen(),
+                last.getHigh(),
+                last.getLow(),
+                percentDayChange,
+                last.getVolume(),
+                portfolio.getEffectiveTimestamp(),
+                quantity,
+                averageCost,
+                positionValue,
+                pnL,
+                percentPnL,
+                netRelativePosition,
+                last.getRecommendations()
+                        .stream()
                         .max(Comparator.comparing(RecommendationDomain::getDate))
                         .orElse(null));
     }
 
-    public record SymbolStand(
-            SymbolDomain symbol,
-            BigDecimal price,
-            BigDecimal open,
-            BigDecimal high,
-            BigDecimal low,
-            BigDecimal percentDayChange,
-            Long volume,
-            LocalDateTime lastMoveDate,
-            BigDecimal quantity,
-            BigDecimal averageCost,
-            BigDecimal positionValue,
-            BigDecimal pnL,
-            BigDecimal percentPnl,
-            BigDecimal netRelativePosition,
-            RecommendationDomain recommendation
-    ) {
+    public record SymbolStand(SymbolDomain symbol,
+                              BigDecimal price,
+                              BigDecimal open,
+                              BigDecimal high,
+                              BigDecimal low,
+                              BigDecimal percentDayChange,
+                              Long volume,
+                              LocalDateTime lastMoveDate,
+                              BigDecimal quantity,
+                              BigDecimal averageCost,
+                              BigDecimal positionValue,
+                              BigDecimal pnL,
+                              BigDecimal percentPnl,
+                              BigDecimal netRelativePosition,
+                              RecommendationDomain recommendation) {
     }
 }

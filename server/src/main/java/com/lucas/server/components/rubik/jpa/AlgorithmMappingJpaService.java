@@ -13,37 +13,40 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
-public class AlgorithmMappingJpaService extends GenericJpaServiceDelegate<AlgorithmMapping, AlgorithmMapping, AlgorithmMappingRepository> {
+public class AlgorithmMappingJpaService
+        extends GenericJpaServiceDelegate<AlgorithmMapping, AlgorithmMapping, AlgorithmMappingRepository> {
 
     private final UniqueConstraintWearyJpaServiceDelegate<AlgorithmMapping> delegate;
 
-    public AlgorithmMappingJpaService(AlgorithmMappingRepository repository, EntityMapper<AlgorithmMapping, AlgorithmMapping> mapper) {
+    public AlgorithmMappingJpaService(AlgorithmMappingRepository repository,
+                                      EntityMapper<AlgorithmMapping, AlgorithmMapping> mapper) {
         super(repository, mapper);
         delegate = new UniqueConstraintWearyJpaServiceDelegate<>(repository);
     }
 
     @Transactional(readOnly = true)
     public Optional<AlgorithmMapping> findByStickers(int firstSticker, int secondSticker, AlgorithmKind kind) {
-        return repository.findByFirstStickerAndSecondSticker(firstSticker, secondSticker)
-                .filter(m -> switch (kind) {
-                    case EDGE -> null != m.getEdgeAlgorithm();
-                    case CORNER -> null != m.getCornerAlgorithm();
-                    case PARITY -> null != m.getParityAlgorithm();
-                });
+        return repository.findByFirstStickerAndSecondSticker(firstSticker, secondSticker).filter(m -> switch (kind) {
+            case EDGE -> null != m.getEdgeAlgorithm();
+            case CORNER -> null != m.getCornerAlgorithm();
+            case PARITY -> null != m.getParityAlgorithm();
+        });
     }
 
     @Transactional
     public Set<AlgorithmMapping> createOrUpdate(Set<AlgorithmMapping> entities) {
-        Set<Integer> firstStickers = entities.stream().map(AlgorithmMapping::getFirstSticker).collect(Collectors.toSet());
-        Set<Integer> secondStickers = entities.stream().map(AlgorithmMapping::getSecondSticker).collect(Collectors.toSet());
-        return delegate.createOrUpdate(
-                all -> repository.findByFirstStickerInAndSecondStickerIn(firstStickers, secondStickers).stream()
-                        .filter(existing -> all.stream().anyMatch(e ->
-                                Objects.equals(e.getFirstSticker(), existing.getFirstSticker()) &&
-                                        Objects.equals(e.getSecondSticker(), existing.getSecondSticker())))
+        Set<Integer> firstStickers =
+                entities.stream().map(AlgorithmMapping::getFirstSticker).collect(Collectors.toUnmodifiableSet());
+        Set<Integer> secondStickers =
+                entities.stream().map(AlgorithmMapping::getSecondSticker).collect(Collectors.toUnmodifiableSet());
+        return delegate.createOrUpdate(all -> repository.findByFirstStickerInAndSecondStickerIn(firstStickers,
+                                secondStickers)
+                        .stream()
+                        .filter(existing -> all.stream()
+                                .anyMatch(e -> Objects.equals(e.getFirstSticker(), existing.getFirstSticker())
+                                               && Objects.equals(e.getSecondSticker(), existing.getSecondSticker())))
                         .collect(Collectors.toSet()),
-                (existing, incoming) -> existing
-                        .setEdgeAlgorithm(incoming.getEdgeAlgorithm())
+                (existing, incoming) -> existing.setEdgeAlgorithm(incoming.getEdgeAlgorithm())
                         .setCornerAlgorithm(incoming.getCornerAlgorithm())
                         .setParityAlgorithm(incoming.getParityAlgorithm())
                         .setEdgeType(incoming.getEdgeType())

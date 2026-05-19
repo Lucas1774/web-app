@@ -34,7 +34,8 @@ class FinnhubMarketResponseMapperTest extends ConfiguredTest {
     @Test
     void whenMapValidJson_thenReturnMarketData() throws MappingException, JsonProcessingException {
         // given
-        String json = """
+        String json =
+                """
                 {
                   "c" : 198.53,
                   "d" : 1.04,
@@ -71,13 +72,16 @@ class FinnhubMarketResponseMapperTest extends ConfiguredTest {
         String invalidJson = "{}";
 
         // when & then
-        assertThatThrownBy(() -> mapper.map(objectMapper.readTree(invalidJson), symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow())).isInstanceOf(MappingException.class);
+        assertThatThrownBy(() -> mapper.map(objectMapper.readTree(invalidJson),
+                symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow())).isInstanceOf(
+                MappingException.class);
     }
 
     @Test
     void whenMapMissingFields_thenThrowsException() {
         // given
-        String json = """
+        String json =
+                """
                 {
                   "c" : 198.53,
                   "d" : 1.04,
@@ -90,8 +94,8 @@ class FinnhubMarketResponseMapperTest extends ConfiguredTest {
                 """;
 
         // when & then
-        assertThatThrownBy(() -> mapper.map(objectMapper.readTree(json), symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow()))
-                .isInstanceOf(MappingException.class)
-                .hasMessageContaining(MessageFormat.format(MAPPING_ERROR, MARKET_DATA));
+        assertThatThrownBy(() -> mapper.map(objectMapper.readTree(json),
+                symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow())).isInstanceOf(
+                MappingException.class).hasMessageContaining(MessageFormat.format(MAPPING_ERROR, MARKET_DATA));
     }
 }

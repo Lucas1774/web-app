@@ -15,7 +15,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Map;
 
-import static com.lucas.server.common.Constants.*;
+import static com.lucas.server.common.Constants.MARKET_SNAPSHOT;
+import static com.lucas.server.common.Constants.REQUEST_MAX_ATTEMPTS;
+import static com.lucas.server.common.Constants.RETRIEVING_DATA_INFO;
+import static com.lucas.server.common.Constants.YAHOO_FINANCE_RATE_LIMITER;
 
 @Component
 @Slf4j
@@ -26,8 +29,10 @@ public class YahooFinanceMarketSnapshotClient {
     private final SlidingWindowRateLimiter rateLimiter;
     private final String endpoint;
 
-    public YahooFinanceMarketSnapshotClient(YahooFinanceMarketResponseMapper mapper, HttpRequestClient httpRequestClient,
-                                            Map<String, SlidingWindowRateLimiter> rateLimiters, @Value("${yahoo.market.endpoint}") String endpoint) {
+    public YahooFinanceMarketSnapshotClient(YahooFinanceMarketResponseMapper mapper,
+                                            HttpRequestClient httpRequestClient,
+                                            Map<String, SlidingWindowRateLimiter> rateLimiters,
+                                            @Value("${yahoo.market.endpoint}") String endpoint) {
         this.mapper = mapper;
         this.httpRequestClient = httpRequestClient;
         rateLimiter = rateLimiters.get(YAHOO_FINANCE_RATE_LIMITER);

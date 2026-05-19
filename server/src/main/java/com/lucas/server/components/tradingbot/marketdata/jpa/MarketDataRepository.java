@@ -16,9 +16,9 @@ public interface MarketDataRepository extends JpaRepository<MarketData, Long> {
 
     OrderedIndexedSetImpl<MarketData> findBySymbol_Id(Long symbolId, PageRequest page);
 
-    Set<MarketData> findBySymbol_IdInAndDateIn(Set<Long> symbolIds, Set<LocalDate> dates);
-
     Set<MarketData> findBySymbol_Id(Long id);
+
+    Set<MarketData> findBySymbol_IdInAndDateIn(Set<Long> symbolIds, Set<LocalDate> dates);
 
     Optional<MarketData> findTopBySymbol_IdOrderByDateDesc(Long id);
 }

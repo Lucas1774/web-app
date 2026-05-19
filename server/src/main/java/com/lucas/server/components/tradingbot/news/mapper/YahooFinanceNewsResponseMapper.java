@@ -18,29 +18,12 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-import static com.lucas.server.common.Constants.*;
+import static com.lucas.server.common.Constants.MAPPING_ERROR;
+import static com.lucas.server.common.Constants.NEWS;
+import static com.lucas.server.common.Constants.NO_YAHOO_NEWS_ERROR;
 
 @Component
 public class YahooFinanceNewsResponseMapper implements Mapper<Element, NewsDomain> {
-
-    @Override
-    public NewsDomain map(Element item) throws MappingException {
-        try {
-            UUID uuid = UUID.fromString(item.getElementsByTagName("guid").item(0).getTextContent());
-            return new NewsDomain()
-                    .setExternalId(uuid.getMostSignificantBits() ^ uuid.getLeastSignificantBits())
-                    .setDate(LocalDateTime.from(ZonedDateTime.parse(
-                            item.getElementsByTagName("pubDate").item(0).getTextContent(),
-                            DateTimeFormatter.RFC_1123_DATE_TIME
-                    )))
-                    .setHeadline(item.getElementsByTagName("title").item(0).getTextContent())
-                    .setSummary(StringUtils.left(item.getElementsByTagName("description").item(0).getTextContent(), 1024))
-                    .setUrl(item.getElementsByTagName("link").item(0).getTextContent())
-                    .setSource("Yahoo Finance RSS");
-        } catch (Exception e) {
-            throw new MappingException(MessageFormat.format(MAPPING_ERROR, NEWS), e);
-        }
-    }
 
     public Set<NewsDomain> mapAll(Document document, SymbolDomain symbol) throws MappingException {
         try {
@@ -54,6 +37,24 @@ public class YahooFinanceNewsResponseMapper implements Mapper<Element, NewsDomai
                 newsList.add(map((Element) items.item(i)).addSymbol(symbol));
             }
             return newsList;
+        } catch (Exception e) {
+            throw new MappingException(MessageFormat.format(MAPPING_ERROR, NEWS), e);
+        }
+    }
+
+    @Override
+    public NewsDomain map(Element item) throws MappingException {
+        try {
+            UUID uuid = UUID.fromString(item.getElementsByTagName("guid").item(0).getTextContent());
+            return new NewsDomain().setExternalId(uuid.getMostSignificantBits() ^ uuid.getLeastSignificantBits())
+                    .setDate(LocalDateTime.from(ZonedDateTime.parse(item.getElementsByTagName("pubDate")
+                            .item(0)
+                            .getTextContent(), DateTimeFormatter.RFC_1123_DATE_TIME)))
+                    .setHeadline(item.getElementsByTagName("title").item(0).getTextContent())
+                    .setSummary(StringUtils.left(item.getElementsByTagName("description").item(0).getTextContent(),
+                            1024))
+                    .setUrl(item.getElementsByTagName("link").item(0).getTextContent())
+                    .setSource("Yahoo Finance RSS");
         } catch (Exception e) {
             throw new MappingException(MessageFormat.format(MAPPING_ERROR, NEWS), e);
         }

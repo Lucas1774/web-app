@@ -23,58 +23,14 @@ class AssetReportToMustacheMapperTest {
     private final AssetReportToMustacheMapper mapper = new AssetReportToMustacheMapper();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private static AssetReportRaw getAssetReportNullValues() {
-        PricePointRaw pp = getPpNullValues();
-        OrderedIndexedSet<NewsItemRaw> news = getNewsNullValues();
-        return new AssetReportRaw("FOO", null, null, null, null, null,
-                1, null, OrderedIndexedSet.of(pp), null, null, null, null, null, null, news.size(), news);
-    }
-
-    private static AssetReportRaw getAssetReportAllValues() {
-        PricePointRaw pp = getPpAllValues();
-        OrderedIndexedSet<NewsItemRaw> news = getNewsAllValues();
-        return new AssetReportRaw("FOO", new BigDecimal("10.2412"), new BigDecimal("101.4887"),
-                new BigDecimal("11.5874"), new BigDecimal("50"), new BigDecimal("80.00"), 1,
-                pp, OrderedIndexedSet.of(pp),
-                new BigDecimal("105.00"), new BigDecimal("42.42"), new BigDecimal("1.23"),
-                new BigDecimal("15.67"), new BigDecimal("15.68"), new BigDecimal("15.69"), news.size(), news);
-    }
-
-    private static PricePointRaw getPpNullValues() {
-        return new PricePointRaw(LocalDate.of(2025, 5, 1), new BigDecimal("100"),
-                new BigDecimal("110"), new BigDecimal("90"), new BigDecimal("105"), null, null);
-    }
-
-    private static PricePointRaw getPpAllValues() {
-        return new PricePointRaw(LocalDate.of(2025, 5, 1), new BigDecimal("100"),
-                new BigDecimal("110"), new BigDecimal("90"), new BigDecimal("105"), 1234L, new BigDecimal("7.5"));
-    }
-
-    private static OrderedIndexedSet<NewsItemRaw> getNewsNullValues() {
-        return OrderedIndexedSet.of(
-                new NewsItemRaw("Headline One", null, null,
-                        "First summary", LocalDateTime.of(LocalDate.of(2025, 5, 1), LocalTime.MIDNIGHT)),
-                new NewsItemRaw("Headline Two", null, null,
-                        "Second summary", LocalDateTime.of(LocalDate.of(2025, 5, 2), LocalTime.MIDNIGHT))
-        );
-    }
-
-    private static OrderedIndexedSet<NewsItemRaw> getNewsAllValues() {
-        return OrderedIndexedSet.of(
-                new NewsItemRaw("Headline One", "positive", BigDecimal.valueOf(54.4412),
-                        "First summary", LocalDateTime.of(LocalDate.of(2025, 5, 1), LocalTime.MIDNIGHT)),
-                new NewsItemRaw("Headline Two", "negative", BigDecimal.valueOf(54.4412),
-                        "Second summary", LocalDateTime.of(LocalDate.of(2025, 5, 2), LocalTime.MIDNIGHT))
-        );
-    }
-
     @Test
     void map_injectsMandatoryFields_and_leavesNullsEmpty() throws MappingException, IOException {
         // given
         AssetReportRaw asset = getAssetReportNullValues();
 
         // when & then
-        String expected = """
+        String expected =
+                """
                 --- Market Data & Features ---
                 [ASSET: FOO]
                 • Current Position:
@@ -97,13 +53,59 @@ class AssetReportToMustacheMapperTest {
         assertThat(objectMapper.readTree(mapper.map(Set.of(asset))).get(CONTENT).asText()).isEqualTo(expected);
     }
 
+    private static AssetReportRaw getAssetReportNullValues() {
+        PricePointRaw pp = getPpNullValues();
+        OrderedIndexedSet<NewsItemRaw> news = getNewsNullValues();
+        return new AssetReportRaw("FOO",
+                null,
+                null,
+                null,
+                null,
+                null,
+                1,
+                null,
+                OrderedIndexedSet.of(pp),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                news.size(),
+                news);
+    }
+
+    private static PricePointRaw getPpNullValues() {
+        return new PricePointRaw(LocalDate.of(2025, 5, 1),
+                new BigDecimal("100"),
+                new BigDecimal("110"),
+                new BigDecimal("90"),
+                new BigDecimal("105"),
+                null,
+                null);
+    }
+
+    private static OrderedIndexedSet<NewsItemRaw> getNewsNullValues() {
+        return OrderedIndexedSet.of(new NewsItemRaw("Headline One",
+                        null,
+                        null,
+                        "First summary",
+                        LocalDateTime.of(LocalDate.of(2025, 5, 1), LocalTime.MIDNIGHT)),
+                new NewsItemRaw("Headline Two",
+                        null,
+                        null,
+                        "Second summary",
+                        LocalDateTime.of(LocalDate.of(2025, 5, 2), LocalTime.MIDNIGHT)));
+    }
+
     @Test
     void map_injectsAllField() throws IOException, MappingException {
         // given
         AssetReportRaw asset = getAssetReportAllValues();
 
         // when & then
-        String expected = """
+        String expected =
+                """
                 --- Market Data & Features ---
                 [ASSET: FOO]
                 • Current Position:
@@ -126,5 +128,50 @@ class AssetReportToMustacheMapperTest {
                 """;
 
         assertThat(objectMapper.readTree(mapper.map(Set.of(asset))).get(CONTENT).asText()).isEqualTo(expected);
+    }
+
+    private static AssetReportRaw getAssetReportAllValues() {
+        PricePointRaw pp = getPpAllValues();
+        OrderedIndexedSet<NewsItemRaw> news = getNewsAllValues();
+        return new AssetReportRaw("FOO",
+                new BigDecimal("10.2412"),
+                new BigDecimal("101.4887"),
+                new BigDecimal("11.5874"),
+                new BigDecimal("50"),
+                new BigDecimal("80.00"),
+                1,
+                pp,
+                OrderedIndexedSet.of(pp),
+                new BigDecimal("105.00"),
+                new BigDecimal("42.42"),
+                new BigDecimal("1.23"),
+                new BigDecimal("15.67"),
+                new BigDecimal("15.68"),
+                new BigDecimal("15.69"),
+                news.size(),
+                news);
+    }
+
+    private static PricePointRaw getPpAllValues() {
+        return new PricePointRaw(LocalDate.of(2025, 5, 1),
+                new BigDecimal("100"),
+                new BigDecimal("110"),
+                new BigDecimal("90"),
+                new BigDecimal("105"),
+                1234L,
+                new BigDecimal("7.5"));
+    }
+
+    private static OrderedIndexedSet<NewsItemRaw> getNewsAllValues() {
+        return OrderedIndexedSet.of(new NewsItemRaw("Headline One",
+                        "positive",
+                        BigDecimal.valueOf(54.4412),
+                        "First summary",
+                        LocalDateTime.of(LocalDate.of(2025, 5, 1), LocalTime.MIDNIGHT)),
+                new NewsItemRaw("Headline Two",
+                        "negative",
+                        BigDecimal.valueOf(54.4412),
+                        "Second summary",
+                        LocalDateTime.of(LocalDate.of(2025, 5, 2), LocalTime.MIDNIGHT)));
     }
 }

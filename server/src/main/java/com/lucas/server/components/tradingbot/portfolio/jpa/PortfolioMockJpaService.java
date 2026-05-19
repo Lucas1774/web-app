@@ -7,7 +7,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class PortfolioMockJpaService extends PortfolioJpaServiceDelegate<PortfolioMock, PortfolioMockRepository> {
 
-    public PortfolioMockJpaService(PortfolioMockRepository repository, EntityMapper<PortfolioMock, PortfolioDomain> mapper) {
+    public PortfolioMockJpaService(PortfolioMockRepository repository,
+                                   EntityMapper<PortfolioMock, PortfolioDomain> mapper) {
         super(repository, mapper, repository::findTopBySymbol_IdOrderByEffectiveTimestampDesc, PortfolioMock::new);
     }
 }

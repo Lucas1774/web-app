@@ -13,7 +13,11 @@ import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Collections;
 import java.util.List;
@@ -32,8 +36,10 @@ public class ShoppingController {
     private final CategoryJpaService categoryJpaService;
     private final Map<Class<? extends Sortable>, OrderColumnJpaService<? extends Sortable>> classToOrderColumnService;
 
-    public ShoppingController(ControllerUtil controllerUtil, ShoppingItemJpaService shoppingItemService,
-                              ProductJpaService productService, CategoryJpaService categoryJpaService) {
+    public ShoppingController(ControllerUtil controllerUtil,
+                              ShoppingItemJpaService shoppingItemService,
+                              ProductJpaService productService,
+                              CategoryJpaService categoryJpaService) {
         this.controllerUtil = controllerUtil;
         this.shoppingItemService = shoppingItemService;
         this.productService = productService;
@@ -43,7 +49,8 @@ public class ShoppingController {
 
     @GetMapping("/shopping")
     public ResponseEntity<Set<ShoppingItem>> getShoppingItems(HttpServletRequest request) {
-        return ResponseEntity.ok(shoppingItemService.findAllByUsername(controllerUtil.retrieveUsername(request.getCookies())));
+        return ResponseEntity.ok(shoppingItemService
+                .findAllByUsername(controllerUtil.retrieveUsername(request.getCookies())));
     }
 
     @GetMapping("/get-possible-categories")
@@ -53,7 +60,8 @@ public class ShoppingController {
 
     @PostMapping("/new-product")
     public ResponseEntity<Product> postProduct(HttpServletRequest request, @RequestBody String name) {
-        return productService.createProductAndOrLinkToUser(name.replace("\"", EMPTY_STRING), controllerUtil.retrieveUsername(request.getCookies()))
+        return productService.createProductAndOrLinkToUser(name.replace("\"", EMPTY_STRING),
+                        controllerUtil.retrieveUsername(request.getCookies()))
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.CONFLICT).build());
     }
@@ -65,29 +73,34 @@ public class ShoppingController {
     }
 
     @PostMapping("/update-product-quantity")
-    public ResponseEntity<ShoppingItem> updateProductQuantity(HttpServletRequest request, @RequestBody ShoppingItem shoppingItem) {
-        return ResponseEntity.ok(shoppingItemService.updateShoppingItemQuantity(shoppingItem, controllerUtil.retrieveUsername(request.getCookies())));
+    public ResponseEntity<ShoppingItem> updateProductQuantity(HttpServletRequest request,
+                                                              @RequestBody ShoppingItem shoppingItem) {
+        return ResponseEntity.ok(shoppingItemService.updateShoppingItemQuantity(shoppingItem,
+                controllerUtil.retrieveUsername(request.getCookies())));
     }
 
     @PostMapping("/update-all-product-quantity")
-    public ResponseEntity<Set<ShoppingItem>> updateAllProductQuantity(HttpServletRequest request, @RequestBody Integer quantity) {
-        return ResponseEntity.ok(shoppingItemService.updateAllShoppingItemQuantities(controllerUtil.retrieveUsername(request.getCookies()), quantity));
+    public ResponseEntity<Set<ShoppingItem>> updateAllProductQuantity(HttpServletRequest request,
+                                                                      @RequestBody Integer quantity) {
+        return ResponseEntity.ok(shoppingItemService.updateAllShoppingItemQuantities(controllerUtil.retrieveUsername(
+                request.getCookies()), quantity));
     }
 
     @PostMapping("/remove-product")
     public ResponseEntity<ShoppingItem> removeProduct(HttpServletRequest request, @RequestBody Product product) {
-        return ResponseEntity.ok(shoppingItemService.deleteByProductAndUsernameRemoveOrphanedProductIfNecessary(product, controllerUtil.retrieveUsername(request.getCookies())));
+        return ResponseEntity.ok(shoppingItemService.deleteByProductAndUsernameRemoveOrphanedProductIfNecessary(product,
+                controllerUtil.retrieveUsername(request.getCookies())));
     }
 
     @PostMapping("update-sortables")
-    public <T extends Sortable> ResponseEntity<Set<T>> updateSortable(HttpServletRequest request, @RequestBody List<T> elements) {
-        return controllerUtil.<Set<T>>getUnauthorizedResponseIfInvalidUser(request.getCookies())
-                .orElseGet(() -> {
-                    if (elements.isEmpty()) {
-                        return ResponseEntity.ok(Collections.emptySet());
-                    }
-                    return ResponseEntity.ok(getService(elements).updateOrders(OrderedIndexedSet.copyOf(elements)));
-                });
+    public <T extends Sortable> ResponseEntity<Set<T>> updateSortable(HttpServletRequest request,
+                                                                      @RequestBody List<T> elements) {
+        return controllerUtil.<Set<T>>getUnauthorizedResponseIfInvalidUser(request.getCookies()).orElseGet(() -> {
+            if (elements.isEmpty()) {
+                return ResponseEntity.ok(Collections.emptySet());
+            }
+            return ResponseEntity.ok(getService(elements).updateOrders(OrderedIndexedSet.copyOf(elements)));
+        });
     }
 
     @SuppressWarnings("unchecked")

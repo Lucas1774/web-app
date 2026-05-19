@@ -16,7 +16,11 @@ class SudokuFileToSudokuMapperTest {
     @Test
     void mapValidFile() throws MappingException {
         // given
-        String content = "Grid 01\\r\\n003020600\\r\\n900305001\\r\\n001806400\\r\\n008102900\\r\\n700000008\\r\\n006708200\\r\\n002609500\\r\\n800203009\\r\\n005010300\\r\\nGrid 02\\r\\n200080300\\r\\n060070084\\r\\n030500209\\r\\n000105408\\r\\n000000000\\r\\n402706000\\r\\n301007040\\r\\n720040060\\r\\n004010003";
+        String content = "Grid 01\\r\\n" + "003020600\\r\\n900305001\\r\\n001806400\\r\\n"
+                         + "008102900\\r\\n700000008\\r\\n006708200\\r\\n"
+                         + "002609500\\r\\n800203009\\r\\n005010300\\r\\n" + "Grid 02\\r\\n"
+                         + "200080300\\r\\n060070084\\r\\n030500209\\r\\n"
+                         + "000105408\\r\\n000000000\\r\\n402706000\\r\\n" + "301007040\\r\\n720040060\\r\\n004010003";
 
         // when
         Set<Sudoku> result = mapper.map(content);
@@ -37,7 +41,8 @@ class SudokuFileToSudokuMapperTest {
     @Test
     void mapFileWithMalformedSudoku() throws MappingException {
         // given
-        String content = "Grid 01\\r\\n00302060a\\r\\n900305001\\r\\n001806400\\r\\n008102900\\r\\n700000008\\r\\n006708200\\r\\n002609500\\r\\n800203009\\r\\n005010300";
+        String content = "Grid 01\\r\\n" + "00302060a\\r\\n900305001\\r\\n001806400\\r\\n"
+                         + "008102900\\r\\n700000008\\r\\n006708200\\r\\n" + "002609500\\r\\n800203009\\r\\n005010300";
 
         // when
         Set<Sudoku> result = mapper.map(content);

@@ -13,7 +13,11 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import static com.lucas.server.common.Constants.*;
+import static com.lucas.server.common.Constants.MARKET_DATA;
+import static com.lucas.server.common.Constants.QUOTE;
+import static com.lucas.server.common.Constants.REQUEST_MAX_ATTEMPTS;
+import static com.lucas.server.common.Constants.RETRIEVING_DATA_INFO;
+import static com.lucas.server.common.Constants.SYMBOL;
 
 @Component
 @Slf4j
@@ -24,8 +28,10 @@ public class FinnhubMarketDataClient {
     private final FinnhubRateLimiter finnhubRateLimiter;
     private final String endpoint;
 
-    public FinnhubMarketDataClient(FinnhubMarketResponseMapper mapper, HttpRequestClient httpRequestClient,
-                                   FinnhubRateLimiter finnhubRateLimiter, @Value("${finnhub.endpoint}") String endpoint) {
+    public FinnhubMarketDataClient(FinnhubMarketResponseMapper mapper,
+                                   HttpRequestClient httpRequestClient,
+                                   FinnhubRateLimiter finnhubRateLimiter,
+                                   @Value("${finnhub.endpoint}") String endpoint) {
         this.mapper = mapper;
         this.httpRequestClient = httpRequestClient;
         this.finnhubRateLimiter = finnhubRateLimiter;

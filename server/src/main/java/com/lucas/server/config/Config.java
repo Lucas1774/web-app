@@ -20,9 +20,7 @@ public class Config {
 
     @Bean
     public RestTemplate restTemplate(RestTemplateBuilder restTemplateBuilder) {
-        return restTemplateBuilder.connectTimeout(Duration.ofSeconds(10))
-                .readTimeout(Duration.ofMinutes(1))
-                .build();
+        return restTemplateBuilder.connectTimeout(Duration.ofSeconds(10)).readTimeout(Duration.ofMinutes(1)).build();
     }
 
     @Bean

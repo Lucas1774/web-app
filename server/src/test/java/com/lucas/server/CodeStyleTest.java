@@ -7,7 +7,6 @@ import com.puppycrawl.tools.checkstyle.api.AuditEvent;
 import com.puppycrawl.tools.checkstyle.api.AuditListener;
 import com.puppycrawl.tools.checkstyle.api.CheckstyleException;
 import com.puppycrawl.tools.checkstyle.api.Configuration;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -22,15 +21,11 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Disabled
 class CodeStyleTest {
 
     @Test
     void testCodeStyle() throws CheckstyleException, IOException {
-        String configPath = Paths.get("")
-                .toAbsolutePath()
-                .resolve("checkstyle.xml")
-                .toString();
+        String configPath = Paths.get("").toAbsolutePath().resolve("checkstyle.xml").toString();
 
         Configuration config =
                 ConfigurationLoader.loadConfiguration(configPath, new PropertiesExpander(new Properties()));
@@ -44,18 +39,22 @@ class CodeStyleTest {
         AuditListener listener = new AuditListener() {
             @Override
             public void auditStarted(AuditEvent event) {
+                // noop
             }
 
             @Override
             public void auditFinished(AuditEvent event) {
+                // noop
             }
 
             @Override
             public void fileStarted(AuditEvent event) {
+                // noop
             }
 
             @Override
             public void fileFinished(AuditEvent event) {
+                // noop
             }
 
             @Override
@@ -80,8 +79,7 @@ class CodeStyleTest {
             if (Files.exists(sourcePath)) {
                 try (Stream<Path> walk = Files.walk(sourcePath)) {
                     walk.filter(Files::isRegularFile)
-                            .filter(p -> p.toString()
-                                    .endsWith(".java"))
+                            .filter(p -> p.toString().endsWith(".java"))
                             .forEach(p -> javaFiles.add(p.toFile()));
                 }
             }
@@ -95,9 +93,7 @@ class CodeStyleTest {
 
         if (!violations.isEmpty()) {
             StringBuilder message = new StringBuilder("Checkstyle violations found:\n");
-            violations.forEach(v -> message.append("  - ")
-                    .append(v)
-                    .append("\n"));
+            violations.forEach(v -> message.append("  - ").append(v).append("\n"));
             assertEquals(0, violations.size(), message.toString());
         }
     }

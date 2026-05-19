@@ -12,7 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashSet;
 import java.util.Set;
 
-public abstract class OrderColumnServiceDelegate<T extends Sortable & JpaEntity, R extends JpaRepository<T, Long>> extends GenericJpaServiceDelegate<T, T, R> implements OrderColumnJpaService<T> {
+public abstract class OrderColumnServiceDelegate<T extends Sortable & JpaEntity, R extends JpaRepository<T, Long>>
+        extends GenericJpaServiceDelegate<T, T, R> implements OrderColumnJpaService<T> {
 
     protected OrderColumnServiceDelegate(R repository, EntityMapper<T, T> mapper) {
         super(repository, mapper);

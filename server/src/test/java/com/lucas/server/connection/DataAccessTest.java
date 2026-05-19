@@ -38,14 +38,10 @@ class DataAccessTest extends ConfiguredTest {
     private NamedParameterJdbcTemplate jdbcTemplate;
 
     @Test
-    void shoppingCRUD() {
+    void shoppingCrud() {
         // seed user and category
-        jdbcTemplate.getJdbcOperations().execute(
-                "INSERT INTO users(username, password) VALUES('bob','pwd')"
-        );
-        jdbcTemplate.getJdbcOperations().execute(
-                "INSERT INTO categories(name, category_order) VALUES('catA',1)"
-        );
+        jdbcTemplate.getJdbcOperations().execute("INSERT INTO users(username, password) VALUES('bob','pwd')");
+        jdbcTemplate.getJdbcOperations().execute("INSERT INTO categories(name, category_order) VALUES('catA',1)");
 
         // insert product and assign
         productService.createProductAndOrLinkToUser("item1", "bob");
@@ -55,7 +51,8 @@ class DataAccessTest extends ConfiguredTest {
         assertThat(item.getProduct().getName()).isEqualTo("item1");
 
         // update quantity
-        assertThat(shoppingItemService.updateShoppingItemQuantity(new ShoppingItem().setProduct(item.getProduct()).setQuantity(5), "bob").getQuantity()).isEqualTo(5);
+        assertThat(shoppingItemService.updateShoppingItemQuantity(new ShoppingItem().setProduct(item.getProduct())
+                .setQuantity(5), "bob").getQuantity()).isEqualTo(5);
 
         // remove
         shoppingItemService.deleteByProductAndUsernameRemoveOrphanedProductIfNecessary(item.getProduct(), "bob");
@@ -67,17 +64,13 @@ class DataAccessTest extends ConfiguredTest {
     void insertAndRetrieveSudoku() {
         Sudoku s1 = Sudoku.withDefaultValues();
         sudokuService.createIgnoringDuplicates(Collections.singleton(s1));
-        assertThat(sudokuService.findAll())
-                .hasSize(1)
-                .extracting(Sudoku::getState)
-                .containsExactly(s1.getState());
+        assertThat(sudokuService.findAll()).hasSize(1).extracting(Sudoku::getState).containsExactly(s1.getState());
     }
 
     @Test
     void getPossibleCategories() {
-        jdbcTemplate.getJdbcOperations().execute(
-                "INSERT INTO categories(name, category_order) VALUES('x',10),( 'y',20 )"
-        );
+        jdbcTemplate.getJdbcOperations()
+                .execute("INSERT INTO categories(name, category_order) VALUES('x',10),( 'y',20 )");
         Set<Category> cats = categoryService.findAllByOrderByOrderAsc();
         assertThat(cats).extracting(Category::getName).containsExactly("x", "y");
     }
@@ -85,9 +78,7 @@ class DataAccessTest extends ConfiguredTest {
     @Test
     void updateOrders() {
         // seed categories
-        jdbcTemplate.getJdbcOperations().execute(
-                "INSERT INTO categories(name, category_order) VALUES('a',1),('b',2)"
-        );
+        jdbcTemplate.getJdbcOperations().execute("INSERT INTO categories(name, category_order) VALUES('a',1),('b',2)");
         OrderedIndexedSet<Category> cats = categoryService.findAllByOrderByOrderAsc();
         // swap order
         Category first = cats.get(0);
@@ -95,32 +86,26 @@ class DataAccessTest extends ConfiguredTest {
 
         categoryService.updateOrders(OrderedIndexedSet.of(second, first));
         Set<Category> updated = categoryService.findAllByOrderByOrderAsc();
-        assertThat(updated)
-                .extracting(Category::getName, Category::getOrder)
-                .containsExactlyInAnyOrder(
-                        tuple("b", 1),
-                        tuple("a", 2)
-                );
+        assertThat(updated).extracting(Category::getName, Category::getOrder)
+                .containsExactlyInAnyOrder(tuple("b", 1), tuple("a", 2));
     }
 
     @Test
     void updateProductWithExistingCategory() {
         // seed user, category, and product
-        jdbcTemplate.getJdbcOperations().execute(
-                "INSERT INTO users(username, password) VALUES('carol','pwd')"
-        );
-        jdbcTemplate.getJdbcOperations().execute(
-                "INSERT INTO categories(name, category_order) VALUES('existingCat', 1)"
-        );
+        jdbcTemplate.getJdbcOperations().execute("INSERT INTO users(username, password) VALUES('carol','pwd')");
+        jdbcTemplate.getJdbcOperations()
+                .execute("INSERT INTO categories(name, category_order) VALUES('existingCat', 1)");
         // insert a product
         productService.createProductAndOrLinkToUser("prod1", "carol");
         Set<ShoppingItem> items = shoppingItemService.findAllByUsername("carol");
         Product item = items.stream().findFirst().map(ShoppingItem::getProduct).orElseThrow();
 
         // update product name, rarity and assign existing category
-        productService.updateProductCreateCategoryIfNecessary(new Product().setId((item.getId())).setName("prod1Updated").setIsRare(true).setCategory(
-                new Category().setId(1L).setName("existingCat")
-        ));
+        productService.updateProductCreateCategoryIfNecessary(new Product().setId((item.getId()))
+                .setName("prod1Updated")
+                .setIsRare(true)
+                .setCategory(new Category().setId(1L).setName("existingCat")));
 
         // verify update
         Set<ShoppingItem> updated = shoppingItemService.findAllByUsername("carol");
@@ -133,41 +118,38 @@ class DataAccessTest extends ConfiguredTest {
     @Test
     void updateProductWithNewCategory() {
         // seed user and initial product
-        jdbcTemplate.getJdbcOperations().execute(
-                "INSERT INTO users(username, password) VALUES('dave','pwd')"
-        );
+        jdbcTemplate.getJdbcOperations().execute("INSERT INTO users(username, password) VALUES('dave','pwd')");
         productService.createProductAndOrLinkToUser("prod2", "dave");
         Set<ShoppingItem> items = shoppingItemService.findAllByUsername("dave");
         Product item = items.stream().findFirst().map(ShoppingItem::getProduct).orElseThrow();
 
         // update product, passing null categoryId to force new category creation
-        productService.updateProductCreateCategoryIfNecessary(
-                new Product().setId(item.getId()).setName("prod2Updated").setIsRare(true).setCategory(
-                        new Category().setId(null).setName("newCat")
-                )
-        );
+        productService.updateProductCreateCategoryIfNecessary(new Product().setId(item.getId())
+                .setName("prod2Updated")
+                .setIsRare(true)
+                .setCategory(new Category().setId(null).setName("newCat")));
 
         // verify that new category was created and assigned
         Set<ShoppingItem> cats = shoppingItemService.findAllByUsername("dave");
         assertThat(cats).extracting(c -> c.getProduct().getCategory().getName()).contains("newCat");
         int newCatId = cats.stream()
                 .filter(c -> "newCat".equals(c.getProduct().getCategory().getName()))
-                .findFirst().orElseThrow().getProduct().getCategory().getOrder();
+                .findFirst()
+                .orElseThrow()
+                .getProduct()
+                .getCategory()
+                .getOrder();
         Set<ShoppingItem> updated = shoppingItemService.findAllByUsername("dave");
-        assertThat(
-                updated.stream().findFirst().map(s -> s.getProduct().getCategory().getId()).orElseThrow()
-        ).isEqualTo(newCatId);
+        assertThat(updated.stream().findFirst().map(s -> s.getProduct().getCategory().getId()).orElseThrow()).isEqualTo(
+                newCatId);
     }
 
     @Test
     void updateAllProductQuantity() {
         // seed user, categories, and two products
-        jdbcTemplate.getJdbcOperations().execute(
-                "INSERT INTO users(username, password) VALUES('eve','pwd')"
-        );
-        jdbcTemplate.getJdbcOperations().execute(
-                "INSERT INTO categories(name, category_order) VALUES('c1',1),('c2',2)"
-        );
+        jdbcTemplate.getJdbcOperations().execute("INSERT INTO users(username, password) VALUES('eve','pwd')");
+        jdbcTemplate.getJdbcOperations()
+                .execute("INSERT INTO categories(name, category_order) VALUES('c1',1),('c2',2)");
         // insert two products for user
         productService.createProductAndOrLinkToUser("p1", "eve");
         productService.createProductAndOrLinkToUser("p2", "eve");

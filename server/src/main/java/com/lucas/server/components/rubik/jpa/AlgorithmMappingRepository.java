@@ -11,5 +11,6 @@ public interface AlgorithmMappingRepository extends JpaRepository<AlgorithmMappi
 
     Optional<AlgorithmMapping> findByFirstStickerAndSecondSticker(Integer firstSticker, Integer secondSticker);
 
-    Set<AlgorithmMapping> findByFirstStickerInAndSecondStickerIn(Set<Integer> firstStickers, Set<Integer> secondStickers);
+    Set<AlgorithmMapping> findByFirstStickerInAndSecondStickerIn(Set<Integer> firstStickers,
+                                                                 Set<Integer> secondStickers);
 }

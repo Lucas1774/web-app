@@ -65,7 +65,8 @@ class RecommendationChatCompletionResponseMapperTest {
     void mapTruncatesLongRationale() throws Exception {
         // given
         String longRationale = "a".repeat(2000);
-        String json = String.format("{\"action\": \"BUY\", \"confidence\": \"0.75\", \"rationale\": \"%s\"}", longRationale);
+        String json =
+                String.format("{\"action\": \"BUY\", \"confidence\": \"0.75\", \"rationale\": \"%s\"}", longRationale);
         JsonNode node = objectMapper.readTree(json);
 
         // when
@@ -82,8 +83,7 @@ class RecommendationChatCompletionResponseMapperTest {
         JsonNode node = objectMapper.readTree(json);
 
         // when & then
-        assertThatThrownBy(() -> mapper.map(node))
-                .isInstanceOf(MappingException.class);
+        assertThatThrownBy(() -> mapper.map(node)).isInstanceOf(MappingException.class);
     }
 
     @Test
@@ -93,7 +93,6 @@ class RecommendationChatCompletionResponseMapperTest {
         JsonNode node = objectMapper.readTree(json);
 
         // when & then
-        assertThatThrownBy(() -> mapper.map(node))
-                .isInstanceOf(MappingException.class);
+        assertThatThrownBy(() -> mapper.map(node)).isInstanceOf(MappingException.class);
     }
 }

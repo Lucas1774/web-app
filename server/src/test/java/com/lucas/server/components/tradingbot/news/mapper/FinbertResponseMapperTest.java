@@ -21,18 +21,13 @@ class FinbertResponseMapperTest {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private static Stream<Arguments> getSentimentData() {
-        return Stream.of(
-                Arguments.of("positive", "0.95", "95"),
+        return Stream.of(Arguments.of("positive", "0.95", "95"),
                 Arguments.of("negative", "0.85", "85"),
-                Arguments.of("neutral", "0.60", "60")
-        );
+                Arguments.of("neutral", "0.60", "60"));
     }
 
     private static Stream<Arguments> getInvalidJson() {
-        return Stream.of(
-                Arguments.of("{}"),
-                Arguments.of("{\"label\": \"positive\"}")
-        );
+        return Stream.of(Arguments.of("{}"), Arguments.of("{\"label\": \"positive\"}"));
     }
 
     @ParameterizedTest
@@ -73,7 +68,6 @@ class FinbertResponseMapperTest {
         JsonNode node = objectMapper.readTree(json);
 
         // when & then
-        assertThatThrownBy(() -> mapper.map(node))
-                .isInstanceOf(MappingException.class);
+        assertThatThrownBy(() -> mapper.map(node)).isInstanceOf(MappingException.class);
     }
 }

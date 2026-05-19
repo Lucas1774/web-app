@@ -26,7 +26,8 @@ public class ControllerUtil {
     private final JWTVerifier verifier;
     private final Algorithm algorithm;
 
-    public ControllerUtil(@Value("${spring.security.admin}") Set<String> admin, @Value("${spring.security.jwt.secret}") String secretKey) {
+    public ControllerUtil(@Value("${spring.security.admin}") Set<String> admin,
+                          @Value("${spring.security.jwt.secret}") String secretKey) {
         this.admin = admin;
         algorithm = Algorithm.HMAC256(secretKey);
         verifier = JWT.require(algorithm).build();
@@ -54,10 +55,16 @@ public class ControllerUtil {
                 .sign(algorithm);
     }
 
+    public <T> Optional<ResponseEntity<T>> getUnauthorizedResponseIfInvalidUser(Cookie[] cookies) {
+        String username = retrieveUsername(cookies);
+        if (DEFAULT_USERNAME.equals(username)) {
+            return Optional.of(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
+        }
+        return Optional.empty();
+    }
+
     public String retrieveUsername(Cookie[] cookies) {
-        return retrieveAuthCookie(cookies)
-                .map(jwt -> JWT.decode(jwt).getSubject())
-                .orElse(DEFAULT_USERNAME);
+        return retrieveAuthCookie(cookies).map(jwt -> JWT.decode(jwt).getSubject()).orElse(DEFAULT_USERNAME);
     }
 
     public Optional<String> retrieveAuthCookie(Cookie[] cookies) {
@@ -68,14 +75,6 @@ public class ControllerUtil {
                 .filter(cookie -> "authToken".equals(cookie.getName()) && isTokenValid(cookie.getValue()))
                 .map(Cookie::getValue)
                 .findFirst();
-    }
-
-    public <T> Optional<ResponseEntity<T>> getUnauthorizedResponseIfInvalidUser(Cookie[] cookies) {
-        String username = retrieveUsername(cookies);
-        if (DEFAULT_USERNAME.equals(username)) {
-            return Optional.of(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
-        }
-        return Optional.empty();
     }
 
     private boolean isTokenValid(String token) {

@@ -21,8 +21,8 @@ public class SudokuJpaService extends GenericJpaServiceDelegate<Sudoku, Sudoku, 
 
     @Transactional
     public Set<Sudoku> createIgnoringDuplicates(Set<Sudoku> entities) {
-        return delegate.createIgnoringDuplicates(allEntities -> repository.findByStateIn(
-                allEntities.stream().map(Sudoku::getState).collect(Collectors.toSet())
-        ), entities);
+        return delegate.createIgnoringDuplicates(allEntities -> repository.findByStateIn(allEntities.stream()
+                .map(Sudoku::getState)
+                .collect(Collectors.toUnmodifiableSet())), entities);
     }
 }

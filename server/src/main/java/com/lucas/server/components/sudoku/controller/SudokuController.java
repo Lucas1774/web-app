@@ -10,7 +10,12 @@ import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Random;
@@ -39,12 +44,10 @@ public class SudokuController {
 
         Set<Sudoku> sudoku;
         try {
-            sudoku = fromFileMapper.map(file.replace("\"", EMPTY_STRING)).stream()
-                    .filter(s -> {
-                        Sudoku copy = Sudoku.withValues(s.getState());
-                        return solver.isValid(s, -1) && solver.solveWithTimeout(copy);
-                    })
-                    .collect(Collectors.toSet());
+            sudoku = fromFileMapper.map(file.replace("\"", EMPTY_STRING)).stream().filter(s -> {
+                Sudoku copy = Sudoku.withValues(s.getState());
+                return solver.isValid(s, -1) && solver.solveWithTimeout(copy);
+            }).collect(Collectors.toUnmodifiableSet());
         } catch (MappingException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }

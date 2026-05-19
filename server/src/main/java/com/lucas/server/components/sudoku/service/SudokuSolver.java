@@ -8,7 +8,9 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.IntStream;
 
-import static com.lucas.server.common.Constants.*;
+import static com.lucas.server.common.Constants.SUDOKU_NUMBER_OF_CELLS;
+import static com.lucas.server.common.Constants.SUDOKU_SIZE;
+import static com.lucas.server.common.Constants.getDigits;
 import static com.lucas.server.components.sudoku.jpa.Sudoku.withValues;
 
 @Component
@@ -160,7 +162,8 @@ public class SudokuSolver {
         int rowIndexOffset = place / SUDOKU_SIZE * SUDOKU_SIZE;
         int columnIndex = place % SUDOKU_SIZE;
         for (int i = 0; SUDOKU_SIZE > i; i++) {
-            if (sudoku.getState()[rowIndexOffset + i] == digit || sudoku.getState()[columnIndex + i * SUDOKU_SIZE] == digit) {
+            if (sudoku.getState()[rowIndexOffset + i] == digit
+                || sudoku.getState()[columnIndex + i * SUDOKU_SIZE] == digit) {
                 return false;
             }
         }
@@ -178,9 +181,7 @@ public class SudokuSolver {
     }
 
     public boolean isValid(Sudoku sudoku, int difficulty) {
-        long clueCount = Arrays.stream(sudoku.getState())
-                .filter(cell -> 0 != cell)
-                .count();
+        long clueCount = Arrays.stream(sudoku.getState()).filter(cell -> 0 != cell).count();
         boolean hasEightOrMoreUniqueDigits = 8 <= IntStream.rangeClosed(1, 9)
                 .filter(digit -> Arrays.stream(sudoku.getState()).anyMatch(cell -> cell == digit))
                 .count();

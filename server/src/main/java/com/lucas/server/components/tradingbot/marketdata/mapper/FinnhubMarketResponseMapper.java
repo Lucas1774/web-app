@@ -18,26 +18,23 @@ import static com.lucas.server.common.Constants.MARKET_DATA;
 @Component
 public class FinnhubMarketResponseMapper implements Mapper<JsonNode, MarketDataDomain> {
 
+    public MarketDataDomain map(JsonNode json, SymbolDomain symbol) throws MappingException {
+        return map(json).setSymbol(symbol);
+    }
+
     @Override
     public MarketDataDomain map(JsonNode json) throws MappingException {
         try {
-            return new MarketDataDomain()
-                    .setOpen(new BigDecimal(json.get("o").asText()))
+            return new MarketDataDomain().setOpen(new BigDecimal(json.get("o").asText()))
                     .setHigh(new BigDecimal(json.get("h").asText()))
                     .setLow(new BigDecimal(json.get("l").asText()))
                     .setPrice(new BigDecimal(json.get("c").asText()))
-                    .setDate(Instant.ofEpochSecond(json.get("t").asLong())
-                            .atZone(ZoneOffset.UTC)
-                            .toLocalDate())
+                    .setDate(Instant.ofEpochSecond(json.get("t").asLong()).atZone(ZoneOffset.UTC).toLocalDate())
                     .setPreviousClose(new BigDecimal(json.get("pc").asText()))
                     .setChange(new BigDecimal(json.get("d").asText()))
                     .setChangePercent(new BigDecimal(json.get("dp").asText()));
         } catch (Exception e) {
             throw new MappingException(MessageFormat.format(MAPPING_ERROR, MARKET_DATA), e);
         }
-    }
-
-    public MarketDataDomain map(JsonNode json, SymbolDomain symbol) throws MappingException {
-        return map(json).setSymbol(symbol);
     }
 }

@@ -1,7 +1,13 @@
 package com.lucas.server.components.rubik.jpa;
 
 import com.lucas.server.common.jpa.JpaEntity;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -34,14 +40,16 @@ public class LetterPairs implements JpaEntity {
     private String object;
 
     @Override
-    public boolean equals(Object o) {
-        if (null == o || getClass() != o.getClass()) return false;
-        LetterPairs that = (LetterPairs) o;
-        return Objects.equals(letterPair, that.letterPair);
+    public int hashCode() {
+        return Objects.hashCode(letterPair);
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hashCode(letterPair);
+    public boolean equals(Object o) {
+        if (null == o || getClass() != o.getClass()) {
+            return false;
+        }
+        LetterPairs that = (LetterPairs) o;
+        return Objects.equals(letterPair, that.letterPair);
     }
 }

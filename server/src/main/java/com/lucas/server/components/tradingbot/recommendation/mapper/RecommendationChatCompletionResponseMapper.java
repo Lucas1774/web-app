@@ -14,28 +14,23 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
-import static com.lucas.server.common.Constants.*;
+import static com.lucas.server.common.Constants.MAPPING_ERROR;
+import static com.lucas.server.common.Constants.RECOMMENDATION;
+import static com.lucas.server.common.Constants.SYMBOL;
 import static com.lucas.utils.Utils.EMPTY_STRING;
 
 @Component
 public class RecommendationChatCompletionResponseMapper implements Mapper<JsonNode, RecommendationDomain> {
 
-    @Override
-    public RecommendationDomain map(JsonNode json) throws MappingException {
-        try {
-            return new RecommendationDomain()
-                    .setDate(LocalDate.now())
-                    .setAction(json.get("action").asText())
-                    .setConfidence(new BigDecimal(json.get("confidence").asText()))
-                    .setRationale(StringUtils.left(json.get("rationale").asText(), 1024));
-        } catch (Exception e) {
-            throw new MappingException(MessageFormat.format(MAPPING_ERROR, RECOMMENDATION), e);
-        }
-    }
-
-    public Set<RecommendationDomain> mapAll(Set<DataManager.SymbolPayload> payload, JsonNode jsonNode, String message,
+    public Set<RecommendationDomain> mapAll(Set<DataManager.SymbolPayload> payload,
+                                            JsonNode jsonNode,
+                                            String message,
                                             String model) throws MappingException {
         try {
             Set<RecommendationDomain> recommendations = new HashSet<>();
@@ -45,15 +40,15 @@ public class RecommendationChatCompletionResponseMapper implements Mapper<JsonNo
             for (DataManager.SymbolPayload p : payload) {
                 String name = p.getSymbol().getName();
                 symbolByName.put(name, p.getSymbol());
-                MarketDataDomain latest = p.getMarketData().stream().max(Comparator.comparing(MarketDataDomain::getDate)).orElseThrow();
+                MarketDataDomain latest =
+                        p.getMarketData().stream().max(Comparator.comparing(MarketDataDomain::getDate)).orElseThrow();
                 latestMarketDataByName.put(name, latest);
                 newsByName.put(name, p.getNews());
             }
 
             if (jsonNode.isObject()) {
                 String symbolName = jsonNode.get(SYMBOL).asText();
-                return Set.of(map(jsonNode)
-                        .setModel(model)
+                return Set.of(map(jsonNode).setModel(model)
                         .setInput(message)
                         .setErrors(EMPTY_STRING)
                         .setMarketDataId(latestMarketDataByName.get(symbolName).getId())
@@ -64,8 +59,7 @@ public class RecommendationChatCompletionResponseMapper implements Mapper<JsonNo
             for (int i = 0; i < jsonNode.size(); i++) {
                 JsonNode load = jsonNode.get(i);
                 String symbolName = load.get(SYMBOL).asText();
-                recommendations.add(map(load)
-                        .setModel(model)
+                recommendations.add(map(load).setModel(model)
                         .setInput(message)
                         .setErrors(EMPTY_STRING)
                         .setMarketDataId(latestMarketDataByName.get(symbolName).getId())
@@ -76,6 +70,18 @@ public class RecommendationChatCompletionResponseMapper implements Mapper<JsonNo
             return recommendations;
         } catch (Exception e) {
             throw new MappingException(MessageFormat.format(MAPPING_ERROR, "recommendations"), e);
+        }
+    }
+
+    @Override
+    public RecommendationDomain map(JsonNode json) throws MappingException {
+        try {
+            return new RecommendationDomain().setDate(LocalDate.now())
+                    .setAction(json.get("action").asText())
+                    .setConfidence(new BigDecimal(json.get("confidence").asText()))
+                    .setRationale(StringUtils.left(json.get("rationale").asText(), 1024));
+        } catch (Exception e) {
+            throw new MappingException(MessageFormat.format(MAPPING_ERROR, RECOMMENDATION), e);
         }
     }
 }

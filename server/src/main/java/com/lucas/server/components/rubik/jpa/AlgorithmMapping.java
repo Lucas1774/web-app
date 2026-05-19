@@ -1,7 +1,14 @@
 package com.lucas.server.components.rubik.jpa;
 
 import com.lucas.server.common.jpa.JpaEntity;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -57,14 +64,16 @@ public class AlgorithmMapping implements JpaEntity {
     private String parityTechnique;
 
     @Override
-    public boolean equals(Object o) {
-        if (null == o || getClass() != o.getClass()) return false;
-        AlgorithmMapping that = (AlgorithmMapping) o;
-        return Objects.equals(firstSticker, that.firstSticker) && Objects.equals(secondSticker, that.secondSticker);
+    public int hashCode() {
+        return Objects.hash(firstSticker, secondSticker);
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(firstSticker, secondSticker);
+    public boolean equals(Object o) {
+        if (null == o || getClass() != o.getClass()) {
+            return false;
+        }
+        AlgorithmMapping that = (AlgorithmMapping) o;
+        return Objects.equals(firstSticker, that.firstSticker) && Objects.equals(secondSticker, that.secondSticker);
     }
 }
