@@ -97,7 +97,7 @@ public class RecommendationChatCompletionClient {
      * @throws MappingException        if mapping the response fails
      */
     public Set<RecommendationDomain> getRecommendations(Set<DataManager.SymbolPayload> payload,
-                                                        Set<AiClient> clients,
+                                                        OrderedIndexedSet<AiClient> clients,
                                                         boolean useOldNews)
             throws ClientException, JsonProcessingException, MappingException {
         Set<AssetReportRaw> reports =

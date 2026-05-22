@@ -560,7 +560,7 @@ public class DataManager {
     }
 
     private void submitChunk(Set<SymbolPayload> buffer,
-                             Set<AiClient> clients,
+                             OrderedIndexedSet<AiClient> clients,
                              ExecutorService executor,
                              BlockingQueue<Set<RecommendationDomain>> resultsQueue,
                              boolean overwrite,
