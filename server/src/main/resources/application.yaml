@@ -317,6 +317,58 @@ ai:
       concurrent-requests: 1
       chunk-size: 1
       fix-me: false
+    - name: openrouter
+      api-key: ${OPENROUTER_KEY}
+      url: ${OPENROUTER_URL}
+      model: deepseek/deepseek-v4-flash:free
+      temperature: 0
+      max-tokens: 8000
+      requests-per-minute: 20
+      concurrent-requests: 20
+      chunk-size: 5
+      fix-me: false
+      fallback-models:
+        - nvidia/nemotron-3-super-120b-a12b:free
+        - openai/gpt-oss-120b:free
+    - name: openrouter-2
+      api-key: ${OPENROUTER_KEY_2}
+      url: ${OPENROUTER_URL}
+      model: deepseek/deepseek-v4-flash:free
+      temperature: 0
+      max-tokens: 8000
+      requests-per-minute: 20
+      concurrent-requests: 20
+      chunk-size: 5
+      fix-me: false
+      fallback-models:
+        - nvidia/nemotron-3-super-120b-a12b:free
+        - openai/gpt-oss-120b:free
+    - name: openrouter-3
+      api-key: ${OPENROUTER_KEY_3}
+      url: ${OPENROUTER_URL}
+      model: deepseek/deepseek-v4-flash:free
+      temperature: 0
+      max-tokens: 8000
+      requests-per-minute: 20
+      concurrent-requests: 20
+      chunk-size: 5
+      fix-me: false
+      fallback-models:
+        - nvidia/nemotron-3-super-120b-a12b:free
+        - openai/gpt-oss-120b:free
+    - name: openrouter-4
+      api-key: ${OPENROUTER_KEY_4}
+      url: ${OPENROUTER_URL}
+      model: deepseek/deepseek-v4-flash:free
+      temperature: 0
+      max-tokens: 8000
+      requests-per-minute: 20
+      concurrent-requests: 20
+      chunk-size: 5
+      fix-me: false
+      fallback-models:
+        - nvidia/nemotron-3-super-120b-a12b:free
+        - openai/gpt-oss-120b:free
     - name: deepseek-r1
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}

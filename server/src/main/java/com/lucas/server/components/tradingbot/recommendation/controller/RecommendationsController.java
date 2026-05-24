@@ -55,6 +55,7 @@ public class RecommendationsController {
                 : models.stream().map(clients::get).collect(Collectors.toUnmodifiableSet());
         return ResponseEntity.ok(jpaService.getRecommendationsById(symbols,
                 selectedClients,
+                Set.of(),
                 getPortfolioType(username),
                 overwrite,
                 false,
@@ -84,6 +85,7 @@ public class RecommendationsController {
                 : models.stream().map(clients::get).collect(Collectors.toUnmodifiableSet());
         return ResponseEntity.ok(jpaService.getRandomRecommendations(SP500_SYMBOLS,
                 selectedClients,
+                Set.of(),
                 getPortfolioType(username),
                 count,
                 overwrite,

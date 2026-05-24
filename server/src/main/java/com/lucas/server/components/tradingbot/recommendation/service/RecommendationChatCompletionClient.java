@@ -151,7 +151,7 @@ public class RecommendationChatCompletionClient {
                     Interrupts.runOrSwallow(() -> Thread.sleep(CLIENT_ROTATION_DEBOUNCE_MS),
                             e -> log.error(e.getMessage(), e));
                 } catch (MappingException | JsonProcessingException e) {
-                    throw new ClientException(MessageFormat.format(RECOMMENDATION_COMPLETION_ERROR, completion.get()),
+                    throw new MappingException(MessageFormat.format(RECOMMENDATION_COMPLETION_ERROR, completion.get()),
                             e);
                 } catch (ClientException e) {
                     throw e;

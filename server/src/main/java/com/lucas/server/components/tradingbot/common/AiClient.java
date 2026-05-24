@@ -11,6 +11,8 @@ import com.lucas.utils.ratelimiter.SlidingWindowRateLimiter;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.UnaryOperator;
 
@@ -34,18 +36,26 @@ public class AiClient {
     private final UnaryOperator<String> responseSanitizer;
 
     public String complete(OrderedIndexedSet<JsonNode> prompt) throws ClientException {
-        JsonNode body = objectMapper.valueToTree(Map.of("model",
-                config.model(),
-                "messages",
+        Map<String, Object> bodyMap = new HashMap<>();
+
+        if (config.fallbackModels() != null && !config.fallbackModels().isEmpty()) {
+            ArrayList<String> models = new ArrayList<>();
+            models.add(config.model());
+            models.addAll(config.fallbackModels());
+            bodyMap.put("models", models);
+        } else {
+            bodyMap.put("model", config.model());
+        }
+
+        bodyMap.put("messages",
                 prompt.stream()
                         .map(m -> Map.of(ROLE, m.get(ROLE).asText(), CONTENT, sanitizeHtml(m.get(CONTENT).asText())))
-                        .toList(),
-                "max_tokens",
-                config.maxTokens(),
-                "temperature",
-                config.temperature())
+                        .toList());
+        bodyMap.put("max_tokens", config.maxTokens());
+        bodyMap.put("temperature", config.temperature());
 
-        );
+
+        JsonNode body = objectMapper.valueToTree(bodyMap);
 
         return responseSanitizer.apply(httpClient.fetchFromJson(config.url(), config.apiKey(), body, true)
                 .get("choices")

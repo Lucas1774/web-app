@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -22,6 +23,7 @@ public class AiProperties {
                                        int requestsPerMinute,
                                        int concurrentRequests,
                                        int chunkSize,
-                                       boolean fixMe) {
+                                       boolean fixMe,
+                                       List<String> fallbackModels) {
     }
 }

@@ -27,6 +27,10 @@ import static com.lucas.server.common.Constants.Clients.GPT_4_1_3;
 import static com.lucas.server.common.Constants.Clients.GPT_4_1_4;
 import static com.lucas.server.common.Constants.Clients.GPT_4_1_5;
 import static com.lucas.server.common.Constants.Clients.GPT_4_1_6;
+import static com.lucas.server.common.Constants.Clients.OPENROUTER;
+import static com.lucas.server.common.Constants.Clients.OPENROUTER_2;
+import static com.lucas.server.common.Constants.Clients.OPENROUTER_3;
+import static com.lucas.server.common.Constants.Clients.OPENROUTER_4;
 import static com.lucas.server.common.Constants.Sector.COMMUNICATION_SERVICES;
 import static com.lucas.server.common.Constants.Sector.CONSUMER_DISCRETIONARY;
 import static com.lucas.server.common.Constants.Sector.CONSUMER_STAPLES;
@@ -646,23 +650,28 @@ public final class Constants {
             LocalDate.of(2026, 11, 26), // Thanksgiving
             LocalDate.of(2026, 12, 25)  // Christmas Day
     );
-    private static final Set<Clients> FINE_GRAIN_CLIENTS = Set.of(DEEPSEEK_R1_0528,
+    private static final Set<Clients> REASONING_CLIENTS = Set.of(DEEPSEEK_R1_0528,
             DEEPSEEK_R1_0528_2,
             DEEPSEEK_R1_0528_3,
             DEEPSEEK_R1_0528_4,
             DEEPSEEK_R1_0528_5,
             DEEPSEEK_R1_0528_6);
-    private static final Set<Clients> RECOMMENDATION_CLIENTS =
+    private static final Set<Clients> GPT_CLIENTS =
             Set.of(GPT_4_1, GPT_4_1_2, GPT_4_1_3, GPT_4_1_4, GPT_4_1_5, GPT_4_1_6);
-    private static final Set<Clients> RANDOM_RECOMMENDATION_CLIENTS =
-            Set.of(GPT_4_1, GPT_4_1_2, GPT_4_1_3, GPT_4_1_4, GPT_4_1_5, GPT_4_1_6);
+    private static final Set<Clients> OPENROUTER_CLIENTS = Set.of(OPENROUTER, OPENROUTER_2, OPENROUTER_3, OPENROUTER_4);
     private static final Map<RecommendationMode, Set<String>> modeToClientNames = new EnumMap<>(Map.of(
+            RecommendationMode.FIRST_ITERATION,
+            GPT_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet()),
+            RecommendationMode.SECOND_ITERATION,
+            GPT_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet()),
             RecommendationMode.FINE_GRAIN,
-            FINE_GRAIN_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet()),
+            REASONING_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet()),
             RecommendationMode.RANDOM,
-            RANDOM_RECOMMENDATION_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet()),
+            GPT_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet()),
             RecommendationMode.NOT_RANDOM,
-            RECOMMENDATION_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet())));
+            GPT_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet()),
+            RecommendationMode.BACKUP,
+            OPENROUTER_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet())));
 
     private static final Map<String, String> ENTITY_MAP = Map.ofEntries(Map.entry("&quot;", "\""),
             Map.entry("&#39;", "'"),
@@ -768,9 +777,12 @@ public final class Constants {
     }
 
     public enum RecommendationMode {
+        FIRST_ITERATION,
+        SECOND_ITERATION,
         FINE_GRAIN,
         RANDOM,
-        NOT_RANDOM
+        NOT_RANDOM,
+        BACKUP
     }
 
     @SuppressWarnings("unused")
@@ -803,6 +815,10 @@ public final class Constants {
         DEEPSEEK_R1_0528_4_SPECIALIST("deepseek-r1-0528-4-specialist"),
         DEEPSEEK_R1_0528_5_SPECIALIST("deepseek-r1-0528-5-specialist"),
         DEEPSEEK_R1_0528_6_SPECIALIST("deepseek-r1-0528-6-specialist"),
+        OPENROUTER("openrouter"),
+        OPENROUTER_2("openrouter-2"),
+        OPENROUTER_3("openrouter-3"),
+        OPENROUTER_4("openrouter-4"),
         DEEPSEEK_R1("deepseek-r1"),
         DEEPSEEK_V3("deepseek-v3"),
         GROK_3("grok-3"),
