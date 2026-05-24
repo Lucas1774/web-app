@@ -52,6 +52,7 @@ class DailySchedulerTest extends ConfiguredTest {
             verify(dataManager, atLeastOnce()).getRandomRecommendations(any(),
                     any(),
                     any(),
+                    any(),
                     anyInt(),
                     anyBoolean(),
                     anyBoolean(),

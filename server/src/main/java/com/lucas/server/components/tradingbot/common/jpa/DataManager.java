@@ -161,6 +161,7 @@ public class DataManager {
 
     public Set<RecommendationDomain> getRecommendationsById(Set<Long> symbolIds,
                                                             Set<AiClient> clients,
+                                                            Set<AiClient> backupClients,
                                                             PortfolioType type,
                                                             boolean overwrite,
                                                             boolean onTheFlyNews,
@@ -169,6 +170,7 @@ public class DataManager {
         Set<SymbolDomain> symbols = symbolService.findAllById(symbolIds);
         return getRecommendationsInParallel(symbols,
                 clients,
+                backupClients,
                 type,
                 overwrite,
                 false,
@@ -180,6 +182,7 @@ public class DataManager {
     @Transactional
     public Set<RecommendationDomain> getRandomRecommendations(Set<String> symbolNames,
                                                               Set<AiClient> clients,
+                                                              Set<AiClient> backupClients,
                                                               PortfolioType type,
                                                               int count,
                                                               boolean overwrite,
@@ -210,6 +213,7 @@ public class DataManager {
 
         return getRecommendationsInParallel(symbolService.findAllById(finalList),
                 clients,
+                backupClients,
                 type,
                 overwrite,
                 onlyIfHasNews,
@@ -410,6 +414,26 @@ public class DataManager {
         return res;
     }
 
+    private Set<RecommendationDomain> getRecommendationsWithBackup(Set<SymbolPayload> buffer,
+                                                                   OrderedIndexedSet<AiClient> clients,
+                                                                   Deque<AiClient> backupClients,
+                                                                   boolean useOldNews)
+            throws JsonProcessingException, ClientException, MappingException {
+        try {
+            return recommendationClient.getRecommendations(buffer, clients, useOldNews);
+        } catch (ClientException e) {
+            if (backupClients.isEmpty()) {
+                throw e;
+            }
+            backupClients.add(backupClients.pollFirst());
+            log.warn(CLIENT_FAILED_BACKUP_WARN,
+                    clients.stream().map(c -> c.getConfig().name()).toList(),
+                    buffer.stream().map(SymbolPayload::getSymbol).toList(),
+                    e);
+            return recommendationClient.getRecommendations(buffer, OrderedIndexedSet.copyOf(backupClients), useOldNews);
+        }
+    }
+
     private OrderedIndexedSet<MarketDataDomain> retrieveMarketDataWithBackupStrategy(Set<SymbolDomain> symbols)
             throws ClientException, MappingException {
         OrderedIndexedSet<MarketDataDomain> res = new OrderedIndexedSetImpl<>();
@@ -435,6 +459,7 @@ public class DataManager {
 
     private Set<RecommendationDomain> getRecommendationsInParallel(Set<SymbolDomain> symbols,
                                                                    Set<AiClient> clients,
+                                                                   Set<AiClient> backupClients,
                                                                    PortfolioType type,
                                                                    boolean overwrite,
                                                                    boolean onlyIfHasNews,
@@ -443,6 +468,7 @@ public class DataManager {
                                                                    boolean useOldNews) {
         Set<RecommendationDomain> res = new HashSet<>();
         Deque<AiClient> mutableClients = new ConcurrentLinkedDeque<>(clients);
+        Deque<AiClient> mutableBackupClients = new ConcurrentLinkedDeque<>(backupClients);
         PortfolioService portfolioService = portfolioTypeToService.get(type);
         int minChunkSize = clients.stream().mapToInt(c -> c.getConfig().chunkSize()).min().orElseThrow();
 
@@ -499,6 +525,7 @@ public class DataManager {
                     if (recommendationBuffer.size() == minChunkSize) {
                         submitChunk(Set.copyOf(recommendationBuffer),
                                 OrderedIndexedSet.copyOf(mutableClients),
+                                mutableBackupClients,
                                 executor,
                                 resultsQueue,
                                 overwrite,
@@ -511,6 +538,7 @@ public class DataManager {
                 if (!recommendationBuffer.isEmpty()) {
                     submitChunk(Set.copyOf(recommendationBuffer),
                             OrderedIndexedSet.copyOf(mutableClients),
+                            mutableBackupClients,
                             executor,
                             resultsQueue,
                             overwrite,
@@ -561,6 +589,7 @@ public class DataManager {
 
     private void submitChunk(Set<SymbolPayload> buffer,
                              OrderedIndexedSet<AiClient> clients,
+                             Deque<AiClient> backupClients,
                              ExecutorService executor,
                              BlockingQueue<Set<RecommendationDomain>> resultsQueue,
                              boolean overwrite,
@@ -568,7 +597,7 @@ public class DataManager {
         executor.submit(() -> {
             try {
                 Set<RecommendationDomain> partial =
-                        recommendationClient.getRecommendations(buffer, clients, useOldNews);
+                        getRecommendationsWithBackup(buffer, clients, backupClients, useOldNews);
                 log.info(GENERATION_SUCCESSFUL_INFO, RECOMMENDATION);
                 Set<NewsDomain> mergedNews = Set.copyOf(partial.stream()
                         .flatMap(r -> r.getNews().stream())

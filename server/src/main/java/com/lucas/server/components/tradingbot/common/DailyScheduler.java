@@ -114,7 +114,8 @@ public class DailyScheduler {
     @SuppressWarnings("SameParameterValue")
     private void doMorningTask(Set<String> symbolNames) {
         Set<RecommendationDomain> updatedRecommendations = dataManager.getRandomRecommendations(symbolNames,
-                filterClients(clients, RecommendationMode.RANDOM),
+                filterClients(clients, RecommendationMode.FIRST_ITERATION),
+                filterClients(clients, RecommendationMode.BACKUP),
                 PortfolioType.REAL,
                 SCHEDULED_RECOMMENDATIONS_COUNT,
                 true,
@@ -130,13 +131,21 @@ public class DailyScheduler {
         LocalDate now = LocalDate.now();
         Set<Long> topRecommendedSymbols =
                 dataManager.getTopRecommendedSymbols(BUY, RECOMMENDATION_MEDIUM_GRAIN_THRESHOLD, now);
-        getRecommendations(topRecommendedSymbols, RecommendationMode.NOT_RANDOM, false, false);
+        getRecommendations(topRecommendedSymbols,
+                filterClients(clients, RecommendationMode.SECOND_ITERATION),
+                filterClients(clients, RecommendationMode.BACKUP),
+                false,
+                false);
         OrderedIndexedSet<Long> topRecommendedSymbolsAfterMediumGrain =
                 dataManager.getTopRecommendedSymbols(BUY, RECOMMENDATION_FINE_GRAIN_THRESHOLD, now)
                         .stream()
                         .limit(MAX_RECOMMENDATIONS_COUNT)
                         .collect(OrderedIndexedSet.toUnmodifiableOrderedIndexedSet());
-        getRecommendations(topRecommendedSymbolsAfterMediumGrain, RecommendationMode.FINE_GRAIN, true, true);
+        getRecommendations(topRecommendedSymbolsAfterMediumGrain,
+                filterClients(clients, RecommendationMode.FINE_GRAIN),
+                Set.of(),
+                true,
+                true);
         publisher.publish("jobs", "job done");
 
         Set<NewsDomain> removedNews = dataManager.removeOldNews(DATABASE_NEWS_PER_SYMBOL);
@@ -152,11 +161,13 @@ public class DailyScheduler {
     }
 
     private void getRecommendations(Set<Long> topRecommendedSymbols,
-                                    RecommendationMode mode,
+                                    Set<AiClient> clients,
+                                    Set<AiClient> backupClients,
                                     boolean fetchPremarket,
                                     boolean useOldNews) {
         Set<RecommendationDomain> updatedRecommendations = dataManager.getRecommendationsById(topRecommendedSymbols,
-                filterClients(clients, mode),
+                clients,
+                backupClients,
                 PortfolioType.REAL,
                 true,
                 true,
