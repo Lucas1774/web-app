@@ -66,7 +66,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @SuppressWarnings("java:S5976")
 class ManualRunTest extends BaseTest {
 
-    private static final Set<String> SYMBOL_NAMES = Set.of("AAPL", "NVDA", "MSFT", "AMZN", "META", "TSLA", "GOOGL");
+    private static final Set<String> SYMBOL_NAMES =
+            Set.of("AAPL", "NVDA", "MSFT", "AMZN", "META", "TSLA", "GOOGL", "GOOG", "IBM");
     private static final LocalDate FROM = LocalDate.of(2026, 4, 25); // inclusive
     private static final LocalDate TO = LocalDate.now().plusDays(1); // exclusive
     private static Set<Recommendation> allRecommendations;
@@ -469,20 +470,17 @@ class ManualRunTest extends BaseTest {
     }
 
     private Map<Recommendation, MarketDataDomain> getFiltered(Map<Recommendation, MarketDataDomain> baseline) {
-        return baseline.entrySet().stream().filter(e -> {
-            if (!BUY.equals(e.getKey().getAction()) || 0 > e.getKey().getConfidence().compareTo(BigDecimal.valueOf(0.8))
-                || !filterClients(allClients, RecommendationMode.FINE_GRAIN).stream()
-                    .map(c -> c.getConfig().name())
-                    .collect(Collectors.toUnmodifiableSet())
-                    .contains(e.getKey().getModel())) {
-                return false;
-            }
-            BigDecimal gapPct = e.getValue()
-                    .getOpen()
-                    .subtract(e.getValue().getPreviousClose())
-                    .divide(e.getValue().getPreviousClose(), 10, RoundingMode.HALF_UP);
-            return 0 < gapPct.compareTo(BigDecimal.ZERO) && 0 > gapPct.compareTo(BigDecimal.valueOf(0.02));
-        }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        return baseline.entrySet()
+                .stream()
+                // It is also possible to filter by gap, for instance (open - previousClose, as percentage)
+                .filter(e -> BUY.equals(e.getKey().getAction()) && 0 <= e.getKey()
+                        .getConfidence()
+                        .compareTo(BigDecimal.valueOf(0.8)) && filterClients(allClients,
+                        RecommendationMode.FINE_GRAIN).stream()
+                                     .map(c -> c.getConfig().name())
+                                     .collect(Collectors.toUnmodifiableSet())
+                                     .contains(e.getKey().getModel()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     record SymDate(Long symbolId, LocalDate date) {
