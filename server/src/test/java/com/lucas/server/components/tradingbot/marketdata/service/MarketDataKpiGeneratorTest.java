@@ -5,14 +5,11 @@ import com.lucas.server.components.tradingbot.common.dto.SymbolDomain;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.marketdata.dto.MarketDataDomain;
 import com.lucas.server.components.tradingbot.marketdata.jpa.MarketData;
-import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataJpaService;
-import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataRepository;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import nl.altindag.log.LogCaptor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -38,15 +35,6 @@ class MarketDataKpiGeneratorTest extends ConfiguredTest {
 
     @Autowired
     private SymbolJpaService symbolService;
-
-    @MockitoSpyBean
-    private MarketDataJpaService marketDataService;
-
-    @MockitoSpyBean
-    private MarketDataRepository marketDataRepository;
-
-    @MockitoSpyBean
-    private MarketDataKpiGenerator kpiGenerator;
 
     @BeforeEach
     void cleanUp() {

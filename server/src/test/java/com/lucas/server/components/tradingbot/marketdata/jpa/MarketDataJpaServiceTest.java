@@ -4,11 +4,9 @@ import com.lucas.server.ConfiguredTest;
 import com.lucas.server.components.tradingbot.common.dto.SymbolDomain;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
 import com.lucas.server.components.tradingbot.marketdata.dto.MarketDataDomain;
-import com.lucas.server.components.tradingbot.marketdata.service.MarketDataKpiGenerator;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -22,9 +20,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 class MarketDataJpaServiceTest extends ConfiguredTest {
-
-    @MockitoSpyBean
-    private MarketDataKpiGenerator kpiGenerator;
 
     @Autowired
     private MarketDataJpaService jpaService;

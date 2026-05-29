@@ -3,7 +3,6 @@ package com.lucas.server.components.rubik.service;
 import com.lucas.server.ConfiguredTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.lang.reflect.Field;
@@ -14,7 +13,6 @@ import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@TestPropertySource(properties = "spring.jpa.show-sql=false")
 @Sql(scripts = {"/seed__algorithms.sql", "/seed__letter__pairs.sql"},
         executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 class RubikSolverTest extends ConfiguredTest {

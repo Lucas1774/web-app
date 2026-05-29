@@ -18,7 +18,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Method;
@@ -61,7 +60,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * among the companies of a particular sector.
  * In short, which sectors is the model most right about.
  */
-@TestPropertySource(properties = "spring.jpa.show-sql=false")
 @Disabled("Manual run only")
 @SuppressWarnings("java:S5976")
 class ManualRunTest extends BaseTest {
