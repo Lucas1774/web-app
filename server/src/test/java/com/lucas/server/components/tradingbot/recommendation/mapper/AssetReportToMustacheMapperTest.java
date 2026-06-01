@@ -33,10 +33,6 @@ class AssetReportToMustacheMapperTest {
                 """
                 --- Market Data & Features ---
                 [ASSET: FOO]
-                • Current Position:
-                  • N/A shares ($N/A)
-                  • Avg Entry Price: N/A
-                  • Unrealized PnL: $0 (0%)
                 • Price History (last 1 days):
                   • 2025-05-01: O100 H110 L90 C105 VN/A
                 • Technical Indicators at last close:
@@ -63,10 +59,6 @@ class AssetReportToMustacheMapperTest {
                 """
                 --- Market Data & Features ---
                 [ASSET: FOO]
-                • Current Position:
-                  • 10.2412 shares ($101.4887)
-                  • Avg Entry Price: $11.5874
-                  • Unrealized PnL: $50 (80%)
                 • This morning's pre-market: O100 H110 L90 Last price105 Gap: 7.5%
                 • Price History (last 1 days):
                   • 2025-05-01: O100 H110 L90 C105 V1234
