@@ -28,6 +28,7 @@ import com.lucas.utils.Interrupts;
 import com.lucas.utils.exception.MappingException;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSetImpl;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -161,6 +162,7 @@ public class DataManager {
 
     public Set<RecommendationDomain> getRecommendationsById(Set<Long> symbolIds,
                                                             Set<AiClient> clients,
+                                                            CheekyClients cheekyClients,
                                                             Set<AiClient> backupClients,
                                                             PortfolioType type,
                                                             boolean overwrite,
@@ -170,6 +172,7 @@ public class DataManager {
         Set<SymbolDomain> symbols = symbolService.findAllById(symbolIds);
         return getRecommendationsInParallel(symbols,
                 clients,
+                cheekyClients,
                 backupClients,
                 type,
                 overwrite,
@@ -182,6 +185,7 @@ public class DataManager {
     @Transactional
     public Set<RecommendationDomain> getRandomRecommendations(Set<String> symbolNames,
                                                               Set<AiClient> clients,
+                                                              CheekyClients cheekyClients,
                                                               Set<AiClient> backupClients,
                                                               PortfolioType type,
                                                               int count,
@@ -213,6 +217,7 @@ public class DataManager {
 
         return getRecommendationsInParallel(symbolService.findAllById(finalList),
                 clients,
+                cheekyClients,
                 backupClients,
                 type,
                 overwrite,
@@ -459,6 +464,7 @@ public class DataManager {
 
     private Set<RecommendationDomain> getRecommendationsInParallel(Set<SymbolDomain> symbols,
                                                                    Set<AiClient> clients,
+                                                                   CheekyClients cheekyClients,
                                                                    Set<AiClient> backupClients,
                                                                    PortfolioType type,
                                                                    boolean overwrite,
@@ -468,9 +474,9 @@ public class DataManager {
                                                                    boolean useOldNews) {
         Set<RecommendationDomain> res = new HashSet<>();
         Deque<AiClient> mutableClients = new ConcurrentLinkedDeque<>(clients);
+        Deque<AiClient> mutableCheekyClients = new ConcurrentLinkedDeque<>(cheekyClients.getClients());
         Deque<AiClient> mutableBackupClients = new ConcurrentLinkedDeque<>(backupClients);
         PortfolioService portfolioService = portfolioTypeToService.get(type);
-        int minChunkSize = clients.stream().mapToInt(c -> c.getConfig().chunkSize()).min().orElseThrow();
 
         LocalDateTime startUtc;
         if (useOldNews) {
@@ -522,29 +528,41 @@ public class DataManager {
                         }
                     }
                     recommendationBuffer.add(payload);
+
+                    boolean withCheekyClients = 0 < cheekyClients.getRemaining() && !mutableCheekyClients.isEmpty();
+                    Deque<AiClient> clientsRef = withCheekyClients ? mutableCheekyClients : mutableClients;
+                    int minChunkSize = clientsRef.stream().mapToInt(c -> c.getConfig().chunkSize()).min().orElseThrow();
                     if (recommendationBuffer.size() == minChunkSize) {
                         submitChunk(Set.copyOf(recommendationBuffer),
-                                OrderedIndexedSet.copyOf(mutableClients),
+                                OrderedIndexedSet.copyOf(clientsRef),
                                 mutableBackupClients,
                                 executor,
                                 resultsQueue,
                                 overwrite,
                                 useOldNews);
+                        if (withCheekyClients) {
+                            cheekyClients.decrementRemaining();
+                        }
                         submitted++;
-                        mutableClients.add(mutableClients.pollFirst());
+                        clientsRef.add(clientsRef.pollFirst());
                         recommendationBuffer.clear();
                     }
                 }
                 if (!recommendationBuffer.isEmpty()) {
+                    boolean withCheekyClients = !mutableCheekyClients.isEmpty() && 0 < cheekyClients.getRemaining();
+                    Deque<AiClient> clientsRef = withCheekyClients ? mutableCheekyClients : mutableClients;
                     submitChunk(Set.copyOf(recommendationBuffer),
-                            OrderedIndexedSet.copyOf(mutableClients),
+                            OrderedIndexedSet.copyOf(clientsRef),
                             mutableBackupClients,
                             executor,
                             resultsQueue,
                             overwrite,
                             useOldNews);
+                    if (withCheekyClients) {
+                        cheekyClients.decrementRemaining();
+                    }
                     submitted++;
-                    mutableClients.add(mutableClients.pollFirst());
+                    clientsRef.add(clientsRef.pollFirst());
                 }
 
                 for (int i = 0; i < submitted; i++) {
@@ -733,5 +751,21 @@ public class DataManager {
         private MarketSnapshotDomain premarket;
         @Setter
         private OrderedIndexedSet<NewsDomain> news;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public static class CheekyClients {
+
+        private final Set<AiClient> clients;
+        private int remaining;
+
+        public static CheekyClients empty() {
+            return new CheekyClients(Set.of(), 0);
+        }
+
+        public void decrementRemaining() {
+            remaining--;
+        }
     }
 }
