@@ -99,16 +99,7 @@ const Portfolio = ({ onClose = () => { } }) => {
         if (!model) {
             return "";
         }
-        if (model.startsWith("gpt-4.1")) {
-            return "gpt-4.1";
-        }
-        if (model.startsWith("grok-3")) {
-            return "grok-3";
-        }
-        if (model.startsWith("deepseek-r1-0528")) {
-            return "deepseek-r1-0528";
-        }
-        return model;
+        return model.replace(/_\d+(-specialist)?$/, (_, s) => s ?? '');
     }
 
     const getData = useCallback(async (all = false) => {
