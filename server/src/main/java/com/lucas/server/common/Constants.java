@@ -27,10 +27,10 @@ import static com.lucas.server.common.Constants.Clients.GPT_4_1_3;
 import static com.lucas.server.common.Constants.Clients.GPT_4_1_4;
 import static com.lucas.server.common.Constants.Clients.GPT_4_1_5;
 import static com.lucas.server.common.Constants.Clients.GPT_4_1_6;
-import static com.lucas.server.common.Constants.Clients.OPENROUTER;
-import static com.lucas.server.common.Constants.Clients.OPENROUTER_2;
-import static com.lucas.server.common.Constants.Clients.OPENROUTER_3;
-import static com.lucas.server.common.Constants.Clients.OPENROUTER_4;
+import static com.lucas.server.common.Constants.Clients.GPT_OSS;
+import static com.lucas.server.common.Constants.Clients.GPT_OSS_2;
+import static com.lucas.server.common.Constants.Clients.GPT_OSS_3;
+import static com.lucas.server.common.Constants.Clients.GPT_OSS_4;
 import static com.lucas.server.common.Constants.Sector.COMMUNICATION_SERVICES;
 import static com.lucas.server.common.Constants.Sector.CONSUMER_DISCRETIONARY;
 import static com.lucas.server.common.Constants.Sector.CONSUMER_STAPLES;
@@ -658,7 +658,7 @@ public final class Constants {
             DEEPSEEK_R1_0528_6);
     private static final Set<Clients> GPT_CLIENTS =
             Set.of(GPT_4_1, GPT_4_1_2, GPT_4_1_3, GPT_4_1_4, GPT_4_1_5, GPT_4_1_6);
-    private static final Set<Clients> OPENROUTER_CLIENTS = Set.of(OPENROUTER, OPENROUTER_2, OPENROUTER_3, OPENROUTER_4);
+    private static final Set<Clients> GPT_OSS_CLIENTS = Set.of(GPT_OSS, GPT_OSS_2, GPT_OSS_3, GPT_OSS_4);
     private static final Map<RecommendationMode, Set<String>> modeToClientNames = new EnumMap<>(Map.of(
             RecommendationMode.FIRST_ITERATION,
             GPT_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet()),
@@ -671,7 +671,7 @@ public final class Constants {
             RecommendationMode.NOT_RANDOM,
             GPT_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet()),
             RecommendationMode.BACKUP,
-            OPENROUTER_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet())));
+            GPT_OSS_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet())));
 
     private static final Map<String, String> ENTITY_MAP = Map.ofEntries(Map.entry("&quot;", "\""),
             Map.entry("&#39;", "'"),
@@ -788,45 +788,49 @@ public final class Constants {
     @SuppressWarnings("unused")
     protected enum Clients {
         GPT_4_1("gpt-4.1"),
-        GPT_4_1_2("gpt-4.1-2"),
-        GPT_4_1_3("gpt-4.1-3"),
-        GPT_4_1_4("gpt-4.1-4"),
-        GPT_4_1_5("gpt-4.1-5"),
-        GPT_4_1_6("gpt-4.1-6"),
+        GPT_4_1_2("gpt-4.1_2"),
+        GPT_4_1_3("gpt-4.1_3"),
+        GPT_4_1_4("gpt-4.1_4"),
+        GPT_4_1_5("gpt-4.1_5"),
+        GPT_4_1_6("gpt-4.1_6"),
         GPT_4_1_SPECIALIST("gpt-4.1-specialist"),
-        GPT_4_1_2_SPECIALIST("gpt-4.1-2-specialist"),
-        GPT_4_1_3_SPECIALIST("gpt-4.1-3-specialist"),
-        GPT_4_1_4_SPECIALIST("gpt-4.1-4-specialist"),
-        GPT_4_1_5_SPECIALIST("gpt-4.1-5-specialist"),
-        GPT_4_1_6_SPECIALIST("gpt-4.1-6-specialist"),
+        GPT_4_1_2_SPECIALIST("gpt-4.1_2-specialist"),
+        GPT_4_1_3_SPECIALIST("gpt-4.1_3-specialist"),
+        GPT_4_1_4_SPECIALIST("gpt-4.1_4-specialist"),
+        GPT_4_1_5_SPECIALIST("gpt-4.1_5-specialist"),
+        GPT_4_1_6_SPECIALIST("gpt-4.1_6-specialist"),
         GPT_4_1_MINI("gpt-4.1-mini"),
         GPT_4_1_NANO("gpt-4.1-nano"),
         GPT_4O("gpt-4o"),
         GPT_4O_MINI("gpt-4o-mini"),
         DEEPSEEK_R1_0528("deepseek-r1-0528"),
-        DEEPSEEK_R1_0528_2("deepseek-r1-0528-2"),
-        DEEPSEEK_R1_0528_3("deepseek-r1-0528-3"),
-        DEEPSEEK_R1_0528_4("deepseek-r1-0528-4"),
-        DEEPSEEK_R1_0528_5("deepseek-r1-0528-5"),
-        DEEPSEEK_R1_0528_6("deepseek-r1-0528-6"),
+        DEEPSEEK_R1_0528_2("deepseek-r1-0528_2"),
+        DEEPSEEK_R1_0528_3("deepseek-r1-0528_3"),
+        DEEPSEEK_R1_0528_4("deepseek-r1-0528_4"),
+        DEEPSEEK_R1_0528_5("deepseek-r1-0528_5"),
+        DEEPSEEK_R1_0528_6("deepseek-r1-0528_6"),
         DEEPSEEK_R1_0528_SPECIALIST("deepseek-r1-0528-specialist"),
-        DEEPSEEK_R1_0528_2_SPECIALIST("deepseek-r1-0528-2-specialist"),
-        DEEPSEEK_R1_0528_3_SPECIALIST("deepseek-r1-0528-3-specialist"),
-        DEEPSEEK_R1_0528_4_SPECIALIST("deepseek-r1-0528-4-specialist"),
-        DEEPSEEK_R1_0528_5_SPECIALIST("deepseek-r1-0528-5-specialist"),
-        DEEPSEEK_R1_0528_6_SPECIALIST("deepseek-r1-0528-6-specialist"),
+        DEEPSEEK_R1_0528_2_SPECIALIST("deepseek-r1-0528_2-specialist"),
+        DEEPSEEK_R1_0528_3_SPECIALIST("deepseek-r1-0528_3-specialist"),
+        DEEPSEEK_R1_0528_4_SPECIALIST("deepseek-r1-0528_4-specialist"),
+        DEEPSEEK_R1_0528_5_SPECIALIST("deepseek-r1-0528_5-specialist"),
+        DEEPSEEK_R1_0528_6_SPECIALIST("deepseek-r1-0528_6-specialist"),
+        GPT_OSS("gpt-oss"),
+        GPT_OSS_2("gpt-oss_2"),
+        GPT_OSS_3("gpt-oss_3"),
+        GPT_OSS_4("gpt-oss_4"),
         OPENROUTER("openrouter"),
-        OPENROUTER_2("openrouter-2"),
-        OPENROUTER_3("openrouter-3"),
-        OPENROUTER_4("openrouter-4"),
+        OPENROUTER_2("openrouter_2"),
+        OPENROUTER_3("openrouter_3"),
+        OPENROUTER_4("openrouter_4"),
         DEEPSEEK_R1("deepseek-r1"),
         DEEPSEEK_V3("deepseek-v3"),
         GROK_3("grok-3"),
-        GROK_3_2("grok-3-2"),
-        GROK_3_3("grok-3-3"),
-        GROK_3_4("grok-3-4"),
-        GROK_3_5("grok-3-5"),
-        GROK_3_6("grok-3-6"),
+        GROK_3_2("grok-3_2"),
+        GROK_3_3("grok-3_3"),
+        GROK_3_4("grok-3_4"),
+        GROK_3_5("grok-3_5"),
+        GROK_3_6("grok-3_6"),
         LLAMA_3_3_70B("llama-3.3-70b"),
         LLAMA_3_1_405B("llama-3.1-405b"),
         LLAMA_3_1_8B("llama-3.1-8b"),

@@ -51,7 +51,7 @@ ai:
       concurrent-requests: 2
       chunk-size: 5
       fix-me: false
-    - name: gpt-4.1-2
+    - name: gpt-4.1_2
       api-key: ${AI_FOUNDRY_KEY}
       url: ${GITHUB_URL}
       model: openai/gpt-4.1
@@ -61,7 +61,7 @@ ai:
       concurrent-requests: 2
       chunk-size: 5
       fix-me: false
-    - name: gpt-4.1-3
+    - name: gpt-4.1_3
       api-key: ${AI_FOUNDRY_KEY_2}
       url: ${GITHUB_URL}
       model: openai/gpt-4.1
@@ -71,7 +71,7 @@ ai:
       concurrent-requests: 2
       chunk-size: 5
       fix-me: false
-    - name: gpt-4.1-4
+    - name: gpt-4.1_4
       api-key: ${AI_FOUNDRY_KEY_3}
       url: ${GITHUB_URL}
       model: openai/gpt-4.1
@@ -81,7 +81,7 @@ ai:
       concurrent-requests: 2
       chunk-size: 5
       fix-me: false
-    - name: gpt-4.1-5
+    - name: gpt-4.1_5
       api-key: ${AI_FOUNDRY_KEY_4}
       url: ${GITHUB_URL}
       model: openai/gpt-4.1
@@ -91,7 +91,7 @@ ai:
       concurrent-requests: 2
       chunk-size: 5
       fix-me: false
-    - name: gpt-4.1-6
+    - name: gpt-4.1_6
       api-key: ${AI_FOUNDRY_KEY_5}
       url: ${GITHUB_URL}
       model: openai/gpt-4.1
@@ -111,7 +111,7 @@ ai:
       concurrent-requests: 2
       chunk-size: 1
       fix-me: false
-    - name: gpt-4.1-2-specialist
+    - name: gpt-4.1_2-specialist
       api-key: ${AI_FOUNDRY_KEY}
       url: ${GITHUB_URL}
       model: openai/gpt-4.1
@@ -121,7 +121,7 @@ ai:
       concurrent-requests: 2
       chunk-size: 1
       fix-me: false
-    - name: gpt-4.1-3-specialist
+    - name: gpt-4.1_3-specialist
       api-key: ${AI_FOUNDRY_KEY_2}
       url: ${GITHUB_URL}
       model: openai/gpt-4.1
@@ -131,7 +131,7 @@ ai:
       concurrent-requests: 2
       chunk-size: 1
       fix-me: false
-    - name: gpt-4.1-4-specialist
+    - name: gpt-4.1_4-specialist
       api-key: ${AI_FOUNDRY_KEY_3}
       url: ${GITHUB_URL}
       model: openai/gpt-4.1
@@ -141,7 +141,7 @@ ai:
       concurrent-requests: 2
       chunk-size: 1
       fix-me: false
-    - name: gpt-4.1-5-specialist
+    - name: gpt-4.1_5-specialist
       api-key: ${AI_FOUNDRY_KEY_4}
       url: ${GITHUB_URL}
       model: openai/gpt-4.1
@@ -151,7 +151,7 @@ ai:
       concurrent-requests: 2
       chunk-size: 1
       fix-me: false
-    - name: gpt-4.1-6-specialist
+    - name: gpt-4.1_6-specialist
       api-key: ${AI_FOUNDRY_KEY_5}
       url: ${GITHUB_URL}
       model: openai/gpt-4.1
@@ -211,7 +211,7 @@ ai:
       concurrent-requests: 1
       chunk-size: 2
       fix-me: false
-    - name: deepseek-r1-0528-2
+    - name: deepseek-r1-0528_2
       api-key: ${AI_FOUNDRY_KEY}
       url: ${GITHUB_URL}
       model: deepseek/deepseek-r1-0528
@@ -221,7 +221,7 @@ ai:
       concurrent-requests: 1
       chunk-size: 2
       fix-me: false
-    - name: deepseek-r1-0528-3
+    - name: deepseek-r1-0528_3
       api-key: ${AI_FOUNDRY_KEY_2}
       url: ${GITHUB_URL}
       model: deepseek/deepseek-r1-0528
@@ -231,7 +231,7 @@ ai:
       concurrent-requests: 1
       chunk-size: 2
       fix-me: false
-    - name: deepseek-r1-0528-4
+    - name: deepseek-r1-0528_4
       api-key: ${AI_FOUNDRY_KEY_3}
       url: ${GITHUB_URL}
       model: deepseek/deepseek-r1-0528
@@ -241,7 +241,7 @@ ai:
       concurrent-requests: 1
       chunk-size: 2
       fix-me: false
-    - name: deepseek-r1-0528-5
+    - name: deepseek-r1-0528_5
       api-key: ${AI_FOUNDRY_KEY_4}
       url: ${GITHUB_URL}
       model: deepseek/deepseek-r1-0528
@@ -251,7 +251,7 @@ ai:
       concurrent-requests: 1
       chunk-size: 2
       fix-me: false
-    - name: deepseek-r1-0528-6
+    - name: deepseek-r1-0528_6
       api-key: ${AI_FOUNDRY_KEY_5}
       url: ${GITHUB_URL}
       model: deepseek/deepseek-r1-0528
@@ -271,7 +271,7 @@ ai:
       concurrent-requests: 1
       chunk-size: 1
       fix-me: false
-    - name: deepseek-r1-0528-2-specialist
+    - name: deepseek-r1-0528_2-specialist
       api-key: ${AI_FOUNDRY_KEY}
       url: ${GITHUB_URL}
       model: deepseek/deepseek-r1-0528
@@ -281,7 +281,7 @@ ai:
       concurrent-requests: 1
       chunk-size: 1
       fix-me: false
-    - name: deepseek-r1-0528-3-specialist
+    - name: deepseek-r1-0528_3-specialist
       api-key: ${AI_FOUNDRY_KEY_2}
       url: ${GITHUB_URL}
       model: deepseek/deepseek-r1-0528
@@ -291,7 +291,7 @@ ai:
       concurrent-requests: 1
       chunk-size: 1
       fix-me: false
-    - name: deepseek-r1-0528-4-specialist
+    - name: deepseek-r1-0528_4-specialist
       api-key: ${AI_FOUNDRY_KEY_3}
       url: ${GITHUB_URL}
       model: deepseek/deepseek-r1-0528
@@ -301,7 +301,7 @@ ai:
       concurrent-requests: 1
       chunk-size: 1
       fix-me: false
-    - name: deepseek-r1-0528-5-specialist
+    - name: deepseek-r1-0528_5-specialist
       api-key: ${AI_FOUNDRY_KEY_4}
       url: ${GITHUB_URL}
       model: deepseek/deepseek-r1-0528
@@ -311,7 +311,7 @@ ai:
       concurrent-requests: 1
       chunk-size: 1
       fix-me: false
-    - name: deepseek-r1-0528-6-specialist
+    - name: deepseek-r1-0528_6-specialist
       api-key: ${AI_FOUNDRY_KEY_5}
       url: ${GITHUB_URL}
       model: deepseek/deepseek-r1-0528
@@ -321,10 +321,50 @@ ai:
       concurrent-requests: 1
       chunk-size: 1
       fix-me: false
+    - name: gpt-oss
+      api-key: ${OPENROUTER_KEY}
+      url: ${OPENROUTER_URL}
+      model: openai/gpt-oss-120b:free
+      temperature: 0
+      max-tokens: 8000
+      requests-per-minute: 20
+      concurrent-requests: 20
+      chunk-size: 5
+      fix-me: false
+    - name: gpt-oss_2
+      api-key: ${OPENROUTER_KEY_2}
+      url: ${OPENROUTER_URL}
+      model: openai/gpt-oss-120b:free
+      temperature: 0
+      max-tokens: 8000
+      requests-per-minute: 20
+      concurrent-requests: 20
+      chunk-size: 5
+      fix-me: false
+    - name: gpt-oss_3
+      api-key: ${OPENROUTER_KEY_3}
+      url: ${OPENROUTER_URL}
+      model: openai/gpt-oss-120b:free
+      temperature: 0
+      max-tokens: 8000
+      requests-per-minute: 20
+      concurrent-requests: 20
+      chunk-size: 5
+      fix-me: false
+    - name: gpt-oss_4
+      api-key: ${OPENROUTER_KEY_4}
+      url: ${OPENROUTER_URL}
+      model: openai/gpt-oss-120b:free
+      temperature: 0
+      max-tokens: 8000
+      requests-per-minute: 20
+      concurrent-requests: 20
+      chunk-size: 5
+      fix-me: false
     - name: openrouter
       api-key: ${OPENROUTER_KEY}
       url: ${OPENROUTER_URL}
-      model: deepseek/deepseek-v4-flash:free
+      model: openai/gpt-oss-120b:free
       temperature: 0
       max-tokens: 8000
       requests-per-minute: 20
@@ -332,12 +372,12 @@ ai:
       chunk-size: 5
       fix-me: false
       fallback-models:
+        - nvidia/nemotron-3-ultra-550b-a55b:free
         - nvidia/nemotron-3-super-120b-a12b:free
-        - openai/gpt-oss-120b:free
-    - name: openrouter-2
+    - name: openrouter_2
       api-key: ${OPENROUTER_KEY_2}
       url: ${OPENROUTER_URL}
-      model: deepseek/deepseek-v4-flash:free
+      model: openai/gpt-oss-120b:free
       temperature: 0
       max-tokens: 8000
       requests-per-minute: 20
@@ -345,12 +385,12 @@ ai:
       chunk-size: 5
       fix-me: false
       fallback-models:
+        - nvidia/nemotron-3-ultra-550b-a55b:free
         - nvidia/nemotron-3-super-120b-a12b:free
-        - openai/gpt-oss-120b:free
-    - name: openrouter-3
+    - name: openrouter_3
       api-key: ${OPENROUTER_KEY_3}
       url: ${OPENROUTER_URL}
-      model: deepseek/deepseek-v4-flash:free
+      model: openai/gpt-oss-120b:free
       temperature: 0
       max-tokens: 8000
       requests-per-minute: 20
@@ -358,12 +398,12 @@ ai:
       chunk-size: 5
       fix-me: false
       fallback-models:
+        - nvidia/nemotron-3-ultra-550b-a55b:free
         - nvidia/nemotron-3-super-120b-a12b:free
-        - openai/gpt-oss-120b:free
-    - name: openrouter-4
+    - name: openrouter_4
       api-key: ${OPENROUTER_KEY_4}
       url: ${OPENROUTER_URL}
-      model: deepseek/deepseek-v4-flash:free
+      model: openai/gpt-oss-120b:free
       temperature: 0
       max-tokens: 8000
       requests-per-minute: 20
@@ -371,8 +411,8 @@ ai:
       chunk-size: 5
       fix-me: false
       fallback-models:
+        - nvidia/nemotron-3-ultra-550b-a55b:free
         - nvidia/nemotron-3-super-120b-a12b:free
-        - openai/gpt-oss-120b:free
     - name: deepseek-r1
       api-key: ${GITHUB_KEY}
       url: ${GITHUB_URL}
@@ -403,7 +443,7 @@ ai:
       concurrent-requests: 1
       chunk-size: 2
       fix-me: false
-    - name: grok-3-2
+    - name: grok-3_2
       api-key: ${AI_FOUNDRY_KEY}
       url: ${GITHUB_URL}
       model: xai/grok-3
@@ -413,7 +453,7 @@ ai:
       concurrent-requests: 1
       chunk-size: 2
       fix-me: false
-    - name: grok-3-3
+    - name: grok-3_3
       api-key: ${AI_FOUNDRY_KEY_2}
       url: ${GITHUB_URL}
       model: xai/grok-3
@@ -423,7 +463,7 @@ ai:
       concurrent-requests: 1
       chunk-size: 2
       fix-me: false
-    - name: grok-3-4
+    - name: grok-3_4
       api-key: ${AI_FOUNDRY_KEY_3}
       url: ${GITHUB_URL}
       model: xai/grok-3
@@ -433,7 +473,7 @@ ai:
       concurrent-requests: 1
       chunk-size: 2
       fix-me: false
-    - name: grok-3-5
+    - name: grok-3_5
       api-key: ${AI_FOUNDRY_KEY_4}
       url: ${GITHUB_URL}
       model: xai/grok-3
@@ -443,7 +483,7 @@ ai:
       concurrent-requests: 1
       chunk-size: 2
       fix-me: false
-    - name: grok-3-6
+    - name: grok-3_6
       api-key: ${AI_FOUNDRY_KEY_5}
       url: ${GITHUB_URL}
       model: xai/grok-3

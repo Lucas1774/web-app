@@ -3959,7 +3959,7 @@
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "{{base_url}}/recommendations/daily/0.5?action=HOLD&models=gpt-4.1,gpt-4.1-2,gpt-4.1-3,gpt-4.1-4,gpt-4.1-5,gpt-4.1-6",
+                  "raw": "{{base_url}}/recommendations/daily/0.5?action=HOLD&models=gpt-4.1,gpt-4.1_2,gpt-4.1_3,gpt-4.1_4,gpt-4.1_5,gpt-4.1_6",
                   "host": [
                     "{{base_url}}"
                   ],
@@ -3975,7 +3975,7 @@
                     },
                     {
                       "key": "models",
-                      "value": "gpt-4.1,gpt-4.1-2,gpt-4.1-3,gpt-4.1-4,gpt-4.1-5,gpt-4.1-6"
+                      "value": "gpt-4.1,gpt-4.1_2,gpt-4.1_3,gpt-4.1_4,gpt-4.1_5,gpt-4.1_6"
                     }
                   ]
                 }
