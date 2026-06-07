@@ -294,9 +294,9 @@ public class RubikSolver {
         }
         String letterPair = String.valueOf(firstLetter) + secondLetter;
         String audioLoop = String.valueOf(LETTER_AUDIO.get(firstLetter)) + LETTER_AUDIO.get(secondLetter);
-        String person = null;
-        String action = null;
-        String object = null;
+        String person = letterPair;
+        String action = letterPair;
+        String object = letterPair;
         if (withLetterPairs) {
             LetterPairs pairs = letterPairsJpaService.findByLetterPair(letterPair).orElseThrow();
             person = pairs.getPerson();

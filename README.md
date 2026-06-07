@@ -79,6 +79,8 @@ who they have to gift.
 While the timer is very precise, the displayed time's refresh rate is declared as a constant and used to save computing
 power.  
 Select a puzzle for which to generate a random scramble.  
+BLD scrambles are solved serverside on the fly, although PAO codes require admin authentication. Solution can be seen by
+clicking on the star.  
 Set the timer to zero by holding `spacebar` or touching your phone screen (buttons and form fields have priority over
 this functionality).  
 Start the timer by releasing, or cancel the start-up by dragging your finger or pressing any other key. The scramble

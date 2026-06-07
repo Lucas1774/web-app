@@ -23,6 +23,13 @@
     line-height: 20px;
 }
 
+.app.rubikTimer button.solution-toggle {
+    position: absolute;
+    background: none;
+    border: none;
+    width: 0%;
+}
+
 .timerContainer {
     width: 100%;
 }

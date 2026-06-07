@@ -106,7 +106,6 @@ public class XlsxToAlgorithmMappingsMapper implements Mapper<InputStream, XlsxTo
             Map.entry(23, "Z"),
             Map.entry(24, "X"));
 
-    // TODO: Migration script on tables. Front-end
     @Override
     public Result map(InputStream input) throws MappingException {
         Result result = new Result(new HashSet<>(), new HashSet<>());

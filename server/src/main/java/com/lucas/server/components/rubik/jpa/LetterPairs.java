@@ -27,7 +27,7 @@ public class LetterPairs implements JpaEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "letter_pair", length = 100, unique = true)
+    @Column(name = "letter_pair", nullable = false, unique = true, length = 100)
     private String letterPair;
 
     @Column(name = "person", length = 100)

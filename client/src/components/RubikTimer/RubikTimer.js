@@ -1,17 +1,21 @@
 import PropTypes from "prop-types";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button, Form } from "react-bootstrap";
+import { get } from "../../api";
 import * as constants from "../../constants";
 import Popup from "./Popup";
 import "./RubikTimer.css";
+import scrambleNormalizer from "./scrambleNormalizer";
 import Scramble from "./scramblers/Scramble";
 import { formatTime, renderStats } from "./statsHelper";
+
 const RubikTimer = ({ onClose = () => { } }) => {
     // IDENTIFIERS
     const isAndroid = /Android/i.test(navigator.userAgent);
 
     const [elapsedTime, setElapsedTime] = useState(0);
     const [scramble, setScramble] = useState("");
+    const [solution, setSolution] = useState("");
     const [isTimerPrepared, setIsTimerPrepared] = useState(false);
     const [isTimerRunning, setIsTimerRunning] = useState(false);
     const [isFormVisible, setIsFormVisible] = useState(true);
@@ -28,6 +32,7 @@ const RubikTimer = ({ onClose = () => { } }) => {
     const [recentTimes, setRecentTimes] = useState([]);
     const [recentScrambles, setRecentScrambles] = useState([]);
     const [isHorizontal, setIsHorizontal] = useState(window.innerWidth > window.innerHeight && isAndroid);
+    const [isShowSolution, setIsShowSolution] = useState(false);
 
     const startTime = useRef(0);
     const wakeLock = useRef(null);
@@ -68,6 +73,8 @@ const RubikTimer = ({ onClose = () => { } }) => {
         }, constants.TIMER_REFRESH_RATE);
         setIsTimerPrepared(false);
         setIsTimerRunning(true);
+        setSolution("");
+        setIsShowSolution(false);
         if (isAndroid) {
             setFocusTimer("center");
         }
@@ -118,6 +125,8 @@ const RubikTimer = ({ onClose = () => { } }) => {
     const restoreDefaults = useCallback(() => {
         setElapsedTime(0);
         setScramble("");
+        setSolution("");
+        setIsShowSolution(false);
         setIsTimerPrepared(false);
         setIsTimerRunning(false);
         hideEverything();
@@ -133,14 +142,15 @@ const RubikTimer = ({ onClose = () => { } }) => {
 
     // EVENT HANDLERS
     const handleTouchStart = useCallback((event) => {
-        if (isTimerVisible && !isTimerRunning && !isTimerPrepared && selectedPuzzle.current !== constants.MULTI && event.target.tagName !== "BUTTON" && event.target.tagName !== "INPUT" && isDragAllowed.current) {
+        if (isTimerVisible && !isTimerRunning && !isTimerPrepared && !isShowSolution && selectedPuzzle.current !== constants.MULTI
+            && event.target.tagName !== "BUTTON" && event.target.tagName !== "INPUT" && isDragAllowed.current) {
             prepare();
         } else if (isTimerPrepared && 0 !== recentTimes.length) {
             editLastTime();
         } else if (isTimerRunning) {
             stop();
         }
-    }, [editLastTime, isTimerPrepared, isTimerRunning, isTimerVisible, prepare, recentTimes.length, stop]);
+    }, [editLastTime, isShowSolution, isTimerPrepared, isTimerRunning, isTimerVisible, prepare, recentTimes.length, stop]);
 
     const handleTouchMove = useCallback((event) => {
         if (!isDragAllowed.current) {
@@ -367,10 +377,43 @@ const RubikTimer = ({ onClose = () => { } }) => {
         );
     };
 
+    const renderSolution = () => {
+        if (!solution) return null;
+
+        const lines = solution.split("\n").filter((line) => line.trim());
+        return (
+            <article style={{ display: scrambleDisplayMode }}>
+                {lines.map((line, idx) => (
+                    <div key={idx}>{line}</div>
+                ))}
+            </article>
+        );
+    };
+
     const renderScramble = () => {
         return (
             <Scramble isNewScramble={isNewScramble.current}
-                onScrambleChange={(s) => { setScramble(s); isNewScramble.current = false }}
+                onScrambleChange={async (s) => {
+                    setScramble(s);
+                    isNewScramble.current = false;
+                    if (constants.BLD === selectedPuzzle.current) {
+                        try {
+                            const normalizedScramble = scrambleNormalizer(s);
+                            const resp = await get(`/rubik/solve?scramble=${normalizedScramble}`);
+                            const solutionText = resp.data
+                                .map((item) => {
+                                    const type = item.type === "CORNER" && item.algorithmType === "TWIST" ? "CORNER TWIST" :
+                                        item.type === "EDGE" && item.algorithmType === "TWIST" ? "EDGE FLIP" : item.type
+                                    return `(${type}) ${item.o} ${item.audioLoop}\n${item.algorithm}`
+                                })
+                                .join("\n");
+                            setSolution(solutionText);
+                        } catch (error) { // do not alert
+                            const message = error.response?.data ? error.response.data : error.message
+                            console.log("Error fetching data", message);
+                        }
+                    }
+                }}
                 puzzle={selectedPuzzle.current}
                 display={scrambleDisplayMode}
                 quantity={multiQuantity.current}
@@ -384,6 +427,18 @@ const RubikTimer = ({ onClose = () => { } }) => {
                 <div></div>
                 <Button className="app restart popup-icon" onClick={onClose}>X</Button>
             </div>
+            {solution && isTimerVisible && !isTimerRunning && !isTimerPrepared && (
+                <button
+                    onClick={() => setIsShowSolution(!isShowSolution)}
+                    className={"solution-toggle"}
+                    style={{ color: isShowSolution ? "#FFD700" : "#888" }}
+                    onMouseEnter={(e) => e.target.style.color = "#FFD700"}
+                    onMouseLeave={(e) => e.target.style.color = isShowSolution ? "#FFD700" : "#888"}
+                    title={isShowSolution ? "Hide solution" : "Show solution"}
+                >
+                    ★
+                </button>
+            )}
             <h1 id="rubikTimer">Rubik timer</h1>
             {isFormVisible && renderForm()}
             {isSelectMultiLengthVisible && renderSelectMultiLength()}
@@ -395,25 +450,22 @@ const RubikTimer = ({ onClose = () => { } }) => {
                     { label: "session", align: "left" }]
             })}
             <div className="timerContainer">
-                {isPopupVisible
-                    ? <>
-                        <Popup content={{ recentTimes: recentTimes, recentScrambles: recentScrambles }} onPopupClose={() => {
+                {!isPopupVisible && isTimerVisible && renderAverages()}
+                {!isPopupVisible && solution && isShowSolution && renderSolution()}
+                {renderScramble()}
+                {isPopupVisible && (
+                    <Popup
+                        content={{ recentTimes, recentScrambles }}
+                        onPopupClose={() => {
                             setIsPopupVisible(false);
-                            setElapsedTime(recentTimes.length > 0
-                                ? recentTimes[recentTimes.length - 1]
-                                : 0);
+                            setElapsedTime(recentTimes.length > 0 ? recentTimes[recentTimes.length - 1] : 0);
                             setScrambleDisplayMode("block");
                             setIsTimerVisible(true);
                             setIsShowMoreStatsVisible(true);
-                        }} />
-                        {renderScramble()}
-                    </>
-                    : <>
-                        {isTimerVisible && renderAverages()}
-                        {renderScramble()}
-                        {isTimerVisible && renderTimer()}
-                    </>
-                }
+                        }}
+                    />
+                )}
+                {!isPopupVisible && isTimerVisible && renderTimer()}
             </div>
             <Button style={{ display: isShowMoreStatsVisible && isAndroid && selectedPuzzle.current === constants.MULTI ? "block" : "none" }} variant="success" onTouchStart={prepare}>Start</Button>
             {isEditTimeVisible && <Popup content={{ recentTimes: recentTimes, recentScrambles: recentScrambles }} justEditLast={true} onPopupClose={() => {
