@@ -9,7 +9,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ../docker/prod/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
       - postgres:/var/lib/postgresql/data
 
   app:
@@ -21,6 +21,7 @@ services:
       - mosquitto
     ports:
       - "443:443"
+    restart: unless-stopped
     environment:
       SOME_IP_ADDRESS: ${SOME_IP_ADDRESS}
       API_KEY: ${API_KEY}
@@ -64,14 +65,12 @@ services:
 
       SENTIMENT_URL: ${SENTIMENT_URL}
 
-    restart: on-failure
-
   mosquitto:
     image: eclipse-mosquitto
-    environment:
-      - MQTT_USER=${MQTT_USER}
-      - MQTT_PASSWORD=${MQTT_PASSWORD}
     restart: unless-stopped
+    environment:
+      MQTT_USER: ${MQTT_USER}
+      MQTT_PASSWORD: ${MQTT_PASSWORD}
     ports:
       - "1883:1883"
     volumes:

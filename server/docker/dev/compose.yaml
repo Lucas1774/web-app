@@ -2,9 +2,9 @@ services:
   postgres:
     image: pgvector/pgvector:pg17
     environment:
-      - POSTGRES_DB=${DB_NAME}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-      - POSTGRES_USER=${DB_USERNAME}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
@@ -17,18 +17,12 @@ services:
       - "8081:8080"
     depends_on:
       - postgres
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://0.0.0.0:8080" ]
-      interval: 1s
-      timeout: 5s
-      retries: 3
 
   mosquitto:
     image: eclipse-mosquitto
     environment:
-      - MQTT_USER=${MQTT_USER}
-      - MQTT_PASSWORD=${MQTT_PASSWORD}
-    restart: unless-stopped
+      MQTT_USER: ${MQTT_USER}
+      MQTT_PASSWORD: ${MQTT_PASSWORD}
     ports:
       - "1883:1883"
     volumes:
