@@ -6,6 +6,7 @@ import deleteIcon from "../../assets/images/bin.png";
 import editIcon from "../../assets/images/edit.png";
 import resetIcon from "../../assets/images/remove.png";
 import * as constants from "../../constants";
+import useAuth from "../../hooks/useAuth";
 import useDebounce from "../../hooks/useDebounce";
 import "../../Table.css";
 import DebounceableInput from "../DebounceableInput";
@@ -17,15 +18,16 @@ import EditProductPopup from "./EditProductPopup";
 import EditSortablesPopup from "./EditSortablesPopup";
 
 const Shopping = ({ onClose = () => { } }) => {
+
+    const [message, setMessage] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isLoginFormVisible, setIsLoginFormVisible] = useState(false);
     const [tableData, setTableData] = useState(null);
     const [sortables, setSortables] = useState([]);
     const [sortablesType, setSortablesType] = useState(null);
     const [popup, setPopup] = useState(null);
     const [filterValue, setFilterValue] = useState({});
-    const [message, setMessage] = useState(null);
     const [selectedProductData, setSelectedProductData] = useState({})
-    const [isLoading, setIsLoading] = useState(true);
-    const [isLoginFormVisible, setIsLoginFormVisible] = useState(false);
     const [isPopupVisible, setIsPopupVisible] = useState(false);
     const [filters, setFilters] = useState({});
     const [order, setOrder] = useState({ key: null, order: constants.DESC })
@@ -44,26 +46,6 @@ const Shopping = ({ onClose = () => { } }) => {
             });
         }
     }, [filterDebouncedValue]);
-
-    useEffect(() => {
-        const checkAuth = async () => {
-            setIsLoading(true);
-            try {
-                await get("/authentication/check-auth");
-                await getData();
-            } catch (error) {
-                if (error.response?.status === 403) {
-                    setIsLoginFormVisible(true);
-                } else {
-                    handleError("Error checking authentication", error);
-                }
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        checkAuth();
-    }, []);
 
     const getData = async () => {
         setIsLoading(true);
@@ -85,6 +67,8 @@ const Shopping = ({ onClose = () => { } }) => {
             setIsLoading(false);
         }
     };
+
+    const handleLoginSubmit = useAuth({ onAuthSuccess: getData, onGuest: getData, setMessage: setMessage, setLoading: setIsLoading, setLoginFormVisible: setIsLoginFormVisible });
 
     const updateProductQuantity = useCallback(async (value, id) => {
         if (isNaN(value) || parseInt(value) < 0) {
@@ -157,48 +141,6 @@ const Shopping = ({ onClose = () => { } }) => {
             handleError("Error sending data", error);
         } finally {
             setIsLoading(false);
-        }
-    };
-
-    const handleLoginSubmit = async (event) => {
-        event.preventDefault();
-        const username = event.target[0].value.trim();
-        const password = event.target[1].value.trim();
-        const action = event.nativeEvent.submitter.value;
-        if (!password || "validate" !== action) {
-            setMessage("No password provided. Continuing as guest");
-            setTimeout(() => {
-                setMessage(null);
-                setIsLoading(true);
-                setIsLoginFormVisible(false);
-                getData();
-            }, constants.TIMEOUT_DELAY);
-        } else {
-            setIsLoading(true);
-            try {
-                await post('/authentication/login', { [constants.USERNAME]: username, [constants.PASSWORD]: password });
-                setMessage("Login successful");
-                setTimeout(() => {
-                    setMessage(null);
-                    setIsLoading(true);
-                    setIsLoginFormVisible(false);
-                    getData();
-                }, constants.TIMEOUT_DELAY);
-            } catch (error) {
-                if (error.response?.status === 403) {
-                    setMessage("Wrong credentials. Continuing as guest");
-                    setTimeout(() => {
-                        setMessage(null);
-                        setIsLoading(true);
-                        setIsLoginFormVisible(false);
-                        getData();
-                    }, constants.TIMEOUT_DELAY);
-                } else {
-                    handleError("Error sending data", error);
-                }
-            } finally {
-                setIsLoading(false);
-            }
         }
     };
 
@@ -415,10 +357,8 @@ const Shopping = ({ onClose = () => { } }) => {
             </div>}
             <h1 id="shopping">Shopping</h1>
             {message ? <div>{message}</div> :
-                isLoginFormVisible ? <LoginForm onSubmit={(e) => {
-                    handleLoginSubmit(e)
-                }} /> :
-                    isLoading ? <Spinner /> :
+                isLoginFormVisible ? <LoginForm onSubmit={handleLoginSubmit} /> :
+                    (isLoading) ? <Spinner /> :
                         isPopupVisible ? "editProduct" === popup
                             ? <EditProductPopup content={selectedProductData}
                                 onSubmit={(id, name, isRare, categoryId, category) => {

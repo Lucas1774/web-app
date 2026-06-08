@@ -3,6 +3,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { get } from "../../api";
 import * as constants from "../../constants";
+import useAuth from "../../hooks/useAuth";
+import LoginForm from "../LoginForm";
+import Spinner from "../Spinner";
 import Popup from "./Popup";
 import "./RubikTimer.css";
 import scrambleNormalizer from "./scrambleNormalizer";
@@ -13,6 +16,9 @@ const RubikTimer = ({ onClose = () => { } }) => {
     // IDENTIFIERS
     const isAndroid = /Android/i.test(navigator.userAgent);
 
+    const [message, setMessage] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isLoginFormVisible, setIsLoginFormVisible] = useState(false);
     const [elapsedTime, setElapsedTime] = useState(0);
     const [scramble, setScramble] = useState("");
     const [solution, setSolution] = useState("");
@@ -64,6 +70,8 @@ const RubikTimer = ({ onClose = () => { } }) => {
         setIsShowMoreStatsVisible(true);
         setIsRestartButtonVisible(true);
     }, []);
+
+    const handleLoginSubmit = useAuth({ onAuthSuccess: () => { }, onGuest: () => { }, setMessage: setMessage, setLoading: setIsLoading, setLoginFormVisible: setIsLoginFormVisible });
 
     const start = useCallback(() => {
         const now = performance.now(); // instant time fetch
@@ -420,6 +428,16 @@ const RubikTimer = ({ onClose = () => { } }) => {
                 isHorizontal={isHorizontal} />
         );
     };
+
+    if (message) {
+        return <div className="app rubikTimer"><div>{message}</div></div>;
+    }
+    if (isLoginFormVisible) {
+        return <div className="app rubikTimer"><LoginForm onSubmit={handleLoginSubmit} /></div>;
+    }
+    if (isLoading) {
+        return <Spinner />;
+    }
 
     return (
         <div className="app rubikTimer">

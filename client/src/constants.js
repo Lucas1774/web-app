@@ -267,6 +267,8 @@ export const PORTFOLIO_META = {
     }
 }
 
+export const noop = () => { };
+
 export const generateRandomBetweenZeroAndX = (x) => {
     return Math.floor(Math.random() * x);
 };
