@@ -12,6 +12,7 @@ import com.lucas.utils.exception.MappingException;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -41,6 +42,7 @@ import static com.lucas.server.common.Constants.isTradingDate;
 import static com.lucas.server.common.Constants.toPastOrFutureTradeDate;
 
 @SuppressWarnings("LoggingSimilarMessage")
+@Profile("prod")
 @Component
 @RequiredArgsConstructor
 @Slf4j

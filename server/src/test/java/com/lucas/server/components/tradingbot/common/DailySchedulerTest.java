@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
@@ -38,6 +39,7 @@ import static org.mockito.Mockito.verify;
         "scheduler.recommendation-inference-five-cron=* * * * * *",
         "scheduler.recommendation-inference-fifteen-cron=* * * * * *"})
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@ActiveProfiles({"prod", "dev"}) // scheduler is not active in other profiles than prod. Dev still overrides prod config
 class DailySchedulerTest extends ConfiguredTest {
 
     @MockitoSpyBean

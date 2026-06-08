@@ -18,6 +18,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Method;
@@ -61,12 +62,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * In short, which sectors is the model most right about.
  */
 @Disabled("Manual run only")
+@ActiveProfiles({"prod", "dev"})
 @SuppressWarnings("java:S5976")
 class ManualRunTest extends BaseTest {
 
     private static final Set<String> SYMBOL_NAMES =
             Set.of("AAPL", "NVDA", "MSFT", "AMZN", "META", "TSLA", "GOOGL", "GOOG", "IBM");
-    private static final LocalDate FROM = LocalDate.of(2026, 4, 25); // inclusive
+    private static final LocalDate FROM = LocalDate.of(2026, 6, 1); // inclusive
     private static final LocalDate TO = LocalDate.now().plusDays(1); // exclusive
     private static Set<Recommendation> allRecommendations;
     private static Set<MarketDataDomain> allMarketData;
