@@ -4,9 +4,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button, Form, Table } from "react-bootstrap";
 import MultiSelectDdl from "../../MultiSelectDdl";
 import "../../Table.css";
-import { get, post } from "../../api";
+import { get } from "../../api";
 import commerceIcon from "../../assets/images/commerce.png";
 import * as constants from "../../constants";
+import useAuth from "../../hooks/useAuth";
 import useDebounce from "../../hooks/useDebounce";
 import LoginForm from "../LoginForm";
 import Spinner from "../Spinner";
@@ -17,6 +18,9 @@ import TransactionPopup from "./TransactionPopup";
 
 const Portfolio = ({ onClose = () => { } }) => {
 
+    const [message, setMessage] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isLoginFormVisible, setIsLoginFormVisible] = useState(false);
     const [tableData, setTableData] = useState(null);
     const [displayData, setDisplayData] = useState([]);
     const [models, setModels] = useState([]);
@@ -24,9 +28,6 @@ const Portfolio = ({ onClose = () => { } }) => {
     const [selectedRandomModels, setSelectedRandomModels] = useState([]);
     const [selectedIds, setSelectedIds] = useState(new Set());
     const [filterValue, setFilterValue] = useState({});
-    const [message, setMessage] = useState(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [isLoginFormVisible, setIsLoginFormVisible] = useState(false);
     const [filters, setFilters] = useState({});
     const [order, setOrder] = useState({ key: null, order: constants.DESC });
     const [isShowAllData, setIsShowAllData] = useState(false);
@@ -153,27 +154,20 @@ const Portfolio = ({ onClose = () => { } }) => {
         }
     }, []);
 
-    useEffect(() => {
-        const init = async () => {
-            setIsLoading(true);
-            try {
-                await get("/authentication/check-auth");
-                await getData();
-                const res = await get("/recommendations/models");
-                setModels(res.data);
-            } catch (error) {
-                if (error.response?.status === 403) {
-                    setIsLoginFormVisible(true);
-                } else {
-                    handleError("Error checking authentication", error);
-                }
-            } finally {
-                setIsLoading(false);
-            }
-        };
+    const loadInitial = async () => {
+        setIsLoading(true);
+        try {
+            await getData();
+            const res = await get("/recommendations/models");
+            setModels(res.data);
+        } catch (error) {
+            handleError("Error checking authentication", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
-        init();
-    }, [getData]);
+    const handleLoginSubmit = useAuth({ onAuthSuccess: loadInitial, onGuest: loadInitial, setMessage: setMessage, setLoading: setIsLoading, setLoginFormVisible: setIsLoginFormVisible });
 
     const getDataByRow = async (dynamic) => {
         const ids = visibleSelectedIds().join(',')
@@ -330,54 +324,6 @@ const Portfolio = ({ onClose = () => { } }) => {
             setIsLoading(false);
         }
     }
-
-    const handleLoginSubmit = async (event) => {
-        event.preventDefault();
-        const username = event.target[0].value.trim();
-        const password = event.target[1].value.trim();
-        const action = event.nativeEvent.submitter.value;
-        if (!password || "validate" !== action) {
-            setMessage("No password provided. Continuing as guest");
-            setTimeout(async () => {
-                setMessage(null);
-                setIsLoading(true);
-                setIsLoginFormVisible(false);
-                getData();
-                const res = await get("/recommendations/models");
-                setModels(res.data);
-            }, constants.TIMEOUT_DELAY);
-        } else {
-            setIsLoading(true);
-            try {
-                await post('/authentication/login', { [constants.USERNAME]: username, [constants.PASSWORD]: password });
-                setMessage("Login successful");
-                setTimeout(async () => {
-                    setMessage(null);
-                    setIsLoading(true);
-                    setIsLoginFormVisible(false);
-                    getData();
-                    const res = await get("/recommendations/models");
-                    setModels(res.data);
-                }, constants.TIMEOUT_DELAY);
-            } catch (error) {
-                if (error.response?.status === 403) {
-                    setMessage("Wrong credentials. Continuing as guest");
-                    setTimeout(async () => {
-                        setMessage(null);
-                        setIsLoading(true);
-                        setIsLoginFormVisible(false);
-                        getData();
-                        const res = await get("/recommendations/models");
-                        setModels(res.data);
-                    }, constants.TIMEOUT_DELAY);
-                } else {
-                    handleError("Error sending data", error);
-                }
-            } finally {
-                setIsLoading(false);
-            }
-        }
-    };
 
     const handleOrderClick = (key) => {
         setOrder((prevOrder) => ({

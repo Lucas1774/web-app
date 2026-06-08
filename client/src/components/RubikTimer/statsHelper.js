@@ -1,4 +1,4 @@
-import { DNF, EMPTY_TIMER } from "../../constants";
+import { DNF, EMPTY_TIMER, noop } from "../../constants";
 
 export const formatTime = (time) => {
     if (time === Infinity) {
@@ -26,8 +26,6 @@ export const renderAllTimes = ({ recentTimes, recentScrambles, firstIndex = 0, l
         }
     });
 };
-
-const noop = () => { };
 
 export const renderStats = ({ times, formatter = formatTime, onClickEffect = noop, averageDisplay = "grid", className = "", params = [
     { label: "0", length: -1 },
