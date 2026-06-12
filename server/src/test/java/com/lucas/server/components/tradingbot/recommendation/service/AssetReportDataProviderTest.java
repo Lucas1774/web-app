@@ -10,6 +10,7 @@ import com.lucas.server.components.tradingbot.marketdata.jpa.MarketDataJpaServic
 import com.lucas.server.components.tradingbot.marketdata.service.MarketDataKpiGenerator;
 import com.lucas.server.components.tradingbot.news.dto.NewsDomain;
 import com.lucas.server.components.tradingbot.news.jpa.NewsJpaService;
+import com.lucas.server.components.tradingbot.news.jpa.NewsPersistenceOrchestrator;
 import com.lucas.server.components.tradingbot.portfolio.dto.PortfolioDomain;
 import com.lucas.server.components.tradingbot.portfolio.jpa.PortfolioJpaService;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.AssetReportRaw;
@@ -41,6 +42,9 @@ class AssetReportDataProviderTest extends ConfiguredTest {
 
     @Autowired
     private NewsJpaService newsService;
+
+    @Autowired
+    private NewsPersistenceOrchestrator newsPersistenceOrchestrator;
 
     @Autowired
     private PortfolioJpaService portfolioService;
@@ -91,7 +95,7 @@ class AssetReportDataProviderTest extends ConfiguredTest {
                     .setSentimentConfidence(BigDecimal.valueOf((i * 6) % 100));
             articles.add(news);
         }
-        newsService.createOrUpdate(articles);
+        newsPersistenceOrchestrator.persistNews(articles);
 
         // given: a portfolio for the symbol
         PortfolioDomain portfolio = new PortfolioDomain();

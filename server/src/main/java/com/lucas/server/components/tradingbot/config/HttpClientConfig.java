@@ -29,8 +29,9 @@ public class HttpClientConfig {
         Map<String, SlidingWindowRateLimiter> res = new HashMap<>();
         res.put(TWELVEDATA_RATE_LIMITER, new SlidingWindowRateLimiter(8, Duration.ofMinutes(1)));
         res.put(YAHOO_FINANCE_RATE_LIMITER, new SlidingWindowRateLimiter(1, Duration.ofSeconds(1).dividedBy(4)));
+        // spread requests are needed for Finnhub, even if its documentation suggests otherwise (60 / minute).
         getFinnhubRateLimiterNames().forEach(name -> res.put(name,
-                new SlidingWindowRateLimiter(56, Duration.ofMinutes(1))));
+                new SlidingWindowRateLimiter(1, Duration.ofSeconds(1))));
 
         return res;
     }

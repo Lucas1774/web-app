@@ -18,9 +18,18 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import static com.lucas.server.common.Constants.AMERICA_NY;
 import static com.lucas.server.common.Constants.BUY;
@@ -210,13 +219,32 @@ public class DailyScheduler {
     private void doBeforeMorningTask(Set<String> symbolNames) {
         LocalDate to = LocalDate.now();
         LocalDate from = toPastOrFutureTradeDate(to, 1, d -> d.minusDays(1));
-        Set<NewsDomain> news = null;
-        try {
-            news = dataManager.retrieveNewsByDateRangeAndName(symbolNames, from, to, false);
-        } catch (ClientException | MappingException e) {
-            log.error(e.getMessage(), e);
+
+        try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
+            List<Callable<Set<NewsDomain>>> tasks = new ArrayList<>();
+            for (String name : symbolNames) {
+                tasks.add(() -> dataManager.retrieveNewsByDateRangeAndName(name, from, to, false));
+            }
+
+            Collection<Future<Set<NewsDomain>>> futures = Interrupts.callOrSwallow(() -> executor.invokeAll(tasks),
+                    Set::of,
+                    e -> log.error(e.getMessage(), e));
+
+            Set<NewsDomain> news = new HashSet<>();
+            for (Future<Set<NewsDomain>> f : Objects.requireNonNull(futures)) {
+                Set<NewsDomain> part = Interrupts.callOrSwallow(() -> {
+                    try {
+                        return f.get();
+                    } catch (ExecutionException e) {
+                        log.error(e.getMessage(), e);
+                        return Set.of();
+                    }
+                }, Set::of, e -> log.error(e.getMessage(), e));
+                news.addAll(Objects.requireNonNull(part)); // doesn't correctly merge, but it's ok
+            }
+
+            String message = String.format("fetched %d news", news.size());
+            log.info(SCHEDULED_TASK_SUCCESS_INFO, message, news);
         }
-        String message = String.format("fetched %d news", Objects.requireNonNull(news).size());
-        log.info(SCHEDULED_TASK_SUCCESS_INFO, message, news);
     }
 }

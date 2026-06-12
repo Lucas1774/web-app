@@ -13,6 +13,7 @@ import com.lucas.server.components.tradingbot.marketdata.service.TwelveDataMarke
 import com.lucas.server.components.tradingbot.marketdata.service.YahooFinanceMarketSnapshotClient;
 import com.lucas.server.components.tradingbot.news.dto.NewsDomain;
 import com.lucas.server.components.tradingbot.news.jpa.NewsJpaService;
+import com.lucas.server.components.tradingbot.news.jpa.NewsPersistenceOrchestrator;
 import com.lucas.server.components.tradingbot.news.service.FinnhubNewsClient;
 import com.lucas.server.components.tradingbot.news.service.YahooFinanceNewsClient;
 import com.lucas.server.components.tradingbot.portfolio.dto.PortfolioDomain;
@@ -88,11 +89,11 @@ import static com.lucas.server.common.Constants.isTradingDate;
 @Slf4j
 public class DataManager {
 
-    private final Object newsPersistLock = new Object();
     private final SymbolJpaService symbolService;
     private final MarketDataJpaService marketDataService;
     private final MarketSnapshotJpaService marketSnapshotService;
     private final NewsJpaService newsService;
+    private final NewsPersistenceOrchestrator newsPersistenceOrchestrator;
     private final RecommendationsJpaService recommendationsService;
     private final YahooFinanceNewsClient yahooFinanceNewsClient;
     private final YahooFinanceMarketSnapshotClient yahooFinanceMarketSnapshotClient;
@@ -108,6 +109,7 @@ public class DataManager {
                        MarketDataJpaService marketDataService,
                        MarketSnapshotJpaService marketSnapshotService,
                        NewsJpaService newsService,
+                       NewsPersistenceOrchestrator newsPersistenceOrchestrator,
                        RecommendationsJpaService recommendationsService,
                        YahooFinanceNewsClient yahooFinanceNewsClient,
                        YahooFinanceMarketSnapshotClient yahooFinanceMarketSnapshotClient,
@@ -122,6 +124,7 @@ public class DataManager {
         this.marketDataService = marketDataService;
         this.marketSnapshotService = marketSnapshotService;
         this.newsService = newsService;
+        this.newsPersistenceOrchestrator = newsPersistenceOrchestrator;
         this.recommendationsService = recommendationsService;
         this.yahooFinanceNewsClient = yahooFinanceNewsClient;
         this.yahooFinanceMarketSnapshotClient = yahooFinanceMarketSnapshotClient;
@@ -261,6 +264,15 @@ public class DataManager {
                                                           boolean withYahooNews)
             throws ClientException, MappingException {
         Set<SymbolDomain> symbols = symbolService.getOrCreateByName(symbolNames);
+        return retrieveNewsByDateRange(symbols, from, to, withYahooNews);
+    }
+
+    public Set<NewsDomain> retrieveNewsByDateRangeAndName(String symbolName,
+                                                          LocalDate from,
+                                                          LocalDate to,
+                                                          boolean withYahooNews)
+            throws ClientException, MappingException {
+        Set<SymbolDomain> symbols = symbolService.getOrCreateByName(Set.of(symbolName));
         return retrieveNewsByDateRange(symbols, from, to, withYahooNews);
     }
 
@@ -591,7 +603,7 @@ public class DataManager {
                                                       LocalDateTime startUtc) {
         if (onTheFlyNews) {
             try {
-                newsService.createOrUpdate(retrieveYahooNews(Set.of(symbol)));
+                newsPersistenceOrchestrator.persistNews(retrieveYahooNews(Set.of(symbol)));
             } catch (ClientException | MappingException e) {
                 log.warn(RETRIEVAL_FAILED_WARN, NEWS, symbol, e);
             }
@@ -623,11 +635,9 @@ public class DataManager {
                         }))
                         .values());
                 Map<Long, NewsDomain> persistedNews;
-                synchronized (newsPersistLock) {
-                    persistedNews = newsService.createOrUpdate(mergedNews)
-                            .stream()
-                            .collect(Collectors.toUnmodifiableMap(NewsDomain::getExternalId, Function.identity()));
-                }
+                persistedNews = newsPersistenceOrchestrator.persistNews(mergedNews)
+                        .stream()
+                        .collect(Collectors.toUnmodifiableMap(NewsDomain::getExternalId, Function.identity()));
                 partial.forEach(r -> r.setNews(r.getNews()
                         .stream()
                         .map(n -> persistedNews.get(n.getExternalId()))
@@ -667,7 +677,7 @@ public class DataManager {
     private Set<NewsDomain> retrieveNews(Set<SymbolDomain> symbols) throws ClientException, MappingException {
         Set<NewsDomain> news = retrieveYahooNews(symbols);
         log.info(GENERATION_SUCCESSFUL_INFO, NEWS);
-        newsService.createOrUpdate(news);
+        newsPersistenceOrchestrator.persistNews(news);
         return news;
     }
 
@@ -687,7 +697,7 @@ public class DataManager {
                 .filter(n -> withYahooNews || !"Yahoo".equals(n.getSource()))
                 .collect(Collectors.toUnmodifiableSet());
         log.info(GENERATION_SUCCESSFUL_INFO, NEWS);
-        newsService.createOrUpdate(res);
+        newsPersistenceOrchestrator.persistNews(res);
         return res;
     }
 
