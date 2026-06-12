@@ -1,6 +1,5 @@
 package com.lucas.server.components.tradingbot.recommendation.mapper;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.lucas.server.components.tradingbot.common.dto.SymbolDomain;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;
 import com.lucas.server.components.tradingbot.marketdata.dto.MarketDataDomain;
@@ -10,6 +9,7 @@ import com.lucas.utils.Mapper;
 import com.lucas.utils.exception.MappingException;
 import org.flywaydb.core.internal.util.StringUtils;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.JsonNode;
 
 import java.math.BigDecimal;
 import java.text.MessageFormat;
@@ -47,7 +47,7 @@ public class RecommendationChatCompletionResponseMapper implements Mapper<JsonNo
             }
 
             if (jsonNode.isObject()) {
-                String symbolName = jsonNode.get(SYMBOL).asText();
+                String symbolName = jsonNode.get(SYMBOL).asString();
                 return Set.of(map(jsonNode).setModel(model)
                         .setInput(message)
                         .setErrors(EMPTY_STRING)
@@ -58,7 +58,7 @@ public class RecommendationChatCompletionResponseMapper implements Mapper<JsonNo
 
             for (int i = 0; i < jsonNode.size(); i++) {
                 JsonNode load = jsonNode.get(i);
-                String symbolName = load.get(SYMBOL).asText();
+                String symbolName = load.get(SYMBOL).asString();
                 recommendations.add(map(load).setModel(model)
                         .setInput(message)
                         .setErrors(EMPTY_STRING)
@@ -77,9 +77,9 @@ public class RecommendationChatCompletionResponseMapper implements Mapper<JsonNo
     public RecommendationDomain map(JsonNode json) throws MappingException {
         try {
             return new RecommendationDomain().setDate(LocalDate.now())
-                    .setAction(json.get("action").asText())
-                    .setConfidence(new BigDecimal(json.get("confidence").asText()))
-                    .setRationale(StringUtils.left(json.get("rationale").asText(), 1024));
+                    .setAction(json.get("action").asString())
+                    .setConfidence(new BigDecimal(json.get("confidence").asString()))
+                    .setRationale(StringUtils.left(json.get("rationale").asString(), 1024));
         } catch (Exception e) {
             throw new MappingException(MessageFormat.format(MAPPING_ERROR, RECOMMENDATION), e);
         }

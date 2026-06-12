@@ -1,13 +1,13 @@
 package com.lucas.server.components.tradingbot.news.mapper;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lucas.server.components.tradingbot.news.dto.NewsDomain;
 import com.lucas.utils.exception.MappingException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
 import java.util.stream.Stream;
@@ -53,7 +53,7 @@ class FinbertResponseMapperTest {
 
     @ParameterizedTest
     @MethodSource("getInvalidJson")
-    void mapInvalidJson(String json) throws Exception {
+    void mapInvalidJson(String json) {
         // given
         JsonNode node = objectMapper.readTree(json);
 

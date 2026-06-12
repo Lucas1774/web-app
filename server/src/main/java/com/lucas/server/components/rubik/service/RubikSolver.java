@@ -4,8 +4,8 @@ import com.lucas.server.components.rubik.jpa.AlgorithmMapping;
 import com.lucas.server.components.rubik.jpa.AlgorithmMappingJpaService;
 import com.lucas.server.components.rubik.jpa.LetterPairs;
 import com.lucas.server.components.rubik.jpa.LetterPairsJpaService;
+import jakarta.annotation.Nonnull;
 import lombok.RequiredArgsConstructor;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -316,7 +316,7 @@ public class RubikSolver {
                             String p,
                             String a,
                             String o) {
-        @NonNull
+        @Nonnull
         @Override
         public String toString() {
             return algorithm;

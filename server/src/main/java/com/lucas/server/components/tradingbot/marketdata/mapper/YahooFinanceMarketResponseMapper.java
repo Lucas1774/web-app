@@ -1,11 +1,11 @@
 package com.lucas.server.components.tradingbot.marketdata.mapper;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.lucas.server.components.tradingbot.common.dto.SymbolDomain;
 import com.lucas.server.components.tradingbot.marketdata.dto.MarketSnapshotDomain;
 import com.lucas.utils.Mapper;
 import com.lucas.utils.exception.MappingException;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.JsonNode;
 
 import java.math.BigDecimal;
 import java.text.MessageFormat;
@@ -22,7 +22,7 @@ public class YahooFinanceMarketResponseMapper implements Mapper<JsonNode, Market
     public MarketSnapshotDomain map(JsonNode json, SymbolDomain symbol) throws MappingException {
         try {
             JsonNode result = json.get("chart").get("result").get(0);
-            if (!symbol.getName().equals(result.get("meta").get(SYMBOL).asText().replace('-', '.'))) {
+            if (!symbol.getName().equals(result.get("meta").get(SYMBOL).asString().replace('-', '.'))) {
                 throw new MappingException(MessageFormat.format(MAPPING_ERROR, MARKET_SNAPSHOT));
             }
             return map(result).setSymbol(symbol);
@@ -37,17 +37,17 @@ public class YahooFinanceMarketResponseMapper implements Mapper<JsonNode, Market
             JsonNode quote = json.get("indicators").get("quote").get(0);
             JsonNode timeStamps = json.get("timestamp");
 
-            BigDecimal maxHigh = new BigDecimal(quote.get("high").get(0).asText());
+            BigDecimal maxHigh = new BigDecimal(quote.get("high").get(0).asString());
             for (JsonNode node : quote.get("high")) {
-                BigDecimal value = new BigDecimal(node.asText());
+                BigDecimal value = new BigDecimal(node.asString());
                 if (0 < value.compareTo(maxHigh)) {
                     maxHigh = value;
                 }
             }
 
-            BigDecimal minLow = new BigDecimal(quote.get("low").get(0).asText());
+            BigDecimal minLow = new BigDecimal(quote.get("low").get(0).asString());
             for (JsonNode node : quote.get("high")) {
-                BigDecimal value = new BigDecimal(node.asText());
+                BigDecimal value = new BigDecimal(node.asString());
                 if (0 > value.compareTo(minLow)) {
                     minLow = value;
                 }
@@ -55,10 +55,10 @@ public class YahooFinanceMarketResponseMapper implements Mapper<JsonNode, Market
 
             return new MarketSnapshotDomain().setDate(Instant.ofEpochSecond(timeStamps.get(timeStamps.size() - 1)
                             .asLong()).atZone(ZoneOffset.UTC).toLocalDateTime())
-                    .setOpen(new BigDecimal(quote.get("open").get(0).asText()))
+                    .setOpen(new BigDecimal(quote.get("open").get(0).asString()))
                     .setHigh(maxHigh)
                     .setLow(minLow)
-                    .setPrice(new BigDecimal(quote.get("close").get(quote.get("close").size() - 1).asText()));
+                    .setPrice(new BigDecimal(quote.get("close").get(quote.get("close").size() - 1).asString()));
         } catch (Exception e) {
             throw new MappingException(MessageFormat.format(MAPPING_ERROR, MARKET_SNAPSHOT), e);
         }

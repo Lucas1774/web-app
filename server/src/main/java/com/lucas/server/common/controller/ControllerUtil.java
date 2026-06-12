@@ -81,7 +81,7 @@ public class ControllerUtil {
         try {
             verifier.verify(token);
             return true;
-        } catch (Exception e) {
+        } catch (Exception _) {
             return false;
         }
     }

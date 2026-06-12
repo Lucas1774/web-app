@@ -1,7 +1,5 @@
 package com.lucas.server.components.tradingbot.marketdata.mapper;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lucas.server.ConfiguredTest;
 import com.lucas.server.components.tradingbot.common.dto.SymbolDomain;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
@@ -10,6 +8,7 @@ import com.lucas.utils.exception.MappingException;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
 import java.text.MessageFormat;
@@ -33,7 +32,7 @@ class TwelveDataMarketResponseMapperTest extends ConfiguredTest {
     private ObjectMapper objectMapper;
 
     @Test
-    void whenMapValidJson_thenReturnMarketData() throws MappingException, JsonProcessingException {
+    void whenMapValidJson_thenReturnMarketData() throws MappingException {
         // given
         String json =
                 """
@@ -203,7 +202,7 @@ class TwelveDataMarketResponseMapperTest extends ConfiguredTest {
     }
 
     @Test
-    void whenMapAllValidJson_thenReturnMarketDataList() throws MappingException, JsonProcessingException {
+    void whenMapAllValidJson_thenReturnMarketDataList() throws MappingException {
         // given
         String json =
                 """
@@ -288,7 +287,7 @@ class TwelveDataMarketResponseMapperTest extends ConfiguredTest {
     }
 
     @Test
-    void whenMapAllEmptyTimeSeries_thenReturnEmptyList() throws MappingException, JsonProcessingException {
+    void whenMapAllEmptyTimeSeries_thenReturnEmptyList() throws MappingException {
         // given
         String json =
                 """

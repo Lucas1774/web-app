@@ -1,7 +1,5 @@
 package com.lucas.server.components.tradingbot.common;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lucas.server.common.HttpRequestClient;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.components.tradingbot.config.AiProperties;
@@ -10,6 +8,8 @@ import com.lucas.utils.ratelimiter.CompletionSlidingWindowRateLimiter;
 import com.lucas.utils.ratelimiter.SlidingWindowRateLimiter;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -49,7 +49,10 @@ public class AiClient {
 
         bodyMap.put("messages",
                 prompt.stream()
-                        .map(m -> Map.of(ROLE, m.get(ROLE).asText(), CONTENT, sanitizeHtml(m.get(CONTENT).asText())))
+                        .map(m -> Map.of(ROLE,
+                                m.get(ROLE).asString(),
+                                CONTENT,
+                                sanitizeHtml(m.get(CONTENT).asString())))
                         .toList());
         bodyMap.put("max_tokens", config.maxTokens());
         bodyMap.put("temperature", config.temperature());
@@ -61,6 +64,6 @@ public class AiClient {
                 .get(0)
                 .get("message")
                 .get(CONTENT)
-                .asText());
+                .asString());
     }
 }

@@ -1,6 +1,5 @@
 package com.lucas.server.components.tradingbot.common.jpa;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.common.exception.IllegalStateException;
 import com.lucas.server.components.tradingbot.common.AiClient;
@@ -423,7 +422,7 @@ public class DataManager {
                                                                    OrderedIndexedSet<AiClient> clients,
                                                                    Deque<AiClient> backupClients,
                                                                    boolean useOldNews)
-            throws JsonProcessingException, ClientException, MappingException {
+            throws ClientException, MappingException {
         try {
             return recommendationClient.getRecommendations(buffer, clients, useOldNews);
         } catch (ClientException e) {
@@ -566,9 +565,8 @@ public class DataManager {
                 }
 
                 for (int i = 0; i < submitted; i++) {
-                    Set<RecommendationDomain> fetched = Interrupts.callOrSwallow(resultsQueue::take,
-                            Collections::emptySet,
-                            e -> log.error(e.getMessage(), e));
+                    Set<RecommendationDomain> fetched =
+                            Interrupts.callOrSwallow(resultsQueue::take, Set::of, e -> log.error(e.getMessage(), e));
                     if (!Objects.requireNonNull(fetched).isEmpty()) {
                         res.addAll(fetched);
                         Set<SymbolDomain> fetchedSymbols = fetched.stream()
@@ -642,13 +640,12 @@ public class DataManager {
                     recommendationsService.createIgnoringDuplicates(partial);
                 }
                 Interrupts.runOrThrow(() -> resultsQueue.put(finalPartial), e -> log.error(e.getMessage(), e));
-            } catch (JsonProcessingException | ClientException | MappingException e) {
+            } catch (ClientException | MappingException e) {
                 log.warn(RETRIEVAL_FAILED_WARN,
                         RECOMMENDATION,
                         buffer.stream().map(SymbolPayload::getSymbol).toList(),
                         e);
-                Interrupts.runOrThrow(() -> resultsQueue.put(Collections.emptySet()),
-                        ie -> log.error(ie.getMessage(), ie));
+                Interrupts.runOrThrow(() -> resultsQueue.put(Set.of()), ie -> log.error(ie.getMessage(), ie));
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }

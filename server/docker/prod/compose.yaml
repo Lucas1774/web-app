@@ -14,8 +14,7 @@ services:
 
   app:
     build:
-      context: ../..
-      dockerfile: docker/prod/Dockerfile
+      context: .
     depends_on:
       - postgres
       - mosquitto

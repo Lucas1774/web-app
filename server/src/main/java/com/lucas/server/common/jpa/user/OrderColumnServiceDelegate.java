@@ -6,13 +6,15 @@ import com.lucas.server.common.jpa.OrderColumnJpaService;
 import com.lucas.server.common.mapper.EntityMapper;
 import com.lucas.server.components.shopping.dto.Sortable;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
+import org.jspecify.annotations.NonNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public abstract class OrderColumnServiceDelegate<T extends Sortable & JpaEntity, R extends JpaRepository<T, Long>>
+public abstract class OrderColumnServiceDelegate
+        <T extends Sortable & JpaEntity, R extends JpaRepository<@NonNull T, Long>>
         extends GenericJpaServiceDelegate<T, T, R> implements OrderColumnJpaService<T> {
 
     protected OrderColumnServiceDelegate(R repository, EntityMapper<T, T> mapper) {

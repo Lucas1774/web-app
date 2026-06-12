@@ -1,9 +1,5 @@
 package com.lucas.server.components.tradingbot.recommendation.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.common.exception.ConfigurationException;
 import com.lucas.server.components.tradingbot.common.AiClient;
@@ -18,6 +14,9 @@ import com.lucas.utils.exception.MappingException;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -92,14 +91,12 @@ public class RecommendationChatCompletionClient {
      * @param clients    the AI clients to use (must share the same chunk size)
      * @param useOldNews whether to use old news or filter by recent dates
      * @return set of recommendations
-     * @throws ClientException         if the AI client request fails
-     * @throws JsonProcessingException if JSON processing fails
-     * @throws MappingException        if mapping the response fails
+     * @throws ClientException  if the AI client request fails
+     * @throws MappingException if mapping the response fails
      */
     public Set<RecommendationDomain> getRecommendations(Set<DataManager.SymbolPayload> payload,
                                                         OrderedIndexedSet<AiClient> clients,
-                                                        boolean useOldNews)
-            throws ClientException, JsonProcessingException, MappingException {
+                                                        boolean useOldNews) throws ClientException, MappingException {
         Set<AssetReportRaw> reports =
                 payload.stream().map(assertReportDataProvider::provide).collect(Collectors.toUnmodifiableSet());
         ObjectNode rawReportMessage =
@@ -109,7 +106,7 @@ public class RecommendationChatCompletionClient {
         ObjectNode contextMessage = context.deepCopy()
                 .put(CONTENT,
                         context.get(CONTENT)
-                                .asText()
+                                .asString()
                                 .replace("{date}",
                                         ZonedDateTime.now(NY_ZONE)
                                                 .format(DateTimeFormatter.ofPattern("EEEE, yyyy-MM-dd HH:mm:ss z",
@@ -127,8 +124,8 @@ public class RecommendationChatCompletionClient {
                         reportMessage = rawReportMessage;
                     } else {
                         reportMessage = objectMapper.readValue(fixMeMessage.get(CONTENT)
-                                .asText()
-                                .replace("{placeholder}", rawReportMessage.get(CONTENT).asText()), ObjectNode.class);
+                                .asString()
+                                .replace("{placeholder}", rawReportMessage.get(CONTENT).asString()), ObjectNode.class);
                     }
                     OrderedIndexedSet<JsonNode> prompt =
                             OrderedIndexedSet.of(usedSystemMessage, contextMessage, fewShotMessage, reportMessage);
@@ -140,7 +137,7 @@ public class RecommendationChatCompletionClient {
                                 return mapper.mapAll(payload,
                                         objectMapper.readTree(completion.get()),
                                         prompt.stream()
-                                                .map(p -> sanitizeHtml(p.get(CONTENT).asText()))
+                                                .map(p -> sanitizeHtml(p.get(CONTENT).asString()))
                                                 .collect(Collectors.joining("\n\n\n")),
                                         client.getConfig().name());
                             }));
@@ -150,13 +147,11 @@ public class RecommendationChatCompletionClient {
 
                     Interrupts.runOrSwallow(() -> Thread.sleep(CLIENT_ROTATION_DEBOUNCE_MS),
                             e -> log.error(e.getMessage(), e));
-                } catch (MappingException | JsonProcessingException e) {
-                    throw new MappingException(MessageFormat.format(RECOMMENDATION_COMPLETION_ERROR, completion.get()),
-                            e);
                 } catch (ClientException e) {
                     throw e;
                 } catch (Exception e) {
-                    throw new ClientException(e);
+                    throw new ClientException(MessageFormat.format(RECOMMENDATION_COMPLETION_ERROR, completion.get()),
+                            e);
                 }
             }
         }

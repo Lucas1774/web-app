@@ -1,12 +1,12 @@
 package com.lucas.server.components.tradingbot.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lucas.server.common.HttpRequestClient;
 import com.lucas.server.components.tradingbot.common.AiClient;
 import com.lucas.utils.ratelimiter.CompletionSlidingWindowRateLimiter;
 import com.lucas.utils.ratelimiter.SlidingWindowRateLimiter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import tools.jackson.databind.ObjectMapper;
 
 import java.time.Duration;
 import java.util.HashMap;

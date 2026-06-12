@@ -48,7 +48,7 @@ public class SudokuController {
                 Sudoku copy = Sudoku.withValues(s.getState());
                 return solver.isValid(s, -1) && solver.solveWithTimeout(copy);
             }).collect(Collectors.toUnmodifiableSet());
-        } catch (MappingException e) {
+        } catch (MappingException _) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 
@@ -74,7 +74,7 @@ public class SudokuController {
     public ResponseEntity<Sudoku> solveSudoku(@RequestBody Sudoku sudoku) {
         Sudoku s = Sudoku.withValues(sudoku.getState());
         if (!solver.isValid(s, -1) || !solver.solveWithTimeout(s)) {
-            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT).build();
         }
 
         return ResponseEntity.ok(s);
@@ -89,7 +89,7 @@ public class SudokuController {
         int[] initialValues = sudoku.getFirst().getState();
         Sudoku s = Sudoku.withValues(initialValues);
         if (!solver.isValid(s, -1) || !solver.solveWithTimeout(s)) {
-            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT).build();
         }
 
         int[] currentState = s.getState();

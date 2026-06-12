@@ -55,7 +55,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
                                                    CorsFilter corsFilter,
-                                                   RateLimitFilter rateLimitingFilter) throws Exception {
+                                                   RateLimitFilter rateLimitingFilter) {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
                 .addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter.class)

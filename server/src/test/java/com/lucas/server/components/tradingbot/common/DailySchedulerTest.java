@@ -1,8 +1,10 @@
 package com.lucas.server.components.tradingbot.common;
 
 import com.lucas.server.ConfiguredTest;
+import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;
 import com.lucas.utils.Interrupts;
+import com.lucas.utils.exception.MappingException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -58,7 +60,7 @@ class DailySchedulerTest extends ConfiguredTest {
 
     @Test
     @Order(1)
-    void schedulerInvokesDataManagerRepeatedly() {
+    void schedulerInvokesDataManagerRepeatedly() throws ClientException, MappingException {
         doReturn(true).when(dailyScheduler).shouldRun(any());
         doNothing().when(dailyScheduler).sleep();
         await().atMost(Duration.ofSeconds(10)).untilAsserted(() -> {
@@ -74,9 +76,24 @@ class DailySchedulerTest extends ConfiguredTest {
                     anyBoolean(),
                     anyBoolean(),
                     anyBoolean());
-            verify(dataManager, times(2)).retrieveSnapshotsByName(any());
-            verify(dataManager, times(1)).retrieveNewsByDateRangeAndName(any(), any(), any(), anyBoolean());
+            verify(dataManager, atLeastOnce()).retrieveSnapshotsByName(any());
+            verify(dataManager, atLeastOnce()).retrieveNewsByDateRangeAndName(any(), any(), any(), anyBoolean());
         });
+
+        verify(dataManager, times(1)).retrieveMarketData(any(), any(), anyBoolean());
+        verify(dataManager, times(1)).getRandomRecommendations(any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                anyInt(),
+                anyBoolean(),
+                anyBoolean(),
+                anyBoolean(),
+                anyBoolean(),
+                anyBoolean());
+        verify(dataManager, times(2)).retrieveSnapshotsByName(any());
+        verify(dataManager, times(1)).retrieveNewsByDateRangeAndName(any(), any(), any(), anyBoolean());
     }
 
     @Test

@@ -1,6 +1,5 @@
 package com.lucas.server.components.tradingbot.marketdata.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.lucas.server.common.HttpRequestClient;
 import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.components.tradingbot.common.dto.SymbolDomain;
@@ -14,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
+import tools.jackson.databind.JsonNode;
 
 import java.util.EnumMap;
 import java.util.Map;

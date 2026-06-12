@@ -14,11 +14,11 @@ public class CalculatorSolver {
     public String solveExpression(String expression) {
         try {
             return new BigDecimal(expression).stripTrailingZeros().toPlainString();
-        } catch (NumberFormatException e1) {
+        } catch (NumberFormatException _) {
             try {
                 return BigDecimal.valueOf(new ExpressionBuilder(expression.replaceAll("\\s+", EMPTY_STRING)).build()
                         .evaluate()).stripTrailingZeros().toPlainString();
-            } catch (IllegalArgumentException e2) {
+            } catch (IllegalArgumentException _) {
                 return INVALID_EXPRESSION;
             }
         }

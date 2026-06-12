@@ -26,6 +26,9 @@ spring:
     scheduling:
       pool:
         size: 4
+  jpa:
+    # TODO: disable once entities don't transpass data layer
+    open-in-view: true
 
 management:
   endpoints:

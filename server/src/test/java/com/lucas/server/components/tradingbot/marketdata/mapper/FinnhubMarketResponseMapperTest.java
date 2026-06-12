@@ -1,7 +1,5 @@
 package com.lucas.server.components.tradingbot.marketdata.mapper;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lucas.server.ConfiguredTest;
 import com.lucas.server.components.tradingbot.common.dto.SymbolDomain;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolJpaService;
@@ -9,6 +7,7 @@ import com.lucas.server.components.tradingbot.marketdata.dto.MarketDataDomain;
 import com.lucas.utils.exception.MappingException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
 import java.text.MessageFormat;
@@ -32,7 +31,7 @@ class FinnhubMarketResponseMapperTest extends ConfiguredTest {
     private ObjectMapper objectMapper;
 
     @Test
-    void whenMapValidJson_thenReturnMarketData() throws MappingException, JsonProcessingException {
+    void whenMapValidJson_thenReturnMarketData() throws MappingException {
         // given
         String json =
                 """

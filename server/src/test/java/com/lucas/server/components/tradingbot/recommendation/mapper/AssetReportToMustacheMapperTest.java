@@ -6,9 +6,8 @@ import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportT
 import com.lucas.utils.exception.MappingException;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -24,7 +23,7 @@ class AssetReportToMustacheMapperTest {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
-    void map_injectsMandatoryFields_and_leavesNullsEmpty() throws MappingException, IOException {
+    void map_injectsMandatoryFields_and_leavesNullsEmpty() throws MappingException {
         // given
         AssetReportRaw asset = getAssetReportNullValues();
 
@@ -42,15 +41,15 @@ class AssetReportToMustacheMapperTest {
                   • 14-day ATR%: N/A
                   • 20-day OBV: N/A
                 • News Summaries (last 2):
-                  • 2025-04-30 20:00:00 EDT: Headline One: First summary
-                  • 2025-05-01 20:00:00 EDT: Headline Two: Second summary
+                  • 2025-04-30 20:00:00 EST: Headline One: First summary
+                  • 2025-05-01 20:00:00 EST: Headline Two: Second summary
                 
                 """;
-        assertThat(objectMapper.readTree(mapper.map(Set.of(asset))).get(CONTENT).asText()).isEqualTo(expected);
+        assertThat(objectMapper.readTree(mapper.map(Set.of(asset))).get(CONTENT).asString()).isEqualTo(expected);
     }
 
     @Test
-    void map_injectsAllField() throws IOException, MappingException {
+    void map_injectsAllField() throws MappingException {
         // given
         AssetReportRaw asset = getAssetReportAllValues();
 
@@ -69,12 +68,12 @@ class AssetReportToMustacheMapperTest {
                   • 14-day ATR%: 15.68%
                   • 20-day OBV: 15.69
                 • News Summaries (last 2):
-                  • 2025-04-30 20:00:00 EDT: Sentiment: positive. Confidence: 54.4412%. Headline One: First summary
-                  • 2025-05-01 20:00:00 EDT: Sentiment: negative. Confidence: 54.4412%. Headline Two: Second summary
+                  • 2025-04-30 20:00:00 EST: Sentiment: positive. Confidence: 54.4412%. Headline One: First summary
+                  • 2025-05-01 20:00:00 EST: Sentiment: negative. Confidence: 54.4412%. Headline Two: Second summary
                 
                 """;
 
-        assertThat(objectMapper.readTree(mapper.map(Set.of(asset))).get(CONTENT).asText()).isEqualTo(expected);
+        assertThat(objectMapper.readTree(mapper.map(Set.of(asset))).get(CONTENT).asString()).isEqualTo(expected);
     }
 
     private static AssetReportRaw getAssetReportNullValues() {

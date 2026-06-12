@@ -73,7 +73,7 @@ public class NewsJpaService extends GenericJpaServiceDelegate<News, NewsDomain, 
                     try {
                         NewsDomain newsDto = mapper.toDto(newsEntity);
                         return Stream.of(sentimentClient.generateSentiment(newsDto));
-                    } catch (Exception e) {
+                    } catch (Exception _) {
                         log.warn(RETRIEVAL_FAILED_WARN, SENTIMENT, newsEntity);
                         return Stream.empty();
                     }

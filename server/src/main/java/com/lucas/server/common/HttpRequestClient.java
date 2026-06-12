@@ -1,6 +1,5 @@
 package com.lucas.server.common;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.lucas.server.common.exception.ClientException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpEntity;
@@ -10,6 +9,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.w3c.dom.Document;
+import tools.jackson.databind.JsonNode;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.ByteArrayInputStream;

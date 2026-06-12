@@ -59,7 +59,7 @@ public class PortfolioController {
                     true));
         } catch (IllegalStateException e) {
             log.error(e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT).build();
         }
     }
 
@@ -84,7 +84,7 @@ public class PortfolioController {
                     false));
         } catch (IllegalStateException e) {
             log.error(e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT).build();
         }
     }
 

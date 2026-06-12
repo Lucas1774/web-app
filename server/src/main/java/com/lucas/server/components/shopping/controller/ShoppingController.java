@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -97,7 +96,7 @@ public class ShoppingController {
                                                                       @RequestBody List<T> elements) {
         return controllerUtil.<Set<T>>getUnauthorizedResponseIfInvalidUser(request.getCookies()).orElseGet(() -> {
             if (elements.isEmpty()) {
-                return ResponseEntity.ok(Collections.emptySet());
+                return ResponseEntity.ok(Set.of());
             }
             return ResponseEntity.ok(getService(elements).updateOrders(OrderedIndexedSet.copyOf(elements)));
         });

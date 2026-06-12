@@ -1,10 +1,10 @@
 package com.lucas.server.components.tradingbot.recommendation.mapper;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lucas.server.components.tradingbot.recommendation.dto.RecommendationDomain;
 import com.lucas.utils.exception.MappingException;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -77,7 +77,7 @@ class RecommendationChatCompletionResponseMapperTest {
     }
 
     @Test
-    void mapInvalidJson() throws Exception {
+    void mapInvalidJson() {
         // given
         String json = "{}";
         JsonNode node = objectMapper.readTree(json);
@@ -87,7 +87,7 @@ class RecommendationChatCompletionResponseMapperTest {
     }
 
     @Test
-    void mapMissingConfidence() throws Exception {
+    void mapMissingConfidence() {
         // given
         String json = "{\"action\": \"BUY\", \"rationale\": \"Test\"}";
         JsonNode node = objectMapper.readTree(json);

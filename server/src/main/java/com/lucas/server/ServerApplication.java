@@ -14,7 +14,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableConfigurationProperties({AiProperties.class, MqttProperties.class})
 public class ServerApplication {
 
-    public static void main(String[] args) {
+    static void main(String[] args) {
         SpringApplication.run(ServerApplication.class, args);
     }
 }

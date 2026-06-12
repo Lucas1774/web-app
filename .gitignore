@@ -14,9 +14,6 @@ client/cordova_env
 server.jar
 
 target/
-!server/.mvn/wrapper/maven-wrapper.jar
-!server/**/src/main/**/target/
-!server/**/src/test/**/target/
 
 V0_update_passwords.sql
 V2_create_mock_user.sql
@@ -25,7 +22,7 @@ seed__letter__pairs.sql
 # misc
 .vscode/
 .idea/
-source.json
+server.iml
 server/docker/prod/mosquitto/
 server/docker/dev/mosquitto/config/passwords
 server/docker/dev/mosquitto/data/

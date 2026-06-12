@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-# Deploys code to Oracle VM and builds and runs docker image with it
+# Deploys code to Oracle VM
 
 # ——— Configuration ———
 VM_USER="ubuntu"
@@ -23,33 +23,31 @@ for f in "${COMPOSE_FILE}" "${ENV_FILE}" "${DOCKERFILE}"; do
   fi
 done
 
-# ——— Transfer entire project to remote ———
-echo "Removing previous files..."
-ssh "${VM_CONN}" "sudo rm -rf ${REMOTE_DIR}/*"
-ssh "${VM_CONN}" "mkdir -p ${REMOTE_DIR}"
-echo "Archiving and transferring full project directory to VM..."
-tar czf - . | ssh "${VM_CONN}" "tar xzf - -C ${REMOTE_DIR}"
-echo "Transfer complete."
+# ——— Build locally ———
+echo "Building artifact locally..."
+mvn -DskipTests package
 
-# ——— Deploy on VM ———
-echo "Initiating deployment on remote VM..."
-ssh "${VM_CONN}" bash <<EOF
-  set -euo pipefail
+ARTIFACT="target/server.jar"
+if [[ ! -f "${ARTIFACT}" ]]; then
+  echo "Error: ${ARTIFACT} not found after build." >&2
+  exit 1
+fi
 
-  echo "Entering deployment directory ${REMOTE_DIR}/${COMPOSE_DIR}..."
-  cd ${REMOTE_DIR}/${COMPOSE_DIR}
-
-  echo "Stopping and removing any existing containers..."
-  docker compose down
-
-  echo "Building application image and starting services..."
-  docker compose up --build -d
-
-  echo "Cleaning up dangling Docker images..."
-  docker image prune -f
-
-  echo "Remote deployment complete."
-EOF
-
+# ——— Transfer & deploy ———
+echo "Starting deployment to ${VM_CONN} ..."
+tar czf - "${ARTIFACT}" "${COMPOSE_DIR}" | ssh "${VM_CONN}" "set -euo pipefail; \
+  sudo rm -rf '${REMOTE_DIR}'/* || true; \
+  mkdir -p '${REMOTE_DIR}'; \
+  echo 'Extracting archive...'; \
+  tar xzf - -C '${REMOTE_DIR}'; \
+  mv '${REMOTE_DIR}/target/server.jar' '${REMOTE_DIR}/${COMPOSE_DIR}/server.jar'; \
+  cd '${REMOTE_DIR}/${COMPOSE_DIR}'; \
+  echo 'Stopping and removing any existing containers...'; \
+  docker compose down || true; \
+  echo 'Building application image and starting services...'; \
+  docker compose up --build -d; \
+  echo 'Cleaning up dangling Docker images...'; \
+  docker image prune -f; \
+  echo 'Remote deployment complete.'"
 
 echo "All done."
