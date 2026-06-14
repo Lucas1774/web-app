@@ -17,8 +17,15 @@ const TransactionPopup = ({ id: symbolId, name: symbolName, onPopupClose, onTran
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!price || !quantity || (action === "buy" && !commission)) {
+        if (action === "buy" && !commission) {
             setMessage("Specify a commission");
+            setTimeout(() => {
+                setMessage(null);
+            }, TIMEOUT_DELAY)
+            return;
+        }
+        if (action === "sell" && commission) {
+            setMessage("Commission is applied on buy and must be empty for sell");
             setTimeout(() => {
                 setMessage(null);
             }, TIMEOUT_DELAY)
@@ -28,7 +35,7 @@ const TransactionPopup = ({ id: symbolId, name: symbolName, onPopupClose, onTran
         try {
             const p = parseFloat(price);
             const q = parseFloat(quantity);
-            const c = parseFloat(commission);
+            const c = parseFloat(commission) || 0;
             // IBKR idiosyncrasies
             const priceWithCommission = p + (c / q);
             const relativeCommission = c / (p * q);
