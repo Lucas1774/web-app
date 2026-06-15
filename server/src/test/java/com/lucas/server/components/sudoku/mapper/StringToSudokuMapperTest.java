@@ -1,6 +1,6 @@
 package com.lucas.server.components.sudoku.mapper;
 
-import com.lucas.server.components.sudoku.jpa.Sudoku;
+import com.lucas.server.components.sudoku.dto.SudokuDomain;
 import com.lucas.server.components.sudoku.service.SudokuSolver;
 import com.lucas.utils.exception.MappingException;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -24,7 +24,7 @@ class StringToSudokuMapperTest {
         if (!serializable) {
             assertThatThrownBy(() -> mapper.map(value)).isInstanceOf(MappingException.class);
         } else {
-            Sudoku sudoku = mapper.map(value);
+            SudokuDomain sudoku = mapper.map(value);
             assertThat(solver.isValid(sudoku, -1)).isEqualTo(isSolvable);
             if (isSolvable) {
                 assertThat(solver.solveWithTimeout(sudoku)).isEqualTo(isActuallySolvable);

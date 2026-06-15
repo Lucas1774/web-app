@@ -1,6 +1,6 @@
 package com.lucas.server.components.sudoku.service;
 
-import com.lucas.server.components.sudoku.jpa.Sudoku;
+import com.lucas.server.components.sudoku.dto.SudokuDomain;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -11,12 +11,12 @@ import java.util.stream.IntStream;
 import static com.lucas.server.common.Constants.SUDOKU_NUMBER_OF_CELLS;
 import static com.lucas.server.common.Constants.SUDOKU_SIZE;
 import static com.lucas.server.common.Constants.getDigits;
-import static com.lucas.server.components.sudoku.jpa.Sudoku.withValues;
+import static com.lucas.server.components.sudoku.dto.SudokuDomain.withValues;
 
 @Component
 public class SudokuSolver {
 
-    public boolean isSolved(Sudoku sudoku) {
+    public boolean isSolved(SudokuDomain sudoku) {
         for (int value : sudoku.getState()) {
             if (0 == value) {
                 return false;
@@ -25,7 +25,7 @@ public class SudokuSolver {
         return true;
     }
 
-    public void solve(Sudoku sudoku) {
+    public void solve(SudokuDomain sudoku) {
         int maxRisk = 3;
         while (!isSolved(sudoku)) {
             doSolve(sudoku, maxRisk);
@@ -33,7 +33,7 @@ public class SudokuSolver {
         }
     }
 
-    public boolean solveWithTimeout(Sudoku sudoku) {
+    public boolean solveWithTimeout(SudokuDomain sudoku) {
         int maxRisk = 3;
         long now = System.nanoTime();
         while (!isSolved(sudoku) && 100000000 > System.nanoTime() - now) {
@@ -47,7 +47,7 @@ public class SudokuSolver {
      * Check block acceptance only after checking row and column acceptance since it
      * is considerably slower
      */
-    public boolean acceptsNumberInPlace(Sudoku sudoku, int place, int digit) {
+    public boolean acceptsNumberInPlace(SudokuDomain sudoku, int place, int digit) {
         int rowIndexOffset = place / SUDOKU_SIZE * SUDOKU_SIZE;
         int columnIndex = place % SUDOKU_SIZE;
         for (int i = 0; SUDOKU_SIZE > i; i++) {
@@ -69,7 +69,7 @@ public class SudokuSolver {
         return true;
     }
 
-    public boolean isValid(Sudoku sudoku, int difficulty) {
+    public boolean isValid(SudokuDomain sudoku, int difficulty) {
         long clueCount = Arrays.stream(sudoku.getState()).filter(cell -> 0 != cell).count();
         boolean hasEightOrMoreUniqueDigits = 8 <= IntStream.rangeClosed(1, 9)
                 .filter(digit -> Arrays.stream(sudoku.getState()).anyMatch(cell -> cell == digit))
@@ -91,7 +91,7 @@ public class SudokuSolver {
      * @param maxRisk forces the program to come back if filling a number doesn't
      *                clear others
      */
-    private boolean doSolve(Sudoku sudoku, int maxRisk) {
+    private boolean doSolve(SudokuDomain sudoku, int maxRisk) {
         if (isSolved(sudoku)) {
             return true;
         }
@@ -116,7 +116,7 @@ public class SudokuSolver {
                 int count = 0;
                 for (int digit : getDigits()) {
                     if (acceptsNumberInPlace(sudoku, promisingCell, digit)) {
-                        Sudoku copy = withValues(sudoku.getState());
+                        SudokuDomain copy = withValues(sudoku.getState());
                         copy.set(promisingCell, digit);
                         count++;
                         if (doSolve(copy, maxRisk--)) {
@@ -133,7 +133,7 @@ public class SudokuSolver {
         return false;
     }
 
-    private boolean isSolvable(Sudoku sudoku) {
+    private boolean isSolvable(SudokuDomain sudoku) {
         for (int place = 0; SUDOKU_NUMBER_OF_CELLS > place; place++) {
             if (0 == sudoku.getState()[place]) {
                 int count = 0;
@@ -151,7 +151,7 @@ public class SudokuSolver {
         return true;
     }
 
-    private Set<Integer> getTrivial(Sudoku sudoku) {
+    private Set<Integer> getTrivial(SudokuDomain sudoku) {
         Set<Integer> promisingCells = new HashSet<>();
         for (int place = 0; SUDOKU_NUMBER_OF_CELLS > place; place++) {
             if (0 == sudoku.getState()[place]) {
@@ -172,7 +172,7 @@ public class SudokuSolver {
         return promisingCells;
     }
 
-    private int getNextPromisingCell(Sudoku sudoku, int i) {
+    private int getNextPromisingCell(SudokuDomain sudoku, int i) {
         for (int place = 0; SUDOKU_NUMBER_OF_CELLS > place; place++) {
             if (0 == sudoku.getState()[place]) {
                 int count = 0;

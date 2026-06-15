@@ -1,54 +1,42 @@
 package com.lucas.server.components.shopping.jpa.category;
 
 import com.lucas.server.common.jpa.JpaEntity;
-import com.lucas.server.components.shopping.dto.Sortable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.Accessors;
-
-import java.util.Objects;
 
 @Getter
 @Setter
-@Accessors(chain = true)
+@AllArgsConstructor
 @NoArgsConstructor
+@ToString(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@Accessors(chain = true)
 @Entity
 @Table(name = "categories")
-public class Category implements JpaEntity, Sortable {
+public class Category implements JpaEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @ToString.Include
     private Long id;
 
     @Column(nullable = false, unique = true, length = 50)
+    @EqualsAndHashCode.Include
+    @ToString.Include
     private String name;
 
     @Column(name = "category_order", nullable = false)
+    @ToString.Include
     private Integer order;
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(name);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (null == o || getClass() != o.getClass()) {
-            return false;
-        }
-        Category category = (Category) o;
-        return Objects.equals(name, category.name);
-    }
-
-    @Override
-    public String toString() {
-        return "Category{" + "id=" + id + ", name='" + name + '\'' + ", order=" + order + '}';
-    }
 }

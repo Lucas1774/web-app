@@ -1,7 +1,7 @@
 package com.lucas.server.components.rubik.mapper;
 
-import com.lucas.server.components.rubik.jpa.AlgorithmMapping;
-import com.lucas.server.components.rubik.jpa.LetterPairs;
+import com.lucas.server.components.rubik.dto.AlgorithmMappingDomain;
+import com.lucas.server.components.rubik.dto.LetterPairsDomain;
 import com.lucas.utils.Mapper;
 import com.lucas.utils.exception.MappingException;
 import org.dhatim.fastexcel.reader.Cell;
@@ -139,7 +139,7 @@ public class XlsxToAlgorithmMappingsMapper implements Mapper<InputStream, XlsxTo
         return result;
     }
 
-    private void mapAlgsRow(Row row, Set<AlgorithmMapping> result, AlgorithmKind kind) {
+    private void mapAlgsRow(Row row, Set<AlgorithmMappingDomain> result, AlgorithmKind kind) {
         int first;
         int second;
         String type = null;
@@ -158,11 +158,12 @@ public class XlsxToAlgorithmMappingsMapper implements Mapper<InputStream, XlsxTo
 
         String algorithm = cell(row, 3);
 
-        AlgorithmMapping existing = result.stream()
+        AlgorithmMappingDomain existing = result.stream()
                 .filter(m -> m.getFirstSticker() == first && m.getSecondSticker() == second)
                 .findFirst()
                 .orElseGet(() -> {
-                    AlgorithmMapping m = new AlgorithmMapping().setFirstSticker(first).setSecondSticker(second);
+                    AlgorithmMappingDomain m =
+                            new AlgorithmMappingDomain().setFirstSticker(first).setSecondSticker(second);
                     result.add(m);
                     return m;
                 });
@@ -179,7 +180,7 @@ public class XlsxToAlgorithmMappingsMapper implements Mapper<InputStream, XlsxTo
         }
     }
 
-    private void mapLetterPairsSheet(Stream<Row> stream, Set<LetterPairs> result) {
+    private void mapLetterPairsSheet(Stream<Row> stream, Set<LetterPairsDomain> result) {
         Iterator<Row> it = stream.iterator();
         for (int rowIndex = 2; it.hasNext(); rowIndex++) {
             Row row = it.next();
@@ -189,7 +190,7 @@ public class XlsxToAlgorithmMappingsMapper implements Mapper<InputStream, XlsxTo
                 String secondLetter = LETTER_PAIR_EXCEL_INDEX.get(colIndex);
                 String value = cell(row, colIndex - 1);
 
-                result.add(new LetterPairs().setLetterPair(firstLetter + secondLetter).setObject(value));
+                result.add(new LetterPairsDomain().setLetterPair(firstLetter + secondLetter).setObject(value));
             }
         }
     }
@@ -203,6 +204,6 @@ public class XlsxToAlgorithmMappingsMapper implements Mapper<InputStream, XlsxTo
         return null == text || text.trim().isEmpty() ? null : text;
     }
 
-    public record Result(Set<AlgorithmMapping> mappings, Set<LetterPairs> letterPairs) {
+    public record Result(Set<AlgorithmMappingDomain> mappings, Set<LetterPairsDomain> letterPairs) {
     }
 }

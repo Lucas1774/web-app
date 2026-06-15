@@ -1,5 +1,6 @@
 package com.lucas.server.common.jpa.user;
 
+import com.lucas.server.common.dto.DomainEntity;
 import com.lucas.server.common.jpa.GenericJpaServiceDelegate;
 import com.lucas.server.common.jpa.JpaEntity;
 import com.lucas.server.common.jpa.OrderColumnJpaService;
@@ -12,25 +13,29 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public abstract class OrderColumnServiceDelegate
-        <T extends Sortable & JpaEntity, R extends JpaRepository<@NonNull T, Long>>
-        extends GenericJpaServiceDelegate<T, T, R> implements OrderColumnJpaService<T> {
+        <T extends JpaEntity, D extends DomainEntity & Sortable, R extends JpaRepository<@NonNull T, Long>>
+        extends GenericJpaServiceDelegate<T, D, R> implements OrderColumnJpaService<D> {
 
-    protected OrderColumnServiceDelegate(R repository, EntityMapper<T, T> mapper) {
+    protected OrderColumnServiceDelegate(R repository, EntityMapper<T, D> mapper) {
         super(repository, mapper);
     }
 
     @Override
     @Transactional
-    public Set<T> updateOrders(OrderedIndexedSet<T> elements) {
-        Set<T> toSave = new HashSet<>();
+    public Set<D> updateOrders(OrderedIndexedSet<D> elements) {
+        Set<D> toSave = new HashSet<>();
         for (int i = 0; i < elements.size(); i++) {
-            T input = elements.get(i);
-            T managed = repository.findById(input.getId()).orElseThrow();
+            D input = elements.get(i);
+            D managed = repository.findById(input.getId()).map(mapper::toDto).orElseThrow();
             managed.setOrder(i + 1);
             toSave.add(managed);
         }
-        return Set.copyOf(repository.saveAll(toSave));
+        return repository.saveAll(toSave.stream().map(mapper::toEntity).collect(Collectors.toSet()))
+                .stream()
+                .map(mapper::toDto)
+                .collect(Collectors.toUnmodifiableSet());
     }
 }

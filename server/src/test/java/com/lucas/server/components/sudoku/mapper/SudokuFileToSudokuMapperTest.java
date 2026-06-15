@@ -1,6 +1,6 @@
 package com.lucas.server.components.sudoku.mapper;
 
-import com.lucas.server.components.sudoku.jpa.Sudoku;
+import com.lucas.server.components.sudoku.dto.SudokuDomain;
 import com.lucas.utils.exception.MappingException;
 import org.junit.jupiter.api.Test;
 
@@ -23,7 +23,7 @@ class SudokuFileToSudokuMapperTest {
                          + "000105408\\r\\n000000000\\r\\n402706000\\r\\n" + "301007040\\r\\n720040060\\r\\n004010003";
 
         // when
-        Set<Sudoku> result = mapper.map(content);
+        Set<SudokuDomain> result = mapper.map(content);
 
         // then
         assertThat(result).hasSize(2);
@@ -32,7 +32,7 @@ class SudokuFileToSudokuMapperTest {
     @Test
     void mapEmptyFile() throws MappingException {
         // when
-        Set<Sudoku> result = mapper.map("");
+        Set<SudokuDomain> result = mapper.map("");
 
         // then
         assertThat(result).isEmpty();
@@ -45,7 +45,7 @@ class SudokuFileToSudokuMapperTest {
                          + "008102900\\r\\n700000008\\r\\n006708200\\r\\n" + "002609500\\r\\n800203009\\r\\n005010300";
 
         // when
-        Set<Sudoku> result = mapper.map(content);
+        Set<SudokuDomain> result = mapper.map(content);
 
         // then
         assertThat(result).isEmpty();

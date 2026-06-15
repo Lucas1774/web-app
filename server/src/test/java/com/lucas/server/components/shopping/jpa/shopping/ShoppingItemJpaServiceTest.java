@@ -2,9 +2,10 @@ package com.lucas.server.components.shopping.jpa.shopping;
 
 import com.lucas.server.ConfiguredTest;
 import com.lucas.server.common.jpa.user.UserJpaService;
-import com.lucas.server.components.shopping.jpa.category.Category;
+import com.lucas.server.components.shopping.dto.category.CategoryDomain;
+import com.lucas.server.components.shopping.dto.product.ProductDomain;
+import com.lucas.server.components.shopping.dto.shopping.ShoppingItemDomain;
 import com.lucas.server.components.shopping.jpa.category.CategoryJpaService;
-import com.lucas.server.components.shopping.jpa.product.Product;
 import com.lucas.server.components.shopping.jpa.product.ProductJpaService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,78 +31,83 @@ class ShoppingItemJpaServiceTest extends ConfiguredTest {
 
     @Test
     void findAllByUsername() {
-        Category c1 = new Category().setName("C1").setOrder(1);
-        Category c2 = new Category().setName("C2").setOrder(2);
-        categoryService.saveAll(Set.of(c1, c2));
+        CategoryDomain cat1 = new CategoryDomain().setName("C1").setOrder(1);
+        CategoryDomain cat2 = new CategoryDomain().setName("C2").setOrder(2);
+        Set<CategoryDomain> saved = categoryService.saveAll(Set.of(cat1, cat2));
+        CategoryDomain c1 = saved.stream().filter(c -> "C1".equals(c.getName())).findFirst().orElseThrow();
+        CategoryDomain c2 = saved.stream().filter(c -> "C2".equals(c.getName())).findFirst().orElseThrow();
 
-        Product prodA = new Product().setName("ProdA").setIsRare(false).setCategory(c1).setOrder(100);
-        Product prodB = new Product().setName("ProdB").setIsRare(false).setCategory(c2).setOrder(200);
-        productService.saveAll(Set.of(prodA, prodB));
+        ProductDomain prodA = new ProductDomain().setName("ProdA").setIsRare(false).setCategory(c1).setOrder(100);
+        ProductDomain prodB = new ProductDomain().setName("ProdB").setIsRare(false).setCategory(c2).setOrder(200);
+        Set<ProductDomain> products = productService.saveAll(Set.of(prodA, prodB));
+        ProductDomain pa = products.stream().filter(p -> "ProdA".equals(p.getName())).findFirst().orElseThrow();
+        ProductDomain pb = products.stream().filter(p -> "ProdB".equals(p.getName())).findFirst().orElseThrow();
 
-        shoppingItemService.saveAll(Set.of(new ShoppingItem().setUser(userService.findByUsername("admin").orElseThrow())
-                        .setProduct(prodB)
-                        .setQuantity(5),
-                new ShoppingItem().setUser(userService.findByUsername("default").orElseThrow())
-                        .setProduct(prodA)
+        shoppingItemService.saveAll(Set.of(new ShoppingItemDomain().setUser(userService.findByUsername("admin")
+                        .orElseThrow()).setProduct(pb).setQuantity(5),
+                new ShoppingItemDomain().setUser(userService.findByUsername("default").orElseThrow())
+                        .setProduct(pa)
                         .setQuantity(3)));
 
         // when & then: only ProdB is returned
         assertThat(shoppingItemService.findAllByUsername("admin")).hasSize(1)
-                .extracting(s -> s.getProduct().getName(), ShoppingItem::getQuantity, s -> s.getProduct().getOrder())
+                .extracting(s -> s.getProduct().getName(),
+                        ShoppingItemDomain::getQuantity,
+                        s -> s.getProduct().getOrder())
                 .containsExactly(tuple("ProdB", 5, 200));
     }
 
     @Test
     void updateAllShoppingItemQuantities() {
         // given: multiple items for admin
-        Product p1 = productService.createProductAndOrLinkToUser("P1", "admin").orElseThrow();
-        Product p2 = productService.createProductAndOrLinkToUser("P2", "admin").orElseThrow();
+        ProductDomain p1 = productService.createProductAndOrLinkToUser("P1", "admin").orElseThrow();
+        ProductDomain p2 = productService.createProductAndOrLinkToUser("P2", "admin").orElseThrow();
 
         // initial quantities differ
-        shoppingItemService.updateShoppingItemQuantity(new ShoppingItem().setProduct(p1).setQuantity(1), "admin");
-        shoppingItemService.updateShoppingItemQuantity(new ShoppingItem().setProduct(p2).setQuantity(2), "admin");
+        shoppingItemService.updateShoppingItemQuantity(new ShoppingItemDomain().setProduct(p1).setQuantity(1), "admin");
+        shoppingItemService.updateShoppingItemQuantity(new ShoppingItemDomain().setProduct(p2).setQuantity(2), "admin");
 
         // when: set all to 7
-        Set<ShoppingItem> updated = shoppingItemService.updateAllShoppingItemQuantities("admin", 7);
+        Set<ShoppingItemDomain> updated = shoppingItemService.updateAllShoppingItemQuantities("admin", 7);
 
         // then: both items have quantity 7
-        assertThat(updated).hasSize(2).extracting(ShoppingItem::getQuantity).containsExactlyInAnyOrder(7, 7);
-        assertThat(shoppingItemService.findAllByUsername("admin")).extracting(ShoppingItem::getQuantity)
+        assertThat(updated).hasSize(2).extracting(ShoppingItemDomain::getQuantity).containsExactlyInAnyOrder(7, 7);
+        assertThat(shoppingItemService.findAllByUsername("admin")).extracting(ShoppingItemDomain::getQuantity)
                 .containsExactlyInAnyOrder(7, 7);
     }
 
     @Test
     void updateShoppingItemQuantity() {
         // given: admin item auto-created and an item for default user
-        Product prod = productService.createProductAndOrLinkToUser("P", "admin").orElseThrow();
-        shoppingItemService.saveAll(Set.of(new ShoppingItem().setUser(userService.findByUsername("default")
+        ProductDomain prod = productService.createProductAndOrLinkToUser("P", "admin").orElseThrow();
+        shoppingItemService.saveAll(Set.of(new ShoppingItemDomain().setUser(userService.findByUsername("default")
                 .orElseThrow()).setProduct(prod).setQuantity(2)));
 
         // when: update admin quantity to 10
-        ShoppingItem updated =
-                shoppingItemService.updateShoppingItemQuantity(new ShoppingItem().setProduct(prod).setQuantity(10),
-                        "admin");
+        ShoppingItemDomain updated =
+                shoppingItemService.updateShoppingItemQuantity(new ShoppingItemDomain().setProduct(prod)
+                        .setQuantity(10), "admin");
 
         // then: only admin item updated
         assertThat(updated.getQuantity()).isEqualTo(10);
-        assertThat(shoppingItemService.findAllByUsername("admin")).extracting(ShoppingItem::getQuantity)
+        assertThat(shoppingItemService.findAllByUsername("admin")).extracting(ShoppingItemDomain::getQuantity)
                 .containsExactly(10);
-        assertThat(shoppingItemService.findAllByUsername("default")).extracting(ShoppingItem::getQuantity)
+        assertThat(shoppingItemService.findAllByUsername("default")).extracting(ShoppingItemDomain::getQuantity)
                 .containsExactly(2);
     }
 
     @Test
     void deleteByProductAndUsernameRemoveOrphanedProductIfNecessary() {
         // given: one item per user
-        Product p = productService.createProductAndOrLinkToUser("ToDel", "admin").orElseThrow();
-        shoppingItemService.saveAll(Set.of(new ShoppingItem().setUser(userService.findByUsername("default")
+        ProductDomain p = productService.createProductAndOrLinkToUser("ToDel", "admin").orElseThrow();
+        shoppingItemService.saveAll(Set.of(new ShoppingItemDomain().setUser(userService.findByUsername("default")
                 .orElseThrow()).setProduct(p).setQuantity(5)));
         // admin already has item from insertProduct
         assertThat(shoppingItemService.findAll()).hasSize(2);
         assertThat(productService.findAll()).hasSize(1);
 
         // when: delete admin's item
-        ShoppingItem deleted =
+        ShoppingItemDomain deleted =
                 shoppingItemService.deleteByProductAndUsernameRemoveOrphanedProductIfNecessary(p, "admin");
 
         // then: product still exists, only default remains

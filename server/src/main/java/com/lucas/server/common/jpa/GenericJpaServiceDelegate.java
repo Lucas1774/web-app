@@ -1,5 +1,6 @@
 package com.lucas.server.common.jpa;
 
+import com.lucas.server.common.dto.DomainEntity;
 import com.lucas.server.common.mapper.EntityMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,8 +10,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
-public abstract class GenericJpaServiceDelegate<T extends JpaEntity, D, R extends JpaRepository<T, ?>>
-        implements JpaService<D> {
+public abstract class GenericJpaServiceDelegate
+        <T extends JpaEntity, D extends DomainEntity, R extends JpaRepository<T, ?>> implements JpaService<D> {
 
     protected final R repository;
     protected final EntityMapper<T, D> mapper;

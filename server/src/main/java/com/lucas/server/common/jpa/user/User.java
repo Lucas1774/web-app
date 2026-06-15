@@ -7,47 +7,35 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.Accessors;
-
-import java.util.Objects;
 
 @Getter
 @Setter
-@Accessors(chain = true)
+@AllArgsConstructor
 @NoArgsConstructor
+@ToString(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@Accessors(chain = true)
 @Entity
 @Table(name = "users")
 public class User implements JpaEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @ToString.Include
     private Long id;
 
     @Column(nullable = false, unique = true, length = 50)
+    @EqualsAndHashCode.Include
+    @ToString.Include
     private String username;
 
     @Column(nullable = false, length = 50)
     private String password;
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(username);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (null == o || getClass() != o.getClass()) {
-            return false;
-        }
-        User user = (User) o;
-        return Objects.equals(username, user.username);
-    }
-
-    @Override
-    public String toString() {
-        return "user{" + "id=" + id + ", username='" + username + '\'' + '}';
-    }
 }

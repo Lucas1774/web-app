@@ -23,12 +23,12 @@ public class SymbolJpaService extends GenericJpaServiceDelegate<Symbol, SymbolDo
 
     @Transactional
     public Set<SymbolDomain> getOrCreateByName(Set<String> names) {
-        Set<Symbol> entities =
+        Set<Symbol> entitySet =
                 names.stream().map(name -> new Symbol().setName(name).computeSector()).collect(Collectors.toSet());
-        return delegate.createOrUpdate(this::findUnique, (oldEntity, newEntity) -> {
+        return delegate.createOrUpdate(this::findUnique, (oldEntity, _) -> {
             oldEntity.computeSector();
             return oldEntity;
-        }, entities).stream().map(mapper::toDto).collect(Collectors.toUnmodifiableSet());
+        }, entitySet).stream().map(mapper::toDto).collect(Collectors.toUnmodifiableSet());
     }
 
     @Transactional(readOnly = true)

@@ -1,6 +1,7 @@
 package com.lucas.server.common.jpa.user;
 
 import com.lucas.server.ConfiguredTest;
+import com.lucas.server.common.dto.user.UserDomain;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -16,7 +17,7 @@ class UserJpaServiceTest extends ConfiguredTest {
     @Test
     void userPasswordFlow() {
         // given
-        User user = new User().setUsername("alice").setPassword("secret");
+        UserDomain user = new UserDomain().setUsername("alice").setPassword("secret");
         userService.saveAll(Set.of(user));
 
         // when & then

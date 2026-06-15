@@ -1,5 +1,6 @@
 package com.lucas.server.components.tradingbot.portfolio.dto;
 
+import com.lucas.server.common.dto.DomainEntity;
 import com.lucas.server.components.tradingbot.common.dto.SymbolDomain;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -19,11 +20,11 @@ import java.time.LocalDateTime;
 @ToString(onlyExplicitlyIncluded = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Accessors(chain = true)
-public class PortfolioDomain {
+public class PortfolioDomain implements DomainEntity {
     @ToString.Include
     private Long id;
-    @ToString.Include
     @EqualsAndHashCode.Include
+    @ToString.Include
     private SymbolDomain symbol;
     @ToString.Include
     private BigDecimal quantity;
@@ -31,7 +32,7 @@ public class PortfolioDomain {
     private BigDecimal averageCost;
     @ToString.Include
     private BigDecimal averageCommission;
-    @ToString.Include
     @EqualsAndHashCode.Include
+    @ToString.Include
     private LocalDateTime effectiveTimestamp;
 }

@@ -1,5 +1,6 @@
 package com.lucas.server.components.tradingbot.common.dto;
 
+import com.lucas.server.common.dto.DomainEntity;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -22,7 +23,7 @@ import static com.lucas.server.common.Constants.Sector;
 @ToString(onlyExplicitlyIncluded = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Accessors(chain = true)
-public class SymbolDomain {
+public class SymbolDomain implements DomainEntity {
     @ToString.Include
     private Long id;
     @EqualsAndHashCode.Include

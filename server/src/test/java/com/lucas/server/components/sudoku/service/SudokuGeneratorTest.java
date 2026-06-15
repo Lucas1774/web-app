@@ -1,6 +1,6 @@
 package com.lucas.server.components.sudoku.service;
 
-import com.lucas.server.components.sudoku.jpa.Sudoku;
+import com.lucas.server.components.sudoku.dto.SudokuDomain;
 import org.junit.jupiter.api.Test;
 
 import java.util.Random;
@@ -20,7 +20,7 @@ class SudokuGeneratorTest {
     void generationConstraints() {
         for (int i = 0; NUM_RUNS > i; i++) {
             int difficulty = random.nextInt(SUDOKU_SIZE) + 1;
-            Sudoku sudoku = generator.generate(difficulty);
+            SudokuDomain sudoku = generator.generate(difficulty);
             assertThat(solver.isValid(sudoku, difficulty)).isTrue();
             assertThat(solver.solveWithTimeout(sudoku)).isTrue();
         }

@@ -1,7 +1,7 @@
 package com.lucas.server.components.calculator.controller;
 
 import com.lucas.server.common.controller.ControllerUtil;
-import com.lucas.server.components.calculator.jpa.Calculator;
+import com.lucas.server.components.calculator.dto.CalculatorDomain;
 import com.lucas.server.components.calculator.jpa.CalculatorJpaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -33,7 +33,7 @@ public class CalculatorController {
     }
 
     @GetMapping("/ans")
-    public ResponseEntity<Calculator> get() {
+    public ResponseEntity<CalculatorDomain> get() {
         return calculatorService.find().map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 }

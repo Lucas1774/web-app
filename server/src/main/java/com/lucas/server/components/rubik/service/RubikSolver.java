@@ -1,8 +1,8 @@
 package com.lucas.server.components.rubik.service;
 
-import com.lucas.server.components.rubik.jpa.AlgorithmMapping;
+import com.lucas.server.components.rubik.dto.AlgorithmMappingDomain;
+import com.lucas.server.components.rubik.dto.LetterPairsDomain;
 import com.lucas.server.components.rubik.jpa.AlgorithmMappingJpaService;
-import com.lucas.server.components.rubik.jpa.LetterPairs;
 import com.lucas.server.components.rubik.jpa.LetterPairsJpaService;
 import jakarta.annotation.Nonnull;
 import lombok.RequiredArgsConstructor;
@@ -208,7 +208,7 @@ public class RubikSolver {
 
         List<RubikStep> steps = new ArrayList<>();
         for (int i = 0; i + 1 < cornerPath.size(); i += 2) {
-            AlgorithmMapping m =
+            AlgorithmMappingDomain m =
                     algorithmMappingJpaService.findByStickers(cornerPath.get(i), cornerPath.get(i + 1), CORNER)
                             .orElseThrow();
             steps.add(createRubikStep(m, CORNER, withLetterPairs));
@@ -224,17 +224,17 @@ public class RubikSolver {
                                     withLetterPairs))));
         }
         for (int i = 0; i + 1 < edgePath.size(); i += 2) {
-            AlgorithmMapping m =
+            AlgorithmMappingDomain m =
                     algorithmMappingJpaService.findByStickers(edgePath.get(i), edgePath.get(i + 1), EDGE).orElseThrow();
             steps.add(createRubikStep(m, EDGE, withLetterPairs));
         }
         for (int i = 0; i + 1 < twists.size(); i += 2) {
-            AlgorithmMapping m =
+            AlgorithmMappingDomain m =
                     algorithmMappingJpaService.findByStickers(twists.get(i), twists.get(i + 1), CORNER).orElseThrow();
             steps.add(createRubikStep(m, CORNER, withLetterPairs));
         }
         for (int i = 0; i + 1 < flips.size(); i += 2) {
-            AlgorithmMapping m =
+            AlgorithmMappingDomain m =
                     algorithmMappingJpaService.findByStickers(flips.get(i), flips.get(i + 1), EDGE).orElseThrow();
             steps.add(createRubikStep(m, EDGE, withLetterPairs));
         }
@@ -263,7 +263,7 @@ public class RubikSolver {
         return state;
     }
 
-    private RubikStep createRubikStep(AlgorithmMapping m, AlgorithmKind kind, boolean withLetterPairs) {
+    private RubikStep createRubikStep(AlgorithmMappingDomain m, AlgorithmKind kind, boolean withLetterPairs) {
         String algorithm;
         String algorithmType = null;
         String technique = null;
@@ -298,7 +298,7 @@ public class RubikSolver {
         String action = letterPair;
         String object = letterPair;
         if (withLetterPairs) {
-            LetterPairs pairs = letterPairsJpaService.findByLetterPair(letterPair).orElseThrow();
+            LetterPairsDomain pairs = letterPairsJpaService.findByLetterPair(letterPair).orElseThrow();
             person = pairs.getPerson();
             action = pairs.getAction();
             object = pairs.getObject();

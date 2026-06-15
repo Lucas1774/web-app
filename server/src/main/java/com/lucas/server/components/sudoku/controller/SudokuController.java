@@ -1,6 +1,6 @@
 package com.lucas.server.components.sudoku.controller;
 
-import com.lucas.server.components.sudoku.jpa.Sudoku;
+import com.lucas.server.components.sudoku.dto.SudokuDomain;
 import com.lucas.server.components.sudoku.jpa.SudokuJpaService;
 import com.lucas.server.components.sudoku.mapper.SudokuFileToSudokuMapper;
 import com.lucas.server.components.sudoku.service.SudokuGenerator;
@@ -37,15 +37,15 @@ public class SudokuController {
     private final Random random;
 
     @PostMapping("/upload/sudokus")
-    public ResponseEntity<Set<Sudoku>> handleFileUpload(@RequestBody String file) {
+    public ResponseEntity<Set<SudokuDomain>> handleFileUpload(@RequestBody String file) {
         if (10000 < file.length()) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        Set<Sudoku> sudoku;
+        Set<SudokuDomain> sudoku;
         try {
             sudoku = fromFileMapper.map(file.replace("\"", EMPTY_STRING)).stream().filter(s -> {
-                Sudoku copy = Sudoku.withValues(s.getState());
+                SudokuDomain copy = SudokuDomain.withValues(s.getState());
                 return solver.isValid(s, -1) && solver.solveWithTimeout(copy);
             }).collect(Collectors.toUnmodifiableSet());
         } catch (MappingException _) {
@@ -56,8 +56,8 @@ public class SudokuController {
     }
 
     @GetMapping("fetch/sudoku")
-    public ResponseEntity<Sudoku> getRandom() {
-        OrderedIndexedSet<Sudoku> sudoku = OrderedIndexedSet.copyOf(sudokuService.findAll());
+    public ResponseEntity<SudokuDomain> getRandom() {
+        OrderedIndexedSet<SudokuDomain> sudoku = OrderedIndexedSet.copyOf(sudokuService.findAll());
         if (sudoku.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         } else {
@@ -66,13 +66,13 @@ public class SudokuController {
     }
 
     @GetMapping("generate/sudoku")
-    public ResponseEntity<Sudoku> generateRandom(@RequestParam("difficulty") int difficulty) {
+    public ResponseEntity<SudokuDomain> generateRandom(@RequestParam("difficulty") int difficulty) {
         return ResponseEntity.ok(generator.generate(difficulty));
     }
 
     @PostMapping("/solve/sudoku")
-    public ResponseEntity<Sudoku> solveSudoku(@RequestBody Sudoku sudoku) {
-        Sudoku s = Sudoku.withValues(sudoku.getState());
+    public ResponseEntity<SudokuDomain> solveSudoku(@RequestBody SudokuDomain sudoku) {
+        SudokuDomain s = SudokuDomain.withValues(sudoku.getState());
         if (!solver.isValid(s, -1) || !solver.solveWithTimeout(s)) {
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT).build();
         }
@@ -81,13 +81,13 @@ public class SudokuController {
     }
 
     @PostMapping("/check/sudoku")
-    public ResponseEntity<Boolean> checkSudoku(@RequestBody List<Sudoku> sudoku) {
+    public ResponseEntity<Boolean> checkSudoku(@RequestBody List<SudokuDomain> sudoku) {
         if (2 != sudoku.size()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 
         int[] initialValues = sudoku.getFirst().getState();
-        Sudoku s = Sudoku.withValues(initialValues);
+        SudokuDomain s = SudokuDomain.withValues(initialValues);
         if (!solver.isValid(s, -1) || !solver.solveWithTimeout(s)) {
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT).build();
         }

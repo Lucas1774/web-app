@@ -1,5 +1,6 @@
 package com.lucas.server.components.tradingbot.recommendation.jpa;
 
+import com.lucas.utils.orderedindexedset.OrderedIndexedSetImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -15,7 +16,7 @@ public interface RecommendationsRepository extends JpaRepository<Recommendation,
 
     Set<Recommendation> findBySymbol_IdInAndDateIn(Set<Long> ids, Set<LocalDate> dates);
 
-    Set<Recommendation> findBySymbol_Id(Long symbolId, PageRequest date);
+    OrderedIndexedSetImpl<Recommendation> findBySymbol_Id(Long symbolId, PageRequest date);
 
     Set<Recommendation> findBySymbol_Id(Long id);
 

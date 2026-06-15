@@ -3,11 +3,11 @@ package com.lucas.server.components.shopping.controller;
 import com.lucas.server.common.controller.ControllerUtil;
 import com.lucas.server.common.jpa.OrderColumnJpaService;
 import com.lucas.server.components.shopping.dto.Sortable;
-import com.lucas.server.components.shopping.jpa.category.Category;
+import com.lucas.server.components.shopping.dto.category.CategoryDomain;
+import com.lucas.server.components.shopping.dto.product.ProductDomain;
+import com.lucas.server.components.shopping.dto.shopping.ShoppingItemDomain;
 import com.lucas.server.components.shopping.jpa.category.CategoryJpaService;
-import com.lucas.server.components.shopping.jpa.product.Product;
 import com.lucas.server.components.shopping.jpa.product.ProductJpaService;
-import com.lucas.server.components.shopping.jpa.shopping.ShoppingItem;
 import com.lucas.server.components.shopping.jpa.shopping.ShoppingItemJpaService;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -43,22 +43,23 @@ public class ShoppingController {
         this.shoppingItemService = shoppingItemService;
         this.productService = productService;
         this.categoryJpaService = categoryJpaService;
-        classToOrderColumnService = Map.of(Product.class, productService, Category.class, categoryJpaService);
+        classToOrderColumnService =
+                Map.of(ProductDomain.class, productService, CategoryDomain.class, categoryJpaService);
     }
 
     @GetMapping("/shopping")
-    public ResponseEntity<Set<ShoppingItem>> getShoppingItems(HttpServletRequest request) {
+    public ResponseEntity<Set<ShoppingItemDomain>> getShoppingItems(HttpServletRequest request) {
         return ResponseEntity.ok(shoppingItemService
                 .findAllByUsername(controllerUtil.retrieveUsername(request.getCookies())));
     }
 
     @GetMapping("/get-possible-categories")
-    public ResponseEntity<Set<Category>> getPossibleCategories() {
+    public ResponseEntity<Set<CategoryDomain>> getPossibleCategories() {
         return ResponseEntity.ok(categoryJpaService.findAllByOrderByOrderAsc());
     }
 
     @PostMapping("/new-product")
-    public ResponseEntity<Product> postProduct(HttpServletRequest request, @RequestBody String name) {
+    public ResponseEntity<ProductDomain> postProductDomain(HttpServletRequest request, @RequestBody String name) {
         return productService.createProductAndOrLinkToUser(name.replace("\"", EMPTY_STRING),
                         controllerUtil.retrieveUsername(request.getCookies()))
                 .map(ResponseEntity::ok)
@@ -66,27 +67,30 @@ public class ShoppingController {
     }
 
     @PostMapping("/update-product")
-    public ResponseEntity<Product> updateProduct(HttpServletRequest request, @RequestBody Product product) {
-        return controllerUtil.<Product>getUnauthorizedResponseIfInvalidUser(request.getCookies())
+    public ResponseEntity<ProductDomain> updateProductDomain(HttpServletRequest request,
+                                                             @RequestBody ProductDomain product) {
+        return controllerUtil.<ProductDomain>getUnauthorizedResponseIfInvalidUser(request.getCookies())
                 .orElseGet(() -> ResponseEntity.ok(productService.updateProductCreateCategoryIfNecessary(product)));
     }
 
     @PostMapping("/update-product-quantity")
-    public ResponseEntity<ShoppingItem> updateProductQuantity(HttpServletRequest request,
-                                                              @RequestBody ShoppingItem shoppingItem) {
+    public ResponseEntity<ShoppingItemDomain> updateProductDomainQuantity(HttpServletRequest request,
+                                                                          @RequestBody
+                                                                          ShoppingItemDomain shoppingItem) {
         return ResponseEntity.ok(shoppingItemService.updateShoppingItemQuantity(shoppingItem,
                 controllerUtil.retrieveUsername(request.getCookies())));
     }
 
     @PostMapping("/update-all-product-quantity")
-    public ResponseEntity<Set<ShoppingItem>> updateAllProductQuantity(HttpServletRequest request,
-                                                                      @RequestBody Integer quantity) {
+    public ResponseEntity<Set<ShoppingItemDomain>> updateAllProductDomainQuantity(HttpServletRequest request,
+                                                                                  @RequestBody Integer quantity) {
         return ResponseEntity.ok(shoppingItemService.updateAllShoppingItemQuantities(controllerUtil.retrieveUsername(
                 request.getCookies()), quantity));
     }
 
     @PostMapping("/remove-product")
-    public ResponseEntity<ShoppingItem> removeProduct(HttpServletRequest request, @RequestBody Product product) {
+    public ResponseEntity<ShoppingItemDomain> removeProductDomain(HttpServletRequest request,
+                                                                  @RequestBody ProductDomain product) {
         return ResponseEntity.ok(shoppingItemService.deleteByProductAndUsernameRemoveOrphanedProductIfNecessary(product,
                 controllerUtil.retrieveUsername(request.getCookies())));
     }
