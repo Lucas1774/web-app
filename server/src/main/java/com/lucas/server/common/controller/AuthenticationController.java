@@ -1,6 +1,6 @@
 package com.lucas.server.common.controller;
 
-import com.lucas.server.common.jpa.user.User;
+import com.lucas.server.common.dto.user.UserDomain;
 import com.lucas.server.common.jpa.user.UserJpaService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,8 +35,8 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Void> handleLogin(@RequestBody User user, HttpServletResponse response) {
-        Optional<User> auth =
+    public ResponseEntity<Void> handleLogin(@RequestBody UserDomain user, HttpServletResponse response) {
+        Optional<UserDomain> auth =
                 userService.findByUsername(user.getUsername()).filter(u -> u.getPassword().equals(user.getPassword()));
         if (auth.isEmpty()) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();

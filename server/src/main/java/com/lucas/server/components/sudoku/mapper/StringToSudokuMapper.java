@@ -1,6 +1,6 @@
 package com.lucas.server.components.sudoku.mapper;
 
-import com.lucas.server.components.sudoku.jpa.Sudoku;
+import com.lucas.server.components.sudoku.dto.SudokuDomain;
 import com.lucas.utils.Mapper;
 import com.lucas.utils.exception.MappingException;
 import lombok.RequiredArgsConstructor;
@@ -13,17 +13,17 @@ import static com.lucas.server.common.Constants.SUDOKU_NUMBER_OF_CELLS;
 
 @Component
 @RequiredArgsConstructor
-public class StringToSudokuMapper implements Mapper<String, Sudoku> {
+public class StringToSudokuMapper implements Mapper<String, SudokuDomain> {
 
     private final SudokuAttributeConverter attributeConverter;
 
     @Override
-    public Sudoku map(String sudoku) throws MappingException {
+    public SudokuDomain map(String sudoku) throws MappingException {
         try {
             if (SUDOKU_NUMBER_OF_CELLS != sudoku.length()) {
                 throw new NumberFormatException();
             }
-            return Sudoku.withValues(attributeConverter.convertToEntityAttribute(sudoku));
+            return SudokuDomain.withValues(attributeConverter.convertToEntityAttribute(sudoku));
         } catch (Exception e) {
             throw new MappingException(MessageFormat.format(MAPPING_ERROR, "sudoku"), e);
         }

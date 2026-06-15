@@ -1,5 +1,6 @@
 package com.lucas.server.components.tradingbot.marketdata.dto;
 
+import com.lucas.server.common.dto.DomainEntity;
 import com.lucas.server.components.tradingbot.common.dto.SymbolDomain;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -19,7 +20,7 @@ import java.time.LocalDateTime;
 @ToString(onlyExplicitlyIncluded = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Accessors(chain = true)
-public class MarketSnapshotDomain {
+public class MarketSnapshotDomain implements DomainEntity {
     @ToString.Include
     private Long id;
     @EqualsAndHashCode.Include

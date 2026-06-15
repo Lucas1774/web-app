@@ -1,6 +1,6 @@
 package com.lucas.server.components.sudoku.mapper;
 
-import com.lucas.server.components.sudoku.jpa.Sudoku;
+import com.lucas.server.components.sudoku.dto.SudokuDomain;
 import com.lucas.utils.Mapper;
 import com.lucas.utils.exception.MappingException;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,7 @@ import static com.lucas.utils.Utils.EMPTY_STRING;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class SudokuFileToSudokuMapper implements Mapper<String, Set<Sudoku>> {
+public class SudokuFileToSudokuMapper implements Mapper<String, Set<SudokuDomain>> {
 
     private final StringToSudokuMapper sudokuMapper;
 
@@ -31,8 +31,8 @@ public class SudokuFileToSudokuMapper implements Mapper<String, Set<Sudoku>> {
      * @param content the string to parse
      */
     @Override
-    public Set<Sudoku> map(String content) throws MappingException {
-        Set<Sudoku> sudoku = new HashSet<>();
+    public Set<SudokuDomain> map(String content) throws MappingException {
+        Set<SudokuDomain> sudoku = new HashSet<>();
         String[] lines;
         try {
             lines = content.split("\\\\r\\\\n|\\\\r|\\\\n");

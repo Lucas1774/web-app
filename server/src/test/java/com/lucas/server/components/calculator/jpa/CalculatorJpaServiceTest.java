@@ -1,6 +1,7 @@
 package com.lucas.server.components.calculator.jpa;
 
 import com.lucas.server.ConfiguredTest;
+import com.lucas.server.components.calculator.dto.CalculatorDomain;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -24,7 +25,7 @@ class CalculatorJpaServiceTest extends ConfiguredTest {
         assertThat(result).isEqualTo("3");
         assertThat(calculatorService.find()).isPresent()
                 .get()
-                .extracting(Calculator::getAns, Calculator::isTextMode)
+                .extracting(CalculatorDomain::getAns, CalculatorDomain::getTextMode)
                 .containsExactly("3", false);
     }
 
@@ -40,7 +41,7 @@ class CalculatorJpaServiceTest extends ConfiguredTest {
         assertThat(result).isEqualTo(INVALID_EXPRESSION);
         assertThat(calculatorService.find()).isPresent()
                 .get()
-                .extracting(Calculator::getText, Calculator::isTextMode)
+                .extracting(CalculatorDomain::getText, CalculatorDomain::getTextMode)
                 .containsExactly("Hello World", true);
     }
 }

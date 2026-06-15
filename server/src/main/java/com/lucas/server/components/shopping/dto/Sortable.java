@@ -2,16 +2,16 @@ package com.lucas.server.components.shopping.dto;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.lucas.server.components.shopping.jpa.category.Category;
-import com.lucas.server.components.shopping.jpa.product.Product;
+import com.lucas.server.components.shopping.dto.category.CategoryDomain;
+import com.lucas.server.components.shopping.dto.product.ProductDomain;
 
 /**
  * Interface for sortable entities in the shopping component, such as categories and products.
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = Category.class, name = "categories"),
-        @JsonSubTypes.Type(value = Product.class, name = "products")})
+        @JsonSubTypes.Type(value = CategoryDomain.class, name = "categories"),
+        @JsonSubTypes.Type(value = ProductDomain.class, name = "products")})
 public interface Sortable {
 
     /**

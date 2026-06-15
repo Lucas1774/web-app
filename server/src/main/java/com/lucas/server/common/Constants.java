@@ -33,15 +33,8 @@ import static com.lucas.server.common.Constants.Clients.GPT_OSS_3;
 import static com.lucas.server.common.Constants.Clients.GPT_OSS_4;
 import static com.lucas.server.common.Constants.Sector.COMMUNICATION_SERVICES;
 import static com.lucas.server.common.Constants.Sector.CONSUMER_DISCRETIONARY;
-import static com.lucas.server.common.Constants.Sector.CONSUMER_STAPLES;
-import static com.lucas.server.common.Constants.Sector.ENERGY;
-import static com.lucas.server.common.Constants.Sector.FINANCIALS;
 import static com.lucas.server.common.Constants.Sector.HEALTH_CARE;
-import static com.lucas.server.common.Constants.Sector.INDUSTRIALS;
 import static com.lucas.server.common.Constants.Sector.INFORMATION_TECHNOLOGY;
-import static com.lucas.server.common.Constants.Sector.MATERIALS;
-import static com.lucas.server.common.Constants.Sector.REAL_ESTATE;
-import static com.lucas.server.common.Constants.Sector.UTILITIES;
 
 public final class Constants {
 

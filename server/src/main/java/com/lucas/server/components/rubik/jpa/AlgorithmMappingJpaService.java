@@ -3,7 +3,8 @@ package com.lucas.server.components.rubik.jpa;
 import com.lucas.server.common.Constants.AlgorithmKind;
 import com.lucas.server.common.jpa.GenericJpaServiceDelegate;
 import com.lucas.server.common.jpa.UniqueConstraintWearyJpaServiceDelegate;
-import com.lucas.server.common.mapper.EntityMapper;
+import com.lucas.server.components.rubik.dto.AlgorithmMappingDomain;
+import com.lucas.server.components.rubik.mapper.AlgorithmMappingMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,32 +15,33 @@ import java.util.stream.Collectors;
 
 @Service
 public class AlgorithmMappingJpaService
-        extends GenericJpaServiceDelegate<AlgorithmMapping, AlgorithmMapping, AlgorithmMappingRepository> {
+        extends GenericJpaServiceDelegate<AlgorithmMapping, AlgorithmMappingDomain, AlgorithmMappingRepository> {
 
     private final UniqueConstraintWearyJpaServiceDelegate<AlgorithmMapping> delegate;
 
-    public AlgorithmMappingJpaService(AlgorithmMappingRepository repository,
-                                      EntityMapper<AlgorithmMapping, AlgorithmMapping> mapper) {
+    public AlgorithmMappingJpaService(AlgorithmMappingRepository repository, AlgorithmMappingMapper mapper) {
         super(repository, mapper);
         delegate = new UniqueConstraintWearyJpaServiceDelegate<>(repository);
     }
 
     @Transactional(readOnly = true)
-    public Optional<AlgorithmMapping> findByStickers(int firstSticker, int secondSticker, AlgorithmKind kind) {
+    public Optional<AlgorithmMappingDomain> findByStickers(int firstSticker, int secondSticker, AlgorithmKind kind) {
         return repository.findByFirstStickerAndSecondSticker(firstSticker, secondSticker).filter(m -> switch (kind) {
             case EDGE -> null != m.getEdgeAlgorithm();
             case CORNER -> null != m.getCornerAlgorithm();
             case PARITY -> null != m.getParityAlgorithm();
-        });
+        }).map(mapper::toDto);
     }
 
     @Transactional
-    public Set<AlgorithmMapping> createOrUpdate(Set<AlgorithmMapping> entities) {
+    public Set<AlgorithmMappingDomain> createOrUpdate(Set<AlgorithmMappingDomain> dtos) {
+        Set<AlgorithmMapping> entitySet = dtos.stream().map(mapper::toEntity).collect(Collectors.toSet());
         Set<Integer> firstStickers =
-                entities.stream().map(AlgorithmMapping::getFirstSticker).collect(Collectors.toUnmodifiableSet());
+                entitySet.stream().map(AlgorithmMapping::getFirstSticker).collect(Collectors.toUnmodifiableSet());
         Set<Integer> secondStickers =
-                entities.stream().map(AlgorithmMapping::getSecondSticker).collect(Collectors.toUnmodifiableSet());
-        return delegate.createOrUpdate(all -> repository.findByFirstStickerInAndSecondStickerIn(firstStickers,
+                entitySet.stream().map(AlgorithmMapping::getSecondSticker).collect(Collectors.toUnmodifiableSet());
+        return delegate.createOrUpdate(all -> repository.findByFirstStickerInAndSecondStickerIn(
+                                firstStickers,
                                 secondStickers)
                         .stream()
                         .filter(existing -> all.stream()
@@ -55,6 +57,6 @@ public class AlgorithmMappingJpaService
                         .setCornerTechnique(incoming.getCornerTechnique())
                         .setParityType(incoming.getParityType())
                         .setParityTechnique(incoming.getParityTechnique()),
-                entities);
+                entitySet).stream().map(mapper::toDto).collect(Collectors.toUnmodifiableSet());
     }
 }

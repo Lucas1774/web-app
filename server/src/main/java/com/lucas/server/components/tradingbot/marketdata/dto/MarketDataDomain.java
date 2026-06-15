@@ -1,5 +1,6 @@
 package com.lucas.server.components.tradingbot.marketdata.dto;
 
+import com.lucas.server.common.dto.DomainEntity;
 import com.lucas.server.components.tradingbot.common.dto.SymbolDomain;
 import com.lucas.server.components.tradingbot.recommendation.dto.RecommendationDomain;
 import lombok.AllArgsConstructor;
@@ -22,7 +23,7 @@ import java.util.Set;
 @ToString(onlyExplicitlyIncluded = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Accessors(chain = true)
-public class MarketDataDomain {
+public class MarketDataDomain implements DomainEntity {
     @ToString.Include
     private Long id;
     @EqualsAndHashCode.Include

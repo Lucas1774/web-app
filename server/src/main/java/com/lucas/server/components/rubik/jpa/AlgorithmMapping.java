@@ -9,17 +9,21 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.Accessors;
-
-import java.util.Objects;
 
 @Getter
 @Setter
-@Accessors(chain = true)
+@AllArgsConstructor
 @NoArgsConstructor
+@ToString(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@Accessors(chain = true)
 @Entity
 @Table(name = "algorithm_mappings",
         indexes = @Index(columnList = "first_sticker, second_sticker"),
@@ -28,12 +32,17 @@ public class AlgorithmMapping implements JpaEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @ToString.Include
     private Long id;
 
     @Column(name = "first_sticker", nullable = false)
+    @EqualsAndHashCode.Include
+    @ToString.Include
     private Integer firstSticker;
 
     @Column(name = "second_sticker", nullable = false)
+    @EqualsAndHashCode.Include
+    @ToString.Include
     private Integer secondSticker;
 
     @Column(name = "edge_algorithm", length = 100)
@@ -62,18 +71,4 @@ public class AlgorithmMapping implements JpaEntity {
 
     @Column(name = "parity_technique", length = 10)
     private String parityTechnique;
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(firstSticker, secondSticker);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (null == o || getClass() != o.getClass()) {
-            return false;
-        }
-        AlgorithmMapping that = (AlgorithmMapping) o;
-        return Objects.equals(firstSticker, that.firstSticker) && Objects.equals(secondSticker, that.secondSticker);
-    }
 }

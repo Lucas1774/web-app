@@ -1,6 +1,6 @@
 package com.lucas.server.components.sudoku.service;
 
-import com.lucas.server.components.sudoku.jpa.Sudoku;
+import com.lucas.server.components.sudoku.dto.SudokuDomain;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -21,14 +21,14 @@ public class SudokuGenerator {
     private final SudokuSolver solver;
     private final Random random;
 
-    public Sudoku generate(int difficulty) {
-        Sudoku sudoku = Sudoku.withZeros();
+    public SudokuDomain generate(int difficulty) {
+        SudokuDomain sudoku = SudokuDomain.withZeros();
         doGenerate(sudoku);
         setDifficulty(sudoku, difficulty);
         return sudoku;
     }
 
-    public boolean doGenerate(Sudoku sudoku) {
+    public boolean doGenerate(SudokuDomain sudoku) {
         List<Integer> digits = new ArrayList<>();
         for (int digit : getDigits()) {
             digits.add(digit);
@@ -51,7 +51,7 @@ public class SudokuGenerator {
         return true;
     }
 
-    private void setDifficulty(Sudoku sudoku, int difficulty) {
+    private void setDifficulty(SudokuDomain sudoku, int difficulty) {
         List<Integer> possibleCells = new ArrayList<>();
         for (int i = 0; SUDOKU_NUMBER_OF_CELLS > i; i++) {
             possibleCells.add(i);

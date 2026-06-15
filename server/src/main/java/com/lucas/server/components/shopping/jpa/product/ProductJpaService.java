@@ -2,25 +2,26 @@ package com.lucas.server.components.shopping.jpa.product;
 
 import com.lucas.server.common.jpa.user.OrderColumnServiceDelegate;
 import com.lucas.server.common.jpa.user.UserRepository;
-import com.lucas.server.common.mapper.EntityMapper;
+import com.lucas.server.components.shopping.dto.product.ProductDomain;
 import com.lucas.server.components.shopping.jpa.category.Category;
 import com.lucas.server.components.shopping.jpa.category.CategoryRepository;
 import com.lucas.server.components.shopping.jpa.shopping.ShoppingItem;
 import com.lucas.server.components.shopping.jpa.shopping.ShoppingItemRepository;
+import com.lucas.server.components.shopping.mapper.ProductMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
 @Service
-public class ProductJpaService extends OrderColumnServiceDelegate<Product, ProductRepository> {
+public class ProductJpaService extends OrderColumnServiceDelegate<Product, ProductDomain, ProductRepository> {
 
     private final UserRepository userRepository;
     private final ShoppingItemRepository shoppingItemRepository;
     private final CategoryRepository categoryRepository;
 
     public ProductJpaService(ProductRepository repository,
-                             EntityMapper<Product, Product> mapper,
+                             ProductMapper mapper,
                              UserRepository userRepository,
                              ShoppingItemRepository shoppingItemRepository,
                              CategoryRepository categoryRepository) {
@@ -31,7 +32,7 @@ public class ProductJpaService extends OrderColumnServiceDelegate<Product, Produ
     }
 
     @Transactional
-    public Optional<Product> createProductAndOrLinkToUser(String productName, String username) {
+    public Optional<ProductDomain> createProductAndOrLinkToUser(String productName, String username) {
         if (shoppingItemRepository.findByUser_UsernameAndProduct_Name(username, productName).isPresent()) {
             return Optional.empty();
         }
@@ -44,13 +45,13 @@ public class ProductJpaService extends OrderColumnServiceDelegate<Product, Produ
                 .setProduct(product)
                 .setQuantity(0));
 
-        return Optional.of(product);
+        return Optional.of(mapper.toDto(product));
     }
 
     @Transactional
-    public Product updateProductCreateCategoryIfNecessary(Product input) {
+    public ProductDomain updateProductCreateCategoryIfNecessary(ProductDomain input) {
         Product product = repository.findById(input.getId()).orElseThrow();
-        product.setName(input.getName()).setIsRare(input.getIsRare());
+        product.setName(input.getName()).setRare(input.getIsRare());
 
         Category category;
         if (null != input.getCategory().getId()) {
@@ -61,6 +62,6 @@ public class ProductJpaService extends OrderColumnServiceDelegate<Product, Produ
                     categoryRepository.save(new Category().setName(input.getCategory().getName()).setOrder(maxOrder));
         }
 
-        return product.setCategory(category);
+        return mapper.toDto(product.setCategory(category));
     }
 }

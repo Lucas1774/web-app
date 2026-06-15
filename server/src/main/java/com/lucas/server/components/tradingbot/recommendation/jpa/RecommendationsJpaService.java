@@ -30,9 +30,9 @@ public class RecommendationsJpaService
 
     @SuppressWarnings("UnusedReturnValue")
     @Transactional
-    public Set<RecommendationDomain> createIgnoringDuplicates(Set<RecommendationDomain> entities) {
+    public Set<RecommendationDomain> createIgnoringDuplicates(Set<RecommendationDomain> dtos) {
         Set<Recommendation> recommendationEntities =
-                entities.stream().map(mapper::toEntity).collect(Collectors.toSet());
+                dtos.stream().map(mapper::toEntity).collect(Collectors.toSet());
         return delegate.createIgnoringDuplicates(this::findUnique, recommendationEntities)
                 .stream()
                 .map(mapper::toDto)
@@ -63,7 +63,7 @@ public class RecommendationsJpaService
 
     @Transactional
     public Set<RecommendationDomain> createOrUpdate(Set<RecommendationDomain> entities) {
-        Set<Recommendation> recommendationEntities =
+        Set<Recommendation> entitySet =
                 entities.stream().map(mapper::toEntity).collect(Collectors.toSet());
         return delegate.createOrUpdate(this::findUnique,
                 (oldEntity, newEntity) -> oldEntity.setModel(newEntity.getModel())
@@ -74,7 +74,7 @@ public class RecommendationsJpaService
                         .setInput(newEntity.getInput())
                         .setErrors(newEntity.getErrors())
                         .addNews(newEntity.getNews()),
-                recommendationEntities).stream().map(mapper::toDto).collect(Collectors.toUnmodifiableSet());
+                entitySet).stream().map(mapper::toDto).collect(Collectors.toUnmodifiableSet());
     }
 
     @Transactional(readOnly = true)

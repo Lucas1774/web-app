@@ -1,8 +1,6 @@
 package com.lucas.server.components.shopping.jpa.product;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.lucas.server.common.jpa.JpaEntity;
-import com.lucas.server.components.shopping.dto.Sortable;
 import com.lucas.server.components.shopping.jpa.category.Category;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -13,56 +11,44 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.Accessors;
-
-import java.util.Objects;
 
 @Getter
 @Setter
-@Accessors(chain = true)
+@AllArgsConstructor
 @NoArgsConstructor
+@ToString(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@Accessors(chain = true)
 @Entity
 @Table(name = "products")
-public class Product implements JpaEntity, Sortable {
+public class Product implements JpaEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @ToString.Include
     private Long id;
 
     @Column(nullable = false, unique = true, length = 50)
+    @EqualsAndHashCode.Include
+    @ToString.Include
     private String name;
 
     @Column(name = "is_rare", nullable = false)
-    private Boolean isRare = false;
+    private boolean isRare;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id")
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @ToString.Include
     private Category category;
 
     @Column(name = "product_order", nullable = false)
+    @ToString.Include
     private Integer order;
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(name);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (null == o || getClass() != o.getClass()) {
-            return false;
-        }
-        Product product = (Product) o;
-        return Objects.equals(name, product.name);
-    }
-
-    @Override
-    public String toString() {
-        return "Product{" + "id=" + id + ", name='" + name + '\'' + ", isRare=" + isRare + ", order=" + order
-               + ", category=" + category + '}';
-    }
 }

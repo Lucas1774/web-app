@@ -52,7 +52,7 @@ public class NewsJpaService extends GenericJpaServiceDelegate<News, NewsDomain, 
     // Commit on finish so that nested threads that lost transactional context can see changes
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Set<NewsDomain> createOrUpdate(Set<NewsDomain> entities) {
-        Set<News> newsEntities = entities.stream().map(mapper::toEntity).collect(Collectors.toSet());
+        Set<News> entitySet = entities.stream().map(mapper::toEntity).collect(Collectors.toSet());
         return delegate.createOrUpdate(allEntities -> repository.findByExternalIdIn(allEntities.stream()
                 .map(News::getExternalId)
                 .collect(Collectors.toUnmodifiableSet())), (oldEntity, newEntity) -> {
@@ -61,7 +61,7 @@ public class NewsJpaService extends GenericJpaServiceDelegate<News, NewsDomain, 
                 symbol.getNews().add(oldEntity);
             }
             return oldEntity;
-        }, newsEntities).stream().map(mapper::toDto).collect(Collectors.toUnmodifiableSet());
+        }, entitySet).stream().map(mapper::toDto).collect(Collectors.toUnmodifiableSet());
     }
 
     @Transactional
