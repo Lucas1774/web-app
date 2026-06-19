@@ -18,18 +18,8 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import static com.lucas.server.common.Constants.AMERICA_NY;
 import static com.lucas.server.common.Constants.BUY;
@@ -48,7 +38,6 @@ import static com.lucas.server.common.Constants.SCHEDULED_TASK_SUCCESS_INFO;
 import static com.lucas.server.common.Constants.SP500_SYMBOLS;
 import static com.lucas.server.common.Constants.filterClients;
 import static com.lucas.server.common.Constants.isTradingDate;
-import static com.lucas.server.common.Constants.toPastOrFutureTradeDate;
 
 @SuppressWarnings("LoggingSimilarMessage")
 @Profile("prod")
@@ -60,13 +49,6 @@ public class DailyScheduler {
     private final DataManager dataManager;
     private final Map<String, AiClient> clients;
     private final MqttPublisher publisher;
-
-    @Scheduled(cron = "${scheduler.market-data-cron}", zone = "UTC")
-    public void midnightTask() {
-        if (shouldRun(LocalDate.now().minusDays(1))) {
-            doMidnightTask(SP500_SYMBOLS);
-        }
-    }
 
     /**
      * hack for testing purposes
@@ -83,6 +65,13 @@ public class DailyScheduler {
      */
     public void sleep() {
         Interrupts.runOrSwallow(() -> Thread.sleep(120_000), e -> log.error(e.getMessage(), e));
+    }
+
+    @Scheduled(cron = "${scheduler.market-data-cron}", zone = "UTC")
+    public void midnightTask() {
+        if (shouldRun(LocalDate.now().minusDays(1))) {
+            doMidnightTask(SP500_SYMBOLS);
+        }
     }
 
     @Scheduled(cron = "${scheduler.news-recommendations-cron}", zone = AMERICA_NY)
@@ -172,6 +161,21 @@ public class DailyScheduler {
                 removedRecommendations.stream().map(RecommendationDomain::getSymbol).toList());
     }
 
+    @SuppressWarnings("SameParameterValue")
+    private void doEarlyMorningTask(Set<String> symbolNames) {
+        Set<MarketSnapshotDomain> updatedSnapshots = dataManager.retrieveSnapshotsByName(symbolNames);
+        String message = String.format("fetched %d market snapshots", updatedSnapshots.size());
+        log.info(SCHEDULED_TASK_SUCCESS_INFO,
+                message,
+                updatedSnapshots.stream().map(MarketSnapshotDomain::getSymbol).toList());
+
+        Set<MarketSnapshotDomain> removedSnapshots = dataManager.removeOldSnapshots(DATABASE_MARKET_DATA_PER_SYMBOL);
+        String message2 = String.format("removed %d market snapshots", removedSnapshots.size());
+        log.info(SCHEDULED_TASK_SUCCESS_INFO,
+                message2,
+                removedSnapshots.stream().map(MarketSnapshotDomain::getSymbol).toList());
+    }
+
     private void getRecommendations(Set<Long> topRecommendedSymbols,
                                     Set<AiClient> clients,
                                     Set<AiClient> backupClients,
@@ -190,61 +194,5 @@ public class DailyScheduler {
         log.info(SCHEDULED_TASK_SUCCESS_INFO,
                 message,
                 updatedRecommendations.stream().map(RecommendationDomain::getSymbol).toList());
-    }
-
-    @SuppressWarnings("SameParameterValue")
-    private void doEarlyMorningTask(Set<String> symbolNames) {
-        Set<MarketSnapshotDomain> updatedSnapshots = dataManager.retrieveSnapshotsByName(symbolNames);
-        String message = String.format("fetched %d market snapshots", updatedSnapshots.size());
-        log.info(SCHEDULED_TASK_SUCCESS_INFO,
-                message,
-                updatedSnapshots.stream().map(MarketSnapshotDomain::getSymbol).toList());
-
-        Set<MarketSnapshotDomain> removedSnapshots = dataManager.removeOldSnapshots(DATABASE_MARKET_DATA_PER_SYMBOL);
-        String message2 = String.format("removed %d market snapshots", removedSnapshots.size());
-        log.info(SCHEDULED_TASK_SUCCESS_INFO,
-                message2,
-                removedSnapshots.stream().map(MarketSnapshotDomain::getSymbol).toList());
-    }
-
-    @Scheduled(cron = "${scheduler.finnhub-news-cron}", zone = "America/New_York")
-    private void beforeMorningTask() {
-        LocalDate nowEt = ZonedDateTime.now(NY_ZONE).toLocalDate();
-        if (shouldRun(nowEt)) {
-            doBeforeMorningTask(SP500_SYMBOLS);
-        }
-    }
-
-    @SuppressWarnings("SameParameterValue")
-    private void doBeforeMorningTask(Set<String> symbolNames) {
-        LocalDate to = LocalDate.now();
-        LocalDate from = toPastOrFutureTradeDate(to, 1, d -> d.minusDays(1));
-
-        try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
-            List<Callable<Set<NewsDomain>>> tasks = new ArrayList<>();
-            for (String name : symbolNames) {
-                tasks.add(() -> dataManager.retrieveNewsByDateRangeAndName(name, from, to, false));
-            }
-
-            Collection<Future<Set<NewsDomain>>> futures = Interrupts.callOrSwallow(() -> executor.invokeAll(tasks),
-                    Set::of,
-                    e -> log.error(e.getMessage(), e));
-
-            Set<NewsDomain> news = new HashSet<>();
-            for (Future<Set<NewsDomain>> f : Objects.requireNonNull(futures)) {
-                Set<NewsDomain> part = Interrupts.callOrSwallow(() -> {
-                    try {
-                        return f.get();
-                    } catch (ExecutionException e) {
-                        log.error(e.getMessage(), e);
-                        return Set.of();
-                    }
-                }, Set::of, e -> log.error(e.getMessage(), e));
-                news.addAll(Objects.requireNonNull(part)); // doesn't correctly merge, but it's ok
-            }
-
-            String message = String.format("fetched %d news", news.size());
-            log.info(SCHEDULED_TASK_SUCCESS_INFO, message, news);
-        }
     }
 }

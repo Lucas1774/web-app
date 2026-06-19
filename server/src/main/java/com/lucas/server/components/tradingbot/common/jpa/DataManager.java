@@ -56,6 +56,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -82,7 +83,9 @@ import static com.lucas.server.common.Constants.RETRIEVAL_FAILED_WARN;
 import static com.lucas.server.common.Constants.RETRIEVING_DATA_INFO;
 import static com.lucas.server.common.Constants.SENTIMENT;
 import static com.lucas.server.common.Constants.SYMBOL_NOT_FOUND_ERROR;
+import static com.lucas.server.common.Constants.getFinnhubRateLimiterNames;
 import static com.lucas.server.common.Constants.isTradingDate;
+import static com.lucas.server.common.Constants.toPastOrFutureTradeDate;
 
 @SuppressWarnings("LoggingSimilarMessage")
 @Service
@@ -241,20 +244,26 @@ public class DataManager {
     @Transactional(rollbackFor = {ClientException.class, MappingException.class})
     public Set<NewsDomain> retrieveNewsByName(Set<String> symbolNames) throws ClientException, MappingException {
         Set<SymbolDomain> symbols = symbolService.getOrCreateByName(symbolNames);
-        return retrieveNews(symbols);
+        Set<NewsDomain> news = retrieveYahooNews(symbols);
+        newsPersistenceOrchestrator.persistNews(news);
+        return news;
     }
 
     @Transactional(rollbackFor = {ClientException.class, MappingException.class})
     public Set<NewsDomain> retrieveNewsById(Set<Long> symbolIds) throws ClientException, MappingException {
         Set<SymbolDomain> symbols = symbolService.findAllById(symbolIds);
-        return retrieveNews(symbols);
+        Set<NewsDomain> news = retrieveYahooNews(symbols);
+        newsPersistenceOrchestrator.persistNews(news);
+        return news;
     }
 
     @Transactional(rollbackFor = {ClientException.class, MappingException.class})
     public Set<NewsDomain> retrieveNewsByDateRangeAndId(Set<Long> symbolIds, LocalDate from, LocalDate to)
             throws ClientException, MappingException {
         Set<SymbolDomain> symbols = symbolService.findAllById(symbolIds);
-        return retrieveNewsByDateRange(symbols, from, to, false);
+        Set<NewsDomain> news = retrieveNewsByDateRange(symbols, from, to, false);
+        newsPersistenceOrchestrator.persistNews(news);
+        return news;
     }
 
     @Transactional(rollbackFor = {ClientException.class, MappingException.class})
@@ -264,16 +273,9 @@ public class DataManager {
                                                           boolean withYahooNews)
             throws ClientException, MappingException {
         Set<SymbolDomain> symbols = symbolService.getOrCreateByName(symbolNames);
-        return retrieveNewsByDateRange(symbols, from, to, withYahooNews);
-    }
-
-    public Set<NewsDomain> retrieveNewsByDateRangeAndName(String symbolName,
-                                                          LocalDate from,
-                                                          LocalDate to,
-                                                          boolean withYahooNews)
-            throws ClientException, MappingException {
-        Set<SymbolDomain> symbols = symbolService.getOrCreateByName(Set.of(symbolName));
-        return retrieveNewsByDateRange(symbols, from, to, withYahooNews);
+        Set<NewsDomain> news = retrieveNewsByDateRange(symbols, from, to, withYahooNews);
+        newsPersistenceOrchestrator.persistNews(news);
+        return news;
     }
 
     @Transactional(rollbackFor = {ClientException.class, MappingException.class})
@@ -490,57 +492,79 @@ public class DataManager {
         PortfolioService portfolioService = portfolioTypeToService.get(type);
 
         LocalDateTime startUtc;
-        if (useOldNews) {
+        if (useOldNews && !onTheFlyNews) {
             startUtc = null;
         } else {
             ZonedDateTime easternTime = ZonedDateTime.now(NY_ZONE);
-            LocalDate lastTradeFinishedDate = easternTime.toLocalDate();
-            if (easternTime.toLocalTime().isBefore(MARKET_CLOSE)) {
-                lastTradeFinishedDate = lastTradeFinishedDate.minusDays(1);
-            }
-            while (!isTradingDate(lastTradeFinishedDate)) {
-                lastTradeFinishedDate = lastTradeFinishedDate.minusDays(1);
-            }
+            LocalDate today = easternTime.toLocalDate();
+            LocalDate lastTradeFinishedDate = !easternTime.toLocalTime().isBefore(MARKET_CLOSE) && isTradingDate(today)
+                    ? today
+                    : toPastOrFutureTradeDate(today, 1, d -> d.minusDays(1));
             LocalTime close = !EARLY_CLOSE_DATES_2026.contains(lastTradeFinishedDate) ? MARKET_CLOSE : EARLY_CLOSE;
             startUtc = ZonedDateTime.of(lastTradeFinishedDate, close, NY_ZONE)
                     .withZoneSameInstant(ZoneOffset.UTC)
                     .toLocalDateTime();
         }
 
-        Set<SymbolDomain> remainingSymbols = new HashSet<>(symbols);
-        try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
-            int attempts = 0;
-            while (!remainingSymbols.isEmpty() && RECOMMENDATION_MAX_ATTEMPTS > attempts) {
-                BlockingQueue<Set<RecommendationDomain>> resultsQueue = new LinkedBlockingQueue<>();
-                int submitted = 0;
-                Set<SymbolPayload> recommendationBuffer = new HashSet<>();
-                log.info(RETRIEVING_DATA_INFO, RECOMMENDATION, remainingSymbols.size());
-                for (SymbolDomain symbol : Set.copyOf(remainingSymbols)) {
-                    OrderedIndexedSet<MarketDataDomain> marketData =
-                            marketDataService.getTopForSymbolId(symbol.getId(), MARKET_DATA_RELEVANT_DAYS_COUNT);
-                    if (marketData.isEmpty()) {
-                        remainingSymbols.remove(symbol);
-                        continue;
-                    }
-                    OrderedIndexedSet<NewsDomain> news = provideNews(onTheFlyNews, useOldNews, symbol, startUtc);
-                    if (onlyIfHasNews && news.isEmpty()) {
-                        remainingSymbols.remove(symbol);
-                        continue;
-                    }
-                    PortfolioDomain portfolio = portfolioService.findBySymbol(symbol)
-                            .orElseGet(() -> new PortfolioDomain().setSymbol(symbol));
+        Set<SymbolDomain> remainingSymbols = ConcurrentHashMap.newKeySet();
+        remainingSymbols.addAll(symbols);
 
-                    SymbolPayload payload = new SymbolPayload(symbol, marketData, portfolio).setNews(news);
-                    if (fetchPreMarket) {
+        int attempts = 0;
+        while (!remainingSymbols.isEmpty() && RECOMMENDATION_MAX_ATTEMPTS > attempts) {
+            BlockingQueue<SymbolPayload> payloadQueue = new LinkedBlockingQueue<>();
+            int payloadsSubmitted = 0;
+            BlockingQueue<Set<RecommendationDomain>> resultsQueue = new LinkedBlockingQueue<>();
+            int submitted = 0;
+            log.info(RETRIEVING_DATA_INFO, RECOMMENDATION, remainingSymbols.size());
+            // fixed payload computer size to not overwhelm Hikari
+            int poolSize = getFinnhubRateLimiterNames().size();
+            // ExecutorService::close would block until tasks finish, so only a single try-with-resources
+            try (ExecutorService payloadComputationExecutor = Executors.newFixedThreadPool(poolSize);
+                 ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
+                for (SymbolDomain symbol : Set.copyOf(remainingSymbols)) {
+                    payloadComputationExecutor.submit(() -> {
                         try {
-                            payload.setPremarket(yahooFinanceMarketSnapshotClient.retrieveMarketSnapshot(symbol));
-                        } catch (ClientException | MappingException e) {
-                            log.warn(RETRIEVAL_FAILED_WARN, MARKET_SNAPSHOT, symbol, e);
+                            OrderedIndexedSet<MarketDataDomain> marketData =
+                                    marketDataService.getTopForSymbolId(symbol.getId(),
+                                            MARKET_DATA_RELEVANT_DAYS_COUNT);
+                            if (marketData.isEmpty()) {
+                                remainingSymbols.remove(symbol);
+                                Interrupts.runOrThrow(() -> payloadQueue.put(SymbolPayload.empty()),
+                                        e -> log.error(e.getMessage(), e));
+                                return;
+                            }
+                            OrderedIndexedSet<NewsDomain> news =
+                                    provideNews(onTheFlyNews, useOldNews, symbol, startUtc);
+                            if (onlyIfHasNews && news.isEmpty()) {
+                                remainingSymbols.remove(symbol);
+                                Interrupts.runOrThrow(() -> payloadQueue.put(SymbolPayload.empty()),
+                                        e -> log.error(e.getMessage(), e));
+                                return;
+                            }
+                            PortfolioDomain portfolio = portfolioService.findBySymbol(symbol)
+                                    .orElseGet(() -> new PortfolioDomain().setSymbol(symbol));
+
+                            SymbolPayload payload = new SymbolPayload(symbol, marketData, portfolio).setNews(news)
+                                    .setPremarket(providePremarket(fetchPreMarket, symbol));
+                            Interrupts.runOrThrow(() -> payloadQueue.put(payload), e -> log.error(e.getMessage(), e));
+                        } catch (Exception e) {
+                            log.error(e.getMessage(), e);
                         }
+                    });
+                    payloadsSubmitted++;
+                }
+
+                Set<SymbolPayload> recommendationBuffer = new HashSet<>();
+                for (int i = 0; i < payloadsSubmitted; i++) {
+                    SymbolPayload payload = Interrupts.callOrSwallow(payloadQueue::take,
+                            SymbolPayload::empty,
+                            e -> log.error(e.getMessage(), e));
+                    if (null == Objects.requireNonNull(payload).getSymbol()) {
+                        continue;
                     }
                     recommendationBuffer.add(payload);
 
-                    boolean withCheekyClients = 0 < cheekyClients.getRemaining() && !mutableCheekyClients.isEmpty();
+                    boolean withCheekyClients = !mutableCheekyClients.isEmpty() && 0 < cheekyClients.getRemaining();
                     Deque<AiClient> clientsRef = withCheekyClients ? mutableCheekyClients : mutableClients;
                     int minChunkSize = clientsRef.stream().mapToInt(c -> c.getConfig().chunkSize()).min().orElseThrow();
                     if (recommendationBuffer.size() == minChunkSize) {
@@ -575,20 +599,20 @@ public class DataManager {
                     submitted++;
                     clientsRef.add(clientsRef.pollFirst());
                 }
-
-                for (int i = 0; i < submitted; i++) {
-                    Set<RecommendationDomain> fetched =
-                            Interrupts.callOrSwallow(resultsQueue::take, Set::of, e -> log.error(e.getMessage(), e));
-                    if (!Objects.requireNonNull(fetched).isEmpty()) {
-                        res.addAll(fetched);
-                        Set<SymbolDomain> fetchedSymbols = fetched.stream()
-                                .map(RecommendationDomain::getSymbol)
-                                .collect(Collectors.toUnmodifiableSet());
-                        remainingSymbols.removeIf(fetchedSymbols::contains);
-                    }
-                }
-                attempts++;
             }
+
+            for (int i = 0; i < submitted; i++) {
+                Set<RecommendationDomain> fetched =
+                        Interrupts.callOrSwallow(resultsQueue::take, Set::of, e -> log.error(e.getMessage(), e));
+                if (!Objects.requireNonNull(fetched).isEmpty()) {
+                    res.addAll(fetched);
+                    Set<SymbolDomain> fetchedSymbols = fetched.stream()
+                            .map(RecommendationDomain::getSymbol)
+                            .collect(Collectors.toUnmodifiableSet());
+                    remainingSymbols.removeIf(fetchedSymbols::contains);
+                }
+            }
+            attempts++;
         }
 
         if (!remainingSymbols.isEmpty()) {
@@ -602,17 +626,36 @@ public class DataManager {
                                                       SymbolDomain symbol,
                                                       LocalDateTime startUtc) {
         if (onTheFlyNews) {
+            Set<SymbolDomain> symbols = Set.of(symbol);
+            Set<NewsDomain> news = new HashSet<>();
             try {
-                newsPersistenceOrchestrator.persistNews(retrieveYahooNews(Set.of(symbol)));
+                news.addAll(retrieveNewsByDateRange(symbols, startUtc.toLocalDate(), LocalDate.now(), false));
             } catch (ClientException | MappingException e) {
                 log.warn(RETRIEVAL_FAILED_WARN, NEWS, symbol, e);
             }
+            try {
+                news.addAll(retrieveYahooNews(symbols));
+            } catch (ClientException | MappingException e) {
+                log.warn(RETRIEVAL_FAILED_WARN, NEWS, symbol, e);
+            }
+            newsPersistenceOrchestrator.persistNews(news);
         }
 
         return newsService.getTopForSymbolId(symbol.getId(), NEWS_COUNT)
                 .stream()
                 .filter(n -> useOldNews || n.getDate().isAfter(startUtc))
                 .collect(OrderedIndexedSet.toUnmodifiableOrderedIndexedSet());
+    }
+
+    private MarketSnapshotDomain providePremarket(boolean fetchPreMarket, SymbolDomain symbol) {
+        if (fetchPreMarket) {
+            try {
+                return yahooFinanceMarketSnapshotClient.retrieveMarketSnapshot(symbol);
+            } catch (ClientException | MappingException e) {
+                log.warn(RETRIEVAL_FAILED_WARN, MARKET_SNAPSHOT, symbol, e);
+            }
+        }
+        return null;
     }
 
     private void submitChunk(Set<SymbolPayload> buffer,
@@ -670,15 +713,8 @@ public class DataManager {
                 newsByExternalId.computeIfAbsent(news.getExternalId(), id -> news).addSymbol(symbol);
             }
         }
-
-        return Set.copyOf(newsByExternalId.values());
-    }
-
-    private Set<NewsDomain> retrieveNews(Set<SymbolDomain> symbols) throws ClientException, MappingException {
-        Set<NewsDomain> news = retrieveYahooNews(symbols);
         log.info(GENERATION_SUCCESSFUL_INFO, NEWS);
-        newsPersistenceOrchestrator.persistNews(news);
-        return news;
+        return Set.copyOf(newsByExternalId.values());
     }
 
     private Set<NewsDomain> retrieveNewsByDateRange(Set<SymbolDomain> symbols,
@@ -697,7 +733,6 @@ public class DataManager {
                 .filter(n -> withYahooNews || !"Yahoo".equals(n.getSource()))
                 .collect(Collectors.toUnmodifiableSet());
         log.info(GENERATION_SUCCESSFUL_INFO, NEWS);
-        newsPersistenceOrchestrator.persistNews(res);
         return res;
     }
 
@@ -758,6 +793,10 @@ public class DataManager {
         private MarketSnapshotDomain premarket;
         @Setter
         private OrderedIndexedSet<NewsDomain> news;
+
+        public static SymbolPayload empty() {
+            return new SymbolPayload(null, null, null);
+        }
     }
 
     @Getter

@@ -634,8 +634,11 @@ public final class Constants {
     private static final String FINNHUB_RATE_LIMITER = "finnhubRateLimiter";
     private static final String FINNHUB_RATE_LIMITER_2 = "finnhubRateLimiter2";
     private static final String FINNHUB_RATE_LIMITER_3 = "finnhubRateLimiter3";
-    private static final OrderedIndexedSet<String> FINNHUB_RATE_LIMITERS =
-            OrderedIndexedSet.of(FINNHUB_RATE_LIMITER, FINNHUB_RATE_LIMITER_2, FINNHUB_RATE_LIMITER_3);
+    private static final String FINNHUB_RATE_LIMITER_4 = "finnhubRateLimiter4";
+    private static final OrderedIndexedSet<String> FINNHUB_RATE_LIMITERS = OrderedIndexedSet.of(FINNHUB_RATE_LIMITER,
+            FINNHUB_RATE_LIMITER_2,
+            FINNHUB_RATE_LIMITER_3,
+            FINNHUB_RATE_LIMITER_4);
     private static final int[] DIGITS = {1, 2, 3, 4, 5, 6, 7, 8, 9};
     private static final char[] LETTERS_CORNERS = "0SFMXBRVPUNLITCOYJEKDAHZ".toCharArray();
     private static final char[] LETTERS_EDGES = "0XRSMNUVFJCBIYOKATEHDPLZ".toCharArray();

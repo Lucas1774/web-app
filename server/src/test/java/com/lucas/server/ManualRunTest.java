@@ -121,14 +121,6 @@ class ManualRunTest extends BaseTest {
         method.invoke(dailyScheduler, SYMBOL_NAMES);
     }
 
-    @Test
-    void runBeforeMorningTask() throws Exception {
-        assertTrue(true);
-        Method method = DailyScheduler.class.getDeclaredMethod("doBeforeMorningTask", Set.class);
-        method.setAccessible(true);
-        method.invoke(dailyScheduler, SYMBOL_NAMES);
-    }
-
     /**
      * High, low and volume (unused) lose correctness for values higher than 1
      *

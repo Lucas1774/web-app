@@ -20,11 +20,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.lucas.server.common.Constants.SP500_SYMBOLS;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.anyInt;
@@ -35,7 +33,6 @@ import static org.mockito.Mockito.verify;
 
 @TestPropertySource(properties = {
         "scheduler.market-data-cron=* * * * * *",
-        "scheduler.finnhub-news-cron=* * * * * *",
         "scheduler.news-recommendations-cron=* * * * * *",
         "scheduler.recommendation-inference-five-cron=* * * * * *",
         "scheduler.recommendation-inference-fifteen-cron=* * * * * *"})
@@ -76,10 +73,6 @@ class DailySchedulerTest extends ConfiguredTest {
                     anyBoolean(),
                     anyBoolean());
             verify(dataManager, times(2)).retrieveSnapshotsByName(any());
-            verify(dataManager, times(SP500_SYMBOLS.size())).retrieveNewsByDateRangeAndName(anyString(),
-                    any(),
-                    any(),
-                    anyBoolean());
         });
     }
 

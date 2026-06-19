@@ -4,8 +4,7 @@ security:
 
 scheduler:
   market-data-cron: "0 0 0 * * *" # Every day at midnight UTC
-  finnhub-news-cron: "0 10 9 * * *" # Every day before the market opens
-  news-recommendations-cron: "0 13 9 * * *" # Every day before the market opens
+  news-recommendations-cron: "0 15 9 * * *" # Every day before the market opens
   recommendation-inference-five-cron: "0 35 9 * * *" # Every day after the market opens
   recommendation-inference-fifteen-cron: "0 45 9 * * *" # Every day after the market opens
 

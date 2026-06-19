@@ -17,6 +17,9 @@ public class NewsPersistenceOrchestrator {
     private final NewsJpaService newsJpaService;
 
     public synchronized Set<NewsDomain> persistNews(Set<NewsDomain> entities) {
+        if (entities.isEmpty()) {
+            return entities;
+        }
         return newsJpaService.createOrUpdate(entities);
     }
 }
