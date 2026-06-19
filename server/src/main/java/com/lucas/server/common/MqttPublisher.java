@@ -46,9 +46,8 @@ public class MqttPublisher implements AutoCloseable {
         }
     }
 
-    @SuppressWarnings("RedundantThrows")
     @Override
-    public void close() throws Exception {
+    public void close() {
         if (null != client) {
             try {
                 client.disconnect();

@@ -15,8 +15,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public abstract class OrderColumnServiceDelegate
-        <T extends JpaEntity, D extends DomainEntity & Sortable, R extends JpaRepository<@NonNull T, Long>>
+public abstract class OrderColumnServiceDelegate<T extends JpaEntity, D extends DomainEntity & Sortable, R extends JpaRepository<@NonNull T, Long>>
         extends GenericJpaServiceDelegate<T, D, R> implements OrderColumnJpaService<D> {
 
     protected OrderColumnServiceDelegate(R repository, EntityMapper<T, D> mapper) {

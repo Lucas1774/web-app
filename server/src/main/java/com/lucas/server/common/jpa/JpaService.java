@@ -15,15 +15,18 @@ public interface JpaService<D> {
      * @param elements elements
      * @return the saved elements
      */
+    @SuppressWarnings("unused")
     Set<D> saveAll(Set<D> elements);
 
     /**
      * @return all entities
      */
+    @SuppressWarnings("unused")
     Set<D> findAll();
 
     /**
      * @param elements elements to delete
      */
+    @SuppressWarnings("unused")
     void deleteAll(Set<D> elements);
 }

@@ -37,19 +37,18 @@ class FinnhubNewsResponseMapperTest extends ConfiguredTest {
     void whenMapValidJson_thenReturnNewsEntity() throws Exception {
         // given
         long epoch = 1745463072L;
-        String json = String.format(
-                """
-                {
-                  "id": %d,
-                  "datetime": %d,
-                  "headline": "Test Headline",
-                  "summary": "Test Summary",
-                  "url": "https://example.com/article",
-                  "source": "Finnhub",
-                  "category": "company",
-                  "image": "https://example.com/image.jpg"
-                }
-                """, epoch, epoch);
+        String json = String.format("""
+                                    {
+                                      "id": %d,
+                                      "datetime": %d,
+                                      "headline": "Test Headline",
+                                      "summary": "Test Summary",
+                                      "url": "https://example.com/article",
+                                      "source": "Finnhub",
+                                      "category": "company",
+                                      "image": "https://example.com/image.jpg"
+                                    }
+                                    """, epoch, epoch);
 
         JsonNode node = objectMapper.readTree(json);
 
@@ -76,13 +75,12 @@ class FinnhubNewsResponseMapperTest extends ConfiguredTest {
     void whenMapAllValidArray_thenReturnNewsList() throws Exception {
         // given
         long now = 1745463072L;
-        String jsonArray = String.format(
-                """
-                [
-                  { "id": %d, "datetime": %d, "headline": "H1", "summary": "S1", "url": "u1", "source": "src1", "category": "cat1", "image": "i1" },
-                  { "id": %d, "datetime": %d, "headline": "H2", "summary": "S2", "url": "u2", "source": "src2", "category": "cat2", "image": "i2" }
-                ]
-                """, now, now, now + 60, now + 60);
+        String jsonArray = String.format("""
+                                         [
+                                           { "id": %d, "datetime": %d, "headline": "H1", "summary": "S1", "url": "u1", "source": "src1", "category": "cat1", "image": "i1" },
+                                           { "id": %d, "datetime": %d, "headline": "H2", "summary": "S2", "url": "u2", "source": "src2", "category": "cat2", "image": "i2" }
+                                         ]
+                                         """, now, now, now + 60, now + 60);
         SymbolDomain symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
 
         JsonNode arrayNode = objectMapper.readTree(jsonArray);
@@ -114,13 +112,12 @@ class FinnhubNewsResponseMapperTest extends ConfiguredTest {
     @Test
     void whenMapAllMissingFields_thenThrowsException() {
         // given
-        String jsonArray =
-                """
-                [
-                  { "datetime": 1, "headline": "H1", "summary": "S1", "url": "u1", "source": "src1", "category": "cat1", "image": "i1" },
-                  { "datetime": 2, "headline": "H2", "summary": "S2", "url": "u2", "source": "src2", "category": "cat2", "image": "i2" }
-                ]
-                """;
+        String jsonArray = """
+                           [
+                             { "datetime": 1, "headline": "H1", "summary": "S1", "url": "u1", "source": "src1", "category": "cat1", "image": "i1" },
+                             { "datetime": 2, "headline": "H2", "summary": "S2", "url": "u2", "source": "src2", "category": "cat2", "image": "i2" }
+                           ]
+                           """;
         JsonNode arrayNode = objectMapper.readTree(jsonArray);
 
         // when & then

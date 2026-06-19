@@ -69,6 +69,10 @@
         <property name="offCommentFormat" value='^""".?'/>
         <property name="onCommentFormat" value='.'/>
     </module>
+    <module name="SuppressionSingleFilter">
+        <property name="checks" value="TextBlockGoogleStyleFormatting"/>
+        <property name="message" value="Opening quotes \(&quot;&quot;&quot;\) of text-block must be on the new line\."/>
+    </module>
     <module name="TreeWalker">
         <module name="OuterTypeFilename"/>
         <module name="MatchXpath">

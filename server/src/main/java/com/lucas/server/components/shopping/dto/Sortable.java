@@ -22,6 +22,7 @@ public interface Sortable {
     /**
      * @return the order of the entity, which determines its position in a list. Lower values indicate higher priority.
      */
+    @SuppressWarnings("unused")
     Integer getOrder();
 
     /**

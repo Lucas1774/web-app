@@ -44,8 +44,8 @@ public class HttpClientConfig {
                 .stream()
                 .map(AiProperties.DeploymentProperties::apiKey)
                 .collect(Collectors.toUnmodifiableMap(Function.identity(),
-                        apiKey -> new SlidingWindowRateLimiter(24, Duration.ofMinutes(1)),
-                        (a, b) -> a));
+                        _ -> new SlidingWindowRateLimiter(24, Duration.ofMinutes(1)),
+                        (a, _) -> a));
         Map<String, AiClient> res = aiProps.getDeployments()
                 .stream()
                 .filter(d -> !d.name().contains("specialist"))

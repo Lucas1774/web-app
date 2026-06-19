@@ -60,7 +60,7 @@ class RubikSolverTest extends ConfiguredTest {
 
     private String generateScramble() {
         return IntStream.range(0, SCRAMBLE_LENGTH)
-                .mapToObj(i -> MOVE_NAMES[random.nextInt(MOVE_NAMES.length)][random.nextInt(3)])
+                .mapToObj(_ -> MOVE_NAMES[random.nextInt(MOVE_NAMES.length)][random.nextInt(3)])
                 .collect(Collectors.joining(" "));
     }
 }

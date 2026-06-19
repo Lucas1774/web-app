@@ -28,23 +28,22 @@ class AssetReportToMustacheMapperTest {
         AssetReportRaw asset = getAssetReportNullValues();
 
         // when & then
-        String expected =
-                """
-                --- Market Data & Features ---
-                [ASSET: FOO]
-                • Price History (last 1 days):
-                  • 2025-05-01: O100 H110 L90 C105 VN/A
-                • Technical Indicators at last close:
-                  • 20-day EMA: N/A
-                  • MACD(12,26,9): line=N/A,signal=N/A,hist=N/A
-                  • 14-day RSI: N/A
-                  • 14-day ATR%: N/A
-                  • 20-day OBV: N/A
-                • News Summaries (last 2):
-                  • 2025-04-30 20:00:00 EST: Headline One: First summary
-                  • 2025-05-01 20:00:00 EST: Headline Two: Second summary
-                
-                """;
+        String expected = """
+                          --- Market Data & Features ---
+                          [ASSET: FOO]
+                          • Price History (last 1 days):
+                            • 2025-05-01: O100 H110 L90 C105 VN/A
+                          • Technical Indicators at last close:
+                            • 20-day EMA: N/A
+                            • MACD(12,26,9): line=N/A,signal=N/A,hist=N/A
+                            • 14-day RSI: N/A
+                            • 14-day ATR%: N/A
+                            • 20-day OBV: N/A
+                          • News Summaries (last 2):
+                            • 2025-04-30 20:00:00 EST: Headline One: First summary
+                            • 2025-05-01 20:00:00 EST: Headline Two: Second summary
+                          
+                          """;
         assertThat(objectMapper.readTree(mapper.map(Set.of(asset))).get(CONTENT).asString()).isEqualTo(expected);
     }
 
@@ -54,24 +53,23 @@ class AssetReportToMustacheMapperTest {
         AssetReportRaw asset = getAssetReportAllValues();
 
         // when & then
-        String expected =
-                """
-                --- Market Data & Features ---
-                [ASSET: FOO]
-                • This morning's pre-market: O100 H110 L90 Last price105 Gap: 7.5%
-                • Price History (last 1 days):
-                  • 2025-05-01: O100 H110 L90 C105 V1234
-                • Technical Indicators at last close:
-                  • 20-day EMA: 105
-                  • MACD(12,26,9): line=42.42,signal=1.23,hist=41.19
-                  • 14-day RSI: 15.67
-                  • 14-day ATR%: 15.68%
-                  • 20-day OBV: 15.69
-                • News Summaries (last 2):
-                  • 2025-04-30 20:00:00 EST: Sentiment: positive. Confidence: 54.4412%. Headline One: First summary
-                  • 2025-05-01 20:00:00 EST: Sentiment: negative. Confidence: 54.4412%. Headline Two: Second summary
-                
-                """;
+        String expected = """
+                          --- Market Data & Features ---
+                          [ASSET: FOO]
+                          • This morning's pre-market: O100 H110 L90 Last price105 Gap: 7.5%
+                          • Price History (last 1 days):
+                            • 2025-05-01: O100 H110 L90 C105 V1234
+                          • Technical Indicators at last close:
+                            • 20-day EMA: 105
+                            • MACD(12,26,9): line=42.42,signal=1.23,hist=41.19
+                            • 14-day RSI: 15.67
+                            • 14-day ATR%: 15.68%
+                            • 20-day OBV: 15.69
+                          • News Summaries (last 2):
+                            • 2025-04-30 20:00:00 EST: Sentiment: positive. Confidence: 54.4412%. Headline One: First summary
+                            • 2025-05-01 20:00:00 EST: Sentiment: negative. Confidence: 54.4412%. Headline Two: Second summary
+                          
+                          """;
 
         assertThat(objectMapper.readTree(mapper.map(Set.of(asset))).get(CONTENT).asString()).isEqualTo(expected);
     }

@@ -37,8 +37,8 @@ public class AssetReportToMustacheMapper implements Mapper<Set<AssetReportRaw>, 
 
     public AssetReportToMustacheMapper() {
         MustacheFactory mf = new DefaultMustacheFactory();
-        try (Reader reader = new InputStreamReader(Objects.requireNonNull(AssetReportToMustacheMapper.class
-                .getResourceAsStream("/prompt/asset-template.mustache")), StandardCharsets.UTF_8)) {
+        try (Reader reader = new InputStreamReader(Objects.requireNonNull(AssetReportToMustacheMapper.class.getResourceAsStream(
+                "/prompt/asset-template.mustache")), StandardCharsets.UTF_8)) {
             mustache = mf.compile(reader, "asset-report");
         } catch (IOException e) {
             throw new ConfigurationException(e);

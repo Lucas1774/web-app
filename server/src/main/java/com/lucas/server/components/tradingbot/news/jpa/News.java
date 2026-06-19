@@ -89,7 +89,6 @@ public class News implements JpaEntity {
     @Array(length = 3072)
     private float[] embeddings;
 
-    @SuppressWarnings("UnusedReturnValue")
     public News addSymbol(Symbol symbol) {
         symbols.add(symbol);
         symbol.getNews().add(this);

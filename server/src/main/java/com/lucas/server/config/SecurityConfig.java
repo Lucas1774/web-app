@@ -60,9 +60,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
                 .addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
-                .httpBasic(basic -> {
+                .httpBasic(_ -> {
                 })
-                .formLogin(form -> {
+                .formLogin(_ -> {
                 });
 
         return http.build();

@@ -89,7 +89,7 @@ class DailySchedulerTest extends ConfiguredTest {
             scheduler.execute(() -> {
                 int current = currentConcurrentTasks.incrementAndGet();
                 maxConcurrentTasks.updateAndGet(max -> Math.max(max, current));
-                Interrupts.runOrSwallow(() -> await().timeout(Duration.ofMillis(500)), e -> {
+                Interrupts.runOrSwallow(() -> await().timeout(Duration.ofMillis(500)), _ -> {
                 });
                 currentConcurrentTasks.decrementAndGet();
                 completionLatch.countDown();

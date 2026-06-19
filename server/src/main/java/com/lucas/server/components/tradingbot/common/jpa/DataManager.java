@@ -710,7 +710,7 @@ public class DataManager {
         for (SymbolDomain symbol : symbols) {
             Set<NewsDomain> updated = yahooFinanceNewsClient.retrieveNews(symbol);
             for (NewsDomain news : updated) {
-                newsByExternalId.computeIfAbsent(news.getExternalId(), id -> news).addSymbol(symbol);
+                newsByExternalId.computeIfAbsent(news.getExternalId(), _ -> news).addSymbol(symbol);
             }
         }
         log.info(GENERATION_SUCCESSFUL_INFO, NEWS);
@@ -725,7 +725,7 @@ public class DataManager {
         for (SymbolDomain symbol : symbols) {
             Set<NewsDomain> updated = finnhubNewsClient.retrieveNewsByDateRange(symbol, from, to);
             for (NewsDomain news : updated) {
-                newsByExternalId.computeIfAbsent(news.getExternalId(), id -> news).addSymbol(symbol);
+                newsByExternalId.computeIfAbsent(news.getExternalId(), _ -> news).addSymbol(symbol);
             }
         }
         Set<NewsDomain> res = newsByExternalId.values()
@@ -786,6 +786,7 @@ public class DataManager {
     @Getter
     @Accessors(chain = true)
     public static class SymbolPayload {
+
         private final SymbolDomain symbol;
         private final OrderedIndexedSet<MarketDataDomain> marketData;
         private final PortfolioDomain portfolio;

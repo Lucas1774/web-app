@@ -142,8 +142,10 @@ class DataAccessTest extends ConfiguredTest {
                 .getCategory()
                 .getOrder();
         Set<ShoppingItemDomain> updated = shoppingItemService.findAllByUsername("dave");
-        assertThat(updated.stream().findFirst().map(s -> s.getProduct().getCategory().getId()).orElseThrow()).isEqualTo(
-                newCatId);
+        assertThat(updated.stream()
+                .findFirst()
+                .map(si -> si.getProduct().getCategory().getId())
+                .orElseThrow()).isEqualTo(newCatId);
     }
 
     @Test

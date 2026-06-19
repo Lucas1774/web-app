@@ -50,8 +50,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Synthetic program runner. Run containers manually and pass production env vars as env vars
  *
  * <p>Model correlation tests are offset so if you run them before market open in the morning
- * they will all represent data available at previous date and before,
- * meaning nth day assertions will be done on nth day before yesterday recs.
+ * they will all represent data available at previous date and before.
+ * This means that for any n, nth day assertions will be done on nth day before yesterday recs.
  *
  * <p>Running the program at 9:00 UTC with <code>FROM</code> as yesterday will yield one day of data for each test
  *
@@ -206,7 +206,7 @@ class ManualRunTest extends BaseTest {
                                 .withZoneSameInstant(ZoneOffset.UTC)
                                 .toLocalDateTime()).stream().map(marketSnapshotMapper::toDto))
                 .collect(Collectors.toUnmodifiableMap(ms -> new SymDate(ms.getSymbol().getId(),
-                        ms.getDate().toLocalDate()), Function.identity(), (a, b) -> a));
+                        ms.getDate().toLocalDate()), Function.identity(), (a, _) -> a));
 
         Set<Long> symbolsNeeded =
                 msByKey.values().stream().map(snap -> snap.getSymbol().getId()).collect(Collectors.toUnmodifiableSet());

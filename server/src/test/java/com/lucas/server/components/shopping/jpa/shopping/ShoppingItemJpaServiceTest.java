@@ -51,9 +51,9 @@ class ShoppingItemJpaServiceTest extends ConfiguredTest {
 
         // when & then: only ProdB is returned
         assertThat(shoppingItemService.findAllByUsername("admin")).hasSize(1)
-                .extracting(s -> s.getProduct().getName(),
+                .extracting(si -> si.getProduct().getName(),
                         ShoppingItemDomain::getQuantity,
-                        s -> s.getProduct().getOrder())
+                        si -> si.getProduct().getOrder())
                 .containsExactly(tuple("ProdB", 5, 200));
     }
 

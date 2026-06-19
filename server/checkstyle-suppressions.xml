@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<!DOCTYPE suppressions PUBLIC
+        "-//Checkstyle//DTD SuppressionFilter Configuration 1.2//EN"
+        "https://checkstyle.org/dtds/suppressions_1_2.dtd">
+
+<suppressions>
+    <suppress checks="LineLength"
+              files=".*GenericJpaServiceDelegate\.java$"
+              lines="13"/>
+
+    <suppress checks="LineLength"
+              files=".*OrderColumnServiceDelegate\.java$"
+              lines="18"/>
+
+    <suppress checks="LineLength"
+              files=".*RubikController\.java$"
+              lines="39"/>
+
+    <suppress checks="LineLength"
+              files=".*RubikController\.java$"
+              lines="51"/>
+
+    <suppress checks="LineLength"
+              files=".*ShoppingController\.java$"
+              lines="52"/>
+
+    <suppress checks="LineLength"
+              files=".*AssetReportToMustacheMapper\.java$"
+              lines="40"/>
+</suppressions>

@@ -51,8 +51,8 @@ public class MarketDataJpaService
     /**
      * Saves or updates all entities first, then updates them one by one (oldest first) with KPI computation.
      */
-    @Transactional
     @SuppressWarnings("UnusedReturnValue")
+    @Transactional
     public Set<MarketDataDomain> createOrUpdate(OrderedIndexedSet<MarketDataDomain> dtos) {
         Set<MarketData> entitySet = dtos.stream().map(mapper::toEntity).collect(Collectors.toSet());
         Set<MarketData> saved = delegate.createOrUpdate(this::findUnique,

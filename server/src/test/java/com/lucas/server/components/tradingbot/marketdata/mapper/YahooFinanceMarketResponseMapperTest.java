@@ -34,140 +34,139 @@ class YahooFinanceMarketResponseMapperTest extends ConfiguredTest {
     @Test
     void whenMapValidJson_thenReturnMarketData() throws MappingException {
         // given
-        String json =
-                """
-                {
-                  "chart": {
-                    "result": [
+        String json = """
                       {
-                        "meta": {
-                          "currency": "USD",
-                          "symbol": "AAPL",
-                          "exchangeName": "NMS",
-                          "fullExchangeName": "NasdaqGS",
-                          "instrumentType": "EQUITY",
-                          "firstTradeDate": 345479400,
-                          "regularMarketTime": 1753819201,
-                          "hasPrePostMarketData": true,
-                          "gmtoffset": -14400,
-                          "timezone": "EDT",
-                          "exchangeTimezoneName": "America/New_York",
-                          "regularMarketPrice": 211.27,
-                          "fiftyTwoWeekHigh": 260.1,
-                          "fiftyTwoWeekLow": 169.21,
-                          "regularMarketDayHigh": 214.81,
-                          "regularMarketDayLow": 210.825,
-                          "regularMarketVolume": 48540908,
-                          "longName": "Apple Inc.",
-                          "shortName": "Apple Inc.",
-                          "chartPreviousClose": 214.05,
-                          "previousClose": 214.05,
-                          "scale": 3,
-                          "priceHint": 2,
-                          "currentTradingPeriod": {
-                            "pre": {
-                              "timezone": "EDT",
-                              "end": 1753882200,
-                              "start": 1753862400,
-                              "gmtoffset": -14400
-                            },
-                            "regular": {
-                              "timezone": "EDT",
-                              "end": 1753905600,
-                              "start": 1753882200,
-                              "gmtoffset": -14400
-                            },
-                            "post": {
-                              "timezone": "EDT",
-                              "end": 1753920000,
-                              "start": 1753905600,
-                              "gmtoffset": -14400
-                            }
-                          },
-                          "tradingPeriods": {
-                            "pre": [
-                              [
-                                {
-                                  "timezone": "EDT",
-                                  "end": 1753882200,
-                                  "start": 1753862400,
-                                  "gmtoffset": -14400
-                                }
-                              ]
-                            ],
-                            "post": [
-                              [
-                                {
-                                  "timezone": "EDT",
-                                  "end": 1753920000,
-                                  "start": 1753905600,
-                                  "gmtoffset": -14400
-                                }
-                              ]
-                            ],
-                            "regular": [
-                              [
-                                {
-                                  "timezone": "EDT",
-                                  "end": 1753905600,
-                                  "start": 1753882200,
-                                  "gmtoffset": -14400
-                                }
-                              ]
-                            ]
-                          },
-                          "dataGranularity": "1h",
-                          "range": "1d",
-                          "validRanges": [
-                            "1d",
-                            "5d",
-                            "1mo",
-                            "3mo",
-                            "6mo",
-                            "1y",
-                            "2y",
-                            "5y",
-                            "10y",
-                            "ytd",
-                            "max"
-                          ]
-                        },
-                        "indicators": {
-                          "quote": [
+                        "chart": {
+                          "result": [
                             {
-                              "close": [
-                                211.4,
-                                211.44
-                              ],
-                              "low": [
-                                211.27,
-                                211.44
-                              ],
-                              "open": [
-                                211.38,
-                                211.44
-                              ],
-                              "high": [
-                                211.63,
-                                211.44
-                              ],
-                              "volume": [
-                                0,
-                                0
+                              "meta": {
+                                "currency": "USD",
+                                "symbol": "AAPL",
+                                "exchangeName": "NMS",
+                                "fullExchangeName": "NasdaqGS",
+                                "instrumentType": "EQUITY",
+                                "firstTradeDate": 345479400,
+                                "regularMarketTime": 1753819201,
+                                "hasPrePostMarketData": true,
+                                "gmtoffset": -14400,
+                                "timezone": "EDT",
+                                "exchangeTimezoneName": "America/New_York",
+                                "regularMarketPrice": 211.27,
+                                "fiftyTwoWeekHigh": 260.1,
+                                "fiftyTwoWeekLow": 169.21,
+                                "regularMarketDayHigh": 214.81,
+                                "regularMarketDayLow": 210.825,
+                                "regularMarketVolume": 48540908,
+                                "longName": "Apple Inc.",
+                                "shortName": "Apple Inc.",
+                                "chartPreviousClose": 214.05,
+                                "previousClose": 214.05,
+                                "scale": 3,
+                                "priceHint": 2,
+                                "currentTradingPeriod": {
+                                  "pre": {
+                                    "timezone": "EDT",
+                                    "end": 1753882200,
+                                    "start": 1753862400,
+                                    "gmtoffset": -14400
+                                  },
+                                  "regular": {
+                                    "timezone": "EDT",
+                                    "end": 1753905600,
+                                    "start": 1753882200,
+                                    "gmtoffset": -14400
+                                  },
+                                  "post": {
+                                    "timezone": "EDT",
+                                    "end": 1753920000,
+                                    "start": 1753905600,
+                                    "gmtoffset": -14400
+                                  }
+                                },
+                                "tradingPeriods": {
+                                  "pre": [
+                                    [
+                                      {
+                                        "timezone": "EDT",
+                                        "end": 1753882200,
+                                        "start": 1753862400,
+                                        "gmtoffset": -14400
+                                      }
+                                    ]
+                                  ],
+                                  "post": [
+                                    [
+                                      {
+                                        "timezone": "EDT",
+                                        "end": 1753920000,
+                                        "start": 1753905600,
+                                        "gmtoffset": -14400
+                                      }
+                                    ]
+                                  ],
+                                  "regular": [
+                                    [
+                                      {
+                                        "timezone": "EDT",
+                                        "end": 1753905600,
+                                        "start": 1753882200,
+                                        "gmtoffset": -14400
+                                      }
+                                    ]
+                                  ]
+                                },
+                                "dataGranularity": "1h",
+                                "range": "1d",
+                                "validRanges": [
+                                  "1d",
+                                  "5d",
+                                  "1mo",
+                                  "3mo",
+                                  "6mo",
+                                  "1y",
+                                  "2y",
+                                  "5y",
+                                  "10y",
+                                  "ytd",
+                                  "max"
+                                ]
+                              },
+                              "indicators": {
+                                "quote": [
+                                  {
+                                    "close": [
+                                      211.4,
+                                      211.44
+                                    ],
+                                    "low": [
+                                      211.27,
+                                      211.44
+                                    ],
+                                    "open": [
+                                      211.38,
+                                      211.44
+                                    ],
+                                    "high": [
+                                      211.63,
+                                      211.44
+                                    ],
+                                    "volume": [
+                                      0,
+                                      0
+                                    ]
+                                  }
+                                ]
+                              },
+                              "timestamp": [
+                                1753862400,
+                                1753864520
                               ]
                             }
-                          ]
-                        },
-                        "timestamp": [
-                          1753862400,
-                          1753864520
-                        ]
+                          ],
+                          "error": null
+                        }
                       }
-                    ],
-                    "error": null
-                  }
-                }
-                """;
+                      """;
         SymbolDomain symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
 
         // when
@@ -200,18 +199,17 @@ class YahooFinanceMarketResponseMapperTest extends ConfiguredTest {
     @Test
     void whenMapMissingFields_thenThrowsException() {
         // given
-        String json =
-                """
-                {
-                  "c" : 198.53,
-                  "d" : 1.04,
-                  "dp" : 0.5266,
-                  "h" : 200.5399,
-                  "o" : 199,
-                  "pc" : 197.49,
-                  "t" : 1746820800
-                }
-                """;
+        String json = """
+                      {
+                        "c" : 198.53,
+                        "d" : 1.04,
+                        "dp" : 0.5266,
+                        "h" : 200.5399,
+                        "o" : 199,
+                        "pc" : 197.49,
+                        "t" : 1746820800
+                      }
+                      """;
 
         // when & then
         assertThatThrownBy(() -> mapper.map(objectMapper.readTree(json),

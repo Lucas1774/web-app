@@ -33,19 +33,18 @@ class FinnhubMarketResponseMapperTest extends ConfiguredTest {
     @Test
     void whenMapValidJson_thenReturnMarketData() throws MappingException {
         // given
-        String json =
-                """
-                {
-                  "c" : 198.53,
-                  "d" : 1.04,
-                  "dp" : 0.5266,
-                  "h" : 200.5399,
-                  "l" : 197.535,
-                  "o" : 199,
-                  "pc" : 197.49,
-                  "t" : 1746820800
-                }
-                """;
+        String json = """
+                      {
+                        "c" : 198.53,
+                        "d" : 1.04,
+                        "dp" : 0.5266,
+                        "h" : 200.5399,
+                        "l" : 197.535,
+                        "o" : 199,
+                        "pc" : 197.49,
+                        "t" : 1746820800
+                      }
+                      """;
         SymbolDomain symbol = symbolService.getOrCreateByName(Set.of("IBM")).stream().findFirst().orElseThrow();
 
         // when
@@ -79,18 +78,17 @@ class FinnhubMarketResponseMapperTest extends ConfiguredTest {
     @Test
     void whenMapMissingFields_thenThrowsException() {
         // given
-        String json =
-                """
-                {
-                  "c" : 198.53,
-                  "d" : 1.04,
-                  "dp" : 0.5266,
-                  "h" : 200.5399,
-                  "o" : 199,
-                  "pc" : 197.49,
-                  "t" : 1746820800
-                }
-                """;
+        String json = """
+                      {
+                        "c" : 198.53,
+                        "d" : 1.04,
+                        "dp" : 0.5266,
+                        "h" : 200.5399,
+                        "o" : 199,
+                        "pc" : 197.49,
+                        "t" : 1746820800
+                      }
+                      """;
 
         // when & then
         assertThatThrownBy(() -> mapper.map(objectMapper.readTree(json),

@@ -232,7 +232,7 @@ public class MarketDataKpiGenerator {
      * @param n       size
      * @return On‑Balance Volume (OBV) accumulated over n periods
      */
-    @SuppressWarnings({"ExtractMethodRecommender"})
+    @SuppressWarnings("ExtractMethodRecommender")
     public Optional<BigDecimal> computeObv(OrderedIndexedSet<MarketDataDomain> history, int n) {
         if (history.size() < n) {
             log.warn(NON_COMPUTABLE_KPI_WARN, OBV, history);
