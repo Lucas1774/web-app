@@ -46,8 +46,8 @@ public class AuthenticationController {
         cookie.setPath("/");
         cookie.setMaxAge(31536000);
         cookie.setSecure(secure);
-        cookie.setAttribute("Partitioned", EMPTY_STRING);
         if (secure) {
+            cookie.setAttribute("Partitioned", EMPTY_STRING);
             cookie.setAttribute("SameSite", "None");
         }
         response.addCookie(cookie);
