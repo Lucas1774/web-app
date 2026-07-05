@@ -1,5 +1,4 @@
-import { generateRandomBetweenZeroAndX } from "../../../constants";
-import { generateMove } from "./Scramble";
+import { appendBlindfoldScrambleMoves } from "./bldScrambleHelper";
 import {
     Scramble as fourScrambler
 } from "./fourScrambler";
@@ -14,27 +13,14 @@ const LAST_TWO = [[
 
 export const Scramble = () => {
     let availabilityMatrix = [[true], [true], [true]];
-    let turnIterator;
     let scramble = fourScrambler();
-    let move = { axis: null, layer: null };
-    let hasFirst = false;
-    if (0 !== generateRandomBetweenZeroAndX(6)) {
-        move = generateMove(availabilityMatrix);
-        turnIterator = generateRandomBetweenZeroAndX(3);
-        scramble += LAST_TWO[move.axis][move.layer][turnIterator];
-        hasFirst = true;
-    }
-    if (0 !== generateRandomBetweenZeroAndX(4)) {
-        if (hasFirst) {
-            updateAvailabilityMatrix(availabilityMatrix, move.axis);
-        }
-        move = generateMove(availabilityMatrix);
-        turnIterator = generateRandomBetweenZeroAndX(3);
-        scramble += LAST_TWO[move.axis][move.layer][turnIterator];
-    }
-    return scramble;
-};
 
-const updateAvailabilityMatrix = (matrix, moveAxis) => {
-    matrix[moveAxis][0] = false;
+    return appendBlindfoldScrambleMoves(
+        scramble,
+        availabilityMatrix,
+        LAST_TWO,
+        (matrix, moveAxis) => {
+            matrix[moveAxis][0] = false;
+        },
+    );
 };

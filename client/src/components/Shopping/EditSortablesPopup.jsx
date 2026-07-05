@@ -5,7 +5,7 @@ const EditSortablesPopup = (props) => {
     return (
         <div>
             <div className="flex-div">
-                <div></div>
+                <div />
                 <Button className="restart popup-icon" onClick={props.onPopupClose} >X</Button>
             </div>
             <div style={{ paddingRight: "20%" }}>

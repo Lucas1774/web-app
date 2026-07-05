@@ -22,7 +22,7 @@ export const Scramble = () => {
     });
     let move = { axis: null, layer: null };
     let previous;
-    let widths = Array(SCRAMBLE_LENGTH - ((THREE_SCRAMBLE_LENGTH - MOVES_TO_REMOVE) + TWO_SCRAMBLER_LENGTH)).fill(0).concat(Array(TWO_SCRAMBLER_LENGTH).fill(1));
+    let widths = new Array(SCRAMBLE_LENGTH - ((THREE_SCRAMBLE_LENGTH - MOVES_TO_REMOVE) + TWO_SCRAMBLER_LENGTH)).fill(0).concat(new Array(TWO_SCRAMBLER_LENGTH).fill(1));
     for (let i = widths.length - 1; i > 0; i--) {
         const j = generateRandomBetweenZeroAndX((i + 1));
         [widths[i], widths[j]] = [widths[j], widths[i]];

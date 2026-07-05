@@ -77,7 +77,7 @@ const Scramble = ({ isNewScramble, onScrambleChange, puzzle, display, quantity, 
     return (
         <h2 data-testid="scramble" className={puzzle} style={{ display: display }}>
             {Array.isArray(scramble)
-                ? scramble.map((s, index) => <p key={index}>{index + 1}{")"} {s}</p>)
+                ? scramble.map((s, index) => <p key={s}>{index + 1}{")"} {s}</p>)
                 : scramble}
         </h2>
     );
@@ -108,9 +108,9 @@ export const SCRAMBLE_MOVES = [[
 
 export const generateMove = (availabilityMatrix, width = null) => {
     const validMoves = [];
-    const [layerStart, layerEnd] = width !== null
-        ? [width * 2, width * 2 + 2]
-        : [0, availabilityMatrix[0].length];
+    const [layerStart, layerEnd] = width === null
+        ? [0, availabilityMatrix[0].length]
+        : [width * 2, width * 2 + 2];
     for (let axis = 0; axis < availabilityMatrix.length; axis++) {
         for (let layer = layerStart; layer < layerEnd; layer++) {
             if (availabilityMatrix[axis][layer]) {

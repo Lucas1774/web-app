@@ -48,9 +48,9 @@ const SudokuGrid = forwardRef(({ sudokuString, onSudokuChange, solved }, ref) =>
                 }
             }
         };
-        window.addEventListener("keydown", handleKeyDown);
+        globalThis.addEventListener("keydown", handleKeyDown);
         return () => {
-            window.removeEventListener("keydown", handleKeyDown);
+            globalThis.removeEventListener("keydown", handleKeyDown);
         };
     }, [focusedIndex]);
 
@@ -58,7 +58,7 @@ const SudokuGrid = forwardRef(({ sudokuString, onSudokuChange, solved }, ref) =>
         <>
             <div className="sudoku-grid" ref={ref}>
                 {sudokuString.split("").map((digit, index) => (
-                    <span className="sudoku-cell" key={index}>
+                    <span className="sudoku-cell" key={`${Math.floor(index / 9)}-${index % 9}`}>
                         <input
                             onChange={() => { }}
                             ref={inputRefs.current[index]}
@@ -71,7 +71,7 @@ const SudokuGrid = forwardRef(({ sudokuString, onSudokuChange, solved }, ref) =>
                     </span>
                 ))}
             </div>
-            <br></br>
+            <br />
         </>
     );
 });

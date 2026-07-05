@@ -8,7 +8,7 @@ export const Scramble = () => {
     let turnIterator;
     for (let i = 0; i < SCRAMBLE_LENGTH; i++) {
         turnIterator = generateRandomBetweenZeroAndX(12);
-        scramble += SCRAMBLE_STEPS[i].concat(i !== 9 ? SCRAMBLE_MOVES[turnIterator] : " ");
+        scramble += SCRAMBLE_STEPS[i].concat(i === 9 ? " " : SCRAMBLE_MOVES[turnIterator]);
     }
     return scramble;
 };

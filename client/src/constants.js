@@ -270,5 +270,16 @@ export const PORTFOLIO_META = {
 export const noop = () => { };
 
 export const generateRandomBetweenZeroAndX = (x) => {
-    return Math.floor(Math.random() * x);
+    const upperBound = Math.max(1, x);
+    const cryptoRef = typeof globalThis === "undefined"
+        ? null
+        : (globalThis.crypto || globalThis.msCrypto);
+
+    if (cryptoRef && typeof cryptoRef.getRandomValues === "function") {
+        const randomValues = new Uint32Array(1);
+        cryptoRef.getRandomValues(randomValues);
+        return randomValues[0] % upperBound;
+    }
+
+    return Date.now() % upperBound;
 };

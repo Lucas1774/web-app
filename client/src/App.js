@@ -29,7 +29,11 @@ const App = () => {
         <br></br>
       </div>
       <div className="app-wrapper">
-        {!program ? (
+        {program ? (
+          Current && (
+            <Current onClose={() => setProgram(null)} />
+          )
+        ) : (
           <div className="app" style={{ width: "auto" }}>
             {Object.keys(COMPONENTS).map((name) => (
               <Button key={name} onClick={() => setProgram(name)}>
@@ -37,10 +41,6 @@ const App = () => {
               </Button>
             ))}
           </div>
-        ) : (
-          Current && (
-            <Current onClose={() => setProgram(null)} />
-          )
         )}
       </div>
     </>
