@@ -2,12 +2,11 @@ package com.lucas.server.common.controller;
 
 import com.lucas.server.common.dto.user.UserDomain;
 import com.lucas.server.common.jpa.user.UserJpaService;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,22 +15,21 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Optional;
 
-import static com.lucas.utils.Utils.EMPTY_STRING;
-
 @RestController
 @RequestMapping("/authentication")
 public class AuthenticationController {
 
     private final ControllerUtil controllerUtil;
     private final UserJpaService userService;
-    private final boolean secure;
 
-    public AuthenticationController(ControllerUtil controllerUtil,
-                                    UserJpaService userService,
-                                    @Value("${spring.security.jwt.secure}") boolean secure) {
+    public AuthenticationController(ControllerUtil controllerUtil, UserJpaService userService) {
         this.controllerUtil = controllerUtil;
         this.userService = userService;
-        this.secure = secure;
+    }
+
+    @GetMapping("/csrf")
+    public CsrfToken csrf(CsrfToken token) {
+        return token;
     }
 
     @PostMapping("/login")
@@ -41,16 +39,10 @@ public class AuthenticationController {
         if (auth.isEmpty()) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        Cookie cookie = new Cookie("authToken", controllerUtil.generateToken(user.getUsername()));
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(31536000);
-        cookie.setSecure(secure);
-        if (secure) {
-            cookie.setAttribute("Partitioned", EMPTY_STRING);
-            cookie.setAttribute("SameSite", "None");
-        }
-        response.addCookie(cookie);
+        response.addCookie(controllerUtil.createCookie("authToken",
+                controllerUtil.generateToken(user.getUsername()),
+                true,
+                31536000));
 
         return ResponseEntity.ok().build();
     }

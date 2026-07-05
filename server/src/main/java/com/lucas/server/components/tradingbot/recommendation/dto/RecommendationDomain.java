@@ -1,8 +1,10 @@
 package com.lucas.server.components.tradingbot.recommendation.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.lucas.server.common.dto.DomainEntity;
 import com.lucas.server.components.tradingbot.common.dto.SymbolDomain;
 import com.lucas.server.components.tradingbot.news.dto.NewsDomain;
+import jakarta.annotation.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -29,6 +31,9 @@ public class RecommendationDomain implements DomainEntity {
     @EqualsAndHashCode.Include
     @ToString.Include
     private SymbolDomain symbol;
+    @Nullable
+    @JsonIgnore
+    // not really readable, only writable
     private Long marketDataId;
     private Set<NewsDomain> news = new HashSet<>();
     @ToString.Include

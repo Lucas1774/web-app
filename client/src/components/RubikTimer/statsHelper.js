@@ -7,9 +7,9 @@ export const formatTime = (time) => {
     if (time === EMPTY_TIMER) {
         return EMPTY_TIMER;
     }
-    const minutes = parseInt(Math.floor(time / 60000)).toString();
-    const seconds = parseInt(Math.floor((time % 60000) / 1000)).toString().padStart(2, "0");
-    const milliseconds = parseInt((time % 1000)).toString().padStart(3, "0");
+    const minutes = Number.parseInt(Math.floor(time / 60000)).toString();
+    const seconds = Number.parseInt(Math.floor((time % 60000) / 1000)).toString().padStart(2, "0");
+    const milliseconds = Number.parseInt((time % 1000)).toString().padStart(3, "0");
     return `${minutes}:${seconds}:${milliseconds}`;
 };
 
@@ -17,7 +17,7 @@ export const renderAllTimes = ({ recentTimes, recentScrambles, firstIndex = 0, l
     return recentTimes.map((time, index) => {
         if (index >= firstIndex && index <= lastIndex) {
             return (
-                <h4 key={index + 1} onClick={() => onClickEffect(index)} style={{ cursor: onClickEffect === noop ? "default" : "pointer" }}>
+                /* NOSONAR */<h4 key={index + 1} onClick={() => onClickEffect(index)} style={{ cursor: onClickEffect === noop ? "default" : "pointer" }}>
                     {index + 1}{")"} {formatTime(time)} {recentScrambles[index]}
                 </h4>
             );
@@ -108,7 +108,7 @@ export const renderStats = ({ times, formatter = formatTime, onClickEffect = noo
                         }
                     } else if (length === 1) {
                         if (what === "last") {
-                            displayTime = aux[aux.length - 1];
+                            displayTime = aux.at(-1);
                         } else if (what === "best") {
                             displayTime = Math.min(...aux);
                         } else if (what === "worst") {
@@ -133,7 +133,9 @@ export const renderStats = ({ times, formatter = formatTime, onClickEffect = noo
                 }
                 displayTime = formatter(displayTime);
                 return (
-                    <h4 key={label} onClick={() => onClickEffect(indexes)} style={{ textAlign: align, cursor: onClickEffect === noop || indexes.length === 0 ? "default" : "pointer" }}>{align === "left" ? label + " " + displayTime : displayTime + " " + label}</h4>
+                    /* NOSONAR */ <h4 key={label} onClick={() => onClickEffect(indexes)} style={{ textAlign: align, cursor: onClickEffect === noop || indexes.length === 0 ? "default" : "pointer" }}>
+                        {align === "left" ? label + " " + displayTime : displayTime + " " + label}
+                    </h4>
                 );
             })}
         </div>

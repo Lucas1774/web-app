@@ -15,15 +15,12 @@ const Popup = ({ content, justEditLast = false, onPopupClose }) => {
     const selectedTime = useRef(null);
     const selectionIndexes = useRef(null);
 
-    const selectContent = () => {
+    const selectContent = async () => {
         if (popupContent.current) {
-            const range = document.createRange();
-            range.selectNodeContents(popupContent.current);
-            const selection = window.getSelection();
-            selection.removeAllRanges();
-            selection.addRange(range);
+            const text = popupContent.current.textContent;
+
             try {
-                document.execCommand("copy");
+                await navigator.clipboard.writeText(text);
             } catch (err) {
                 console.log(err);
             }
@@ -42,31 +39,31 @@ const Popup = ({ content, justEditLast = false, onPopupClose }) => {
         }
     }
 
-    const setToEmpty = () => {
-        if (justEditLast) {
+    const setToEmpty = justEditLast
+        ? () => {
             recentTimes[recentTimes.length - 1] = Infinity;
             onPopupClose();
-        } else {
+        }
+        : () => {
             let timeToEdit = selectedTime.current;
             recentTimes[timeToEdit] = Infinity;
             timeToEdit = null;
             setIsEditTimeVisible(false);
-        }
-    };
+        };
 
-    const deleteTime = () => {
-        if (justEditLast) {
+    const deleteTime = justEditLast
+        ? () => {
             recentTimes.pop();
             recentScrambles.pop();
             onPopupClose();
-        } else {
+        }
+        : () => {
             let timeToRemove = selectedTime.current;
             recentTimes.splice(timeToRemove, 1);
             recentScrambles.splice(timeToRemove, 1);
             selectedTime.current = null;
             setIsEditTimeVisible(false);
-        }
-    };
+        };
 
     return (
         <div>
@@ -75,7 +72,7 @@ const Popup = ({ content, justEditLast = false, onPopupClose }) => {
                     ? <Button className="popup-icon" onClick={selectContent}>
                         <img src={icon} alt="" width={"20x"} height={"20px"}></img>
                     </Button>
-                    : <div></div>
+                    : <div />
                 }
                 <Button className="restart popup-icon"
                     onClick={isEditTimeVisible && !justEditLast
@@ -90,7 +87,7 @@ const Popup = ({ content, justEditLast = false, onPopupClose }) => {
                     ? <div ref={popupContent}>{
                         <>
                             {renderStats({ times: recentTimes, onClickEffect: (indexes) => handleStatClick(indexes) })}
-                            <br></br>
+                            <br />
                             {renderAllTimes({ recentTimes, recentScrambles, onClickEffect: (key) => handleTimeClick(key) })}
                         </>
                     }

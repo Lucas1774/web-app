@@ -37,7 +37,7 @@ public class ShoppingItem implements JpaEntity {
     @ToString.Include
     private Long id;
 
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     @EqualsAndHashCode.Include
     @ToString.Include

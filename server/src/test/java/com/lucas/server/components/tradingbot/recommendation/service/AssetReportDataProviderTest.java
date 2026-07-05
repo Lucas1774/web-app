@@ -24,12 +24,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 
+import static com.lucas.server.common.Constants.FIXED_DATE;
 import static com.lucas.server.common.Constants.HISTORY_DAYS_COUNT;
 import static com.lucas.server.common.Constants.MARKET_DATA_RELEVANT_DAYS_COUNT;
 import static com.lucas.server.common.Constants.NEWS_COUNT;
@@ -62,7 +61,7 @@ class AssetReportDataProviderTest extends ConfiguredTest {
     void provide() {
         // given: insert 34 days of market data. Needs to be at least 34 and greater than the history days
         SymbolDomain symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
-        LocalDate today = LocalDate.now();
+        LocalDate today = FIXED_DATE.toLocalDate();
         OrderedIndexedSet<MarketDataDomain> modifiableMds = new OrderedIndexedSetImpl<>();
         for (int i = MARKET_DATA_RELEVANT_DAYS_COUNT; 0 <= i; i--) {
             MarketDataDomain md =
@@ -83,14 +82,13 @@ class AssetReportDataProviderTest extends ConfiguredTest {
 
         // given: insert 15 news items. Needs to be greater than the news per symbol and day
         Set<NewsDomain> articles = new HashSet<>();
-        LocalDateTime todayDateTime = LocalDateTime.now().atZone(ZoneOffset.UTC).toLocalDateTime();
         for (int i = 1; 15 >= i; i++) {
             NewsDomain news = new NewsDomain().addSymbol(symbol)
                     .setExternalId((long) i)
                     .setUrl("https://example.com/news/" + i)
                     .setHeadline("Headline " + i)
                     .setSummary("Summary " + i)
-                    .setDate(todayDateTime.minusDays(i - 1))
+                    .setDate(FIXED_DATE.minusDays(i - 1))
                     .setSentiment(0 == i % 3 ? "positive" : 0 == i % 2 ? "neutral" : "negative")
                     .setSentimentConfidence(BigDecimal.valueOf((i * 6) % 100));
             articles.add(news);

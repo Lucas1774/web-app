@@ -38,5 +38,18 @@ services:
         exec /usr/sbin/mosquitto -c /mosquitto/config/mosquitto.conf -v
       "
 
+  sonarqube:
+    image: sonarqube:community
+    profiles: [ "sonar" ]
+    ports:
+      - "9000:9000"
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+
 volumes:
   postgres:
+  sonarqube_data:
+  sonarqube_extensions:
+  sonarqube_logs:

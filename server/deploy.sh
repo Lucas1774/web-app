@@ -25,7 +25,7 @@ done
 
 # ——— Build locally ———
 echo "Building artifact locally..."
-mvn -DskipTests package
+mvn clean package
 
 ARTIFACT="target/server.jar"
 if [[ ! -f "${ARTIFACT}" ]]; then

@@ -15,6 +15,7 @@ import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.Set;
 import java.util.UUID;
 
@@ -59,7 +60,7 @@ class YahooFinanceNewsResponseMapperTest extends ConfiguredTest {
         UUID uuid = UUID.fromString("d7c02a66-936a-32e1-b631-65fbc838c25d");
         assertThat(news).isNotNull().satisfies(n -> {
             assertThat(n.getExternalId()).isEqualTo(uuid.getMostSignificantBits() ^ uuid.getLeastSignificantBits());
-            assertThat(n.getDate()).isEqualTo(LocalDateTime.of(2025, 7, 25, 20, 36, 4));
+            assertThat(n.getDate()).isEqualTo(LocalDateTime.of(2025, Month.JULY, 25, 20, 36, 4));
             assertThat(n.getHeadline()).isEqualTo("Stock Market Today: Dow, S&P Climb On Trump-China Deal Hopes;"
                                                   + " Cathie Wood Loads Up On Tesla Stock (Live Coverage)");
             assertThat(n.getSummary()).isEqualTo("The Dow Jones index rose after surprise economic data. Tesla"

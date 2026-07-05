@@ -11,9 +11,6 @@ import lombok.experimental.Accessors;
 import tools.jackson.databind.annotation.JsonSerialize;
 import tools.jackson.databind.ser.std.ToStringSerializer;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import static com.lucas.server.common.Constants.Sector;
 
 @Getter
@@ -31,5 +28,4 @@ public class SymbolDomain implements DomainEntity {
     private String name;
     @JsonSerialize(using = ToStringSerializer.class)
     private Sector sector;
-    private Set<Long> newsIds = new HashSet<>();
 }

@@ -33,9 +33,9 @@ const TransactionPopup = ({ id: symbolId, name: symbolName, onPopupClose, onTran
         }
         setIsLoading(true);
         try {
-            const p = parseFloat(price);
-            const q = parseFloat(quantity);
-            const c = parseFloat(commission) || 0;
+            const p = Number.parseFloat(price);
+            const q = Number.parseFloat(quantity);
+            const c = Number.parseFloat(commission) || 0;
             // IBKR idiosyncrasies
             const priceWithCommission = p + (c / q);
             const relativeCommission = c / (p * q);
@@ -76,7 +76,7 @@ const TransactionPopup = ({ id: symbolId, name: symbolName, onPopupClose, onTran
     return (
         <div>
             <div className="flex-div">
-                <div></div>
+                <div />
                 <Button className="restart popup-icon" onClick={onPopupClose}>X</Button>
             </div>
 

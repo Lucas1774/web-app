@@ -71,7 +71,7 @@ const Shopping = ({ onClose = () => { } }) => {
     const handleLoginSubmit = useAuth({ onAuthSuccess: getData, onGuest: getData, setMessage: setMessage, setLoading: setIsLoading, setLoginFormVisible: setIsLoginFormVisible });
 
     const updateProductQuantity = useCallback(async (value, id) => {
-        if (isNaN(value) || parseInt(value) < 0) {
+        if (Number.isNaN(value) || Number.parseInt(value) < 0) {
             return;
         }
         try {
@@ -80,7 +80,7 @@ const Shopping = ({ onClose = () => { } }) => {
                     [constants.ID_KEY]: id,
                     [constants.TYPE_KEY]: "products"
                 },
-                [constants.QUANTITY_KEY]: parseInt(value),
+                [constants.QUANTITY_KEY]: Number.parseInt(value),
             });
             setTableData(previous => previous.map(product =>
                 product[constants.ID_KEY] === id
@@ -272,7 +272,7 @@ const Shopping = ({ onClose = () => { } }) => {
             return (!isShowOnlyPositive || row[constants.QUANTITY_KEY] !== 0)
                 && (!isShowOnlyCommon || !row[constants.IS_RARE_KEY]) && Object.keys(filters).every((key) => {
                     if (constants.META.DATATYPE[key] === constants.NUMBER) {
-                        return isNaN(filters[key]) || row[key] === filters[key];
+                        return Number.isNaN(filters[key]) || row[key] === filters[key];
                     } else if (constants.META.DATATYPE[key] === constants.STRING) {
                         return row[key].toString().toLowerCase().includes(filters[key].toLowerCase());
                     } else {
@@ -352,7 +352,7 @@ const Shopping = ({ onClose = () => { } }) => {
     return (
         <div className="app custom-table">
             {!isLoading && !message && <div className="flex-div" style={{ height: "0" }}>
-                <div></div>
+                <div />
                 <Button className="app restart popup-icon" onClick={onClose}>X</Button>
             </div>}
             <h1 id="shopping">Shopping</h1>
@@ -422,10 +422,10 @@ const Shopping = ({ onClose = () => { } }) => {
                                                             type="text"
                                                             inputMode={constants.META.DATATYPE[key] === constants.NUMBER ? "numeric" : "text"}
                                                             placeholder={constants.META.DISPLAY_NAME[key]}
-                                                            defaultValue={constants.META.DATATYPE[key] === constants.NUMBER && isNaN(filters[key]) ? "" : filters[key]}
+                                                            defaultValue={constants.META.DATATYPE[key] === constants.NUMBER && Number.isNaN(filters[key]) ? "" : filters[key]}
                                                             onChange={(e) => setFilterValue({
                                                                 column: key,
-                                                                value: constants.META.DATATYPE[key] === constants.NUMBER ? parseInt(e.target.value) : e.target.value
+                                                                value: constants.META.DATATYPE[key] === constants.NUMBER ? Number.parseInt(e.target.value) : e.target.value
                                                             })}
                                                             onClick={(e) => e.target.select()} />
                                                     )}

@@ -1,7 +1,6 @@
 package com.lucas.server.components.shopping.jpa.shopping;
 
 import com.lucas.server.ConfiguredTest;
-import com.lucas.server.common.jpa.user.UserJpaService;
 import com.lucas.server.components.shopping.dto.category.CategoryDomain;
 import com.lucas.server.components.shopping.dto.product.ProductDomain;
 import com.lucas.server.components.shopping.dto.shopping.ShoppingItemDomain;
@@ -26,11 +25,9 @@ class ShoppingItemJpaServiceTest extends ConfiguredTest {
     @Autowired
     private CategoryJpaService categoryService;
 
-    @Autowired
-    private UserJpaService userService;
-
     @Test
     void findAllByUsername() {
+        // given
         CategoryDomain cat1 = new CategoryDomain().setName("C1").setOrder(1);
         CategoryDomain cat2 = new CategoryDomain().setName("C2").setOrder(2);
         Set<CategoryDomain> saved = categoryService.saveAll(Set.of(cat1, cat2));
@@ -40,14 +37,15 @@ class ShoppingItemJpaServiceTest extends ConfiguredTest {
         ProductDomain prodA = new ProductDomain().setName("ProdA").setIsRare(false).setCategory(c1).setOrder(100);
         ProductDomain prodB = new ProductDomain().setName("ProdB").setIsRare(false).setCategory(c2).setOrder(200);
         Set<ProductDomain> products = productService.saveAll(Set.of(prodA, prodB));
+
+        // link users to the existing products (sets ownership), then assign quantities
+        productService.createProductAndOrLinkToUser("ProdA", "default");
+        productService.createProductAndOrLinkToUser("ProdB", "admin");
         ProductDomain pa = products.stream().filter(p -> "ProdA".equals(p.getName())).findFirst().orElseThrow();
         ProductDomain pb = products.stream().filter(p -> "ProdB".equals(p.getName())).findFirst().orElseThrow();
-
-        shoppingItemService.saveAll(Set.of(new ShoppingItemDomain().setUser(userService.findByUsername("admin")
-                        .orElseThrow()).setProduct(pb).setQuantity(5),
-                new ShoppingItemDomain().setUser(userService.findByUsername("default").orElseThrow())
-                        .setProduct(pa)
-                        .setQuantity(3)));
+        shoppingItemService.updateShoppingItemQuantity(new ShoppingItemDomain().setProduct(pa).setQuantity(3),
+                "default");
+        shoppingItemService.updateShoppingItemQuantity(new ShoppingItemDomain().setProduct(pb).setQuantity(5), "admin");
 
         // when & then: only ProdB is returned
         assertThat(shoppingItemService.findAllByUsername("admin")).hasSize(1)
@@ -80,8 +78,9 @@ class ShoppingItemJpaServiceTest extends ConfiguredTest {
     void updateShoppingItemQuantity() {
         // given: admin item auto-created and an item for default user
         ProductDomain prod = productService.createProductAndOrLinkToUser("P", "admin").orElseThrow();
-        shoppingItemService.saveAll(Set.of(new ShoppingItemDomain().setUser(userService.findByUsername("default")
-                .orElseThrow()).setProduct(prod).setQuantity(2)));
+        productService.createProductAndOrLinkToUser("P", "default");
+        shoppingItemService.updateShoppingItemQuantity(new ShoppingItemDomain().setProduct(prod).setQuantity(2),
+                "default");
 
         // when: update admin quantity to 10
         ShoppingItemDomain updated =
@@ -98,24 +97,23 @@ class ShoppingItemJpaServiceTest extends ConfiguredTest {
 
     @Test
     void deleteByProductAndUsernameRemoveOrphanedProductIfNecessary() {
-        // given: one item per user
-        ProductDomain p = productService.createProductAndOrLinkToUser("ToDel", "admin").orElseThrow();
-        shoppingItemService.saveAll(Set.of(new ShoppingItemDomain().setUser(userService.findByUsername("default")
-                .orElseThrow()).setProduct(p).setQuantity(5)));
-        // admin already has item from insertProduct
-        assertThat(shoppingItemService.findAll()).hasSize(2);
+        // given: both users own the same product
+        productService.createProductAndOrLinkToUser("ToDel", "admin");
+        productService.createProductAndOrLinkToUser("ToDel", "default");
+        assertThat(shoppingItemService.findAllByUsername("admin")).hasSize(1);
+        assertThat(shoppingItemService.findAllByUsername("default")).hasSize(1);
         assertThat(productService.findAll()).hasSize(1);
 
         // when: delete admin's item
+        ProductDomain p = productService.findAll().stream().findFirst().orElseThrow();
         ShoppingItemDomain deleted =
                 shoppingItemService.deleteByProductAndUsernameRemoveOrphanedProductIfNecessary(p, "admin");
 
         // then: product still exists, only default remains
-        assertThat(deleted.getUser().getUsername()).isEqualTo("admin");
+        assertThat(deleted.getProduct().getName()).isEqualTo("ToDel");
         assertThat(productService.findAll()).isNotEmpty();
-        assertThat(shoppingItemService.findAll()).hasSize(1)
-                .extracting(si -> si.getUser().getUsername())
-                .containsExactly("default");
+        assertThat(shoppingItemService.findAllByUsername("admin")).isEmpty();
+        assertThat(shoppingItemService.findAllByUsername("default")).hasSize(1);
 
         // when: delete default's item
         shoppingItemService.deleteByProductAndUsernameRemoveOrphanedProductIfNecessary(p, "default");

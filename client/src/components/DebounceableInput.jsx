@@ -29,10 +29,10 @@ const DebounceableInput = ({ value, id, onDebouncedChange }) => {
       ref={inputRef}
       inputMode='numeric'
       onChange={(e) => {
-        if (isNaN(e.target.value) || parseInt(e.target.value) < 0) {
+        if (Number.isNaN(e.target.value) || Number.parseInt(e.target.value) < 0) {
           return;
         }
-        setInnerValue(e.target.value === "" ? 0 : parseInt(e.target.value));
+        setInnerValue(e.target.value === "" ? 0 : Number.parseInt(e.target.value));
         setShouldListenToDebounce(true);
       }}
       onClick={(e) => e.target.select()}

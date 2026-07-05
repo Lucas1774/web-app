@@ -27,6 +27,7 @@ import java.util.Set;
 import static com.lucas.server.common.Constants.DEFAULT_USERNAME;
 import static com.lucas.server.common.Constants.PortfolioType;
 import static com.lucas.server.common.Constants.SP500_SYMBOLS;
+import static com.lucas.server.common.Constants.UTC_ZONE;
 
 @RestController
 @RequestMapping("/portfolio")
@@ -48,7 +49,7 @@ public class PortfolioController {
         if (DEFAULT_USERNAME.equals(username)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        LocalDateTime effectiveDate = null == date ? LocalDateTime.now() : date.atStartOfDay();
+        LocalDateTime effectiveDate = null == date ? LocalDateTime.now(UTC_ZONE) : date.atStartOfDay();
         try {
             return ResponseEntity.ok(jpaService.executePortfolioAction(getPortfolioType(username),
                     symbolId,
@@ -73,7 +74,7 @@ public class PortfolioController {
         if (DEFAULT_USERNAME.equals(username)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        LocalDateTime effectiveDate = null == date ? LocalDateTime.now() : date.atStartOfDay();
+        LocalDateTime effectiveDate = null == date ? LocalDateTime.now(UTC_ZONE) : date.atStartOfDay();
         try {
             return ResponseEntity.ok(jpaService.executePortfolioAction(getPortfolioType(username),
                     symbolId,

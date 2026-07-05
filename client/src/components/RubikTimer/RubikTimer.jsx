@@ -37,7 +37,7 @@ const RubikTimer = ({ onClose = () => { } }) => {
     const [focusFormLabel, setFocusFormLabel] = useState("");
     const [recentTimes, setRecentTimes] = useState([]);
     const [recentScrambles, setRecentScrambles] = useState([]);
-    const [isHorizontal, setIsHorizontal] = useState(window.innerWidth > window.innerHeight && isAndroid);
+    const [isHorizontal, setIsHorizontal] = useState(globalThis.innerWidth > globalThis.innerHeight && isAndroid);
     const [isShowSolution, setIsShowSolution] = useState(false);
 
     const startTime = useRef(0);
@@ -175,7 +175,7 @@ const RubikTimer = ({ onClose = () => { } }) => {
     }, [isTimerPrepared, start]);
 
     const handleResize = useCallback(() => {
-        setIsHorizontal(window.innerWidth > window.innerHeight);
+        setIsHorizontal(globalThis.innerWidth > globalThis.innerHeight);
         if (isTimerVisible) {
             setFocusTimer(isTimerRunning ? "center" : "end");
         }
@@ -225,7 +225,7 @@ const RubikTimer = ({ onClose = () => { } }) => {
                 setFocusFormLabel("start");
             }
         } else {
-            if (constants.MULTI === puzzle && (isNaN(multiQuantity.current) || multiQuantity.current < 1 || multiQuantity.current > 200)) {
+            if (constants.MULTI === puzzle && (Number.isNaN(multiQuantity.current) || multiQuantity.current < 1 || multiQuantity.current > 200)) {
                 hideEverything();
                 setIsMultiQuantityInvalidVisible(true);
                 setTimeout(() => {
@@ -257,7 +257,7 @@ const RubikTimer = ({ onClose = () => { } }) => {
             document.addEventListener("touchstart", handleTouchStart, true);
             document.addEventListener("touchmove", handleTouchMove, { passive: false });
             document.addEventListener("touchend", handleTouchEnd);
-            window.addEventListener("resize", handleResize);
+            globalThis.addEventListener("resize", handleResize);
         } else {
             document.addEventListener("keydown", handleKeyDown, { passive: false });
             document.addEventListener("keyup", handleKeyUp, { passive: false });
@@ -267,7 +267,7 @@ const RubikTimer = ({ onClose = () => { } }) => {
                 document.removeEventListener("touchstart", handleTouchStart, true);
                 document.removeEventListener("touchmove", handleTouchMove);
                 document.removeEventListener("touchend", handleTouchEnd);
-                window.removeEventListener("resize", handleResize);
+                globalThis.removeEventListener("resize", handleResize);
             } else {
                 document.removeEventListener("keydown", handleKeyDown);
                 document.removeEventListener("keyup", handleKeyUp);
@@ -379,7 +379,7 @@ const RubikTimer = ({ onClose = () => { } }) => {
         return (
             <Form id={constants.MULTI} onSubmit={handleSubmit}>
                 <Form.Label ref={formLabel}>Number of scrambles:</Form.Label>
-                <Form.Control inputMode="numeric" onChange={(event) => multiQuantity.current = parseInt(event.target.value)} />
+                <Form.Control inputMode="numeric" onChange={(event) => multiQuantity.current = Number.parseInt(event.target.value)} />
                 <Button type="submit" variant="success">Generate</Button>
             </Form>
         );
@@ -392,7 +392,7 @@ const RubikTimer = ({ onClose = () => { } }) => {
         return (
             <article style={{ display: scrambleDisplayMode }}>
                 {lines.map((line, idx) => (
-                    <div key={idx}>{line}</div>
+                    <div key={`${line}-${idx}`}>{line}</div>
                 ))}
             </article>
         );
@@ -442,7 +442,7 @@ const RubikTimer = ({ onClose = () => { } }) => {
     return (
         <div className="app rubikTimer">
             <div className="flex-div" style={{ height: "0" }}>
-                <div></div>
+                <div />
                 <Button className="app restart popup-icon" onClick={onClose}>X</Button>
             </div>
             {solution && isTimerVisible && !isTimerRunning && !isTimerPrepared && (
@@ -476,7 +476,7 @@ const RubikTimer = ({ onClose = () => { } }) => {
                         content={{ recentTimes, recentScrambles }}
                         onPopupClose={() => {
                             setIsPopupVisible(false);
-                            setElapsedTime(recentTimes.length > 0 ? recentTimes[recentTimes.length - 1] : 0);
+                            setElapsedTime(recentTimes.length > 0 ? recentTimes.at(-1) : 0);
                             setScrambleDisplayMode("block");
                             setIsTimerVisible(true);
                             setIsShowMoreStatsVisible(true);
@@ -489,7 +489,7 @@ const RubikTimer = ({ onClose = () => { } }) => {
             {isEditTimeVisible && <Popup content={{ recentTimes: recentTimes, recentScrambles: recentScrambles }} justEditLast={true} onPopupClose={() => {
                 setIsEditTimeVisible(false);
                 setElapsedTime(recentTimes.length > 0
-                    ? recentTimes[recentTimes.length - 1]
+                    ? recentTimes.at(-1)
                     : 0);
                 setScrambleDisplayMode("block");
                 setIsTimerVisible(true);

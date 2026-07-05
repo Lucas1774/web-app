@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.Comparator;
 import java.util.Set;
 
@@ -29,11 +30,11 @@ class MarketDataJpaServiceTest extends ConfiguredTest {
 
     @Test
     void createIgnoringDuplicates_shouldPersistOnlyNewRecords_andHandleTrailingZeros() {
-        // given:
+        // given
         SymbolDomain symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
         SymbolDomain symbol2 = symbolService.getOrCreateByName(Set.of("IBM")).stream().findFirst().orElseThrow();
-        LocalDate date1 = LocalDate.of(2023, 12, 15);
-        LocalDate date2 = LocalDate.of(2023, 12, 16);
+        LocalDate date1 = LocalDate.of(2023, Month.DECEMBER, 15);
+        LocalDate date2 = LocalDate.of(2023, Month.DECEMBER, 16);
 
         MarketDataDomain a1 =
                 new MarketDataDomain().setSymbol(symbol).setDate(date1).setPrice(new BigDecimal("150.0000"));
@@ -74,11 +75,11 @@ class MarketDataJpaServiceTest extends ConfiguredTest {
         // given
         SymbolDomain symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
         MarketDataDomain previous = new MarketDataDomain().setSymbol(symbol)
-                .setDate(LocalDate.of(2024, 4, 20))
+                .setDate(LocalDate.of(2024, Month.APRIL, 20))
                 .setPrice(new BigDecimal("150"));
 
         MarketDataDomain current = new MarketDataDomain().setSymbol(symbol)
-                .setDate(LocalDate.of(2024, 4, 21))
+                .setDate(LocalDate.of(2024, Month.APRIL, 21))
                 .setPrice(new BigDecimal("155"));
 
         // when

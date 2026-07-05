@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 import java.util.Set;
 
 import static com.lucas.server.common.Constants.SP500_SYMBOLS;
+import static com.lucas.server.common.Constants.UTC_ZONE;
 
 @RestController
 @RequestMapping("/sentiment")
@@ -45,10 +46,11 @@ public class SentimentController {
         return controllerUtil.<Set<NewsDomain>>getUnauthorizedResponseIfInvalidUser(request.getCookies())
                 .orElseGet(() -> {
                     LocalDateTime effectiveDate =
-                            null == from ? LocalDate.now().minusDays(1).atStartOfDay() : from.atStartOfDay();
+                            null == from ? LocalDate.now(UTC_ZONE).minusDays(1).atStartOfDay() : from.atStartOfDay();
+
                     return ResponseEntity.ok(jpaService.generateSentiment(symbols,
                             effectiveDate,
-                            LocalDate.now().plusDays(1).atStartOfDay()));
+                            LocalDate.now(UTC_ZONE).plusDays(1).atStartOfDay()));
                 });
     }
 }

@@ -9,6 +9,7 @@ import tools.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import static com.lucas.server.common.Constants.UTC_ZONE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -27,7 +28,8 @@ class RecommendationChatCompletionResponseMapperTest {
         RecommendationDomain result = mapper.map(node);
 
         // then
-        assertThat(result.getDate()).isEqualTo(LocalDate.now());
+        @SuppressWarnings("java:S8692") LocalDate now = LocalDate.now(UTC_ZONE);
+        assertThat(result.getDate()).isEqualTo(now);
         assertThat(result.getAction()).isEqualTo("BUY");
         assertThat(result.getConfidence()).isEqualByComparingTo(new BigDecimal("0.85"));
         assertThat(result.getRationale()).isEqualTo("Strong growth potential");

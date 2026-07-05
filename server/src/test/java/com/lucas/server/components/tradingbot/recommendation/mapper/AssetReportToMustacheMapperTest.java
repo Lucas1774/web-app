@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.Month;
 import java.util.Set;
 
 import static com.lucas.server.common.Constants.CONTENT;
@@ -97,7 +98,7 @@ class AssetReportToMustacheMapperTest {
     }
 
     private static PricePointRaw getPpNullValues() {
-        return new PricePointRaw(LocalDate.of(2025, 5, 1),
+        return new PricePointRaw(LocalDate.of(2025, Month.MAY, 1),
                 new BigDecimal("100"),
                 new BigDecimal("110"),
                 new BigDecimal("90"),
@@ -111,12 +112,12 @@ class AssetReportToMustacheMapperTest {
                         null,
                         null,
                         "First summary",
-                        LocalDateTime.of(LocalDate.of(2025, 5, 1), LocalTime.MIDNIGHT)),
+                        LocalDateTime.of(LocalDate.of(2025, Month.MAY, 1), LocalTime.MIDNIGHT)),
                 new NewsItemRaw("Headline Two",
                         null,
                         null,
                         "Second summary",
-                        LocalDateTime.of(LocalDate.of(2025, 5, 2), LocalTime.MIDNIGHT)));
+                        LocalDateTime.of(LocalDate.of(2025, Month.MAY, 2), LocalTime.MIDNIGHT)));
     }
 
     private static AssetReportRaw getAssetReportAllValues() {
@@ -142,7 +143,7 @@ class AssetReportToMustacheMapperTest {
     }
 
     private static PricePointRaw getPpAllValues() {
-        return new PricePointRaw(LocalDate.of(2025, 5, 1),
+        return new PricePointRaw(LocalDate.of(2025, Month.MAY, 1),
                 new BigDecimal("100"),
                 new BigDecimal("110"),
                 new BigDecimal("90"),
@@ -156,11 +157,11 @@ class AssetReportToMustacheMapperTest {
                         "positive",
                         BigDecimal.valueOf(54.4412),
                         "First summary",
-                        LocalDateTime.of(LocalDate.of(2025, 5, 1), LocalTime.MIDNIGHT)),
+                        LocalDateTime.of(LocalDate.of(2025, Month.MAY, 1), LocalTime.MIDNIGHT)),
                 new NewsItemRaw("Headline Two",
                         "negative",
                         BigDecimal.valueOf(54.4412),
                         "Second summary",
-                        LocalDateTime.of(LocalDate.of(2025, 5, 2), LocalTime.MIDNIGHT)));
+                        LocalDateTime.of(LocalDate.of(2025, Month.MAY, 2), LocalTime.MIDNIGHT)));
     }
 }

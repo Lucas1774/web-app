@@ -5,15 +5,11 @@ import { Button } from "react-bootstrap";
 const FileImporter = ({ onFileContentChange }) => {
     const fileInput = useRef(null);
 
-    const handleFileChange = (event) => {
+    const handleFileChange = async (event) => {
         const file = event.target.files[0];
-        const fileReader = new FileReader();
-        fileReader.onloadend = () => {
-            const content = fileReader.result;
-            const stringifiedContent = JSON.stringify(content);
-            onFileContentChange(stringifiedContent);
-        };
-        fileReader.readAsText(file);
+        const content = await file.text();
+        const stringifiedContent = JSON.stringify(content);
+        onFileContentChange(stringifiedContent);
     };
 
     return (

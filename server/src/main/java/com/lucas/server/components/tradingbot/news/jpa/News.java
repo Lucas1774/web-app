@@ -88,10 +88,4 @@ public class News implements JpaEntity {
     @JdbcTypeCode(SqlTypes.VECTOR)
     @Array(length = 3072)
     private float[] embeddings;
-
-    public News addSymbol(Symbol symbol) {
-        symbols.add(symbol);
-        symbol.getNews().add(this);
-        return this;
-    }
 }

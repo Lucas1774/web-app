@@ -27,7 +27,7 @@ public class RecommendationMapper implements EntityMapper<Recommendation, Recomm
         }
         return new RecommendationDomain(entity.getId(),
                 null != entity.getSymbol() ? symbolMapper.toDto(entity.getSymbol()) : null,
-                null != entity.getMarketData() ? entity.getMarketData().getId() : null,
+                null,
                 entity.getNews().stream().map(newsMapper::toDto).collect(Collectors.toSet()),
                 entity.getAction(),
                 entity.getConfidence(),

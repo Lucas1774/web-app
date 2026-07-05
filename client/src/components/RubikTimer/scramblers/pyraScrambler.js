@@ -1,10 +1,8 @@
 import { generateRandomBetweenZeroAndX } from "../../../constants";
-import {
-    SCRAMBLE_LENGTH as SKEWB_SCRAMBLE_LENGTH,
-    Scramble as skewbScramble
-} from "./skewbScrambler";
+import { Scramble as skewbScramble } from "./skewbScrambler";
 
-export const SCRAMBLE_LENGTH = SKEWB_SCRAMBLE_LENGTH;
+export { SCRAMBLE_LENGTH } from "./skewbScrambler";
+
 const TIP_SCRAMBLE_MOVES = [
     ["", "u ", "u' "],
     ["", "b ", "b' "],

@@ -27,6 +27,7 @@ import static com.lucas.server.common.Constants.DEFAULT_USERNAME;
 import static com.lucas.server.common.Constants.PortfolioType;
 import static com.lucas.server.common.Constants.RecommendationMode;
 import static com.lucas.server.common.Constants.SP500_SYMBOLS;
+import static com.lucas.server.common.Constants.UTC_ZONE;
 import static com.lucas.server.common.Constants.filterClients;
 
 @RestController
@@ -107,7 +108,7 @@ public class RecommendationsController {
             @RequestParam(required = false) LocalDate date,
             @RequestParam(required = false) String action,
             @RequestParam(required = false) Set<String> models) {
-        LocalDate selectedDate = null == date ? LocalDate.now() : date;
+        LocalDate selectedDate = null == date ? LocalDate.now(UTC_ZONE) : date;
         String selectedAction = null == action ? BUY : action;
         Set<String> selectedClients = null == models ? filterClients(clients, RecommendationMode.FINE_GRAIN).stream()
                 .map(c -> c.getConfig().name())

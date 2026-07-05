@@ -83,6 +83,7 @@ import static com.lucas.server.common.Constants.RETRIEVAL_FAILED_WARN;
 import static com.lucas.server.common.Constants.RETRIEVING_DATA_INFO;
 import static com.lucas.server.common.Constants.SENTIMENT;
 import static com.lucas.server.common.Constants.SYMBOL_NOT_FOUND_ERROR;
+import static com.lucas.server.common.Constants.UTC_ZONE;
 import static com.lucas.server.common.Constants.getFinnhubRateLimiterNames;
 import static com.lucas.server.common.Constants.isTradingDate;
 import static com.lucas.server.common.Constants.toPastOrFutureTradeDate;
@@ -206,7 +207,8 @@ public class DataManager {
                 .map(SymbolDomain::getId)
                 .collect(Collectors.toSet());
         if (!overwrite) {
-            Set<Long> already = recommendationsService.findByDateBetween(LocalDate.now(), LocalDate.now().plusDays(1))
+            Set<Long> already = recommendationsService.findByDateBetween(LocalDate.now(UTC_ZONE),
+                            LocalDate.now(UTC_ZONE).plusDays(1))
                     .stream()
                     .map(r -> r.getSymbol().getId())
                     .collect(Collectors.toUnmodifiableSet());
@@ -362,15 +364,12 @@ public class DataManager {
                     .stream()
                     .map(NewsDomain::getId)
                     .collect(Collectors.toUnmodifiableSet());
-            Set<NewsDomain> toRemove = newsService.findByIdIn(symbol.getNewsIds()
+            Set<NewsDomain> toRemove = newsService.findBySymbolId(symbol.getId())
                     .stream()
-                    .filter(id -> !keepIds.contains(id))
-                    .collect(Collectors.toUnmodifiableSet()));
+                    .filter(news -> !keepIds.contains(news.getId()))
+                    .collect(Collectors.toUnmodifiableSet());
             res.addAll(toRemove);
-            toRemove.forEach(n -> {
-                symbol.getNewsIds().remove(n.getId());
-                n.getSymbols().remove(symbol);
-            });
+            toRemove.forEach(n -> n.getSymbols().removeIf(s -> s.getId().equals(symbol.getId())));
             newsService.saveAll(toRemove);
         }
 
@@ -495,7 +494,7 @@ public class DataManager {
         if (useOldNews && !onTheFlyNews) {
             startUtc = null;
         } else {
-            ZonedDateTime easternTime = ZonedDateTime.now(NY_ZONE);
+            LocalDateTime easternTime = LocalDateTime.now(NY_ZONE);
             LocalDate today = easternTime.toLocalDate();
             LocalDate lastTradeFinishedDate = !easternTime.toLocalTime().isBefore(MARKET_CLOSE) && isTradingDate(today)
                     ? today
@@ -629,7 +628,7 @@ public class DataManager {
             Set<SymbolDomain> symbols = Set.of(symbol);
             Set<NewsDomain> news = new HashSet<>();
             try {
-                news.addAll(retrieveNewsByDateRange(symbols, startUtc.toLocalDate(), LocalDate.now(), false));
+                news.addAll(retrieveNewsByDateRange(symbols, startUtc.toLocalDate(), LocalDate.now(UTC_ZONE), false));
             } catch (ClientException | MappingException e) {
                 log.warn(RETRIEVAL_FAILED_WARN, NEWS, symbol, e);
             }

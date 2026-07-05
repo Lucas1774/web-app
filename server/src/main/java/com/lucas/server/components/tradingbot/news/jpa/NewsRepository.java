@@ -20,7 +20,7 @@ public interface NewsRepository extends JpaRepository<News, Long> {
 
     Set<News> findAllBySymbols_IdInAndDateBetween(Set<Long> symbolIds, LocalDateTime from, LocalDateTime to);
 
-    Set<News> findBySymbolsIsEmpty();
+    Set<News> findBySymbols_Id(Long symbolId);
 
-    Set<News> findByIdIn(Set<Long> newsIds);
+    Set<News> findBySymbolsIsEmpty();
 }

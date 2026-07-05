@@ -54,7 +54,7 @@ public class NewsMapper implements EntityMapper<News, NewsDomain> {
                 .setEmbeddings(dto.getEmbeddings());
 
         if (null != dto.getSymbols()) {
-            dto.getSymbols().stream().map(symbolMapper::toEntity).forEach(news::addSymbol);
+            dto.getSymbols().stream().map(symbolMapper::toEntity).forEach(s -> news.getSymbols().add(s));
         }
         return news;
     }

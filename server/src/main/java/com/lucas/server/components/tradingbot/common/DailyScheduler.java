@@ -17,7 +17,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Set;
 
@@ -36,6 +35,8 @@ import static com.lucas.server.common.Constants.RecommendationMode;
 import static com.lucas.server.common.Constants.SCHEDULED_RECOMMENDATIONS_COUNT;
 import static com.lucas.server.common.Constants.SCHEDULED_TASK_SUCCESS_INFO;
 import static com.lucas.server.common.Constants.SP500_SYMBOLS;
+import static com.lucas.server.common.Constants.UTC;
+import static com.lucas.server.common.Constants.UTC_ZONE;
 import static com.lucas.server.common.Constants.filterClients;
 import static com.lucas.server.common.Constants.isTradingDate;
 
@@ -67,16 +68,16 @@ public class DailyScheduler {
         Interrupts.runOrSwallow(() -> Thread.sleep(120_000), e -> log.error(e.getMessage(), e));
     }
 
-    @Scheduled(cron = "${scheduler.market-data-cron}", zone = "UTC")
+    @Scheduled(cron = "${scheduler.market-data-cron}", zone = UTC)
     public void midnightTask() {
-        if (shouldRun(LocalDate.now().minusDays(1))) {
+        if (shouldRun(LocalDate.now(UTC_ZONE).minusDays(1))) {
             doMidnightTask(SP500_SYMBOLS);
         }
     }
 
     @Scheduled(cron = "${scheduler.news-recommendations-cron}", zone = AMERICA_NY)
     private void morningTask() {
-        LocalDate nowEt = ZonedDateTime.now(NY_ZONE).toLocalDate();
+        LocalDate nowEt = LocalDate.now(NY_ZONE);
         if (shouldRun(nowEt)) {
             if (isTradingDate(nowEt.minusDays(1))) {
                 sleep();
@@ -88,7 +89,7 @@ public class DailyScheduler {
     @Scheduled(cron = "${scheduler.recommendation-inference-fifteen-cron}", zone = "America/New_York")
     @Scheduled(cron = "${scheduler.recommendation-inference-five-cron}", zone = "America/New_York")
     private void earlyMorningTask() {
-        LocalDate nowEt = ZonedDateTime.now(NY_ZONE).toLocalDate();
+        LocalDate nowEt = LocalDate.now(NY_ZONE);
         if (shouldRun(nowEt)) {
             doEarlyMorningTask(SP500_SYMBOLS);
         }
@@ -137,7 +138,7 @@ public class DailyScheduler {
                 message,
                 updatedRecommendations.stream().map(RecommendationDomain::getSymbol).toList());
 
-        LocalDate now = LocalDate.now();
+        LocalDate now = LocalDate.now(UTC_ZONE);
         Set<Long> topRecommendedSymbols =
                 dataManager.getTopRecommendedSymbols(BUY, RECOMMENDATION_MEDIUM_GRAIN_THRESHOLD, now);
         getRecommendations(topRecommendedSymbols, secondIterationClients, backupClients, false, false);

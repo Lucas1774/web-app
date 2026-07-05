@@ -32,7 +32,7 @@ const EditProductPopup = (props) => {
         let categoryId;
         let categoryName;
         if (isSelectVisible) {
-            categoryId = parseInt(categoryRef.current.value);
+            categoryId = Number.parseInt(categoryRef.current.value);
             categoryName = props.categories.find((cat) => cat[constants.ID_KEY] === categoryId)[constants.NAME_KEY];
         } else {
             categoryName = categoryRef2.current.value;
@@ -47,7 +47,7 @@ const EditProductPopup = (props) => {
     return (
         <div>
             <div className="flex-div">
-                <div></div>
+                <div />
                 <Button className="restart popup-icon" onClick={props.onPopupClose} >X</Button>
             </div>
             <div>

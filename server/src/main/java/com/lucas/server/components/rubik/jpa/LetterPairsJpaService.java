@@ -2,8 +2,8 @@ package com.lucas.server.components.rubik.jpa;
 
 import com.lucas.server.common.jpa.GenericJpaServiceDelegate;
 import com.lucas.server.common.jpa.UniqueConstraintWearyJpaServiceDelegate;
-import com.lucas.server.common.mapper.EntityMapper;
 import com.lucas.server.components.rubik.dto.LetterPairsDomain;
+import com.lucas.server.components.rubik.mapper.LetterPairsMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,8 +17,7 @@ public class LetterPairsJpaService
 
     private final UniqueConstraintWearyJpaServiceDelegate<LetterPairs> delegate;
 
-    public LetterPairsJpaService(LetterPairsRepository repository,
-                                 EntityMapper<LetterPairs, LetterPairsDomain> mapper) {
+    public LetterPairsJpaService(LetterPairsRepository repository, LetterPairsMapper mapper) {
         super(repository, mapper);
         delegate = new UniqueConstraintWearyJpaServiceDelegate<>(repository);
     }

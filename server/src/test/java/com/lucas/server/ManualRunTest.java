@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.Month;
 import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -68,7 +69,8 @@ class ManualRunTest extends BaseTest {
 
     private static final Set<String> SYMBOL_NAMES =
             Set.of("AAPL", "NVDA", "MSFT", "AMZN", "META", "TSLA", "GOOGL", "GOOG", "IBM");
-    private static final LocalDate FROM = LocalDate.of(2026, 6, 1); // inclusive
+    private static final LocalDate FROM = LocalDate.of(2026, Month.JUNE, 1); // inclusive
+    @SuppressWarnings("java:S8692")
     private static final LocalDate TO = LocalDate.now().plusDays(1); // exclusive
     private static Set<Recommendation> allRecommendations;
     private static Set<MarketDataDomain> allMarketData;

@@ -6,10 +6,11 @@ import com.lucas.server.components.tradingbot.portfolio.dto.PortfolioDomain;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.HashSet;
 
+import static com.lucas.server.common.Constants.FIXED_DATE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class PortfolioManagerTest {
@@ -23,7 +24,7 @@ class PortfolioManagerTest {
         PortfolioDomain portfolio = new PortfolioDomain().setSymbol(symbol)
                 .setQuantity(new BigDecimal("10"))
                 .setAverageCost(new BigDecimal("100"))
-                .setEffectiveTimestamp(LocalDateTime.of(2024, 1, 1, 0, 0));
+                .setEffectiveTimestamp(LocalDateTime.of(2024, Month.JANUARY, 1, 0, 0));
 
         MarketDataDomain last = new MarketDataDomain().setSymbol(symbol)
                 .setPrice(new BigDecimal("110"))
@@ -32,7 +33,7 @@ class PortfolioManagerTest {
                 .setLow(new BigDecimal("107"))
                 .setPreviousClose(new BigDecimal("105"))
                 .setVolume(1000000L)
-                .setDate(LocalDate.now())
+                .setDate(FIXED_DATE.toLocalDate())
                 .setRecommendations(new HashSet<>());
 
         // when
@@ -53,7 +54,7 @@ class PortfolioManagerTest {
         PortfolioDomain portfolio = new PortfolioDomain().setSymbol(symbol)
                 .setQuantity(new BigDecimal("5"))
                 .setAverageCost(new BigDecimal("200"))
-                .setEffectiveTimestamp(LocalDateTime.of(2024, 1, 1, 0, 0));
+                .setEffectiveTimestamp(LocalDateTime.of(2024, Month.JANUARY, 1, 0, 0));
 
         MarketDataDomain last = new MarketDataDomain().setSymbol(symbol)
                 .setPrice(new BigDecimal("180"))
@@ -62,7 +63,7 @@ class PortfolioManagerTest {
                 .setLow(new BigDecimal("178"))
                 .setPreviousClose(new BigDecimal("190"))
                 .setVolume(500000L)
-                .setDate(LocalDate.now())
+                .setDate(FIXED_DATE.toLocalDate())
                 .setRecommendations(new HashSet<>());
 
         // when
@@ -79,7 +80,7 @@ class PortfolioManagerTest {
         SymbolDomain symbol = new SymbolDomain().setId(1L).setName("GOOG");
         PortfolioDomain portfolio = new PortfolioDomain().setSymbol(symbol)
                 .setQuantity(BigDecimal.ZERO)
-                .setEffectiveTimestamp(LocalDateTime.of(2024, 1, 1, 0, 0));
+                .setEffectiveTimestamp(LocalDateTime.of(2024, Month.JANUARY, 1, 0, 0));
 
         MarketDataDomain last = new MarketDataDomain().setSymbol(symbol)
                 .setPrice(new BigDecimal("150"))
@@ -87,7 +88,7 @@ class PortfolioManagerTest {
                 .setOpen(new BigDecimal("146"))
                 .setHigh(new BigDecimal("152"))
                 .setLow(new BigDecimal("144"))
-                .setDate(LocalDate.now())
+                .setDate(FIXED_DATE.toLocalDate())
                 .setRecommendations(new HashSet<>());
 
         // when
@@ -107,7 +108,7 @@ class PortfolioManagerTest {
                 .setQuantity(new BigDecimal("10"))
                 .setAverageCost(new BigDecimal("100"))
                 .setAverageCommission(new BigDecimal("0.01"))
-                .setEffectiveTimestamp(LocalDateTime.of(2024, 1, 1, 0, 0));
+                .setEffectiveTimestamp(LocalDateTime.of(2024, Month.JANUARY, 1, 0, 0));
 
         MarketDataDomain last = new MarketDataDomain().setSymbol(symbol)
                 .setPrice(new BigDecimal("110"))
@@ -115,7 +116,7 @@ class PortfolioManagerTest {
                 .setOpen(new BigDecimal("106"))
                 .setHigh(new BigDecimal("112"))
                 .setLow(new BigDecimal("105"))
-                .setDate(LocalDate.now())
+                .setDate(FIXED_DATE.toLocalDate())
                 .setRecommendations(new HashSet<>());
 
         // when

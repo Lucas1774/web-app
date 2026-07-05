@@ -6,7 +6,9 @@ import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.Month;
 import java.time.ZoneId;
 import java.util.EnumMap;
 import java.util.Map;
@@ -111,11 +113,15 @@ public final class Constants {
     public static final String SYMBOL_NOT_FOUND_ERROR = "{0}: Unknown symbol";
     public static final String AMERICA_NY = "America/New_York";
     public static final ZoneId NY_ZONE = ZoneId.of(AMERICA_NY);
+    public static final String UTC = "UTC";
+    public static final ZoneId UTC_ZONE = ZoneId.of(UTC);
     public static final LocalTime MARKET_CLOSE = LocalTime.of(16, 0);
     public static final LocalTime EARLY_CLOSE = LocalTime.of(13, 0);
+    // for testing purposes
+    public static final LocalDateTime FIXED_DATE = LocalDate.of(2025, Month.JANUARY, 1).atStartOfDay();
     public static final Set<LocalDate> EARLY_CLOSE_DATES_2026 =
-            Set.of(LocalDate.of(2026, 11, 27), // Day after Thanksgiving
-                    LocalDate.of(2026, 12, 24)  // Christmas Eve
+            Set.of(LocalDate.of(2026, Month.NOVEMBER, 27), // Day after Thanksgiving
+                    LocalDate.of(2026, Month.DECEMBER, 24)  // Christmas Eve
             );
     public static final Map<String, Sector> SYMBOL_TO_SECTOR =
             Map.<String, Sector>ofEntries(Map.entry("MMM", INDUSTRIALS),
@@ -642,17 +648,18 @@ public final class Constants {
     private static final int[] DIGITS = {1, 2, 3, 4, 5, 6, 7, 8, 9};
     private static final char[] LETTERS_CORNERS = "0SFMXBRVPUNLITCOYJEKDAHZ".toCharArray();
     private static final char[] LETTERS_EDGES = "0XRSMNUVFJCBIYOKATEHDPLZ".toCharArray();
-    private static final Set<LocalDate> MARKET_HOLIDAYS_2026 = Set.of(LocalDate.of(2026, 1, 1), // New Year's Day
-            LocalDate.of(2026, 1, 19), // Martin Luther King Jr. Day
-            LocalDate.of(2026, 2, 16), // Presidents' Day
-            LocalDate.of(2026, 4, 3), // Good Friday
-            LocalDate.of(2026, 5, 25), // Memorial Day
-            LocalDate.of(2026, 6, 19), // Juneteenth Day
-            LocalDate.of(2026, 7, 3), // Independence Day
-            LocalDate.of(2026, 9, 7), // Labor Day
-            LocalDate.of(2026, 11, 26), // Thanksgiving
-            LocalDate.of(2026, 12, 25)  // Christmas Day
-    );
+    private static final Set<LocalDate> MARKET_HOLIDAYS_2026 =
+            Set.of(LocalDate.of(2026, Month.JANUARY, 1), // New Year's Day
+                    LocalDate.of(2026, Month.JANUARY, 19), // Martin Luther King Jr. Day
+                    LocalDate.of(2026, Month.FEBRUARY, 16), // Presidents' Day
+                    LocalDate.of(2026, Month.APRIL, 3), // Good Friday
+                    LocalDate.of(2026, Month.MAY, 25), // Memorial Day
+                    LocalDate.of(2026, Month.JUNE, 19), // Juneteenth Day
+                    LocalDate.of(2026, Month.JULY, 3), // Independence Day
+                    LocalDate.of(2026, Month.SEPTEMBER, 7), // Labor Day
+                    LocalDate.of(2026, Month.NOVEMBER, 26), // Thanksgiving
+                    LocalDate.of(2026, Month.DECEMBER, 25)  // Christmas Day
+            );
     private static final Set<Clients> REASONING_CLIENTS = Set.of(DEEPSEEK_R1_0528,
             DEEPSEEK_R1_0528_2,
             DEEPSEEK_R1_0528_3,
@@ -747,7 +754,8 @@ public final class Constants {
 
     public static boolean isTradingDate(LocalDate date) {
         DayOfWeek dayOfWeek = date.getDayOfWeek();
-        return DayOfWeek.SATURDAY != dayOfWeek && DayOfWeek.SUNDAY != dayOfWeek && !MARKET_HOLIDAYS_2026.contains(date);
+        return !DayOfWeek.SATURDAY.equals(dayOfWeek) && !DayOfWeek.SUNDAY.equals(dayOfWeek)
+               && !MARKET_HOLIDAYS_2026.contains(date);
     }
 
     public static int[] getDigits() {

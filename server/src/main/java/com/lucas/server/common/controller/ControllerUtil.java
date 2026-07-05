@@ -10,8 +10,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -25,12 +26,15 @@ public class ControllerUtil {
     private final Set<String> admin;
     private final JWTVerifier verifier;
     private final Algorithm algorithm;
+    private final boolean secure;
 
     public ControllerUtil(@Value("${spring.security.admin}") Set<String> admin,
-                          @Value("${spring.security.jwt.secret}") String secretKey) {
+                          @Value("${spring.security.jwt.secret}") String secretKey,
+                          @Value("${spring.security.jwt.secure}") boolean secure) {
         this.admin = admin;
         algorithm = Algorithm.HMAC256(secretKey);
         verifier = JWT.require(algorithm).build();
+        this.secure = secure;
     }
 
     public boolean isAdmin(String username) {
@@ -48,11 +52,27 @@ public class ControllerUtil {
     }
 
     public String generateToken(String userName) {
+        Instant now = Instant.now();
         return JWT.create()
                 .withSubject(userName)
-                .withIssuedAt(new Date())
-                .withExpiresAt(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 365))
+                .withIssuedAt(now)
+                .withExpiresAt(now.plus(365, ChronoUnit.DAYS))
                 .sign(algorithm);
+    }
+
+    public Cookie createCookie(String name, String value, boolean httpOnly, int maxAge) {
+        Cookie cookie = new Cookie(name, value);
+        cookie.setHttpOnly(httpOnly);
+        cookie.setPath("/");
+        cookie.setMaxAge(maxAge);
+        cookie.setSecure(secure);
+
+        if (secure) {
+            cookie.setAttribute("Partitioned", "");
+            cookie.setAttribute("SameSite", "None");
+        }
+
+        return cookie;
     }
 
     public <T> Optional<ResponseEntity<T>> getUnauthorizedResponseIfInvalidUser(Cookie[] cookies) {

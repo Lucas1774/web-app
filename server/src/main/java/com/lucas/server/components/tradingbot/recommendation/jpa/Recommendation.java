@@ -95,7 +95,7 @@ public class Recommendation implements JpaEntity {
 
     public Recommendation setMarketData(MarketData marketData) {
         this.marketData = marketData;
-        marketData.addRecommendation(this);
+        marketData.getRecommendations().add(this);
         return this;
     }
 }

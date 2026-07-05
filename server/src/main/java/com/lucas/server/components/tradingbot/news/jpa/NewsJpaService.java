@@ -58,7 +58,6 @@ public class NewsJpaService extends GenericJpaServiceDelegate<News, NewsDomain, 
                 .collect(Collectors.toUnmodifiableSet())), (oldEntity, newEntity) -> {
             for (Symbol symbol : newEntity.getSymbols()) {
                 oldEntity.getSymbols().add(symbol);
-                symbol.getNews().add(oldEntity);
             }
             return oldEntity;
         }, entitySet).stream().map(mapper::toDto).collect(Collectors.toUnmodifiableSet());
@@ -82,12 +81,15 @@ public class NewsJpaService extends GenericJpaServiceDelegate<News, NewsDomain, 
     }
 
     @Transactional(readOnly = true)
-    public Set<NewsDomain> findOrphanedNews() {
-        return repository.findBySymbolsIsEmpty().stream().map(mapper::toDto).collect(Collectors.toUnmodifiableSet());
+    public Set<NewsDomain> findBySymbolId(Long symbolId) {
+        return repository.findBySymbols_Id(symbolId)
+                .stream()
+                .map(mapper::toDto)
+                .collect(Collectors.toUnmodifiableSet());
     }
 
     @Transactional(readOnly = true)
-    public Set<NewsDomain> findByIdIn(Set<Long> newsIds) {
-        return repository.findByIdIn(newsIds).stream().map(mapper::toDto).collect(Collectors.toUnmodifiableSet());
+    public Set<NewsDomain> findOrphanedNews() {
+        return repository.findBySymbolsIsEmpty().stream().map(mapper::toDto).collect(Collectors.toUnmodifiableSet());
     }
 }

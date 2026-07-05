@@ -102,8 +102,4 @@ public class MarketData implements JpaEntity {
 
     @Column(name = "previous_average_loss", precision = 15, scale = 4)
     private BigDecimal previousAverageLoss;
-
-    public void addRecommendation(Recommendation r) {
-        recommendations.add(r);
-    }
 }

@@ -2,8 +2,8 @@ package com.lucas.server.components.tradingbot.marketdata.jpa;
 
 import com.lucas.server.common.jpa.GenericJpaServiceDelegate;
 import com.lucas.server.common.jpa.UniqueConstraintWearyJpaServiceDelegate;
-import com.lucas.server.common.mapper.EntityMapper;
 import com.lucas.server.components.tradingbot.marketdata.dto.MarketDataDomain;
+import com.lucas.server.components.tradingbot.marketdata.mapper.MarketDataMapper;
 import com.lucas.server.components.tradingbot.marketdata.service.MarketDataKpiGenerator;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import org.springframework.data.domain.PageRequest;
@@ -24,7 +24,7 @@ public class MarketDataJpaService
     private final MarketDataKpiGenerator kpiGenerator;
 
     public MarketDataJpaService(MarketDataRepository repository,
-                                EntityMapper<MarketData, MarketDataDomain> mapper,
+                                MarketDataMapper mapper,
                                 MarketDataKpiGenerator kpiGenerator) {
         super(repository, mapper);
         delegate = new UniqueConstraintWearyJpaServiceDelegate<>(repository);

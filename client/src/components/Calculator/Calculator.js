@@ -62,7 +62,7 @@ const Calculator = ({ onClose = () => { } }) => {
   return (
     <div className="app">
       {!isLoading && <div className="flex-div" style={{ height: "0" }}>
-        <div></div>
+        <div />
         <Button className="app restart popup-icon" onClick={onClose}>X</Button>
       </div>}
       <h1 id="calculator">Calculator</h1>

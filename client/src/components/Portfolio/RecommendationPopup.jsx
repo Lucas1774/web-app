@@ -7,7 +7,7 @@ const RecommendationPopup = ({ content, onPopupClose }) => {
     return (
         <div>
             <div className="flex-div">
-                <div></div>
+                <div />
                 <Button className="restart popup-icon" onClick={onPopupClose}>X</Button>
             </div>
 

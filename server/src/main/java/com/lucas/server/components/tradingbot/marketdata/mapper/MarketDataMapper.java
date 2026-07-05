@@ -69,7 +69,7 @@ public class MarketDataMapper implements EntityMapper<MarketData, MarketDataDoma
             dto.getRecommendations()
                     .stream()
                     .map(recommendationMapper::toEntity)
-                    .forEach(marketData::addRecommendation);
+                    .forEach(r -> marketData.getRecommendations().add(r));
         }
         return marketData;
     }

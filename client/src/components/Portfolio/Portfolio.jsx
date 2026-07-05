@@ -61,11 +61,11 @@ const Portfolio = ({ onClose = () => { } }) => {
         const filtered = tableData.filter((row) => {
             return Object.keys(filters).every((key) => {
                 if (key === constants.RECOMMENDATION_CONFIDENCE_KEY) {
-                    return isNaN(filters[key]) || row[key] >= filters[key];
+                    return Number.isNaN(filters[key]) || row[key] >= filters[key];
                 } else if (key === constants.RECOMMENDATION_MODEL_KEY) {
                     return filters[key] === "" || row[key]?.toString().toLowerCase() === (filters[key].toLowerCase())
                 } else if (constants.PORTFOLIO_META.DATATYPE[key] === constants.NUMBER) {
-                    return isNaN(filters[key]) || row[key] === filters[key];
+                    return Number.isNaN(filters[key]) || row[key] === filters[key];
                 } else if (constants.PORTFOLIO_META.DATATYPE[key] === constants.STRING) {
                     return row[key]?.toString().toLowerCase().includes(filters[key].toLowerCase());
                 } else if (constants.PORTFOLIO_META.DATATYPE[key] === constants.DATE) {
@@ -225,9 +225,7 @@ const Portfolio = ({ onClose = () => { } }) => {
 
     const getRecommendations = async (overwrite, afterHoursContext, useOldNews, selectedModels, count = undefined) => {
         let path;
-        if (count !== undefined) {
-            path = `/recommendations/random/${count}`
-        } else {
+        if (count === undefined) {
             const ids = visibleSelectedIds().join(',')
             if (ids.length === 0) {
                 setMessage("Select at least one row");
@@ -237,6 +235,8 @@ const Portfolio = ({ onClose = () => { } }) => {
                 return;
             }
             path = `/recommendations/${ids}`;
+        } else {
+            path = `/recommendations/random/${count}`
         }
         let modelsParam = selectedModels.length > 0 ? `&models=${selectedModels.join(',')}` : '';
         setIsLoading(true);
@@ -382,9 +382,9 @@ const Portfolio = ({ onClose = () => { } }) => {
         if (key === constants.PERCENT_DAY_CHANGE_KEY || key === constants.PERCENT_PNL_KEY
             || key === constants.RECOMMENDATION_CONFIDENCE_KEY || key === constants.NET_RELATIVE_POSITION_KEY) {
             return <td key={key} style={{
-                backgroundColor: value != null ? scales[key](value).hex() : "black",
+                backgroundColor: value == null ? "black" : scales[key](value).hex(),
                 color: "black"
-            }}>{value != null ? value.toFixed(2) : null}%</td>;
+            }}>{value == null ? null : value.toFixed(2)}%</td>;
         }
         if (type === constants.NUMBER || type === constants.STRING) {
             return <td key={key}>{value}</td>;
@@ -437,7 +437,7 @@ const Portfolio = ({ onClose = () => { } }) => {
     return (
         <div className="app custom-table portfolio">
             {!isLoading && !message && <div className="flex-div" style={{ height: "0" }}>
-                <div></div>
+                <div />
                 <Button className="app restart popup-icon" onClick={onClose}>X</Button>
             </div>}
             <h1 id="portfolio">Portfolio</h1>
@@ -480,10 +480,10 @@ const Portfolio = ({ onClose = () => { } }) => {
                         <Button className="thirty-percent" onClick={() => {
                             Object.values(inputsRef.current).forEach((input) => {
                                 if (input) {
-                                    if (!input.hasOwnProperty("checked")) {
-                                        input.value = ""
-                                    } else {
+                                    if (input.hasOwnProperty("checked")) {
                                         input.checked = false;
+                                    } else {
+                                        input.value = ""
                                     }
                                 }
                             });
@@ -528,7 +528,7 @@ const Portfolio = ({ onClose = () => { } }) => {
                                                 type={constants.PORTFOLIO_META.DATATYPE[key] === constants.DATE ? "date" : "text"}
                                                 inputMode={constants.PORTFOLIO_META.DATATYPE[key] === constants.NUMBER ? "numeric" : "text"}
                                                 placeholder={constants.PORTFOLIO_META.DISPLAY_NAME[key]}
-                                                defaultValue={constants.PORTFOLIO_META.DATATYPE[key] === constants.NUMBER && isNaN(filters[key]) ? "" : filters[key]}
+                                                defaultValue={constants.PORTFOLIO_META.DATATYPE[key] === constants.NUMBER && Number.isNaN(filters[key]) ? "" : filters[key]}
                                                 onChange={(e) => setFilterValue({
                                                     column: key,
                                                     value: constants.PORTFOLIO_META.DATATYPE[key] === constants.NUMBER ? Number(e.target.value) : e.target.value

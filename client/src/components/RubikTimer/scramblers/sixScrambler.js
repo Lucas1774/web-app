@@ -12,10 +12,10 @@ export const Scramble = () => {
     let width;
     for (let i = 0; i < SCRAMBLE_LENGTH; i++) {
         width = generateRandomBetweenZeroAndX(5);
-        if (width !== 4) {
-            width = Math.floor(width / 2)
-        } else {
+        if (width === 4) {
             width = 2;
+        } else {
+            width = Math.floor(width / 2)
         }
         move = generateMove(availabilityMatrix, width);
         updateAvailabilityMatrix(availabilityMatrix, move, previous);

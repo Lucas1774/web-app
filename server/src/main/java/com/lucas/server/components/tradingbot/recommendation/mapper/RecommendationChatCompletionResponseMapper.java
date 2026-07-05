@@ -23,6 +23,7 @@ import java.util.Set;
 import static com.lucas.server.common.Constants.MAPPING_ERROR;
 import static com.lucas.server.common.Constants.RECOMMENDATION;
 import static com.lucas.server.common.Constants.SYMBOL;
+import static com.lucas.server.common.Constants.UTC_ZONE;
 import static com.lucas.utils.Utils.EMPTY_STRING;
 
 @Component
@@ -76,7 +77,7 @@ public class RecommendationChatCompletionResponseMapper implements Mapper<JsonNo
     @Override
     public RecommendationDomain map(JsonNode json) throws MappingException {
         try {
-            return new RecommendationDomain().setDate(LocalDate.now())
+            return new RecommendationDomain().setDate(LocalDate.now(UTC_ZONE))
                     .setAction(json.get("action").asString())
                     .setConfidence(new BigDecimal(json.get("confidence").asString()))
                     .setRationale(StringUtils.left(json.get("rationale").asString(), 1024));

@@ -12,11 +12,11 @@ export const Scramble = () => {
     let turnIterator;
     for (let i = 0; i < SCRAMBLE_LENGTH; i++) {
         turnIterator = generateRandomBetweenZeroAndX(2);
-        if (0 !== (i + 1) % 11) {
+        if ((i + 1) % 11 === 0) {
+            scramble += ELEVENTH[turnIterator];
+        } else {
             scramble += SCRAMBLE_MOVES[turn][turnIterator];
             turn = (turn + 1) % 2;
-        } else {
-            scramble += ELEVENTH[turnIterator];
         }
     }
     return scramble;

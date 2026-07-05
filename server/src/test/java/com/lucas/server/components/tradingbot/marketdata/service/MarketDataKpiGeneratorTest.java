@@ -13,10 +13,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.Comparator;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import static com.lucas.server.common.Constants.FIXED_DATE;
 import static com.lucas.server.common.Constants.KPI_RETURNED_ZERO_WARN;
 import static com.lucas.server.common.Constants.NON_COMPUTABLE_KPI_WARN;
 import static com.lucas.server.common.Constants.VOLATILITY;
@@ -45,8 +47,8 @@ class MarketDataKpiGeneratorTest extends ConfiguredTest {
     void whenComputeDerivedFieldsOnCurrentMarketData_thenCorrectlyReflectsKpis() {
         // given
         SymbolDomain symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
-        LocalDate currentDate = LocalDate.of(2023, 12, 15);
-        LocalDate previousDate = LocalDate.of(2023, 12, 14);
+        LocalDate currentDate = LocalDate.of(2023, Month.DECEMBER, 15);
+        LocalDate previousDate = LocalDate.of(2023, Month.DECEMBER, 14);
 
         MarketDataDomain currentData =
                 new MarketDataDomain().setSymbol(symbol).setDate(currentDate).setPrice(BigDecimal.valueOf(150.00));
@@ -71,7 +73,7 @@ class MarketDataKpiGeneratorTest extends ConfiguredTest {
     @Test
     void whenComputeDerivedFieldsWithoutPreviousData_thenNothingHappens() {
         // given
-        LocalDate currentDate = LocalDate.of(2023, 12, 15);
+        LocalDate currentDate = LocalDate.of(2023, Month.DECEMBER, 15);
         SymbolDomain symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
 
         MarketDataDomain currentData =
@@ -94,8 +96,8 @@ class MarketDataKpiGeneratorTest extends ConfiguredTest {
         // given
         SymbolDomain symbol = symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow();
         symbolService.getOrCreateByName(Set.of(symbol.getName()));
-        LocalDate currentDate = LocalDate.of(2023, 12, 15);
-        LocalDate previousDate = LocalDate.of(2023, 12, 14);
+        LocalDate currentDate = LocalDate.of(2023, Month.DECEMBER, 15);
+        LocalDate previousDate = LocalDate.of(2023, Month.DECEMBER, 14);
 
         MarketDataDomain currentData =
                 new MarketDataDomain().setSymbol(symbol).setDate(currentDate).setPrice(BigDecimal.valueOf(150.00));
@@ -178,6 +180,6 @@ class MarketDataKpiGeneratorTest extends ConfiguredTest {
                 .setPreviousClose(null != prevClose ? BigDecimal.valueOf(prevClose) : null)
                 .setHigh(null != high ? BigDecimal.valueOf(high) : null)
                 .setLow(null != low ? BigDecimal.valueOf(low) : null)
-                .setDate(LocalDate.now().minusDays(null != daysAgo ? daysAgo : 0));
+                .setDate(FIXED_DATE.toLocalDate().minusDays(null != daysAgo ? daysAgo : 0));
     }
 }

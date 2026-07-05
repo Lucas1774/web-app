@@ -2,8 +2,8 @@ package com.lucas.server.components.tradingbot.common.jpa;
 
 import com.lucas.server.common.jpa.GenericJpaServiceDelegate;
 import com.lucas.server.common.jpa.UniqueConstraintWearyJpaServiceDelegate;
-import com.lucas.server.common.mapper.EntityMapper;
 import com.lucas.server.components.tradingbot.common.dto.SymbolDomain;
+import com.lucas.server.components.tradingbot.common.mapper.SymbolMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,7 +16,7 @@ public class SymbolJpaService extends GenericJpaServiceDelegate<Symbol, SymbolDo
 
     private final UniqueConstraintWearyJpaServiceDelegate<Symbol> delegate;
 
-    public SymbolJpaService(SymbolRepository repository, EntityMapper<Symbol, SymbolDomain> mapper) {
+    public SymbolJpaService(SymbolRepository repository, SymbolMapper mapper) {
         super(repository, mapper);
         delegate = new UniqueConstraintWearyJpaServiceDelegate<>(repository);
     }

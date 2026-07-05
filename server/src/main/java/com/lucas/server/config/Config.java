@@ -7,6 +7,7 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import java.security.SecureRandom;
 import java.time.Duration;
 import java.util.Random;
 
@@ -15,7 +16,7 @@ public class Config {
 
     @Bean
     public Random random() {
-        return new Random();
+        return new SecureRandom();
     }
 
     @Bean

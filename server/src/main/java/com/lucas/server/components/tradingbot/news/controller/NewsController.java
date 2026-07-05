@@ -21,6 +21,7 @@ import java.time.LocalDate;
 import java.util.Set;
 
 import static com.lucas.server.common.Constants.SP500_SYMBOLS;
+import static com.lucas.server.common.Constants.UTC_ZONE;
 
 @RestController
 @RequestMapping("/news")
@@ -66,7 +67,7 @@ public class NewsController {
                     try {
                         return ResponseEntity.ok(jpaService.retrieveNewsByDateRangeAndName(SP500_SYMBOLS,
                                 from,
-                                LocalDate.now(),
+                                LocalDate.now(UTC_ZONE),
                                 false));
                     } catch (MappingException | ClientException e) {
                         log.error(e.getMessage(), e);
@@ -84,7 +85,7 @@ public class NewsController {
                     try {
                         return ResponseEntity.ok(jpaService.retrieveNewsByDateRangeAndId(symbols,
                                 from,
-                                LocalDate.now()));
+                                LocalDate.now(UTC_ZONE)));
                     } catch (MappingException | ClientException e) {
                         log.error(e.getMessage(), e);
                         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

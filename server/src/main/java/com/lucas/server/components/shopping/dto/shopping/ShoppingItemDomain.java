@@ -1,7 +1,6 @@
 package com.lucas.server.components.shopping.dto.shopping;
 
 import com.lucas.server.common.dto.DomainEntity;
-import com.lucas.server.common.dto.user.UserDomain;
 import com.lucas.server.components.shopping.dto.product.ProductDomain;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -21,9 +20,6 @@ import lombok.experimental.Accessors;
 public class ShoppingItemDomain implements DomainEntity {
     @ToString.Include
     private Long id;
-    @EqualsAndHashCode.Include
-    @ToString.Include
-    private UserDomain user;
     @EqualsAndHashCode.Include
     @ToString.Include
     private ProductDomain product;

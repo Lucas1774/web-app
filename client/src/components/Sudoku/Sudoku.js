@@ -9,7 +9,7 @@ import Spinner from "../Spinner";
 import "./Sudoku.css";
 import SudokuGrid from "./SudokuGrid";
 
-const Sudoku = ({ onClose = () => {} }) => {
+const Sudoku = ({ onClose = () => { } }) => {
     const [sudoku, setSudoku] = useState("");
     const [initialSudoku, setInitialSudoku] = useState("");
     const [difficulty, setDifficulty] = useState(1);
@@ -46,7 +46,7 @@ const Sudoku = ({ onClose = () => {} }) => {
     }, []);
 
     const isSolved = useCallback(() => {
-        return sudoku.indexOf("0") === -1;
+        return !sudoku.includes("0");
     }, [sudoku]);
 
     const check = useCallback(() => {
@@ -112,7 +112,7 @@ const Sudoku = ({ onClose = () => {} }) => {
     }, [difficulty, hideEverything, restoreDefaults]);
 
     useEffect(() => {
-        if (sudoku.length === 81 && isSolved() && initialSudoku.indexOf("0") !== -1) {
+        if (sudoku.length === 81 && isSolved() && initialSudoku.includes("0")) {
             check();
         }
     }, [check, initialSudoku, isSolved, sudoku.length]);
@@ -226,24 +226,24 @@ const Sudoku = ({ onClose = () => {} }) => {
 
     const handleFormInputChange = (event) => {
         let newValue = event.key;
-        if (!isNaN(newValue) && parseInt(newValue) >= 1 && parseInt(newValue) <= 9) {
+        if (!Number.isNaN(newValue) && Number.parseInt(newValue) >= 1 && Number.parseInt(newValue) <= 9) {
             event.preventDefault();
-            setDifficulty(parseInt(newValue));
+            setDifficulty(Number.parseInt(newValue));
         }
     };
 
     const handleSudokuChange = (index, element, event) => {
         event.preventDefault();
-        const newValue = (event.key === "Backspace" || event.key === "Delete") ? 0 : parseInt(event.key);
+        const newValue = (event.key === "Backspace" || event.key === "Delete") ? 0 : Number.parseInt(event.key);
         if (newValue >= 0 && newValue <= 9 && initialSudoku[index] === "0") {
             let auxSudoku = [...sudoku];
             auxSudoku[index] = newValue.toString();
-            if (0 !== newValue) {
-                element.classList.remove(`white-background`);
-                element.classList.add(`blue-background`);
-            } else {
+            if (0 === newValue) {
                 element.classList.remove(`blue-background`);
                 element.classList.add(`white-background`);
+            } else {
+                element.classList.remove(`white-background`);
+                element.classList.add(`blue-background`);
             }
             setSudoku(auxSudoku.join(""));
         }
@@ -285,7 +285,7 @@ const Sudoku = ({ onClose = () => {} }) => {
     return (
         <div className="app sudoku">
             {!isLoading && !responseMessage.current && <div className="flex-div" style={{ height: "0" }}>
-                <div></div>
+                <div />
                 <Button className="app restart popup-icon" onClick={onClose}>X</Button>
             </div>}
             <h1 id="sudoku">Sudoku</h1>

@@ -160,14 +160,14 @@ const SecretSanta = ({ onClose = () => { } }) => {
     return (
         <div className="app secretSanta">
             {!isSavingVisible && !isCalculatingVisible && !isNoParticipantsVisible && !isChosenVisible && !isTargetVisible && <div className="flex-div" style={{ height: "0" }}>
-                <div></div>
+                <div />
                 <Button className="app restart popup-icon" onClick={onClose}>X</Button>
             </div>}
             <h1 id="secretSanta">Secret Santa</h1>
             {isFormVisible && renderForm()}
             {isSavingVisible && (input === ""
                 ? <div>Type a name</div> : participants.includes(input)
-                    ? <div>Player already registered</div> : <div></div>)}
+                    ? <div>Player already registered</div> : <div />)}
             {isCalculatingVisible && <div>Calculating...</div>}
             {isNoParticipantsVisible && (
                 <div>Not enough participants</div>
