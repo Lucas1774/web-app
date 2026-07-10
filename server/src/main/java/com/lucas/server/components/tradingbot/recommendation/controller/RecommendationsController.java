@@ -29,6 +29,7 @@ import static com.lucas.server.common.Constants.RecommendationMode;
 import static com.lucas.server.common.Constants.SP500_SYMBOLS;
 import static com.lucas.server.common.Constants.UTC_ZONE;
 import static com.lucas.server.common.Constants.filterClients;
+import static com.lucas.server.common.Constants.getFineGrainClientNames;
 
 @RestController
 @RequestMapping("/recommendations")
@@ -110,9 +111,7 @@ public class RecommendationsController {
             @RequestParam(required = false) Set<String> models) {
         LocalDate selectedDate = null == date ? LocalDate.now(UTC_ZONE) : date;
         String selectedAction = null == action ? BUY : action;
-        Set<String> selectedClients = null == models ? filterClients(clients, RecommendationMode.FINE_GRAIN).stream()
-                .map(c -> c.getConfig().name())
-                .collect(Collectors.toUnmodifiableSet()) : models;
+        Set<String> selectedClients = null == models ? getFineGrainClientNames(clients) : models;
         return ResponseEntity.ok(jpaService.getDailyRecommendations(confidenceThreshold,
                 selectedDate,
                 selectedAction,

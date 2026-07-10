@@ -40,9 +40,8 @@ import java.util.stream.Stream;
 
 import static com.lucas.server.common.Constants.BUY;
 import static com.lucas.server.common.Constants.NY_ZONE;
-import static com.lucas.server.common.Constants.RecommendationMode;
 import static com.lucas.server.common.Constants.Sector;
-import static com.lucas.server.common.Constants.filterClients;
+import static com.lucas.server.common.Constants.getFineGrainClientNames;
 import static com.lucas.server.common.Constants.isTradingDate;
 import static com.lucas.server.common.Constants.toPastOrFutureTradeDate;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -464,16 +463,13 @@ class ManualRunTest extends BaseTest {
     }
 
     private Map<Recommendation, MarketDataDomain> getFiltered(Map<Recommendation, MarketDataDomain> baseline) {
+        Set<String> fineGrainClientNames = getFineGrainClientNames(allClients);
         return baseline.entrySet()
                 .stream()
                 // It is also possible to filter by gap, for instance (open - previousClose, as percentage)
                 .filter(e -> BUY.equals(e.getKey().getAction()) && 0 <= e.getKey()
                         .getConfidence()
-                        .compareTo(BigDecimal.valueOf(0.8)) && filterClients(allClients,
-                        RecommendationMode.FINE_GRAIN).stream()
-                                     .map(c -> c.getConfig().name())
-                                     .collect(Collectors.toUnmodifiableSet())
-                                     .contains(e.getKey().getModel()))
+                        .compareTo(BigDecimal.valueOf(0.8)) && fineGrainClientNames.contains(e.getKey().getModel()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 

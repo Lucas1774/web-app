@@ -41,549 +41,354 @@ mqtt:
     jobs: jobs
 
 ai:
+  # Defaults:
+  # provider: github
+  # fix-me: false
+  # chunk-size: 5
+  # max-tokens: 8000
+  # temperature: 0 for openrouter and github, null otherwise
+  # thinking-level: high for google, null otherwise
+  # requests-per-minute: 20 for openrouter (not configurable here), null otherwise
+  # concurrent-requests: requests-per-minute for google and openrouter (not configurable here), null otherwise
   deployments:
+    # GitHub
     - name: gpt-4.1
       api-key: ${GITHUB_KEY}
-      url: ${GITHUB_URL}
       model: openai/gpt-4.1
-      temperature: 0
       max-tokens: 4000
       requests-per-minute: 10
       concurrent-requests: 2
-      chunk-size: 5
-      fix-me: false
     - name: gpt-4.1_2
       api-key: ${AI_FOUNDRY_KEY}
-      url: ${GITHUB_URL}
       model: openai/gpt-4.1
-      temperature: 0
       max-tokens: 4000
       requests-per-minute: 10
       concurrent-requests: 2
-      chunk-size: 5
-      fix-me: false
     - name: gpt-4.1_3
       api-key: ${AI_FOUNDRY_KEY_2}
-      url: ${GITHUB_URL}
       model: openai/gpt-4.1
-      temperature: 0
       max-tokens: 4000
       requests-per-minute: 10
       concurrent-requests: 2
-      chunk-size: 5
-      fix-me: false
     - name: gpt-4.1_4
       api-key: ${AI_FOUNDRY_KEY_3}
-      url: ${GITHUB_URL}
       model: openai/gpt-4.1
-      temperature: 0
       max-tokens: 4000
       requests-per-minute: 10
       concurrent-requests: 2
-      chunk-size: 5
-      fix-me: false
     - name: gpt-4.1_5
       api-key: ${AI_FOUNDRY_KEY_4}
-      url: ${GITHUB_URL}
       model: openai/gpt-4.1
-      temperature: 0
       max-tokens: 4000
       requests-per-minute: 10
       concurrent-requests: 2
-      chunk-size: 5
-      fix-me: false
     - name: gpt-4.1_6
       api-key: ${AI_FOUNDRY_KEY_5}
-      url: ${GITHUB_URL}
       model: openai/gpt-4.1
-      temperature: 0
       max-tokens: 4000
       requests-per-minute: 10
       concurrent-requests: 2
-      chunk-size: 5
-      fix-me: false
     - name: gpt-4.1-specialist
       api-key: ${GITHUB_KEY}
-      url: ${GITHUB_URL}
       model: openai/gpt-4.1
-      temperature: 0
       max-tokens: 4000
       requests-per-minute: 10
       concurrent-requests: 2
       chunk-size: 1
-      fix-me: false
     - name: gpt-4.1_2-specialist
       api-key: ${AI_FOUNDRY_KEY}
-      url: ${GITHUB_URL}
       model: openai/gpt-4.1
-      temperature: 0
       max-tokens: 4000
       requests-per-minute: 10
       concurrent-requests: 2
       chunk-size: 1
-      fix-me: false
     - name: gpt-4.1_3-specialist
       api-key: ${AI_FOUNDRY_KEY_2}
-      url: ${GITHUB_URL}
       model: openai/gpt-4.1
-      temperature: 0
       max-tokens: 4000
       requests-per-minute: 10
       concurrent-requests: 2
       chunk-size: 1
-      fix-me: false
     - name: gpt-4.1_4-specialist
       api-key: ${AI_FOUNDRY_KEY_3}
-      url: ${GITHUB_URL}
       model: openai/gpt-4.1
-      temperature: 0
       max-tokens: 4000
       requests-per-minute: 10
       concurrent-requests: 2
       chunk-size: 1
-      fix-me: false
     - name: gpt-4.1_5-specialist
       api-key: ${AI_FOUNDRY_KEY_4}
-      url: ${GITHUB_URL}
       model: openai/gpt-4.1
-      temperature: 0
       max-tokens: 4000
       requests-per-minute: 10
       concurrent-requests: 2
       chunk-size: 1
-      fix-me: false
     - name: gpt-4.1_6-specialist
       api-key: ${AI_FOUNDRY_KEY_5}
-      url: ${GITHUB_URL}
       model: openai/gpt-4.1
-      temperature: 0
       max-tokens: 4000
       requests-per-minute: 10
       concurrent-requests: 2
       chunk-size: 1
-      fix-me: false
     - name: gpt-4o
       api-key: ${GITHUB_KEY}
-      url: ${GITHUB_URL}
       model: openai/gpt-4o
-      temperature: 0
       max-tokens: 4000
       requests-per-minute: 10
       concurrent-requests: 2
-      chunk-size: 5
-      fix-me: false
     - name: gpt-4.1-mini
       api-key: ${GITHUB_KEY}
-      url: ${GITHUB_URL}
       model: openai/gpt-4.1-mini
-      temperature: 0
       max-tokens: 4000
       requests-per-minute: 15
       concurrent-requests: 5
-      chunk-size: 5
-      fix-me: false
     - name: gpt-4o-mini
       api-key: ${GITHUB_KEY}
-      url: ${GITHUB_URL}
       model: openai/gpt-4o-mini
-      temperature: 0
       max-tokens: 4000
       requests-per-minute: 15
       concurrent-requests: 5
-      chunk-size: 5
-      fix-me: false
     - name: gpt-4.1-nano
       api-key: ${GITHUB_KEY}
-      url: ${GITHUB_URL}
       model: openai/gpt-4.1-nano
-      temperature: 0
       max-tokens: 4000
       requests-per-minute: 15
       concurrent-requests: 5
-      chunk-size: 5
-      fix-me: false
-    - name: deepseek-r1-0528
-      api-key: ${GITHUB_KEY}
-      url: ${GITHUB_URL}
-      model: deepseek/deepseek-r1-0528
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 1
-      concurrent-requests: 1
-      chunk-size: 2
-      fix-me: false
-    - name: deepseek-r1-0528_2
-      api-key: ${AI_FOUNDRY_KEY}
-      url: ${GITHUB_URL}
-      model: deepseek/deepseek-r1-0528
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 1
-      concurrent-requests: 1
-      chunk-size: 2
-      fix-me: false
-    - name: deepseek-r1-0528_3
-      api-key: ${AI_FOUNDRY_KEY_2}
-      url: ${GITHUB_URL}
-      model: deepseek/deepseek-r1-0528
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 1
-      concurrent-requests: 1
-      chunk-size: 2
-      fix-me: false
-    - name: deepseek-r1-0528_4
-      api-key: ${AI_FOUNDRY_KEY_3}
-      url: ${GITHUB_URL}
-      model: deepseek/deepseek-r1-0528
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 1
-      concurrent-requests: 1
-      chunk-size: 2
-      fix-me: false
-    - name: deepseek-r1-0528_5
-      api-key: ${AI_FOUNDRY_KEY_4}
-      url: ${GITHUB_URL}
-      model: deepseek/deepseek-r1-0528
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 1
-      concurrent-requests: 1
-      chunk-size: 2
-      fix-me: false
-    - name: deepseek-r1-0528_6
-      api-key: ${AI_FOUNDRY_KEY_5}
-      url: ${GITHUB_URL}
-      model: deepseek/deepseek-r1-0528
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 1
-      concurrent-requests: 1
-      chunk-size: 2
-      fix-me: false
-    - name: deepseek-r1-0528-specialist
-      api-key: ${GITHUB_KEY}
-      url: ${GITHUB_URL}
-      model: deepseek/deepseek-r1-0528
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 1
-      concurrent-requests: 1
-      chunk-size: 1
-      fix-me: false
-    - name: deepseek-r1-0528_2-specialist
-      api-key: ${AI_FOUNDRY_KEY}
-      url: ${GITHUB_URL}
-      model: deepseek/deepseek-r1-0528
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 1
-      concurrent-requests: 1
-      chunk-size: 1
-      fix-me: false
-    - name: deepseek-r1-0528_3-specialist
-      api-key: ${AI_FOUNDRY_KEY_2}
-      url: ${GITHUB_URL}
-      model: deepseek/deepseek-r1-0528
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 1
-      concurrent-requests: 1
-      chunk-size: 1
-      fix-me: false
-    - name: deepseek-r1-0528_4-specialist
-      api-key: ${AI_FOUNDRY_KEY_3}
-      url: ${GITHUB_URL}
-      model: deepseek/deepseek-r1-0528
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 1
-      concurrent-requests: 1
-      chunk-size: 1
-      fix-me: false
-    - name: deepseek-r1-0528_5-specialist
-      api-key: ${AI_FOUNDRY_KEY_4}
-      url: ${GITHUB_URL}
-      model: deepseek/deepseek-r1-0528
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 1
-      concurrent-requests: 1
-      chunk-size: 1
-      fix-me: false
-    - name: deepseek-r1-0528_6-specialist
-      api-key: ${AI_FOUNDRY_KEY_5}
-      url: ${GITHUB_URL}
-      model: deepseek/deepseek-r1-0528
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 1
-      concurrent-requests: 1
-      chunk-size: 1
-      fix-me: false
-    - name: gpt-oss
-      api-key: ${OPENROUTER_KEY}
-      url: ${OPENROUTER_URL}
-      model: openai/gpt-oss-120b:free
-      temperature: 0
-      max-tokens: 8000
-      requests-per-minute: 20
-      concurrent-requests: 20
-      chunk-size: 5
-      fix-me: false
-    - name: gpt-oss_2
-      api-key: ${OPENROUTER_KEY_2}
-      url: ${OPENROUTER_URL}
-      model: openai/gpt-oss-120b:free
-      temperature: 0
-      max-tokens: 8000
-      requests-per-minute: 20
-      concurrent-requests: 20
-      chunk-size: 5
-      fix-me: false
-    - name: gpt-oss_3
-      api-key: ${OPENROUTER_KEY_3}
-      url: ${OPENROUTER_URL}
-      model: openai/gpt-oss-120b:free
-      temperature: 0
-      max-tokens: 8000
-      requests-per-minute: 20
-      concurrent-requests: 20
-      chunk-size: 5
-      fix-me: false
-    - name: gpt-oss_4
-      api-key: ${OPENROUTER_KEY_4}
-      url: ${OPENROUTER_URL}
-      model: openai/gpt-oss-120b:free
-      temperature: 0
-      max-tokens: 8000
-      requests-per-minute: 20
-      concurrent-requests: 20
-      chunk-size: 5
-      fix-me: false
-    - name: openrouter
-      api-key: ${OPENROUTER_KEY}
-      url: ${OPENROUTER_URL}
-      model: openai/gpt-oss-120b:free
-      temperature: 0
-      max-tokens: 8000
-      requests-per-minute: 20
-      concurrent-requests: 20
-      chunk-size: 5
-      fix-me: false
-      fallback-models:
-        - nvidia/nemotron-3-ultra-550b-a55b:free
-        - nvidia/nemotron-3-super-120b-a12b:free
-    - name: openrouter_2
-      api-key: ${OPENROUTER_KEY_2}
-      url: ${OPENROUTER_URL}
-      model: openai/gpt-oss-120b:free
-      temperature: 0
-      max-tokens: 8000
-      requests-per-minute: 20
-      concurrent-requests: 20
-      chunk-size: 5
-      fix-me: false
-      fallback-models:
-        - nvidia/nemotron-3-ultra-550b-a55b:free
-        - nvidia/nemotron-3-super-120b-a12b:free
-    - name: openrouter_3
-      api-key: ${OPENROUTER_KEY_3}
-      url: ${OPENROUTER_URL}
-      model: openai/gpt-oss-120b:free
-      temperature: 0
-      max-tokens: 8000
-      requests-per-minute: 20
-      concurrent-requests: 20
-      chunk-size: 5
-      fix-me: false
-      fallback-models:
-        - nvidia/nemotron-3-ultra-550b-a55b:free
-        - nvidia/nemotron-3-super-120b-a12b:free
-    - name: openrouter_4
-      api-key: ${OPENROUTER_KEY_4}
-      url: ${OPENROUTER_URL}
-      model: openai/gpt-oss-120b:free
-      temperature: 0
-      max-tokens: 8000
-      requests-per-minute: 20
-      concurrent-requests: 20
-      chunk-size: 5
-      fix-me: false
-      fallback-models:
-        - nvidia/nemotron-3-ultra-550b-a55b:free
-        - nvidia/nemotron-3-super-120b-a12b:free
-    - name: deepseek-r1
-      api-key: ${GITHUB_KEY}
-      url: ${GITHUB_URL}
-      model: deepseek/deepseek-r1
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 1
-      concurrent-requests: 1
-      chunk-size: 2
-      fix-me: false
-    - name: deepseek-v3
-      api-key: ${GITHUB_KEY}
-      url: ${GITHUB_URL}
-      model: deepseek/deepseek-V3-0324
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 10
-      concurrent-requests: 2
-      chunk-size: 2
-      fix-me: false
-    - name: grok-3
-      api-key: ${GITHUB_KEY}
-      url: ${GITHUB_URL}
-      model: xai/grok-3
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 1
-      concurrent-requests: 1
-      chunk-size: 2
-      fix-me: false
-    - name: grok-3_2
-      api-key: ${AI_FOUNDRY_KEY}
-      url: ${GITHUB_URL}
-      model: xai/grok-3
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 1
-      concurrent-requests: 1
-      chunk-size: 2
-      fix-me: false
-    - name: grok-3_3
-      api-key: ${AI_FOUNDRY_KEY_2}
-      url: ${GITHUB_URL}
-      model: xai/grok-3
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 1
-      concurrent-requests: 1
-      chunk-size: 2
-      fix-me: false
-    - name: grok-3_4
-      api-key: ${AI_FOUNDRY_KEY_3}
-      url: ${GITHUB_URL}
-      model: xai/grok-3
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 1
-      concurrent-requests: 1
-      chunk-size: 2
-      fix-me: false
-    - name: grok-3_5
-      api-key: ${AI_FOUNDRY_KEY_4}
-      url: ${GITHUB_URL}
-      model: xai/grok-3
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 1
-      concurrent-requests: 1
-      chunk-size: 2
-      fix-me: false
-    - name: grok-3_6
-      api-key: ${AI_FOUNDRY_KEY_5}
-      url: ${GITHUB_URL}
-      model: xai/grok-3
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 1
-      concurrent-requests: 1
-      chunk-size: 2
-      fix-me: false
     - name: llama-3.3-70b
       api-key: ${GITHUB_KEY}
-      url: ${GITHUB_URL}
       model: meta/llama-3.3-70b-instruct
-      temperature: 0
       max-tokens: 4000
       requests-per-minute: 10
       concurrent-requests: 2
-      chunk-size: 5
-      fix-me: false
-    - name: llama-3.1-405b
-      api-key: ${GITHUB_KEY}
-      url: ${GITHUB_URL}
-      model: meta/meta-llama-3.1-405b-instruct
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 10
-      concurrent-requests: 2
-      chunk-size: 5
-      fix-me: false
-    - name: llama-3.1-8b
-      api-key: ${GITHUB_KEY}
-      url: ${GITHUB_URL}
-      model: meta/meta-llama-3.1-8b-instruct
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 15
-      concurrent-requests: 5
-      chunk-size: 5
-      fix-me: false
-    - name: a21-jamba
-      api-key: ${GITHUB_KEY}
-      url: ${GITHUB_URL}
-      model: ai21-labs/ai21-jamba-1.5-large
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 10
-      concurrent-requests: 2
-      chunk-size: 2
-      fix-me: false
-    - name: command-r-plus-2024
-      api-key: ${GITHUB_KEY}
-      url: ${GITHUB_URL}
-      model: cohere/cohere-command-r-plus-08-2024
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 10
-      concurrent-requests: 2
-      chunk-size: 5
-      fix-me: false
-    - name: command-r-2024
-      api-key: ${GITHUB_KEY}
-      url: ${GITHUB_URL}
-      model: cohere/cohere-command-r-08-2024
-      temperature: 0
-      max-tokens: 4000
-      requests-per-minute: 15
-      concurrent-requests: 5
-      chunk-size: 5
-      fix-me: false
     - name: command-a
       api-key: ${GITHUB_KEY}
-      url: ${GITHUB_URL}
       model: cohere/cohere-command-a
-      temperature: 0
       max-tokens: 4000
       requests-per-minute: 15
       concurrent-requests: 5
-      chunk-size: 5
-      fix-me: false
     - name: ministral-3b
       api-key: ${GITHUB_KEY}
-      url: ${GITHUB_URL}
       model: mistral-ai/ministral-3b
-      temperature: 0
       max-tokens: 4000
       requests-per-minute: 15
       concurrent-requests: 5
-      chunk-size: 5
-      fix-me: false
     - name: phi-4
       api-key: ${GITHUB_KEY}
-      url: ${GITHUB_URL}
       model: microsoft/phi-4
-      temperature: 0
       max-tokens: 4000
       requests-per-minute: 15
       concurrent-requests: 5
-      chunk-size: 5
-      fix-me: false
+
+    # Openrouter
+    - name: openrouter
+      provider: openrouter
+      api-key: ${OPENROUTER_KEY}
+      model: nvidia/nemotron-3-ultra-550b-a55b:free
+      fallback-models:
+        - nvidia/nemotron-3-super-120b-a12b:free
+        - openai/gpt-oss-20b:free
+    - name: openrouter_2
+      provider: openrouter
+      api-key: ${OPENROUTER_KEY_2}
+      model: nvidia/nemotron-3-ultra-550b-a55b:free
+      fallback-models:
+        - nvidia/nemotron-3-super-120b-a12b:free
+        - openai/gpt-oss-20b:free
+    - name: openrouter_3
+      provider: openrouter
+      api-key: ${OPENROUTER_KEY_3}
+      model: nvidia/nemotron-3-ultra-550b-a55b:free
+      fallback-models:
+        - nvidia/nemotron-3-super-120b-a12b:free
+        - openai/gpt-oss-20b:free
+    - name: openrouter_4
+      provider: openrouter
+      api-key: ${OPENROUTER_KEY_4}
+      model: nvidia/nemotron-3-ultra-550b-a55b:free
+      fallback-models:
+        - nvidia/nemotron-3-super-120b-a12b:free
+        - openai/gpt-oss-20b:free
+    - name: openrouter_5
+      provider: openrouter
+      api-key: ${OPENROUTER_KEY_5}
+      model: nvidia/nemotron-3-ultra-550b-a55b:free
+      fallback-models:
+        - nvidia/nemotron-3-super-120b-a12b:free
+        - openai/gpt-oss-20b:free
+    - name: nemotron-3-ultra
+      provider: openrouter
+      api-key: ${OPENROUTER_KEY}
+      model: nvidia/nemotron-3-ultra-550b-a55b:free
+    - name: nemotron-3-ultra_2
+      provider: openrouter
+      api-key: ${OPENROUTER_KEY_2}
+      model: nvidia/nemotron-3-ultra-550b-a55b:free
+    - name: nemotron-3-ultra_3
+      provider: openrouter
+      api-key: ${OPENROUTER_KEY_3}
+      model: nvidia/nemotron-3-ultra-550b-a55b:free
+    - name: nemotron-3-ultra_4
+      provider: openrouter
+      api-key: ${OPENROUTER_KEY_4}
+      model: nvidia/nemotron-3-ultra-550b-a55b:free
+    - name: nemotron-3-ultra_5
+      provider: openrouter
+      api-key: ${OPENROUTER_KEY_5}
+      model: nvidia/nemotron-3-ultra-550b-a55b:free
+    - name: gpt-oss
+      provider: openrouter
+      api-key: ${OPENROUTER_KEY}
+      model: openai/gpt-oss-20b:free
+    - name: gpt-oss_2
+      api-key: ${OPENROUTER_KEY_2}
+      provider: openrouter
+      model: openai/gpt-oss-20b:free
+    - name: gpt-oss_3
+      api-key: ${OPENROUTER_KEY_3}
+      provider: openrouter
+      model: openai/gpt-oss-20b:free
+    - name: gpt-oss_4
+      provider: openrouter
+      api-key: ${OPENROUTER_KEY_4}
+      model: openai/gpt-oss-20b:free
+    - name: gpt-oss_5
+      provider: openrouter
+      api-key: ${OPENROUTER_KEY_5}
+      model: openai/gpt-oss-20b:free
+
+    # Google
+    - name: gemini-3.5-flash
+      provider: google
+      api-key: ${GOOGLE_KEY}
+      model: gemini-3.5-flash
+      requests-per-minute: 5
+    - name: gemini-3.5-flash_2
+      provider: google
+      api-key: ${GOOGLE_KEY_2}
+      model: gemini-3.5-flash
+      requests-per-minute: 5
+    - name: gemini-3.5-flash_3
+      provider: google
+      api-key: ${GOOGLE_KEY_3}
+      model: gemini-3.5-flash
+      requests-per-minute: 5
+    - name: gemini-3.5-flash_4
+      provider: google
+      api-key: ${GOOGLE_KEY_4}
+      model: gemini-3.5-flash
+      requests-per-minute: 5
+    - name: gemini-3.5-flash-specialist
+      provider: google
+      api-key: ${GOOGLE_KEY}
+      model: gemini-3.5-flash
+      requests-per-minute: 5
+      chunk-size: 1
+    - name: gemini-3.5-flash_2-specialist
+      provider: google
+      api-key: ${GOOGLE_KEY_2}
+      model: gemini-3.5-flash
+      requests-per-minute: 5
+      chunk-size: 1
+    - name: gemini-3.5-flash_3-specialist
+      provider: google
+      api-key: ${GOOGLE_KEY_3}
+      model: gemini-3.5-flash
+      requests-per-minute: 5
+      chunk-size: 1
+    - name: gemini-3.5-flash_4-specialist
+      provider: google
+      api-key: ${GOOGLE_KEY_4}
+      model: gemini-3.5-flash
+      requests-per-minute: 5
+      chunk-size: 1
+    - name: gemini-3.1-flash-lite
+      provider: google
+      api-key: ${GOOGLE_KEY}
+      model: gemini-3.1-flash-lite
+      requests-per-minute: 15
+    - name: gemini-3.1-flash-lite_2
+      provider: google
+      api-key: ${GOOGLE_KEY_2}
+      model: gemini-3.1-flash-lite
+      requests-per-minute: 15
+    - name: gemini-3.1-flash-lite_3
+      provider: google
+      api-key: ${GOOGLE_KEY_3}
+      model: gemini-3.1-flash-lite
+      requests-per-minute: 15
+    - name: gemini-3.1-flash-lite_4
+      provider: google
+      api-key: ${GOOGLE_KEY_4}
+      model: gemini-3.1-flash-lite
+      requests-per-minute: 15
+    - name: gemini-3.1-flash-lite-specialist
+      provider: google
+      api-key: ${GOOGLE_KEY}
+      model: gemini-3.1-flash-lite
+      requests-per-minute: 15
+      chunk-size: 1
+    - name: gemini-3.1-flash-lite_2-specialist
+      provider: google
+      api-key: ${GOOGLE_KEY_2}
+      model: gemini-3.1-flash-lite
+      requests-per-minute: 15
+      chunk-size: 1
+    - name: gemini-3.1-flash-lite_3-specialist
+      provider: google
+      api-key: ${GOOGLE_KEY_3}
+      model: gemini-3.1-flash-lite
+      requests-per-minute: 15
+      chunk-size: 1
+    - name: gemini-3.1-flash-lite_4-specialist
+      provider: google
+      api-key: ${GOOGLE_KEY_4}
+      model: gemini-3.1-flash-lite
+      requests-per-minute: 15
+      chunk-size: 1
+    - name: gemini-3-flash
+      provider: google
+      api-key: ${GOOGLE_KEY}
+      model: gemini-3-flash-preview
+      requests-per-minute: 5
+    - name: gemini-3-flash_2
+      provider: google
+      api-key: ${GOOGLE_KEY_2}
+      model: gemini-3-flash-preview
+      requests-per-minute: 5
+    - name: gemini-3-flash_3
+      provider: google
+      api-key: ${GOOGLE_KEY_3}
+      model: gemini-3-flash-preview
+      requests-per-minute: 5
+    - name: gemini-3-flash_4
+      provider: google
+      api-key: ${GOOGLE_KEY_4}
+      model: gemini-3-flash-preview
+      requests-per-minute: 5
+    - name: gemini-3-flash-specialist
+      provider: google
+      api-key: ${GOOGLE_KEY}
+      model: gemini-3-flash-preview
+      requests-per-minute: 5
+      chunk-size: 1
+    - name: gemini-3-flash_2-specialist
+      provider: google
+      api-key: ${GOOGLE_KEY_2}
+      model: gemini-3-flash-preview
+      requests-per-minute: 5
+      chunk-size: 1
+    - name: gemini-3-flash_3-specialist
+      provider: google
+      api-key: ${GOOGLE_KEY_3}
+      model: gemini-3-flash-preview
+      requests-per-minute: 5
+      chunk-size: 1
+    - name: gemini-3-flash_4-specialist
+      provider: google
+      api-key: ${GOOGLE_KEY_4}
+      model: gemini-3-flash-preview
+      requests-per-minute: 5
+      chunk-size: 1
 
 finnhub:
   api-keys: ${FINNHUB_KEYS}

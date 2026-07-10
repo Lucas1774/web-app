@@ -15,24 +15,36 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import static com.lucas.server.common.Constants.Clients.DEEPSEEK_R1;
-import static com.lucas.server.common.Constants.Clients.DEEPSEEK_R1_0528;
-import static com.lucas.server.common.Constants.Clients.DEEPSEEK_R1_0528_2;
-import static com.lucas.server.common.Constants.Clients.DEEPSEEK_R1_0528_3;
-import static com.lucas.server.common.Constants.Clients.DEEPSEEK_R1_0528_4;
-import static com.lucas.server.common.Constants.Clients.DEEPSEEK_R1_0528_5;
-import static com.lucas.server.common.Constants.Clients.DEEPSEEK_R1_0528_6;
+import static com.lucas.server.common.Constants.Clients.GEMINI_3_1_FLASH_LITE;
+import static com.lucas.server.common.Constants.Clients.GEMINI_3_1_FLASH_LITE_2;
+import static com.lucas.server.common.Constants.Clients.GEMINI_3_1_FLASH_LITE_3;
+import static com.lucas.server.common.Constants.Clients.GEMINI_3_1_FLASH_LITE_4;
+import static com.lucas.server.common.Constants.Clients.GEMINI_3_5_FLASH_2_SPECIALIST;
+import static com.lucas.server.common.Constants.Clients.GEMINI_3_5_FLASH_3_SPECIALIST;
+import static com.lucas.server.common.Constants.Clients.GEMINI_3_5_FLASH_4_SPECIALIST;
+import static com.lucas.server.common.Constants.Clients.GEMINI_3_5_FLASH_SPECIALIST;
+import static com.lucas.server.common.Constants.Clients.GEMINI_3_FLASH_2_SPECIALIST;
+import static com.lucas.server.common.Constants.Clients.GEMINI_3_FLASH_3_SPECIALIST;
+import static com.lucas.server.common.Constants.Clients.GEMINI_3_FLASH_4_SPECIALIST;
+import static com.lucas.server.common.Constants.Clients.GEMINI_3_FLASH_SPECIALIST;
 import static com.lucas.server.common.Constants.Clients.GPT_4_1;
 import static com.lucas.server.common.Constants.Clients.GPT_4_1_2;
 import static com.lucas.server.common.Constants.Clients.GPT_4_1_3;
 import static com.lucas.server.common.Constants.Clients.GPT_4_1_4;
 import static com.lucas.server.common.Constants.Clients.GPT_4_1_5;
 import static com.lucas.server.common.Constants.Clients.GPT_4_1_6;
-import static com.lucas.server.common.Constants.Clients.GPT_OSS;
-import static com.lucas.server.common.Constants.Clients.GPT_OSS_2;
-import static com.lucas.server.common.Constants.Clients.GPT_OSS_3;
-import static com.lucas.server.common.Constants.Clients.GPT_OSS_4;
+import static com.lucas.server.common.Constants.Clients.NEMOTRON_3_ULTRA;
+import static com.lucas.server.common.Constants.Clients.NEMOTRON_3_ULTRA_2;
+import static com.lucas.server.common.Constants.Clients.NEMOTRON_3_ULTRA_3;
+import static com.lucas.server.common.Constants.Clients.NEMOTRON_3_ULTRA_4;
+import static com.lucas.server.common.Constants.Clients.NEMOTRON_3_ULTRA_5;
+import static com.lucas.server.common.Constants.Clients.OPENROUTER;
+import static com.lucas.server.common.Constants.Clients.OPENROUTER_2;
+import static com.lucas.server.common.Constants.Clients.OPENROUTER_3;
+import static com.lucas.server.common.Constants.Clients.OPENROUTER_4;
+import static com.lucas.server.common.Constants.Clients.OPENROUTER_5;
 import static com.lucas.server.common.Constants.Sector.COMMUNICATION_SERVICES;
 import static com.lucas.server.common.Constants.Sector.CONSUMER_DISCRETIONARY;
 import static com.lucas.server.common.Constants.Sector.CONSUMER_STAPLES;
@@ -62,15 +74,15 @@ public final class Constants {
     public static final int DATABASE_NEWS_PER_SYMBOL = 20;
     public static final int DATABASE_MARKET_DATA_PER_SYMBOL = 100;
     public static final int DATABASE_RECOMMENDATIONS_PER_SYMBOL = 30;
-    public static final int MAX_RECOMMENDATIONS_COUNT = 36;
+    public static final int MAX_RECOMMENDATIONS_COUNT = 80;
     public static final int REQUEST_MAX_ATTEMPTS = 2;
     public static final int RECOMMENDATION_MAX_ATTEMPTS = 5;
     public static final int MAX_REQUESTS_PER_SECOND = 10;
     public static final int CLIENT_ROTATION_DEBOUNCE_MS = 200;
     public static final int FINNHUB_RATE_LIMITER_ROTATION_DEBOUNCE_MS = 50;
 
-    public static final BigDecimal RECOMMENDATION_MEDIUM_GRAIN_THRESHOLD = BigDecimal.valueOf(0.75);
-    public static final BigDecimal RECOMMENDATION_FINE_GRAIN_THRESHOLD = BigDecimal.valueOf(0.75);
+    public static final BigDecimal RECOMMENDATION_MEDIUM_GRAIN_THRESHOLD = BigDecimal.valueOf(0.5);
+    public static final BigDecimal RECOMMENDATION_FINE_GRAIN_THRESHOLD = BigDecimal.valueOf(0.5);
     public static final String SHEET_CORNERS = "UFR";
     public static final String SHEET_EDGES = "UF";
     public static final String SHEET_PARITY = "Parity";
@@ -83,6 +95,7 @@ public final class Constants {
     public static final String TIME_SERIES = "/time_series";
     public static final String ANALYZE = "/analyze";
     public static final String SYMBOL = "symbol";
+    public static final String PARTS = "parts";
     public static final String CONTENT = "content";
     public static final String ROLE = "role";
     public static final String BUY = "BUY";
@@ -630,13 +643,7 @@ public final class Constants {
     public static final Set<String> SP500_SYMBOLS = Set.copyOf(SYMBOL_TO_SECTOR.keySet());
     public static final int SCHEDULED_RECOMMENDATIONS_COUNT = SP500_SYMBOLS.size();
     // If a model here has a specialist version, that one will be assumed to output a thinking block too
-    private static final Set<Clients> CLIENTS_WITH_THINKING_BLOCK = Set.of(DEEPSEEK_R1,
-            DEEPSEEK_R1_0528,
-            DEEPSEEK_R1_0528_2,
-            DEEPSEEK_R1_0528_3,
-            DEEPSEEK_R1_0528_4,
-            DEEPSEEK_R1_0528_5,
-            DEEPSEEK_R1_0528_6);
+    private static final Set<Clients> CLIENTS_WITH_THINKING_BLOCK = Set.of();
     private static final String FINNHUB_RATE_LIMITER = "finnhubRateLimiter";
     private static final String FINNHUB_RATE_LIMITER_2 = "finnhubRateLimiter2";
     private static final String FINNHUB_RATE_LIMITER_3 = "finnhubRateLimiter3";
@@ -660,28 +667,39 @@ public final class Constants {
                     LocalDate.of(2026, Month.NOVEMBER, 26), // Thanksgiving
                     LocalDate.of(2026, Month.DECEMBER, 25)  // Christmas Day
             );
-    private static final Set<Clients> REASONING_CLIENTS = Set.of(DEEPSEEK_R1_0528,
-            DEEPSEEK_R1_0528_2,
-            DEEPSEEK_R1_0528_3,
-            DEEPSEEK_R1_0528_4,
-            DEEPSEEK_R1_0528_5,
-            DEEPSEEK_R1_0528_6);
-    private static final Set<Clients> GPT_CLIENTS =
+    private static final Set<Clients> GPT_4_1_CLIENTS =
             Set.of(GPT_4_1, GPT_4_1_2, GPT_4_1_3, GPT_4_1_4, GPT_4_1_5, GPT_4_1_6);
-    private static final Set<Clients> GPT_OSS_CLIENTS = Set.of(GPT_OSS, GPT_OSS_2, GPT_OSS_3, GPT_OSS_4);
+    private static final Set<Clients> OPENROUTER_CLIENTS =
+            Set.of(OPENROUTER, OPENROUTER_2, OPENROUTER_3, OPENROUTER_4, OPENROUTER_5);
+    private static final Set<Clients> NEMOTRON_3_ULTRA_CLIENTS =
+            Set.of(NEMOTRON_3_ULTRA, NEMOTRON_3_ULTRA_2, NEMOTRON_3_ULTRA_3, NEMOTRON_3_ULTRA_4, NEMOTRON_3_ULTRA_5);
+    private static final Set<Clients> GEMINI_3_5_FLASH_SPECIALIST_CLIENTS = Set.of(GEMINI_3_5_FLASH_SPECIALIST,
+            GEMINI_3_5_FLASH_2_SPECIALIST,
+            GEMINI_3_5_FLASH_3_SPECIALIST,
+            GEMINI_3_5_FLASH_4_SPECIALIST);
+    private static final Set<Clients> GEMINI_3_1_FLASH_LITE_CLIENTS =
+            Set.of(GEMINI_3_1_FLASH_LITE, GEMINI_3_1_FLASH_LITE_2, GEMINI_3_1_FLASH_LITE_3, GEMINI_3_1_FLASH_LITE_4);
+    private static final Set<Clients> GEMINI_3_FLASH_SPECIALIST_CLIENTS = Set.of(GEMINI_3_FLASH_SPECIALIST,
+            GEMINI_3_FLASH_2_SPECIALIST,
+            GEMINI_3_FLASH_3_SPECIALIST,
+            GEMINI_3_FLASH_4_SPECIALIST);
     private static final Map<RecommendationMode, Set<String>> modeToClientNames = new EnumMap<>(Map.of(
             RecommendationMode.FIRST_ITERATION,
-            GPT_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet()),
+            OPENROUTER_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet()),
+            RecommendationMode.FIRST_ITERATION_BACKUP,
+            GEMINI_3_1_FLASH_LITE_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet()),
             RecommendationMode.SECOND_ITERATION,
-            GPT_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet()),
+            NEMOTRON_3_ULTRA_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet()),
+            RecommendationMode.SECOND_ITERATION_BACKUP,
+            GEMINI_3_1_FLASH_LITE_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet()),
             RecommendationMode.FINE_GRAIN,
-            REASONING_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet()),
+            GEMINI_3_5_FLASH_SPECIALIST_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet()),
+            RecommendationMode.FINE_GRAIN_BACKUP,
+            GEMINI_3_FLASH_SPECIALIST_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet()),
             RecommendationMode.RANDOM,
-            GPT_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet()),
+            GPT_4_1_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet()),
             RecommendationMode.NOT_RANDOM,
-            GPT_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet()),
-            RecommendationMode.BACKUP,
-            GPT_OSS_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet())));
+            GPT_4_1_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet())));
 
     private static final Map<String, String> ENTITY_MAP = Map.ofEntries(Map.entry("&quot;", "\""),
             Map.entry("&#39;", "'"),
@@ -733,6 +751,13 @@ public final class Constants {
                 .filter(clientNameToClient -> modeToClientNames.get(recommendationMode)
                         .contains(clientNameToClient.getKey()))
                 .map(Map.Entry::getValue)
+                .collect(Collectors.toUnmodifiableSet());
+    }
+
+    public static Set<String> getFineGrainClientNames(Map<String, AiClient> allClients) {
+        return Stream.of(RecommendationMode.FINE_GRAIN, RecommendationMode.FINE_GRAIN_BACKUP)
+                .flatMap(mode -> filterClients(allClients, mode).stream())
+                .map(c -> c.getConfig().name())
                 .collect(Collectors.toUnmodifiableSet());
     }
 
@@ -789,11 +814,13 @@ public final class Constants {
 
     public enum RecommendationMode {
         FIRST_ITERATION,
+        FIRST_ITERATION_BACKUP,
         SECOND_ITERATION,
+        SECOND_ITERATION_BACKUP,
+        FINE_GRAIN_BACKUP,
         FINE_GRAIN,
         RANDOM,
-        NOT_RANDOM,
-        BACKUP
+        NOT_RANDOM
     }
 
     @SuppressWarnings("unused")
@@ -810,47 +837,55 @@ public final class Constants {
         GPT_4_1_4_SPECIALIST("gpt-4.1_4-specialist"),
         GPT_4_1_5_SPECIALIST("gpt-4.1_5-specialist"),
         GPT_4_1_6_SPECIALIST("gpt-4.1_6-specialist"),
-        GPT_4_1_MINI("gpt-4.1-mini"),
-        GPT_4_1_NANO("gpt-4.1-nano"),
         GPT_4O("gpt-4o"),
+        GPT_4_1_MINI("gpt-4.1-mini"),
         GPT_4O_MINI("gpt-4o-mini"),
-        DEEPSEEK_R1_0528("deepseek-r1-0528"),
-        DEEPSEEK_R1_0528_2("deepseek-r1-0528_2"),
-        DEEPSEEK_R1_0528_3("deepseek-r1-0528_3"),
-        DEEPSEEK_R1_0528_4("deepseek-r1-0528_4"),
-        DEEPSEEK_R1_0528_5("deepseek-r1-0528_5"),
-        DEEPSEEK_R1_0528_6("deepseek-r1-0528_6"),
-        DEEPSEEK_R1_0528_SPECIALIST("deepseek-r1-0528-specialist"),
-        DEEPSEEK_R1_0528_2_SPECIALIST("deepseek-r1-0528_2-specialist"),
-        DEEPSEEK_R1_0528_3_SPECIALIST("deepseek-r1-0528_3-specialist"),
-        DEEPSEEK_R1_0528_4_SPECIALIST("deepseek-r1-0528_4-specialist"),
-        DEEPSEEK_R1_0528_5_SPECIALIST("deepseek-r1-0528_5-specialist"),
-        DEEPSEEK_R1_0528_6_SPECIALIST("deepseek-r1-0528_6-specialist"),
-        GPT_OSS("gpt-oss"),
-        GPT_OSS_2("gpt-oss_2"),
-        GPT_OSS_3("gpt-oss_3"),
-        GPT_OSS_4("gpt-oss_4"),
+        GPT_4_1_NANO("gpt-4.1-nano"),
+        LLAMA_3_3_70B("llama-3.3-70b"),
+        COMMAND_A("command-a"),
+        MINISTRAL_3B("ministral-3b"),
+        PHI_4("phi-4"),
+
         OPENROUTER("openrouter"),
         OPENROUTER_2("openrouter_2"),
         OPENROUTER_3("openrouter_3"),
         OPENROUTER_4("openrouter_4"),
-        DEEPSEEK_R1("deepseek-r1"),
-        DEEPSEEK_V3("deepseek-v3"),
-        GROK_3("grok-3"),
-        GROK_3_2("grok-3_2"),
-        GROK_3_3("grok-3_3"),
-        GROK_3_4("grok-3_4"),
-        GROK_3_5("grok-3_5"),
-        GROK_3_6("grok-3_6"),
-        LLAMA_3_3_70B("llama-3.3-70b"),
-        LLAMA_3_1_405B("llama-3.1-405b"),
-        LLAMA_3_1_8B("llama-3.1-8b"),
-        A21_JAMBA("a21-jamba"),
-        COMMAND_R_PLUS_2024("command-r-plus-2024"),
-        COMMAND_R_2024("command-r-2024"),
-        COMMAND_A("command-a"),
-        MINISTRAL_3B("ministral-3b"),
-        PHI_4("phi-4");
+        OPENROUTER_5("openrouter_5"),
+        NEMOTRON_3_ULTRA("nemotron-3-ultra"),
+        NEMOTRON_3_ULTRA_2("nemotron-3-ultra_2"),
+        NEMOTRON_3_ULTRA_3("nemotron-3-ultra_3"),
+        NEMOTRON_3_ULTRA_4("nemotron-3-ultra_4"),
+        NEMOTRON_3_ULTRA_5("nemotron-3-ultra_5"),
+        GPT_OSS("gpt-oss"),
+        GPT_OSS_2("gpt-oss_2"),
+        GPT_OSS_3("gpt-oss_3"),
+        GPT_OSS_4("gpt-oss_4"),
+        GPT_OSS_5("gpt-oss_5"),
+
+        GEMINI_3_5_FLASH("gemini-3.5-flash"),
+        GEMINI_3_5_FLASH_2("gemini-3.5-flash_2"),
+        GEMINI_3_5_FLASH_3("gemini-3.5-flash_3"),
+        GEMINI_3_5_FLASH_4("gemini-3.5-flash_4"),
+        GEMINI_3_5_FLASH_SPECIALIST("gemini-3.5-flash-specialist"),
+        GEMINI_3_5_FLASH_2_SPECIALIST("gemini-3.5-flash_2-specialist"),
+        GEMINI_3_5_FLASH_3_SPECIALIST("gemini-3.5-flash_3-specialist"),
+        GEMINI_3_5_FLASH_4_SPECIALIST("gemini-3.5-flash_4-specialist"),
+        GEMINI_3_1_FLASH_LITE("gemini-3.1-flash-lite"),
+        GEMINI_3_1_FLASH_LITE_2("gemini-3.1-flash-lite_2"),
+        GEMINI_3_1_FLASH_LITE_3("gemini-3.1-flash-lite_3"),
+        GEMINI_3_1_FLASH_LITE_4("gemini-3.1-flash-lite_4"),
+        GEMINI_3_1_FLASH_LITE_SPECIALIST("gemini-3.1-flash-lite-specialist"),
+        GEMINI_3_1_FLASH_LITE_2_SPECIALIST("gemini-3.1-flash-lite_2-specialist"),
+        GEMINI_3_1_FLASH_LITE_3_SPECIALIST("gemini-3.1-flash-lite_3-specialist"),
+        GEMINI_3_1_FLASH_LITE_4_SPECIALIST("gemini-3.1-flash-lite_4-specialist"),
+        GEMINI_3_FLASH("gemini-3-flash"),
+        GEMINI_3_FLASH_2("gemini-3-flash_2"),
+        GEMINI_3_FLASH_3("gemini-3-flash_3"),
+        GEMINI_3_FLASH_4("gemini-3-flash_4"),
+        GEMINI_3_FLASH_SPECIALIST("gemini-3-flash-specialist"),
+        GEMINI_3_FLASH_2_SPECIALIST("gemini-3-flash_2-specialist"),
+        GEMINI_3_FLASH_3_SPECIALIST("gemini-3-flash_3-specialist"),
+        GEMINI_3_FLASH_4_SPECIALIST("gemini-3-flash_4-specialist");
 
         private final String label;
 
@@ -887,5 +922,11 @@ public final class Constants {
         public String toString() {
             return label;
         }
+    }
+
+    public enum AiProvider {
+        GITHUB,
+        OPENROUTER,
+        GOOGLE
     }
 }

@@ -114,18 +114,10 @@ public class DailyScheduler {
 
     @SuppressWarnings("SameParameterValue")
     private void doMorningTask(Set<String> symbolNames) {
-        Set<AiClient> firstIterationClients = filterClients(clients, RecommendationMode.FIRST_ITERATION);
-        Set<AiClient> secondIterationClients = filterClients(clients, RecommendationMode.SECOND_ITERATION);
-        Set<AiClient> fineGrainClients = filterClients(clients, RecommendationMode.FINE_GRAIN);
-        Set<AiClient> backupClients = filterClients(clients, RecommendationMode.BACKUP);
-        int cheekyRuns = MAX_RECOMMENDATIONS_COUNT / fineGrainClients.stream()
-                .mapToInt(c -> c.getConfig().chunkSize())
-                .min()
-                .orElseThrow();
         Set<RecommendationDomain> updatedRecommendations = dataManager.getRandomRecommendations(symbolNames,
-                firstIterationClients,
-                new DataManager.CheekyClients(fineGrainClients, cheekyRuns),
-                backupClients,
+                filterClients(clients, RecommendationMode.FIRST_ITERATION),
+                DataManager.CheekyClients.empty(),
+                filterClients(clients, RecommendationMode.FIRST_ITERATION_BACKUP),
                 PortfolioType.REAL,
                 SCHEDULED_RECOMMENDATIONS_COUNT,
                 true,
@@ -141,13 +133,19 @@ public class DailyScheduler {
         LocalDate now = LocalDate.now(UTC_ZONE);
         Set<Long> topRecommendedSymbols =
                 dataManager.getTopRecommendedSymbols(BUY, RECOMMENDATION_MEDIUM_GRAIN_THRESHOLD, now);
-        getRecommendations(topRecommendedSymbols, secondIterationClients, backupClients, false, false);
+        getRecommendations(topRecommendedSymbols,
+                filterClients(clients, RecommendationMode.SECOND_ITERATION),
+                filterClients(clients, RecommendationMode.SECOND_ITERATION_BACKUP),
+                false);
         OrderedIndexedSet<Long> topRecommendedSymbolsAfterMediumGrain =
                 dataManager.getTopRecommendedSymbols(BUY, RECOMMENDATION_FINE_GRAIN_THRESHOLD, now)
                         .stream()
                         .limit(MAX_RECOMMENDATIONS_COUNT)
                         .collect(OrderedIndexedSet.toUnmodifiableOrderedIndexedSet());
-        getRecommendations(topRecommendedSymbolsAfterMediumGrain, fineGrainClients, Set.of(), true, true);
+        getRecommendations(topRecommendedSymbolsAfterMediumGrain,
+                filterClients(clients, RecommendationMode.FINE_GRAIN),
+                filterClients(clients, RecommendationMode.FINE_GRAIN_BACKUP),
+                true);
         publisher.publish("jobs", "job done");
 
         Set<NewsDomain> removedNews = dataManager.removeOldNews(DATABASE_NEWS_PER_SYMBOL);
@@ -180,8 +178,7 @@ public class DailyScheduler {
     private void getRecommendations(Set<Long> topRecommendedSymbols,
                                     Set<AiClient> clients,
                                     Set<AiClient> backupClients,
-                                    boolean fetchPremarket,
-                                    boolean useOldNews) {
+                                    boolean fetchPremarket) {
         Set<RecommendationDomain> updatedRecommendations = dataManager.getRecommendationsById(topRecommendedSymbols,
                 clients,
                 DataManager.CheekyClients.empty(),
@@ -190,7 +187,7 @@ public class DailyScheduler {
                 true,
                 true,
                 fetchPremarket,
-                useOldNews);
+                true);
         String message = String.format("generated %d recommendations", updatedRecommendations.size());
         log.info(SCHEDULED_TASK_SUCCESS_INFO,
                 message,

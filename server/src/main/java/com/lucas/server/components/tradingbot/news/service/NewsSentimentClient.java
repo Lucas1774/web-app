@@ -34,7 +34,7 @@ public class NewsSentimentClient {
     @Retryable(retryFor = {ClientException.class, MappingException.class}, maxAttempts = REQUEST_MAX_ATTEMPTS)
     public NewsDomain generateSentiment(NewsDomain news) throws ClientException, MappingException {
         log.info(RETRIEVING_DATA_INFO, SENTIMENT, news);
-        return mapper.map(httpRequestClient.fetch(url + ANALYZE, news.getHeadline() + " [SEP] " + news.getSummary()),
+        return mapper.map(httpRequestClient.post(url + ANALYZE, news.getHeadline() + " [SEP] " + news.getSummary()),
                 news);
     }
 }

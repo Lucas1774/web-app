@@ -1,6 +1,7 @@
 package com.lucas.server.common;
 
 import com.lucas.server.common.exception.ClientException;
+import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -24,7 +25,7 @@ public class HttpRequestClient {
     private final RestTemplate restTemplate;
     private final DocumentBuilderFactory documentBuilderFactory;
 
-    public JsonNode fetch(String url, boolean mockUserAgent) throws ClientException {
+    public JsonNode get(String url, boolean mockUserAgent) throws ClientException {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
         if (mockUserAgent) {
@@ -38,7 +39,23 @@ public class HttpRequestClient {
         }
     }
 
-    public JsonNode fetch(String url, String body) throws ClientException {
+    public Document get(String url) throws ClientException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(List.of(MediaType.APPLICATION_XML, MediaType.TEXT_XML));
+        mockUserAgent(headers);
+        HttpEntity<Void> request = new HttpEntity<>(headers);
+        try {
+            return documentBuilderFactory.newDocumentBuilder()
+                    .parse(new ByteArrayInputStream(Objects.requireNonNull(restTemplate.exchange(url,
+                            HttpMethod.GET,
+                            request,
+                            String.class).getBody()).getBytes(StandardCharsets.UTF_8)));
+        } catch (Exception e) {
+            throw new ClientException(e);
+        }
+    }
+
+    public JsonNode post(String url, String body) throws ClientException {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
         headers.setContentType(MediaType.TEXT_PLAIN);
@@ -50,33 +67,20 @@ public class HttpRequestClient {
         }
     }
 
-    public JsonNode fetch(String url, String apiKey, JsonNode body, boolean mockUserAgent) throws ClientException {
+    public JsonNode post(String url, @Nullable String apiKey, JsonNode body, boolean mockUserAgent)
+            throws ClientException {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth(apiKey);
+        if (null != apiKey && !apiKey.isBlank()) {
+            headers.setBearerAuth(apiKey);
+        }
         if (mockUserAgent) {
             mockUserAgent(headers);
         }
         HttpEntity<JsonNode> request = new HttpEntity<>(body, headers);
         try {
             return restTemplate.exchange(url, HttpMethod.POST, request, JsonNode.class).getBody();
-        } catch (Exception e) {
-            throw new ClientException(e);
-        }
-    }
-
-    public Document fetch(String url) throws ClientException {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setAccept(List.of(MediaType.APPLICATION_XML, MediaType.TEXT_XML));
-        mockUserAgent(headers);
-        HttpEntity<Void> request = new HttpEntity<>(headers);
-        try {
-            return documentBuilderFactory.newDocumentBuilder()
-                    .parse(new ByteArrayInputStream(Objects.requireNonNull(restTemplate.exchange(url,
-                            HttpMethod.GET,
-                            request,
-                            String.class).getBody()).getBytes(StandardCharsets.UTF_8)));
         } catch (Exception e) {
             throw new ClientException(e);
         }

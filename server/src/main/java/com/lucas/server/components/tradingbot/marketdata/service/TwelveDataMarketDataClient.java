@@ -7,7 +7,7 @@ import com.lucas.server.components.tradingbot.marketdata.dto.MarketDataDomain;
 import com.lucas.server.components.tradingbot.marketdata.mapper.TwelveDataMarketResponseMapper;
 import com.lucas.utils.exception.MappingException;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
-import com.lucas.utils.ratelimiter.SlidingWindowRateLimiter;
+import com.lucas.utils.ratelimiter.DefaultSlidingWindowRateLimiter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Retryable;
@@ -40,13 +40,13 @@ public class TwelveDataMarketDataClient {
                     MarketDataType.HISTORIC,
                     builder -> builder.queryParam("interval", "1day")));
     private final HttpRequestClient httpRequestClient;
-    private final SlidingWindowRateLimiter rateLimiter;
+    private final DefaultSlidingWindowRateLimiter rateLimiter;
     private final String endpoint;
     private final String apiKey;
     private final Map<MarketDataType, TwelveDataMarketDataClient.JsonToMarketDataFunction> typeToMapper;
 
     public TwelveDataMarketDataClient(HttpRequestClient httpRequestClient,
-                                      Map<String, SlidingWindowRateLimiter> rateLimiters,
+                                      Map<String, DefaultSlidingWindowRateLimiter> rateLimiters,
                                       TwelveDataMarketResponseMapper mapper,
                                       @Value("${twelve-data.endpoint}") String endpoint,
                                       @Value("${twelve-data.api-key}") String apiKey) {
@@ -72,7 +72,7 @@ public class TwelveDataMarketDataClient {
                 .build()
                 .toUriString();
 
-        return typeToMapper.get(type).apply(symbol, httpRequestClient.fetch(url, false));
+        return typeToMapper.get(type).apply(symbol, httpRequestClient.get(url, false));
     }
 
     @FunctionalInterface

@@ -56,7 +56,7 @@ def on_message(message_client, _userdata, msg):
 
 CLIENT_PORTAL_PATH = Path.home() / "AppData" / "Local" / "ibkr" / "Client Portal"
 BASE = "https://localhost:5000/v1/api"
-SYMBOLS_URL = "https://ferafera.ddns.net/recommendations/daily/0.75"
+SYMBOLS_URL = "https://ferafera.ddns.net/recommendations/daily/0.7"
 WATCHLIST = "dailyWatchlist"
 SCRIPT_DIR = Path(__file__).resolve().parent
 CONID_MAP_FILE = SCRIPT_DIR / "conids.json"

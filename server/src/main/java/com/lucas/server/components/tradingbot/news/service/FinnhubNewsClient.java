@@ -53,6 +53,6 @@ public class FinnhubNewsClient {
                 .queryParam("token", apiKey)
                 .toUriString();
 
-        return mapper.mapAll(httpRequestClient.fetch(url, false), symbol);
+        return mapper.mapAll(httpRequestClient.get(url, false), symbol);
     }
 }

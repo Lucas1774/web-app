@@ -1,8 +1,10 @@
 package com.lucas.server.components.tradingbot.config;
 
+import com.lucas.server.common.Constants;
 import com.lucas.server.common.HttpRequestClient;
 import com.lucas.server.components.tradingbot.common.AiClient;
 import com.lucas.utils.ratelimiter.CompletionSlidingWindowRateLimiter;
+import com.lucas.utils.ratelimiter.DefaultSlidingWindowRateLimiter;
 import com.lucas.utils.ratelimiter.SlidingWindowRateLimiter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,6 +17,9 @@ import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
+import static com.lucas.server.common.Constants.AiProvider.GITHUB;
+import static com.lucas.server.common.Constants.AiProvider.GOOGLE;
+import static com.lucas.server.common.Constants.AiProvider.OPENROUTER;
 import static com.lucas.server.common.Constants.TWELVEDATA_RATE_LIMITER;
 import static com.lucas.server.common.Constants.YAHOO_FINANCE_RATE_LIMITER;
 import static com.lucas.server.common.Constants.getFinnhubRateLimiterNames;
@@ -24,14 +29,30 @@ import static com.lucas.utils.Utils.EMPTY_STRING;
 @Configuration
 public class HttpClientConfig {
 
+    private static final Map<Constants.AiProvider, Function<AiProperties.DeploymentProperties, SlidingWindowRateLimiter>>
+            providerToPerMinuteRateLimiter = Map.of(OPENROUTER,
+            config -> new DefaultSlidingWindowRateLimiter(config.requestsPerMinute(), Duration.ofMinutes(1)),
+            GOOGLE,
+            config -> new DefaultSlidingWindowRateLimiter(config.requestsPerMinute(), Duration.ofMinutes(1)),
+            GITHUB,
+            config -> new CompletionSlidingWindowRateLimiter(config.requestsPerMinute(), Duration.ofMinutes(1)));
+    private static final Map<Constants.AiProvider, Function<AiProperties.DeploymentProperties, SlidingWindowRateLimiter>>
+            providerToConcurrentRateLimiter = Map.of(OPENROUTER,
+            config -> new DefaultSlidingWindowRateLimiter(config.concurrentRequests(), Duration.ofSeconds(1)),
+            GOOGLE,
+            config -> new DefaultSlidingWindowRateLimiter(config.concurrentRequests(), Duration.ofSeconds(1)),
+            GITHUB,
+            config -> new CompletionSlidingWindowRateLimiter(config.concurrentRequests(), Duration.ofSeconds(1)));
+    private static final String SPECIALIST = "-specialist";
+
     @Bean
-    public Map<String, SlidingWindowRateLimiter> rateLimiters() {
-        Map<String, SlidingWindowRateLimiter> res = new HashMap<>();
-        res.put(TWELVEDATA_RATE_LIMITER, new SlidingWindowRateLimiter(8, Duration.ofMinutes(1)));
-        res.put(YAHOO_FINANCE_RATE_LIMITER, new SlidingWindowRateLimiter(1, Duration.ofSeconds(1).dividedBy(4)));
+    public Map<String, DefaultSlidingWindowRateLimiter> rateLimiters() {
+        Map<String, DefaultSlidingWindowRateLimiter> res = new HashMap<>();
+        res.put(TWELVEDATA_RATE_LIMITER, new DefaultSlidingWindowRateLimiter(8, Duration.ofMinutes(1)));
+        res.put(YAHOO_FINANCE_RATE_LIMITER, new DefaultSlidingWindowRateLimiter(1, Duration.ofSeconds(1).dividedBy(4)));
         // spread requests are needed for Finnhub, even if its documentation suggests otherwise (60 / minute).
         getFinnhubRateLimiterNames().forEach(name -> res.put(name,
-                new SlidingWindowRateLimiter(1, Duration.ofSeconds(1))));
+                new DefaultSlidingWindowRateLimiter(1, Duration.ofSeconds(1))));
 
         return res;
     }
@@ -40,34 +61,33 @@ public class HttpClientConfig {
     public Map<String, AiClient> clients(HttpRequestClient httpClient,
                                          AiProperties aiProps,
                                          ObjectMapper objectMapper) {
-        Map<String, SlidingWindowRateLimiter> rateLimiters = aiProps.getDeployments()
+        Map<String, DefaultSlidingWindowRateLimiter> rateLimiters = aiProps.getDeployments()
                 .stream()
+                .filter(d -> GITHUB.equals(d.provider()))
                 .map(AiProperties.DeploymentProperties::apiKey)
                 .collect(Collectors.toUnmodifiableMap(Function.identity(),
-                        _ -> new SlidingWindowRateLimiter(24, Duration.ofMinutes(1)),
+                        _ -> new DefaultSlidingWindowRateLimiter(24, Duration.ofMinutes(1)),
                         (a, _) -> a));
         Map<String, AiClient> res = aiProps.getDeployments()
                 .stream()
-                .filter(d -> !d.name().contains("specialist"))
+                .filter(d -> !d.name().contains(SPECIALIST))
                 .collect(Collectors.toMap(AiProperties.DeploymentProperties::name,
                         config -> new AiClient(config,
-                                new CompletionSlidingWindowRateLimiter(config.requestsPerMinute(),
-                                        Duration.ofMinutes(1)),
-                                new CompletionSlidingWindowRateLimiter(config.concurrentRequests(),
-                                        Duration.ofSeconds(1)),
+                                providerToPerMinuteRateLimiter.get(config.provider()).apply(config),
+                                providerToConcurrentRateLimiter.get(config.provider()).apply(config),
                                 rateLimiters.get(config.apiKey()),
                                 objectMapper,
                                 httpClient,
                                 sanitizer(getModelsWithThinkingBlock().contains(config.name())))));
         res.putAll(aiProps.getDeployments()
                 .stream()
-                .filter(d -> d.name().contains("-specialist"))
+                .filter(d -> d.name().contains(SPECIALIST))
                 .collect(Collectors.toUnmodifiableMap(AiProperties.DeploymentProperties::name, config -> {
-                    String baseName = config.name().replace("-specialist", EMPTY_STRING);
+                    String baseName = config.name().replace(SPECIALIST, EMPTY_STRING);
                     AiClient baseClient = res.get(baseName);
                     return new AiClient(config,
-                            baseClient.getRateLimiter(),
-                            baseClient.getConcurrentRequestsRateLimiter(),
+                            baseClient.getMoreRestrictiveRateLimiter(),
+                            baseClient.getLessRestrictiveRateLimiter(),
                             baseClient.getApiKeyRateLimiter(),
                             objectMapper,
                             httpClient,
