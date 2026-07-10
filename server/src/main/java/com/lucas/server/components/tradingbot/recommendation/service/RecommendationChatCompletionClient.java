@@ -120,7 +120,7 @@ public class RecommendationChatCompletionClient {
             for (AiClient client : clients) {
                 try {
                     ObjectNode reportMessage;
-                    if (!client.getConfig().fixMe()) {
+                    if (Boolean.FALSE.equals(client.getConfig().fixMe())) {
                         reportMessage = rawReportMessage;
                     } else {
                         reportMessage = objectMapper.readValue(fixMeMessage.get(CONTENT)
@@ -129,9 +129,11 @@ public class RecommendationChatCompletionClient {
                     }
                     OrderedIndexedSet<JsonNode> prompt =
                             OrderedIndexedSet.of(usedSystemMessage, contextMessage, fewShotMessage, reportMessage);
-                    Optional<Set<RecommendationDomain>> res =
-                            client.getRateLimiter().tryCall(() -> client.getConcurrentRequestsRateLimiter().call(() -> {
-                                client.getApiKeyRateLimiter().acquirePermission();
+                    Optional<Set<RecommendationDomain>> res = client.getMoreRestrictiveRateLimiter()
+                            .tryCall(() -> client.getLessRestrictiveRateLimiter().call(() -> {
+                                if (null != client.getApiKeyRateLimiter()) {
+                                    client.getApiKeyRateLimiter().acquirePermission();
+                                }
                                 log.info(PROMPTING_MODEL_INFO, client.getConfig().name());
                                 completion.set(client.complete(prompt));
                                 return mapper.mapAll(payload,

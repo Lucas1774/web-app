@@ -27,4 +27,12 @@
     <suppress checks="LineLength"
               files=".*AssetReportToMustacheMapper\.java$"
               lines="40"/>
+
+    <suppress checks="LineLength"
+              files=".*HttpClientConfig\.java$"
+              lines="32"/>
+
+    <suppress checks="LineLength"
+              files=".*HttpClientConfig\.java$"
+              lines="39"/>
 </suppressions>

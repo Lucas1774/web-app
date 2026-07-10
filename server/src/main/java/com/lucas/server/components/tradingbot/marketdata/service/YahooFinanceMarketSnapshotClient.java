@@ -6,7 +6,7 @@ import com.lucas.server.components.tradingbot.common.dto.SymbolDomain;
 import com.lucas.server.components.tradingbot.marketdata.dto.MarketSnapshotDomain;
 import com.lucas.server.components.tradingbot.marketdata.mapper.YahooFinanceMarketResponseMapper;
 import com.lucas.utils.exception.MappingException;
-import com.lucas.utils.ratelimiter.SlidingWindowRateLimiter;
+import com.lucas.utils.ratelimiter.DefaultSlidingWindowRateLimiter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Retryable;
@@ -26,12 +26,12 @@ public class YahooFinanceMarketSnapshotClient {
 
     private final YahooFinanceMarketResponseMapper mapper;
     private final HttpRequestClient httpRequestClient;
-    private final SlidingWindowRateLimiter rateLimiter;
+    private final DefaultSlidingWindowRateLimiter rateLimiter;
     private final String endpoint;
 
     public YahooFinanceMarketSnapshotClient(YahooFinanceMarketResponseMapper mapper,
                                             HttpRequestClient httpRequestClient,
-                                            Map<String, SlidingWindowRateLimiter> rateLimiters,
+                                            Map<String, DefaultSlidingWindowRateLimiter> rateLimiters,
                                             @Value("${yahoo.market.endpoint}") String endpoint) {
         this.mapper = mapper;
         this.httpRequestClient = httpRequestClient;
@@ -49,6 +49,6 @@ public class YahooFinanceMarketSnapshotClient {
                 .build()
                 .toUriString();
 
-        return mapper.map(httpRequestClient.fetch(url, true), symbol);
+        return mapper.map(httpRequestClient.get(url, true), symbol);
     }
 }

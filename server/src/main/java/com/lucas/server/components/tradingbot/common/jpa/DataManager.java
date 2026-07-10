@@ -170,6 +170,7 @@ public class DataManager {
                                                             Set<AiClient> clients,
                                                             CheekyClients cheekyClients,
                                                             Set<AiClient> backupClients,
+                                                            Set<AiClient> secondBackupClients,
                                                             PortfolioType type,
                                                             boolean overwrite,
                                                             boolean onTheFlyNews,
@@ -180,6 +181,7 @@ public class DataManager {
                 clients,
                 cheekyClients,
                 backupClients,
+                secondBackupClients,
                 type,
                 overwrite,
                 false,
@@ -193,6 +195,7 @@ public class DataManager {
                                                               Set<AiClient> clients,
                                                               CheekyClients cheekyClients,
                                                               Set<AiClient> backupClients,
+                                                              Set<AiClient> secondBackupClients,
                                                               PortfolioType type,
                                                               int count,
                                                               boolean overwrite,
@@ -226,6 +229,7 @@ public class DataManager {
                 clients,
                 cheekyClients,
                 backupClients,
+                secondBackupClients,
                 type,
                 overwrite,
                 onlyIfHasNews,
@@ -434,6 +438,7 @@ public class DataManager {
     private Set<RecommendationDomain> getRecommendationsWithBackup(Set<SymbolPayload> buffer,
                                                                    OrderedIndexedSet<AiClient> clients,
                                                                    Deque<AiClient> backupClients,
+                                                                   Deque<AiClient> secondBackupClients,
                                                                    boolean useOldNews)
             throws ClientException, MappingException {
         try {
@@ -447,7 +452,23 @@ public class DataManager {
                     clients.stream().map(c -> c.getConfig().name()).toList(),
                     buffer.stream().map(SymbolPayload::getSymbol).toList(),
                     e);
-            return recommendationClient.getRecommendations(buffer, OrderedIndexedSet.copyOf(backupClients), useOldNews);
+            try {
+                return recommendationClient.getRecommendations(buffer,
+                        OrderedIndexedSet.copyOf(backupClients),
+                        useOldNews);
+            } catch (ClientException ex) {
+                if (secondBackupClients.isEmpty()) {
+                    throw ex;
+                }
+                secondBackupClients.add(secondBackupClients.pollFirst());
+                log.warn(CLIENT_FAILED_BACKUP_WARN,
+                        backupClients.stream().map(c -> c.getConfig().name()).toList(),
+                        buffer.stream().map(SymbolPayload::getSymbol).toList(),
+                        ex);
+                return recommendationClient.getRecommendations(buffer,
+                        OrderedIndexedSet.copyOf(secondBackupClients),
+                        useOldNews);
+            }
         }
     }
 
@@ -478,6 +499,7 @@ public class DataManager {
                                                                    Set<AiClient> clients,
                                                                    CheekyClients cheekyClients,
                                                                    Set<AiClient> backupClients,
+                                                                   Set<AiClient> secondBackupClients,
                                                                    PortfolioType type,
                                                                    boolean overwrite,
                                                                    boolean onlyIfHasNews,
@@ -488,6 +510,7 @@ public class DataManager {
         Deque<AiClient> mutableClients = new ConcurrentLinkedDeque<>(clients);
         Deque<AiClient> mutableCheekyClients = new ConcurrentLinkedDeque<>(cheekyClients.getClients());
         Deque<AiClient> mutableBackupClients = new ConcurrentLinkedDeque<>(backupClients);
+        Deque<AiClient> mutableSecondBackupClients = new ConcurrentLinkedDeque<>(secondBackupClients);
         PortfolioService portfolioService = portfolioTypeToService.get(type);
 
         LocalDateTime startUtc;
@@ -570,6 +593,7 @@ public class DataManager {
                         submitChunk(Set.copyOf(recommendationBuffer),
                                 OrderedIndexedSet.copyOf(clientsRef),
                                 mutableBackupClients,
+                                mutableSecondBackupClients,
                                 executor,
                                 resultsQueue,
                                 overwrite,
@@ -588,6 +612,7 @@ public class DataManager {
                     submitChunk(Set.copyOf(recommendationBuffer),
                             OrderedIndexedSet.copyOf(clientsRef),
                             mutableBackupClients,
+                            mutableSecondBackupClients,
                             executor,
                             resultsQueue,
                             overwrite,
@@ -660,6 +685,7 @@ public class DataManager {
     private void submitChunk(Set<SymbolPayload> buffer,
                              OrderedIndexedSet<AiClient> clients,
                              Deque<AiClient> backupClients,
+                             Deque<AiClient> secondBackupClients,
                              ExecutorService executor,
                              BlockingQueue<Set<RecommendationDomain>> resultsQueue,
                              boolean overwrite,
@@ -667,7 +693,7 @@ public class DataManager {
         executor.submit(() -> {
             try {
                 Set<RecommendationDomain> partial =
-                        getRecommendationsWithBackup(buffer, clients, backupClients, useOldNews);
+                        getRecommendationsWithBackup(buffer, clients, backupClients, secondBackupClients, useOldNews);
                 log.info(GENERATION_SUCCESSFUL_INFO, RECOMMENDATION);
                 Set<NewsDomain> mergedNews = Set.copyOf(partial.stream()
                         .flatMap(r -> r.getNews().stream())
