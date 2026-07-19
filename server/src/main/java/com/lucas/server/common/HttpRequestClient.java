@@ -3,18 +3,17 @@ package com.lucas.server.common;
 import com.lucas.server.common.exception.ClientException;
 import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 import org.w3c.dom.Document;
 import tools.jackson.databind.JsonNode;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
 
@@ -22,7 +21,9 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class HttpRequestClient {
 
-    private final RestTemplate restTemplate;
+    private static final Duration RESPONSE_TIMEOUT = Duration.ofMinutes(1);
+
+    private final WebClient webClient;
     private final DocumentBuilderFactory documentBuilderFactory;
 
     public JsonNode get(String url, boolean mockUserAgent) throws ClientException {
@@ -31,9 +32,14 @@ public class HttpRequestClient {
         if (mockUserAgent) {
             mockUserAgent(headers);
         }
-        HttpEntity<Void> request = new HttpEntity<>(headers);
         try {
-            return restTemplate.exchange(url, HttpMethod.GET, request, JsonNode.class).getBody();
+            return webClient.get()
+                    .uri(url)
+                    .headers(h -> h.addAll(headers))
+                    .retrieve()
+                    .bodyToMono(JsonNode.class)
+                    .timeout(RESPONSE_TIMEOUT)
+                    .block();
         } catch (Exception e) {
             throw new ClientException(e);
         }
@@ -43,25 +49,31 @@ public class HttpRequestClient {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(List.of(MediaType.APPLICATION_XML, MediaType.TEXT_XML));
         mockUserAgent(headers);
-        HttpEntity<Void> request = new HttpEntity<>(headers);
         try {
             return documentBuilderFactory.newDocumentBuilder()
-                    .parse(new ByteArrayInputStream(Objects.requireNonNull(restTemplate.exchange(url,
-                            HttpMethod.GET,
-                            request,
-                            String.class).getBody()).getBytes(StandardCharsets.UTF_8)));
+                    .parse(new ByteArrayInputStream(Objects.requireNonNull(webClient.get()
+                            .uri(url)
+                            .headers(h -> h.addAll(headers))
+                            .retrieve()
+                            .bodyToMono(String.class)
+                            .timeout(RESPONSE_TIMEOUT)
+                            .block()).getBytes(StandardCharsets.UTF_8)));
         } catch (Exception e) {
             throw new ClientException(e);
         }
     }
 
     public JsonNode post(String url, String body) throws ClientException {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
-        headers.setContentType(MediaType.TEXT_PLAIN);
-        HttpEntity<String> request = new HttpEntity<>(body, headers);
         try {
-            return restTemplate.exchange(url, HttpMethod.POST, request, JsonNode.class).getBody();
+            return webClient.post()
+                    .uri(url)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.TEXT_PLAIN)
+                    .bodyValue(body)
+                    .retrieve()
+                    .bodyToMono(JsonNode.class)
+                    .timeout(RESPONSE_TIMEOUT)
+                    .block();
         } catch (Exception e) {
             throw new ClientException(e);
         }
@@ -78,9 +90,15 @@ public class HttpRequestClient {
         if (mockUserAgent) {
             mockUserAgent(headers);
         }
-        HttpEntity<JsonNode> request = new HttpEntity<>(body, headers);
         try {
-            return restTemplate.exchange(url, HttpMethod.POST, request, JsonNode.class).getBody();
+            return webClient.post()
+                    .uri(url)
+                    .headers(h -> h.addAll(headers))
+                    .bodyValue(body)
+                    .retrieve()
+                    .bodyToMono(JsonNode.class)
+                    .timeout(RESPONSE_TIMEOUT)
+                    .block();
         } catch (Exception e) {
             throw new ClientException(e);
         }

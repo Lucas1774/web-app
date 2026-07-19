@@ -6,8 +6,12 @@ import com.lucas.server.components.tradingbot.common.AiClient;
 import com.lucas.utils.ratelimiter.CompletionSlidingWindowRateLimiter;
 import com.lucas.utils.ratelimiter.DefaultSlidingWindowRateLimiter;
 import com.lucas.utils.ratelimiter.SlidingWindowRateLimiter;
+import io.netty.channel.ChannelOption;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.netty.http.client.HttpClient;
 import tools.jackson.databind.ObjectMapper;
 
 import java.time.Duration;
@@ -44,6 +48,13 @@ public class HttpClientConfig {
             GITHUB,
             config -> new CompletionSlidingWindowRateLimiter(config.concurrentRequests(), Duration.ofSeconds(1)));
     private static final String SPECIALIST = "-specialist";
+
+    @Bean
+    public WebClient webClient() {
+        HttpClient httpClient = HttpClient.create().option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10_000);
+
+        return WebClient.builder().clientConnector(new ReactorClientHttpConnector(httpClient)).build();
+    }
 
     @Bean
     public Map<String, DefaultSlidingWindowRateLimiter> rateLimiters() {
