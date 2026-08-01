@@ -147,7 +147,7 @@ public class DailyScheduler {
         getRecommendations(topRecommendedSymbolsAfterMediumGrain,
                 filterClients(clients, RecommendationMode.FINE_GRAIN),
                 filterClients(clients, RecommendationMode.FINE_GRAIN_BACKUP),
-                Set.of(),
+                filterClients(clients, RecommendationMode.FINE_GRAIN_BACKUP_TWO),
                 true);
         publisher.publish("jobs", "job done");
 
