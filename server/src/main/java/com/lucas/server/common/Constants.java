@@ -21,14 +21,14 @@ import static com.lucas.server.common.Constants.Clients.GEMINI_3_5_FLASH;
 import static com.lucas.server.common.Constants.Clients.GEMINI_3_5_FLASH_2;
 import static com.lucas.server.common.Constants.Clients.GEMINI_3_5_FLASH_3;
 import static com.lucas.server.common.Constants.Clients.GEMINI_3_5_FLASH_4;
-import static com.lucas.server.common.Constants.Clients.GEMINI_3_5_FLASH_LITE;
-import static com.lucas.server.common.Constants.Clients.GEMINI_3_5_FLASH_LITE_2;
-import static com.lucas.server.common.Constants.Clients.GEMINI_3_5_FLASH_LITE_3;
-import static com.lucas.server.common.Constants.Clients.GEMINI_3_5_FLASH_LITE_4;
 import static com.lucas.server.common.Constants.Clients.GEMINI_3_6_FLASH;
 import static com.lucas.server.common.Constants.Clients.GEMINI_3_6_FLASH_2;
 import static com.lucas.server.common.Constants.Clients.GEMINI_3_6_FLASH_3;
 import static com.lucas.server.common.Constants.Clients.GEMINI_3_6_FLASH_4;
+import static com.lucas.server.common.Constants.Clients.GEMINI_3_7_FLASH;
+import static com.lucas.server.common.Constants.Clients.GEMINI_3_7_FLASH_2;
+import static com.lucas.server.common.Constants.Clients.GEMINI_3_7_FLASH_3;
+import static com.lucas.server.common.Constants.Clients.GEMINI_3_7_FLASH_4;
 import static com.lucas.server.common.Constants.Clients.GPT_4_1;
 import static com.lucas.server.common.Constants.Clients.GPT_4_1_2;
 import static com.lucas.server.common.Constants.Clients.GPT_4_1_3;
@@ -659,37 +659,31 @@ public final class Constants {
             );
     private static final Set<Clients> GPT_4_1_CLIENTS =
             Set.of(GPT_4_1, GPT_4_1_2, GPT_4_1_3, GPT_4_1_4, GPT_4_1_5, GPT_4_1_6);
+    private static final Set<Clients> GEMINI_3_7_FLASH_CLIENTS =
+            Set.of(GEMINI_3_7_FLASH, GEMINI_3_7_FLASH_2, GEMINI_3_7_FLASH_3, GEMINI_3_7_FLASH_4);
     private static final Set<Clients> GEMINI_3_6_FLASH_CLIENTS =
             Set.of(GEMINI_3_6_FLASH, GEMINI_3_6_FLASH_2, GEMINI_3_6_FLASH_3, GEMINI_3_6_FLASH_4);
     private static final Set<Clients> GEMINI_3_5_FLASH_CLIENTS =
             Set.of(GEMINI_3_5_FLASH, GEMINI_3_5_FLASH_2, GEMINI_3_5_FLASH_3, GEMINI_3_5_FLASH_4);
-    private static final Set<Clients> GEMINI_3_5_FLASH_LITE_CLIENTS =
-            Set.of(GEMINI_3_5_FLASH_LITE, GEMINI_3_5_FLASH_LITE_2, GEMINI_3_5_FLASH_LITE_3, GEMINI_3_5_FLASH_LITE_4);
     private static final Map<RecommendationMode, Set<String>> modeToClientNames = new EnumMap<>(Map.ofEntries(Map.entry(
                     RecommendationMode.FIRST_ITERATION,
-                    GEMINI_3_6_FLASH_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet())),
+                    GEMINI_3_7_FLASH_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet())),
             Map.entry(RecommendationMode.FIRST_ITERATION_BACKUP,
-                    GEMINI_3_5_FLASH_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet())),
+                    GEMINI_3_6_FLASH_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet())),
             Map.entry(RecommendationMode.FIRST_ITERATION_BACKUP_TWO,
-                    GEMINI_3_5_FLASH_LITE_CLIENTS.stream()
-                            .map(Clients::toString)
-                            .collect(Collectors.toUnmodifiableSet())),
+                    GEMINI_3_5_FLASH_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet())),
             Map.entry(RecommendationMode.SECOND_ITERATION,
-                    GEMINI_3_6_FLASH_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet())),
+                    GEMINI_3_7_FLASH_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet())),
             Map.entry(RecommendationMode.SECOND_ITERATION_BACKUP,
-                    GEMINI_3_5_FLASH_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet())),
-            Map.entry(RecommendationMode.SECOND_ITERATION_BACKUP_TWO,
-                    GEMINI_3_5_FLASH_LITE_CLIENTS.stream()
-                            .map(Clients::toString)
-                            .collect(Collectors.toUnmodifiableSet())),
-            Map.entry(RecommendationMode.FINE_GRAIN,
                     GEMINI_3_6_FLASH_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet())),
-            Map.entry(RecommendationMode.FINE_GRAIN_BACKUP,
+            Map.entry(RecommendationMode.SECOND_ITERATION_BACKUP_TWO,
                     GEMINI_3_5_FLASH_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet())),
+            Map.entry(RecommendationMode.FINE_GRAIN,
+                    GEMINI_3_7_FLASH_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet())),
+            Map.entry(RecommendationMode.FINE_GRAIN_BACKUP,
+                    GEMINI_3_6_FLASH_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet())),
             Map.entry(RecommendationMode.FINE_GRAIN_BACKUP_TWO,
-                    GEMINI_3_5_FLASH_LITE_CLIENTS.stream()
-                            .map(Clients::toString)
-                            .collect(Collectors.toUnmodifiableSet())),
+                    GEMINI_3_5_FLASH_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet())),
             Map.entry(RecommendationMode.RANDOM,
                     GPT_4_1_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet())),
             Map.entry(RecommendationMode.NOT_RANDOM,
@@ -815,9 +809,9 @@ public final class Constants {
         SECOND_ITERATION,
         SECOND_ITERATION_BACKUP,
         SECOND_ITERATION_BACKUP_TWO,
+        FINE_GRAIN,
         FINE_GRAIN_BACKUP,
         FINE_GRAIN_BACKUP_TWO,
-        FINE_GRAIN,
         RANDOM,
         NOT_RANDOM
     }
@@ -861,6 +855,14 @@ public final class Constants {
         GPT_OSS_4("gpt-oss_4"),
         GPT_OSS_5("gpt-oss_5"),
 
+        GEMINI_3_7_FLASH("gemini-3.7-flash"),
+        GEMINI_3_7_FLASH_2("gemini-3.7-flash_2"),
+        GEMINI_3_7_FLASH_3("gemini-3.7-flash_3"),
+        GEMINI_3_7_FLASH_4("gemini-3.7-flash_4"),
+        GEMINI_3_7_FLASH_SPECIALIST("gemini-3.7-flash-specialist"),
+        GEMINI_3_7_FLASH_2_SPECIALIST("gemini-3.7-flash_2-specialist"),
+        GEMINI_3_7_FLASH_3_SPECIALIST("gemini-3.7-flash_3-specialist"),
+        GEMINI_3_7_FLASH_4_SPECIALIST("gemini-3.7-flash_4-specialist"),
         GEMINI_3_6_FLASH("gemini-3.6-flash"),
         GEMINI_3_6_FLASH_2("gemini-3.6-flash_2"),
         GEMINI_3_6_FLASH_3("gemini-3.6-flash_3"),

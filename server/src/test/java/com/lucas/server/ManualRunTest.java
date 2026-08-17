@@ -68,7 +68,7 @@ class ManualRunTest extends BaseTest {
 
     private static final Set<String> SYMBOL_NAMES =
             Set.of("AAPL", "NVDA", "MSFT", "AMZN", "META", "TSLA", "GOOGL", "GOOG", "IBM");
-    private static final LocalDate FROM = LocalDate.of(2026, Month.JUNE, 1); // inclusive
+    private static final LocalDate FROM = LocalDate.of(2026, Month.AUGUST, 18); // inclusive
     @SuppressWarnings("java:S8692")
     private static final LocalDate TO = LocalDate.now().plusDays(1); // exclusive
     private static Set<Recommendation> allRecommendations;

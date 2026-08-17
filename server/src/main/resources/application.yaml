@@ -257,6 +257,54 @@ ai:
       model: openai/gpt-oss-20b:free
 
     # Google
+    - name: gemini-3.7-flash
+      provider: google
+      api-key: ${GOOGLE_KEY}
+      model: gemini-3.7-flash
+      requests-per-minute: 5
+      chunk-size: 8
+    - name: gemini-3.7-flash_2
+      provider: google
+      api-key: ${GOOGLE_KEY_2}
+      model: gemini-3.7-flash
+      requests-per-minute: 5
+      chunk-size: 8
+    - name: gemini-3.7-flash_3
+      provider: google
+      api-key: ${GOOGLE_KEY_3}
+      model: gemini-3.7-flash
+      requests-per-minute: 5
+      chunk-size: 8
+    - name: gemini-3.7-flash_4
+      provider: google
+      api-key: ${GOOGLE_KEY_4}
+      model: gemini-3.7-flash
+      requests-per-minute: 5
+      chunk-size: 8
+    - name: gemini-3.7-flash-specialist
+      provider: google
+      api-key: ${GOOGLE_KEY}
+      model: gemini-3.7-flash
+      requests-per-minute: 5
+      chunk-size: 1
+    - name: gemini-3.7-flash_2-specialist
+      provider: google
+      api-key: ${GOOGLE_KEY_2}
+      model: gemini-3.7-flash
+      requests-per-minute: 5
+      chunk-size: 1
+    - name: gemini-3.7-flash_3-specialist
+      provider: google
+      api-key: ${GOOGLE_KEY_3}
+      model: gemini-3.7-flash
+      requests-per-minute: 5
+      chunk-size: 1
+    - name: gemini-3.7-flash_4-specialist
+      provider: google
+      api-key: ${GOOGLE_KEY_4}
+      model: gemini-3.7-flash
+      requests-per-minute: 5
+      chunk-size: 1
     - name: gemini-3.6-flash
       provider: google
       api-key: ${GOOGLE_KEY}
