@@ -3,11 +3,9 @@ package com.lucas.server.common;
 import com.lucas.server.components.tradingbot.common.AiClient;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 
-import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.Month;
 import java.time.ZoneId;
 import java.util.EnumMap;
@@ -49,45 +47,18 @@ import static com.lucas.server.common.Constants.Sector.UTILITIES;
 
 public final class Constants {
 
-    public static final int CORNERS_LAST_ROW = 441;
-    public static final int EDGES_LAST_ROW = 484;
-    public static final int PARITY_LAST_ROW = 462;
-    public static final int LETTER_PAIRS_LAST_ROW = 23;
-    public static final int STICKERS = 24;
-    public static final int CORNERS = 8;
-    public static final int EDGES = 12;
     public static final int SUDOKU_SIZE = 9;
     public static final int SUDOKU_NUMBER_OF_CELLS = 81;
     public static final int MARKET_DATA_RELEVANT_DAYS_COUNT = 34;
     public static final int HISTORY_DAYS_COUNT = 10;
     public static final int NEWS_COUNT = 12;
-    public static final int DATABASE_NEWS_PER_SYMBOL = 20;
-    public static final int DATABASE_MARKET_DATA_PER_SYMBOL = 100;
-    public static final int DATABASE_RECOMMENDATIONS_PER_SYMBOL = 30;
-    public static final int MAX_RECOMMENDATIONS_COUNT = 80;
     public static final int REQUEST_MAX_ATTEMPTS = 2;
-    public static final int RECOMMENDATION_MAX_ATTEMPTS = 5;
-    public static final int MAX_REQUESTS_PER_SECOND = 10;
-    public static final int CLIENT_ROTATION_DEBOUNCE_MS = 200;
-    public static final int FINNHUB_RATE_LIMITER_ROTATION_DEBOUNCE_MS = 50;
-
-    public static final BigDecimal RECOMMENDATION_MEDIUM_GRAIN_THRESHOLD = BigDecimal.valueOf(0.5);
-    public static final BigDecimal RECOMMENDATION_FINE_GRAIN_THRESHOLD = BigDecimal.valueOf(0.5);
-    public static final String SHEET_CORNERS = "UFR";
-    public static final String SHEET_EDGES = "UF";
-    public static final String SHEET_PARITY = "Parity";
-    public static final String SHEET_LETTER_PAIRS = "Letter pairs";
+    public static final String SPECIALIST = "-specialist";
     public static final String DEFAULT_USERNAME = "default";
-    public static final String NA = "N/A";
     public static final String INVALID_EXPRESSION = "Invalid expression";
-    public static final String COMPANY_NEWS = "/company-news";
     public static final String QUOTE = "/quote";
-    public static final String TIME_SERIES = "/time_series";
-    public static final String ANALYZE = "/analyze";
     public static final String SYMBOL = "symbol";
-    public static final String PARTS = "parts";
     public static final String CONTENT = "content";
-    public static final String ROLE = "role";
     public static final String BUY = "BUY";
     public static final String MARKET_DATA = "market data";
     public static final String MARKET_SNAPSHOT = "market snapshot";
@@ -95,37 +66,20 @@ public final class Constants {
     public static final String SENTIMENT = "sentiment";
     public static final String RECOMMENDATION = "recommendation";
     public static final String VOLATILITY = "volatility";
-    public static final String OBV = "OBV";
     public static final String TWELVEDATA_RATE_LIMITER = "twelveDataRateLimiter";
     public static final String YAHOO_FINANCE_RATE_LIMITER = "yahooFinanceRateLimiter";
-    public static final String SUDOKU_IGNORED_MALFORMED_JSON_WARN = "Couldn't deserialize sudoku from raw data {}";
     public static final String KPI_RETURNED_ZERO_WARN = "Value is zero for {}, {}";
     public static final String NON_COMPUTABLE_KPI_WARN = "Error attempting to compute {} for {}";
-    public static final String CLIENT_FAILED_BACKUP_WARN = "{} failed when trying to process {}";
-    public static final String MARKET_STILL_OPEN_WARN = "Market is still open!";
     public static final String RETRIEVAL_FAILED_WARN = "Error generating {} {}";
-    public static final String NEWS_SERIALIZATION_WARN = "Some news were lost in conversion for symbol {}";
-    public static final String SCHEDULED_TASK_SUCCESS_INFO = "Successfully {}: {}";
     public static final String RETRIEVING_DATA_INFO = "Retrieving {} for {}";
-    public static final String PROMPTING_MODEL_INFO = "Prompting model {}";
-    public static final String GENERATION_SUCCESSFUL_INFO = "Successfully generated {}";
-    public static final String RECOMMENDATION_COMPLETION_ERROR = "Failed to get recommendations. Completion: {0}";
     public static final String NO_YAHOO_NEWS_ERROR = "No news found in document {0}";
     public static final String MAPPING_ERROR = "Error mapping {0}";
-    public static final String INSUFFICIENT_STOCK_ERROR = "{0}: Nothing to sell";
-    public static final String SYMBOL_NOT_FOUND_ERROR = "{0}: Unknown symbol";
     public static final String AMERICA_NY = "America/New_York";
     public static final ZoneId NY_ZONE = ZoneId.of(AMERICA_NY);
     public static final String UTC = "UTC";
     public static final ZoneId UTC_ZONE = ZoneId.of(UTC);
-    public static final LocalTime MARKET_CLOSE = LocalTime.of(16, 0);
-    public static final LocalTime EARLY_CLOSE = LocalTime.of(13, 0);
     // for testing purposes
     public static final LocalDateTime FIXED_DATE = LocalDate.of(2025, Month.JANUARY, 1).atStartOfDay();
-    public static final Set<LocalDate> EARLY_CLOSE_DATES_2026 =
-            Set.of(LocalDate.of(2026, Month.NOVEMBER, 27), // Day after Thanksgiving
-                    LocalDate.of(2026, Month.DECEMBER, 24)  // Christmas Eve
-            );
     public static final Map<String, Sector> SYMBOL_TO_SECTOR =
             Map.<String, Sector>ofEntries(Map.entry("MMM", INDUSTRIALS),
                     Map.entry("AOS", INDUSTRIALS),
@@ -631,7 +585,6 @@ public final class Constants {
                     Map.entry("ZBH", HEALTH_CARE),
                     Map.entry("ZTS", HEALTH_CARE));
     public static final Set<String> SP500_SYMBOLS = Set.copyOf(SYMBOL_TO_SECTOR.keySet());
-    public static final int SCHEDULED_RECOMMENDATIONS_COUNT = SP500_SYMBOLS.size();
     // If a model here has a specialist version, that one will be assumed to output a thinking block too
     private static final Set<Clients> CLIENTS_WITH_THINKING_BLOCK = Set.of();
     private static final String FINNHUB_RATE_LIMITER = "finnhubRateLimiter";
@@ -643,8 +596,6 @@ public final class Constants {
             FINNHUB_RATE_LIMITER_3,
             FINNHUB_RATE_LIMITER_4);
     private static final int[] DIGITS = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-    private static final char[] LETTERS_CORNERS = "0SFMXBRVPUNLITCOYJEKDAHZ".toCharArray();
-    private static final char[] LETTERS_EDGES = "0XRSMNUVFJCBIYOKATEHDPLZ".toCharArray();
     private static final Set<LocalDate> MARKET_HOLIDAYS_2026 =
             Set.of(LocalDate.of(2026, Month.JANUARY, 1), // New Year's Day
                     LocalDate.of(2026, Month.JANUARY, 19), // Martin Luther King Jr. Day
@@ -729,7 +680,7 @@ public final class Constants {
     public static Set<String> getModelsWithThinkingBlock() {
         return CLIENTS_WITH_THINKING_BLOCK.stream().flatMap(client -> {
             String label = client.toString();
-            return java.util.stream.Stream.of(label, label + "-specialist");
+            return Stream.of(label, label + SPECIALIST);
         }).collect(Collectors.toUnmodifiableSet());
     }
 
@@ -777,14 +728,6 @@ public final class Constants {
         return DIGITS;
     }
 
-    public static char[] getLettersCorners() {
-        return LETTERS_CORNERS;
-    }
-
-    public static char[] getLettersEdges() {
-        return LETTERS_EDGES;
-    }
-
     public enum AlgorithmKind {
         EDGE,
         CORNER,
@@ -824,12 +767,12 @@ public final class Constants {
         GPT_4_1_4("gpt-4.1_4"),
         GPT_4_1_5("gpt-4.1_5"),
         GPT_4_1_6("gpt-4.1_6"),
-        GPT_4_1_SPECIALIST("gpt-4.1-specialist"),
-        GPT_4_1_2_SPECIALIST("gpt-4.1_2-specialist"),
-        GPT_4_1_3_SPECIALIST("gpt-4.1_3-specialist"),
-        GPT_4_1_4_SPECIALIST("gpt-4.1_4-specialist"),
-        GPT_4_1_5_SPECIALIST("gpt-4.1_5-specialist"),
-        GPT_4_1_6_SPECIALIST("gpt-4.1_6-specialist"),
+        GPT_4_1_SPECIALIST("gpt-4.1" + SPECIALIST),
+        GPT_4_1_2_SPECIALIST("gpt-4.1_2" + SPECIALIST),
+        GPT_4_1_3_SPECIALIST("gpt-4.1_3" + SPECIALIST),
+        GPT_4_1_4_SPECIALIST("gpt-4.1_4" + SPECIALIST),
+        GPT_4_1_5_SPECIALIST("gpt-4.1_5" + SPECIALIST),
+        GPT_4_1_6_SPECIALIST("gpt-4.1_6" + SPECIALIST),
         GPT_4O("gpt-4o"),
         GPT_4_1_MINI("gpt-4.1-mini"),
         GPT_4O_MINI("gpt-4o-mini"),
@@ -859,34 +802,34 @@ public final class Constants {
         GEMINI_3_7_FLASH_2("gemini-3.7-flash_2"),
         GEMINI_3_7_FLASH_3("gemini-3.7-flash_3"),
         GEMINI_3_7_FLASH_4("gemini-3.7-flash_4"),
-        GEMINI_3_7_FLASH_SPECIALIST("gemini-3.7-flash-specialist"),
-        GEMINI_3_7_FLASH_2_SPECIALIST("gemini-3.7-flash_2-specialist"),
-        GEMINI_3_7_FLASH_3_SPECIALIST("gemini-3.7-flash_3-specialist"),
-        GEMINI_3_7_FLASH_4_SPECIALIST("gemini-3.7-flash_4-specialist"),
+        GEMINI_3_7_FLASH_SPECIALIST("gemini-3.7-flash" + SPECIALIST),
+        GEMINI_3_7_FLASH_2_SPECIALIST("gemini-3.7-flash_2" + SPECIALIST),
+        GEMINI_3_7_FLASH_3_SPECIALIST("gemini-3.7-flash_3" + SPECIALIST),
+        GEMINI_3_7_FLASH_4_SPECIALIST("gemini-3.7-flash_4" + SPECIALIST),
         GEMINI_3_6_FLASH("gemini-3.6-flash"),
         GEMINI_3_6_FLASH_2("gemini-3.6-flash_2"),
         GEMINI_3_6_FLASH_3("gemini-3.6-flash_3"),
         GEMINI_3_6_FLASH_4("gemini-3.6-flash_4"),
-        GEMINI_3_6_FLASH_SPECIALIST("gemini-3.6-flash-specialist"),
-        GEMINI_3_6_FLASH_2_SPECIALIST("gemini-3.6-flash_2-specialist"),
-        GEMINI_3_6_FLASH_3_SPECIALIST("gemini-3.6-flash_3-specialist"),
-        GEMINI_3_6_FLASH_4_SPECIALIST("gemini-3.6-flash_4-specialist"),
+        GEMINI_3_6_FLASH_SPECIALIST("gemini-3.6-flash" + SPECIALIST),
+        GEMINI_3_6_FLASH_2_SPECIALIST("gemini-3.6-flash_2" + SPECIALIST),
+        GEMINI_3_6_FLASH_3_SPECIALIST("gemini-3.6-flash_3" + SPECIALIST),
+        GEMINI_3_6_FLASH_4_SPECIALIST("gemini-3.6-flash_4" + SPECIALIST),
         GEMINI_3_5_FLASH("gemini-3.5-flash"),
         GEMINI_3_5_FLASH_2("gemini-3.5-flash_2"),
         GEMINI_3_5_FLASH_3("gemini-3.5-flash_3"),
         GEMINI_3_5_FLASH_4("gemini-3.5-flash_4"),
-        GEMINI_3_5_FLASH_SPECIALIST("gemini-3.5-flash-specialist"),
-        GEMINI_3_5_FLASH_2_SPECIALIST("gemini-3.5-flash_2-specialist"),
-        GEMINI_3_5_FLASH_3_SPECIALIST("gemini-3.5-flash_3-specialist"),
-        GEMINI_3_5_FLASH_4_SPECIALIST("gemini-3.5-flash_4-specialist"),
+        GEMINI_3_5_FLASH_SPECIALIST("gemini-3.5-flash" + SPECIALIST),
+        GEMINI_3_5_FLASH_2_SPECIALIST("gemini-3.5-flash_2" + SPECIALIST),
+        GEMINI_3_5_FLASH_3_SPECIALIST("gemini-3.5-flash_3" + SPECIALIST),
+        GEMINI_3_5_FLASH_4_SPECIALIST("gemini-3.5-flash_4" + SPECIALIST),
         GEMINI_3_5_FLASH_LITE("gemini-3.5-flash-lite"),
         GEMINI_3_5_FLASH_LITE_2("gemini-3.5-flash-lite_2"),
         GEMINI_3_5_FLASH_LITE_3("gemini-3.5-flash-lite_3"),
         GEMINI_3_5_FLASH_LITE_4("gemini-3.5-flash-lite_4"),
-        GEMINI_3_5_FLASH_LITE_SPECIALIST("gemini-3.5-flash-lite-specialist"),
-        GEMINI_3_5_FLASH_LITE_2_SPECIALIST("gemini-3.5-flash-lite_2-specialist"),
-        GEMINI_3_5_FLASH_LITE_3_SPECIALIST("gemini-3.5-flash-lite_3-specialist"),
-        GEMINI_3_5_FLASH_LITE_4_SPECIALIST("gemini-3.5-flash-lite_4-specialist");
+        GEMINI_3_5_FLASH_LITE_SPECIALIST("gemini-3.5-flash-lite" + SPECIALIST),
+        GEMINI_3_5_FLASH_LITE_2_SPECIALIST("gemini-3.5-flash-lite_2" + SPECIALIST),
+        GEMINI_3_5_FLASH_LITE_3_SPECIALIST("gemini-3.5-flash-lite_3" + SPECIALIST),
+        GEMINI_3_5_FLASH_LITE_4_SPECIALIST("gemini-3.5-flash-lite_4" + SPECIALIST);
 
         private final String label;
 

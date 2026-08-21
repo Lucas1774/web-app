@@ -16,15 +16,16 @@ import static com.lucas.server.common.Constants.AlgorithmKind;
 import static com.lucas.server.common.Constants.AlgorithmKind.CORNER;
 import static com.lucas.server.common.Constants.AlgorithmKind.EDGE;
 import static com.lucas.server.common.Constants.AlgorithmKind.PARITY;
-import static com.lucas.server.common.Constants.CORNERS;
-import static com.lucas.server.common.Constants.EDGES;
-import static com.lucas.server.common.Constants.STICKERS;
-import static com.lucas.server.common.Constants.getLettersCorners;
-import static com.lucas.server.common.Constants.getLettersEdges;
 
 @Service
 @RequiredArgsConstructor
 public class RubikSolver {
+
+    private static final int STICKERS = 24;
+    private static final int CORNERS = 8;
+    private static final int EDGES = 12;
+    private static final char[] LETTERS_CORNERS = "0SFMXBRVPUNLITCOYJEKDAHZ".toCharArray();
+    private static final char[] LETTERS_EDGES = "0XRSMNUVFJCBIYOKATEHDPLZ".toCharArray();
 
     private static final int[][] PERMS_CORNERS = {
             {0, 3, 9, 6, 1, 4, 10, 7, 2, 5, 11, 8},
@@ -274,20 +275,20 @@ public class RubikSolver {
                 algorithm = m.getEdgeAlgorithm();
                 algorithmType = m.getEdgeType();
                 technique = m.getEdgeTechnique();
-                firstLetter = getLettersEdges()[m.getFirstSticker()];
-                secondLetter = getLettersEdges()[m.getSecondSticker()];
+                firstLetter = LETTERS_EDGES[m.getFirstSticker()];
+                secondLetter = LETTERS_EDGES[m.getSecondSticker()];
                 break;
             case CORNER:
                 algorithm = m.getCornerAlgorithm();
                 algorithmType = m.getCornerType();
                 technique = m.getCornerTechnique();
-                firstLetter = getLettersCorners()[m.getFirstSticker()];
-                secondLetter = getLettersCorners()[m.getSecondSticker()];
+                firstLetter = LETTERS_CORNERS[m.getFirstSticker()];
+                secondLetter = LETTERS_CORNERS[m.getSecondSticker()];
                 break;
             case PARITY:
                 algorithm = m.getParityAlgorithm();
-                firstLetter = getLettersCorners()[m.getFirstSticker()];
-                secondLetter = getLettersEdges()[m.getSecondSticker()];
+                firstLetter = LETTERS_CORNERS[m.getFirstSticker()];
+                secondLetter = LETTERS_EDGES[m.getSecondSticker()];
                 break;
             default:
                 throw new IllegalArgumentException();

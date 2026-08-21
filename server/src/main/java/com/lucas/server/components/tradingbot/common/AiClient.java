@@ -21,13 +21,13 @@ import java.util.function.UnaryOperator;
 import static com.lucas.server.common.Constants.AiProvider.GOOGLE;
 import static com.lucas.server.common.Constants.AiProvider.OPENROUTER;
 import static com.lucas.server.common.Constants.CONTENT;
-import static com.lucas.server.common.Constants.PARTS;
-import static com.lucas.server.common.Constants.ROLE;
 import static com.lucas.server.common.Constants.sanitizeHtml;
 
 @RequiredArgsConstructor
 public class AiClient {
 
+    private static final String PARTS = "parts";
+    private static final String ROLE = "role";
     @Getter
     private final AiProperties.DeploymentProperties config;
     @Getter

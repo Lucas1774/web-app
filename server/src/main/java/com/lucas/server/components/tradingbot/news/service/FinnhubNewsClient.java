@@ -16,7 +16,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.time.LocalDate;
 import java.util.Set;
 
-import static com.lucas.server.common.Constants.COMPANY_NEWS;
 import static com.lucas.server.common.Constants.NEWS;
 import static com.lucas.server.common.Constants.REQUEST_MAX_ATTEMPTS;
 import static com.lucas.server.common.Constants.RETRIEVING_DATA_INFO;
@@ -26,6 +25,7 @@ import static com.lucas.server.common.Constants.SYMBOL;
 @Slf4j
 public class FinnhubNewsClient {
 
+    private static final String COMPANY_NEWS = "/company-news";
     private final FinnhubNewsResponseMapper mapper;
     private final HttpRequestClient httpRequestClient;
     private final FinnhubRateLimiter finnhubRateLimiter;

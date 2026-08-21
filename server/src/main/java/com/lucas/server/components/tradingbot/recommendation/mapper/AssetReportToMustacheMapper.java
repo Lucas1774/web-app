@@ -26,13 +26,13 @@ import java.util.Objects;
 import java.util.Set;
 
 import static com.lucas.server.common.Constants.MAPPING_ERROR;
-import static com.lucas.server.common.Constants.NA;
 import static com.lucas.server.common.Constants.NY_ZONE;
 import static com.lucas.utils.Utils.EMPTY_STRING;
 
 @Component
 public class AssetReportToMustacheMapper implements Mapper<Set<AssetReportRaw>, String> {
 
+    private static final String NA = "N/A";
     private final Mustache mustache;
 
     public AssetReportToMustacheMapper() {

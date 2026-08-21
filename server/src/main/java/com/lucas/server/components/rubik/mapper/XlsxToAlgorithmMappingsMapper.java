@@ -19,18 +19,19 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static com.lucas.server.common.Constants.AlgorithmKind;
-import static com.lucas.server.common.Constants.CORNERS_LAST_ROW;
-import static com.lucas.server.common.Constants.EDGES_LAST_ROW;
-import static com.lucas.server.common.Constants.LETTER_PAIRS_LAST_ROW;
 import static com.lucas.server.common.Constants.MAPPING_ERROR;
-import static com.lucas.server.common.Constants.PARITY_LAST_ROW;
-import static com.lucas.server.common.Constants.SHEET_CORNERS;
-import static com.lucas.server.common.Constants.SHEET_EDGES;
-import static com.lucas.server.common.Constants.SHEET_LETTER_PAIRS;
-import static com.lucas.server.common.Constants.SHEET_PARITY;
 
 @Component
 public class XlsxToAlgorithmMappingsMapper implements Mapper<InputStream, XlsxToAlgorithmMappingsMapper.Result> {
+
+    private static final int CORNERS_LAST_ROW = 441;
+    private static final int EDGES_LAST_ROW = 484;
+    private static final int PARITY_LAST_ROW = 462;
+    private static final int LETTER_PAIRS_LAST_ROW = 23;
+    private static final String SHEET_CORNERS = "UFR";
+    private static final String SHEET_EDGES = "UF";
+    private static final String SHEET_PARITY = "Parity";
+    private static final String SHEET_LETTER_PAIRS = "Letter pairs";
 
     private static final Map<String, Integer> CORNER_STICKERS = Map.ofEntries(Map.entry("UFR", 0),
             Map.entry("RUF", 1),

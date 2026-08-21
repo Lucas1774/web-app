@@ -11,7 +11,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 class SudokuGeneratorTest {
 
     private static final int NUM_RUNS = 1000;
-
     private final Random random = new Random();
     private final SudokuSolver solver = new SudokuSolver();
     private final SudokuGenerator generator = new SudokuGenerator(solver, random);

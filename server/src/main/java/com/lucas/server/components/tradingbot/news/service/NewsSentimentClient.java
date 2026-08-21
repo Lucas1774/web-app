@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 
-import static com.lucas.server.common.Constants.ANALYZE;
 import static com.lucas.server.common.Constants.REQUEST_MAX_ATTEMPTS;
 import static com.lucas.server.common.Constants.RETRIEVING_DATA_INFO;
 import static com.lucas.server.common.Constants.SENTIMENT;
@@ -19,6 +18,7 @@ import static com.lucas.server.common.Constants.SENTIMENT;
 @Slf4j
 public class NewsSentimentClient {
 
+    private static final String ANALYZE = "/analyze";
     private final FinbertResponseMapper mapper;
     private final HttpRequestClient httpRequestClient;
     private final String url;

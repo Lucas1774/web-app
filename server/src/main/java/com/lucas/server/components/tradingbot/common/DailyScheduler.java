@@ -16,24 +16,17 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.Set;
 
 import static com.lucas.server.common.Constants.AMERICA_NY;
 import static com.lucas.server.common.Constants.BUY;
-import static com.lucas.server.common.Constants.DATABASE_MARKET_DATA_PER_SYMBOL;
-import static com.lucas.server.common.Constants.DATABASE_NEWS_PER_SYMBOL;
-import static com.lucas.server.common.Constants.DATABASE_RECOMMENDATIONS_PER_SYMBOL;
-import static com.lucas.server.common.Constants.MAX_RECOMMENDATIONS_COUNT;
 import static com.lucas.server.common.Constants.MarketDataType;
 import static com.lucas.server.common.Constants.NY_ZONE;
 import static com.lucas.server.common.Constants.PortfolioType;
-import static com.lucas.server.common.Constants.RECOMMENDATION_FINE_GRAIN_THRESHOLD;
-import static com.lucas.server.common.Constants.RECOMMENDATION_MEDIUM_GRAIN_THRESHOLD;
 import static com.lucas.server.common.Constants.RecommendationMode;
-import static com.lucas.server.common.Constants.SCHEDULED_RECOMMENDATIONS_COUNT;
-import static com.lucas.server.common.Constants.SCHEDULED_TASK_SUCCESS_INFO;
 import static com.lucas.server.common.Constants.SP500_SYMBOLS;
 import static com.lucas.server.common.Constants.UTC;
 import static com.lucas.server.common.Constants.UTC_ZONE;
@@ -47,6 +40,13 @@ import static com.lucas.server.common.Constants.isTradingDate;
 @Slf4j
 public class DailyScheduler {
 
+    private static final int DATABASE_NEWS_PER_SYMBOL = 20;
+    private static final int DATABASE_MARKET_DATA_PER_SYMBOL = 100;
+    private static final int DATABASE_RECOMMENDATIONS_PER_SYMBOL = 30;
+    private static final int MAX_RECOMMENDATIONS_COUNT = 80;
+    private static final BigDecimal RECOMMENDATION_MEDIUM_GRAIN_THRESHOLD = BigDecimal.valueOf(0.5);
+    private static final BigDecimal RECOMMENDATION_FINE_GRAIN_THRESHOLD = BigDecimal.valueOf(0.5);
+    private static final String SCHEDULED_TASK_SUCCESS_INFO = "Successfully {}: {}";
     private final DataManager dataManager;
     private final Map<String, AiClient> clients;
     private final MqttPublisher publisher;
@@ -120,7 +120,7 @@ public class DailyScheduler {
                 filterClients(clients, RecommendationMode.FIRST_ITERATION_BACKUP),
                 filterClients(clients, RecommendationMode.FIRST_ITERATION_BACKUP_TWO),
                 PortfolioType.REAL,
-                SCHEDULED_RECOMMENDATIONS_COUNT,
+                symbolNames.size(),
                 true,
                 true,
                 true,

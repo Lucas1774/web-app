@@ -12,7 +12,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static com.lucas.server.common.Constants.MAPPING_ERROR;
-import static com.lucas.server.common.Constants.SUDOKU_IGNORED_MALFORMED_JSON_WARN;
 import static com.lucas.utils.Utils.EMPTY_STRING;
 
 @Component
@@ -20,6 +19,7 @@ import static com.lucas.utils.Utils.EMPTY_STRING;
 @Slf4j
 public class SudokuFileToSudokuMapper implements Mapper<String, Set<SudokuDomain>> {
 
+    private static final String SUDOKU_IGNORED_MALFORMED_JSON_WARN = "Couldn't deserialize sudoku from raw data {}";
     private final StringToSudokuMapper sudokuMapper;
 
     /**

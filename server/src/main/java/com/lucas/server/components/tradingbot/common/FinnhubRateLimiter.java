@@ -12,13 +12,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.lucas.server.common.Constants.FINNHUB_RATE_LIMITER_ROTATION_DEBOUNCE_MS;
 import static com.lucas.server.common.Constants.getFinnhubRateLimiterNames;
 
 @Component
 @Slf4j
 public class FinnhubRateLimiter {
 
+    private static final int FINNHUB_RATE_LIMITER_ROTATION_DEBOUNCE_MS = 50;
     private final OrderedIndexedSet<Map.Entry<String, DefaultSlidingWindowRateLimiter>> keyToLimiterEntries;
     private final AtomicInteger pointer = new AtomicInteger();
 

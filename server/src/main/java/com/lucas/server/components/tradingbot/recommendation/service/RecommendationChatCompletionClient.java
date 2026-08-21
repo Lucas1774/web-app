@@ -32,12 +32,9 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-import static com.lucas.server.common.Constants.CLIENT_ROTATION_DEBOUNCE_MS;
 import static com.lucas.server.common.Constants.CONTENT;
 import static com.lucas.server.common.Constants.NY_ZONE;
-import static com.lucas.server.common.Constants.PROMPTING_MODEL_INFO;
 import static com.lucas.server.common.Constants.RECOMMENDATION;
-import static com.lucas.server.common.Constants.RECOMMENDATION_COMPLETION_ERROR;
 import static com.lucas.server.common.Constants.RETRIEVING_DATA_INFO;
 import static com.lucas.server.common.Constants.sanitizeHtml;
 
@@ -45,6 +42,9 @@ import static com.lucas.server.common.Constants.sanitizeHtml;
 @Slf4j
 public class RecommendationChatCompletionClient {
 
+    private static final int CLIENT_ROTATION_DEBOUNCE_MS = 200;
+    private static final String PROMPTING_MODEL_INFO = "Prompting model {}";
+    private static final String RECOMMENDATION_COMPLETION_ERROR = "Failed to get recommendations. Completion: {0}";
     private final ObjectNode systemMessage;
     private final ObjectNode systemLongTermMessage;
     private final ObjectNode context;

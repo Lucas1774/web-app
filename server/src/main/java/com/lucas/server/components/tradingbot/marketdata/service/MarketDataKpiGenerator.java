@@ -20,7 +20,6 @@ import java.util.stream.Stream;
 
 import static com.lucas.server.common.Constants.KPI_RETURNED_ZERO_WARN;
 import static com.lucas.server.common.Constants.NON_COMPUTABLE_KPI_WARN;
-import static com.lucas.server.common.Constants.OBV;
 import static com.lucas.server.common.Constants.VOLATILITY;
 import static com.lucas.utils.Utils.computeIfAbsent;
 
@@ -30,6 +29,7 @@ import static com.lucas.utils.Utils.computeIfAbsent;
 @Slf4j
 public class MarketDataKpiGenerator {
 
+    private static final String OBV = "OBV";
     private final MarketDataRepository repository;
     private final MarketDataMapper marketDataMapper;
 

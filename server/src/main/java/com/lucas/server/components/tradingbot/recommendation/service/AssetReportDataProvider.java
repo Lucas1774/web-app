@@ -16,7 +16,6 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 
 import static com.lucas.server.common.Constants.HISTORY_DAYS_COUNT;
-import static com.lucas.server.common.Constants.NEWS_SERIALIZATION_WARN;
 import static java.lang.Math.min;
 
 @Component
@@ -24,6 +23,7 @@ import static java.lang.Math.min;
 @Slf4j
 public class AssetReportDataProvider {
 
+    private static final String NEWS_SERIALIZATION_WARN = "Some news were lost in conversion for symbol {}";
     private final MarketDataKpiGenerator kpiGenerator;
     private final PortfolioManager portfolioManager;
 

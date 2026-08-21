@@ -16,12 +16,13 @@ import java.time.LocalDate;
 
 import static com.lucas.server.common.Constants.MAPPING_ERROR;
 import static com.lucas.server.common.Constants.MARKET_DATA;
-import static com.lucas.server.common.Constants.MARKET_STILL_OPEN_WARN;
 import static com.lucas.server.common.Constants.SYMBOL;
 
 @Component
 @Slf4j
 public class TwelveDataMarketResponseMapper implements Mapper<JsonNode, MarketDataDomain> {
+
+    private static final String MARKET_STILL_OPEN_WARN = "Market is still open!";
 
     public MarketDataDomain map(JsonNode json, SymbolDomain symbol) throws MappingException {
         if (!symbol.getName().equals(json.path(SYMBOL).asString(null))) {

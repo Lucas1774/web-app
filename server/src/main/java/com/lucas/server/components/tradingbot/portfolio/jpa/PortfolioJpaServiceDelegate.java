@@ -21,11 +21,10 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import static com.lucas.server.common.Constants.INSUFFICIENT_STOCK_ERROR;
-
 public abstract class PortfolioJpaServiceDelegate<T extends PortfolioBase, R extends JpaRepository<T, Long>>
         extends GenericJpaServiceDelegate<T, PortfolioDomain, R> implements PortfolioService {
 
+    private static final String INSUFFICIENT_STOCK_ERROR = "{0}: Nothing to sell";
     private final Function<Long, Optional<T>> findLatestBySymbol;
     private final Supplier<T> builder;
 

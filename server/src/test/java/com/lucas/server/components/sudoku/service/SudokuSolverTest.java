@@ -12,7 +12,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class SudokuSolverTest {
 
     private static final int NUM_RUNS = 1000;
-
     private final Random random = new Random();
     private final SudokuSolver solver = new SudokuSolver();
     private final SudokuGenerator generator = new SudokuGenerator(solver, random);

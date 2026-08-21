@@ -42,6 +42,7 @@ import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.Month;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -64,11 +65,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.lucas.server.common.Constants.CLIENT_FAILED_BACKUP_WARN;
-import static com.lucas.server.common.Constants.EARLY_CLOSE;
-import static com.lucas.server.common.Constants.EARLY_CLOSE_DATES_2026;
-import static com.lucas.server.common.Constants.GENERATION_SUCCESSFUL_INFO;
-import static com.lucas.server.common.Constants.MARKET_CLOSE;
 import static com.lucas.server.common.Constants.MARKET_DATA;
 import static com.lucas.server.common.Constants.MARKET_DATA_RELEVANT_DAYS_COUNT;
 import static com.lucas.server.common.Constants.MARKET_SNAPSHOT;
@@ -78,11 +74,9 @@ import static com.lucas.server.common.Constants.NEWS_COUNT;
 import static com.lucas.server.common.Constants.NY_ZONE;
 import static com.lucas.server.common.Constants.PortfolioType;
 import static com.lucas.server.common.Constants.RECOMMENDATION;
-import static com.lucas.server.common.Constants.RECOMMENDATION_MAX_ATTEMPTS;
 import static com.lucas.server.common.Constants.RETRIEVAL_FAILED_WARN;
 import static com.lucas.server.common.Constants.RETRIEVING_DATA_INFO;
 import static com.lucas.server.common.Constants.SENTIMENT;
-import static com.lucas.server.common.Constants.SYMBOL_NOT_FOUND_ERROR;
 import static com.lucas.server.common.Constants.UTC_ZONE;
 import static com.lucas.server.common.Constants.getFinnhubRateLimiterNames;
 import static com.lucas.server.common.Constants.isTradingDate;
@@ -92,6 +86,17 @@ import static com.lucas.server.common.Constants.toPastOrFutureTradeDate;
 @Service
 @Slf4j
 public class DataManager {
+
+    private static final int RECOMMENDATION_MAX_ATTEMPTS = 5;
+    private static final String CLIENT_FAILED_BACKUP_WARN = "{} failed when trying to process {}";
+    private static final String GENERATION_SUCCESSFUL_INFO = "Successfully generated {}";
+    private static final String SYMBOL_NOT_FOUND_ERROR = "{0}: Unknown symbol";
+    private static final LocalTime MARKET_CLOSE = LocalTime.of(16, 0);
+    private static final LocalTime EARLY_CLOSE = LocalTime.of(13, 0);
+    private static final Set<LocalDate> EARLY_CLOSE_DATES_2026 =
+            Set.of(LocalDate.of(2026, Month.NOVEMBER, 27), // Day after Thanksgiving
+                    LocalDate.of(2026, Month.DECEMBER, 24)  // Christmas Eve
+            );
 
     private final SymbolJpaService symbolService;
     private final MarketDataJpaService marketDataService;

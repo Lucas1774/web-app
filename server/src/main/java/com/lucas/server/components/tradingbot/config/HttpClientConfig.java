@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import static com.lucas.server.common.Constants.AiProvider.GITHUB;
 import static com.lucas.server.common.Constants.AiProvider.GOOGLE;
 import static com.lucas.server.common.Constants.AiProvider.OPENROUTER;
+import static com.lucas.server.common.Constants.SPECIALIST;
 import static com.lucas.server.common.Constants.TWELVEDATA_RATE_LIMITER;
 import static com.lucas.server.common.Constants.YAHOO_FINANCE_RATE_LIMITER;
 import static com.lucas.server.common.Constants.getFinnhubRateLimiterNames;
@@ -47,7 +48,6 @@ public class HttpClientConfig {
             config -> new DefaultSlidingWindowRateLimiter(config.concurrentRequests(), Duration.ofSeconds(1)),
             GITHUB,
             config -> new CompletionSlidingWindowRateLimiter(config.concurrentRequests(), Duration.ofSeconds(1)));
-    private static final String SPECIALIST = "-specialist";
 
     @Bean
     public WebClient webClient() {

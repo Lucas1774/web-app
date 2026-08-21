@@ -25,13 +25,13 @@ import static com.lucas.server.common.Constants.QUOTE;
 import static com.lucas.server.common.Constants.REQUEST_MAX_ATTEMPTS;
 import static com.lucas.server.common.Constants.RETRIEVING_DATA_INFO;
 import static com.lucas.server.common.Constants.SYMBOL;
-import static com.lucas.server.common.Constants.TIME_SERIES;
 import static com.lucas.server.common.Constants.TWELVEDATA_RATE_LIMITER;
 
 @Component
 @Slf4j
 public class TwelveDataMarketDataClient {
 
+    private static final String TIME_SERIES = "/time_series";
     private static final EnumMap<MarketDataType, String> typeToEndpoint =
             new EnumMap<>(Map.of(MarketDataType.LAST, QUOTE, MarketDataType.HISTORIC, TIME_SERIES));
     private static final Map<MarketDataType, UnaryOperator<UriComponentsBuilder>> typeToBuilderCustomizer =
