@@ -19,6 +19,10 @@ import static com.lucas.server.common.Constants.Clients.GEMINI_3_5_FLASH;
 import static com.lucas.server.common.Constants.Clients.GEMINI_3_5_FLASH_2;
 import static com.lucas.server.common.Constants.Clients.GEMINI_3_5_FLASH_3;
 import static com.lucas.server.common.Constants.Clients.GEMINI_3_5_FLASH_4;
+import static com.lucas.server.common.Constants.Clients.GEMINI_3_5_FLASH_LITE;
+import static com.lucas.server.common.Constants.Clients.GEMINI_3_5_FLASH_LITE_2;
+import static com.lucas.server.common.Constants.Clients.GEMINI_3_5_FLASH_LITE_3;
+import static com.lucas.server.common.Constants.Clients.GEMINI_3_5_FLASH_LITE_4;
 import static com.lucas.server.common.Constants.Clients.GEMINI_3_6_FLASH;
 import static com.lucas.server.common.Constants.Clients.GEMINI_3_6_FLASH_2;
 import static com.lucas.server.common.Constants.Clients.GEMINI_3_6_FLASH_3;
@@ -616,6 +620,8 @@ public final class Constants {
             Set.of(GEMINI_3_6_FLASH, GEMINI_3_6_FLASH_2, GEMINI_3_6_FLASH_3, GEMINI_3_6_FLASH_4);
     private static final Set<Clients> GEMINI_3_5_FLASH_CLIENTS =
             Set.of(GEMINI_3_5_FLASH, GEMINI_3_5_FLASH_2, GEMINI_3_5_FLASH_3, GEMINI_3_5_FLASH_4);
+    private static final Set<Clients> GEMINI_3_4_LITE_CLIENTS =
+            Set.of(GEMINI_3_5_FLASH_LITE, GEMINI_3_5_FLASH_LITE_2, GEMINI_3_5_FLASH_LITE_3, GEMINI_3_5_FLASH_LITE_4);
     private static final Map<RecommendationMode, Set<String>> modeToClientNames = new EnumMap<>(Map.ofEntries(Map.entry(
                     RecommendationMode.FIRST_ITERATION,
                     GEMINI_3_7_FLASH_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet())),
@@ -638,7 +644,9 @@ public final class Constants {
             Map.entry(RecommendationMode.RANDOM,
                     GPT_4_1_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet())),
             Map.entry(RecommendationMode.NOT_RANDOM,
-                    GPT_4_1_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet()))));
+                    GPT_4_1_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet())),
+            Map.entry(RecommendationMode.LITE,
+                    GEMINI_3_4_LITE_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet()))));
 
     private static final Map<String, String> ENTITY_MAP = Map.ofEntries(Map.entry("&quot;", "\""),
             Map.entry("&#39;", "'"),
@@ -756,7 +764,8 @@ public final class Constants {
         FINE_GRAIN_BACKUP,
         FINE_GRAIN_BACKUP_TWO,
         RANDOM,
-        NOT_RANDOM
+        NOT_RANDOM,
+        LITE
     }
 
     @SuppressWarnings("unused")

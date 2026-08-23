@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -58,8 +59,7 @@ public class RecommendationsController {
         return ResponseEntity.ok(jpaService.getRecommendationsById(symbols,
                 selectedClients,
                 DataManager.CheekyClients.empty(),
-                Set.of(),
-                Set.of(),
+                List.of(),
                 getPortfolioType(username),
                 overwrite,
                 false,
@@ -86,8 +86,7 @@ public class RecommendationsController {
         return ResponseEntity.ok(jpaService.getRandomRecommendations(SP500_SYMBOLS,
                 selectedClients,
                 DataManager.CheekyClients.empty(),
-                Set.of(),
-                Set.of(),
+                List.of(),
                 getPortfolioType(username),
                 count,
                 overwrite,

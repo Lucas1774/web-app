@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -117,8 +118,9 @@ public class DailyScheduler {
         Set<RecommendationDomain> updatedRecommendations = dataManager.getRandomRecommendations(symbolNames,
                 filterClients(clients, RecommendationMode.FIRST_ITERATION),
                 DataManager.CheekyClients.empty(),
-                filterClients(clients, RecommendationMode.FIRST_ITERATION_BACKUP),
-                filterClients(clients, RecommendationMode.FIRST_ITERATION_BACKUP_TWO),
+                List.of(filterClients(clients, RecommendationMode.FIRST_ITERATION_BACKUP),
+                        filterClients(clients, RecommendationMode.FIRST_ITERATION_BACKUP_TWO),
+                        filterClients(clients, RecommendationMode.LITE)),
                 PortfolioType.REAL,
                 symbolNames.size(),
                 true,
@@ -136,8 +138,9 @@ public class DailyScheduler {
                 dataManager.getTopRecommendedSymbols(BUY, RECOMMENDATION_MEDIUM_GRAIN_THRESHOLD, now);
         getRecommendations(topRecommendedSymbols,
                 filterClients(clients, RecommendationMode.SECOND_ITERATION),
-                filterClients(clients, RecommendationMode.SECOND_ITERATION_BACKUP),
-                filterClients(clients, RecommendationMode.SECOND_ITERATION_BACKUP_TWO),
+                List.of(filterClients(clients, RecommendationMode.SECOND_ITERATION_BACKUP),
+                        filterClients(clients, RecommendationMode.SECOND_ITERATION_BACKUP_TWO),
+                        filterClients(clients, RecommendationMode.LITE)),
                 false);
         OrderedIndexedSet<Long> topRecommendedSymbolsAfterMediumGrain =
                 dataManager.getTopRecommendedSymbols(BUY, RECOMMENDATION_FINE_GRAIN_THRESHOLD, now)
@@ -146,8 +149,8 @@ public class DailyScheduler {
                         .collect(OrderedIndexedSet.toUnmodifiableOrderedIndexedSet());
         getRecommendations(topRecommendedSymbolsAfterMediumGrain,
                 filterClients(clients, RecommendationMode.FINE_GRAIN),
-                filterClients(clients, RecommendationMode.FINE_GRAIN_BACKUP),
-                filterClients(clients, RecommendationMode.FINE_GRAIN_BACKUP_TWO),
+                List.of(filterClients(clients, RecommendationMode.FINE_GRAIN_BACKUP),
+                        filterClients(clients, RecommendationMode.FINE_GRAIN_BACKUP_TWO)),
                 true);
         publisher.publish("jobs", "job done");
 
@@ -180,14 +183,12 @@ public class DailyScheduler {
 
     private void getRecommendations(Set<Long> topRecommendedSymbols,
                                     Set<AiClient> clients,
-                                    Set<AiClient> backupClients,
-                                    Set<AiClient> secondBackupClients,
+                                    List<Set<AiClient>> backupClientsList,
                                     boolean fetchPremarket) {
         Set<RecommendationDomain> updatedRecommendations = dataManager.getRecommendationsById(topRecommendedSymbols,
                 clients,
                 DataManager.CheekyClients.empty(),
-                backupClients,
-                secondBackupClients,
+                backupClientsList,
                 PortfolioType.REAL,
                 true,
                 true,

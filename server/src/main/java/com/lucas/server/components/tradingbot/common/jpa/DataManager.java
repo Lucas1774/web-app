@@ -174,8 +174,7 @@ public class DataManager {
     public Set<RecommendationDomain> getRecommendationsById(Set<Long> symbolIds,
                                                             Set<AiClient> clients,
                                                             CheekyClients cheekyClients,
-                                                            Set<AiClient> backupClients,
-                                                            Set<AiClient> secondBackupClients,
+                                                            List<Set<AiClient>> backupClientsList,
                                                             PortfolioType type,
                                                             boolean overwrite,
                                                             boolean onTheFlyNews,
@@ -185,8 +184,7 @@ public class DataManager {
         return getRecommendationsInParallel(symbols,
                 clients,
                 cheekyClients,
-                backupClients,
-                secondBackupClients,
+                backupClientsList,
                 type,
                 overwrite,
                 false,
@@ -199,8 +197,7 @@ public class DataManager {
     public Set<RecommendationDomain> getRandomRecommendations(Set<String> symbolNames,
                                                               Set<AiClient> clients,
                                                               CheekyClients cheekyClients,
-                                                              Set<AiClient> backupClients,
-                                                              Set<AiClient> secondBackupClients,
+                                                              List<Set<AiClient>> backupClientsList,
                                                               PortfolioType type,
                                                               int count,
                                                               boolean overwrite,
@@ -233,8 +230,7 @@ public class DataManager {
         return getRecommendationsInParallel(symbolService.findAllById(finalList),
                 clients,
                 cheekyClients,
-                backupClients,
-                secondBackupClients,
+                backupClientsList,
                 type,
                 overwrite,
                 onlyIfHasNews,
@@ -441,40 +437,23 @@ public class DataManager {
     }
 
     private Set<RecommendationDomain> getRecommendationsWithBackup(Set<SymbolPayload> buffer,
-                                                                   OrderedIndexedSet<AiClient> clients,
-                                                                   Deque<AiClient> backupClients,
-                                                                   Deque<AiClient> secondBackupClients,
+                                                                   List<Deque<AiClient>> clientTiers,
                                                                    boolean useOldNews)
             throws ClientException, MappingException {
-        try {
-            return recommendationClient.getRecommendations(buffer, clients, useOldNews);
-        } catch (ClientException e) {
-            if (backupClients.isEmpty()) {
-                throw e;
-            }
-            backupClients.add(backupClients.pollFirst());
-            log.warn(CLIENT_FAILED_BACKUP_WARN,
-                    clients.stream().map(c -> c.getConfig().name()).toList(),
-                    buffer.stream().map(SymbolPayload::getSymbol).toList(),
-                    e);
+        ClientException last = null;
+        for (Deque<AiClient> tier : clientTiers) {
+            tier.add(tier.pollFirst());
             try {
-                return recommendationClient.getRecommendations(buffer,
-                        OrderedIndexedSet.copyOf(backupClients),
-                        useOldNews);
-            } catch (ClientException ex) {
-                if (secondBackupClients.isEmpty()) {
-                    throw ex;
-                }
-                secondBackupClients.add(secondBackupClients.pollFirst());
+                return recommendationClient.getRecommendations(buffer, OrderedIndexedSet.copyOf(tier), useOldNews);
+            } catch (ClientException e) {
+                last = e;
                 log.warn(CLIENT_FAILED_BACKUP_WARN,
-                        backupClients.stream().map(c -> c.getConfig().name()).toList(),
+                        tier.stream().map(c -> c.getConfig().name()).toList(),
                         buffer.stream().map(SymbolPayload::getSymbol).toList(),
-                        ex);
-                return recommendationClient.getRecommendations(buffer,
-                        OrderedIndexedSet.copyOf(secondBackupClients),
-                        useOldNews);
+                        e);
             }
         }
+        throw Objects.requireNonNull(last);
     }
 
     private OrderedIndexedSet<MarketDataDomain> retrieveMarketDataWithBackupStrategy(Set<SymbolDomain> symbols)
@@ -503,8 +482,7 @@ public class DataManager {
     private Set<RecommendationDomain> getRecommendationsInParallel(Set<SymbolDomain> symbols,
                                                                    Set<AiClient> clients,
                                                                    CheekyClients cheekyClients,
-                                                                   Set<AiClient> backupClients,
-                                                                   Set<AiClient> secondBackupClients,
+                                                                   List<Set<AiClient>> backupClientsList,
                                                                    PortfolioType type,
                                                                    boolean overwrite,
                                                                    boolean onlyIfHasNews,
@@ -514,8 +492,8 @@ public class DataManager {
         Set<RecommendationDomain> res = new HashSet<>();
         Deque<AiClient> mutableClients = new ConcurrentLinkedDeque<>(clients);
         Deque<AiClient> mutableCheekyClients = new ConcurrentLinkedDeque<>(cheekyClients.getClients());
-        Deque<AiClient> mutableBackupClients = new ConcurrentLinkedDeque<>(backupClients);
-        Deque<AiClient> mutableSecondBackupClients = new ConcurrentLinkedDeque<>(secondBackupClients);
+        List<Deque<AiClient>> mutableBackupClients =
+                backupClientsList.stream().<Deque<AiClient>>map(ConcurrentLinkedDeque::new).toList();
         PortfolioService portfolioService = portfolioTypeToService.get(type);
 
         LocalDateTime startUtc;
@@ -595,10 +573,11 @@ public class DataManager {
                     Deque<AiClient> clientsRef = withCheekyClients ? mutableCheekyClients : mutableClients;
                     int minChunkSize = clientsRef.stream().mapToInt(c -> c.getConfig().chunkSize()).min().orElseThrow();
                     if (recommendationBuffer.size() == minChunkSize) {
+                        List<Deque<AiClient>> tiers = new ArrayList<>();
+                        tiers.add(clientsRef);
+                        tiers.addAll(mutableBackupClients);
                         submitChunk(Set.copyOf(recommendationBuffer),
-                                OrderedIndexedSet.copyOf(clientsRef),
-                                mutableBackupClients,
-                                mutableSecondBackupClients,
+                                tiers,
                                 executor,
                                 resultsQueue,
                                 overwrite,
@@ -607,26 +586,20 @@ public class DataManager {
                             cheekyClients.decrementRemaining();
                         }
                         submitted++;
-                        clientsRef.add(clientsRef.pollFirst());
                         recommendationBuffer.clear();
                     }
                 }
                 if (!recommendationBuffer.isEmpty()) {
                     boolean withCheekyClients = !mutableCheekyClients.isEmpty() && 0 < cheekyClients.getRemaining();
                     Deque<AiClient> clientsRef = withCheekyClients ? mutableCheekyClients : mutableClients;
-                    submitChunk(Set.copyOf(recommendationBuffer),
-                            OrderedIndexedSet.copyOf(clientsRef),
-                            mutableBackupClients,
-                            mutableSecondBackupClients,
-                            executor,
-                            resultsQueue,
-                            overwrite,
-                            useOldNews);
+                    List<Deque<AiClient>> tiers = new ArrayList<>();
+                    tiers.add(clientsRef);
+                    tiers.addAll(mutableBackupClients);
+                    submitChunk(Set.copyOf(recommendationBuffer), tiers, executor, resultsQueue, overwrite, useOldNews);
                     if (withCheekyClients) {
                         cheekyClients.decrementRemaining();
                     }
                     submitted++;
-                    clientsRef.add(clientsRef.pollFirst());
                 }
             }
 
@@ -688,17 +661,14 @@ public class DataManager {
     }
 
     private void submitChunk(Set<SymbolPayload> buffer,
-                             OrderedIndexedSet<AiClient> clients,
-                             Deque<AiClient> backupClients,
-                             Deque<AiClient> secondBackupClients,
+                             List<Deque<AiClient>> clientTiers,
                              ExecutorService executor,
                              BlockingQueue<Set<RecommendationDomain>> resultsQueue,
                              boolean overwrite,
                              boolean useOldNews) {
         executor.submit(() -> {
             try {
-                Set<RecommendationDomain> partial =
-                        getRecommendationsWithBackup(buffer, clients, backupClients, secondBackupClients, useOldNews);
+                Set<RecommendationDomain> partial = getRecommendationsWithBackup(buffer, clientTiers, useOldNews);
                 log.info(GENERATION_SUCCESSFUL_INFO, RECOMMENDATION);
                 Set<NewsDomain> mergedNews = Set.copyOf(partial.stream()
                         .flatMap(r -> r.getNews().stream())

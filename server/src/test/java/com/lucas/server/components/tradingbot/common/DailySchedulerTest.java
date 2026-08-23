@@ -66,7 +66,6 @@ class DailySchedulerTest extends ConfiguredTest {
                     any(),
                     any(),
                     any(),
-                    any(),
                     anyInt(),
                     anyBoolean(),
                     anyBoolean(),
