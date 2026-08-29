@@ -6,7 +6,7 @@ SONAR_COMPOSE_FILE="docker/dev/compose.yaml"
 SONAR_URL="http://localhost:9000"
 SONAR_PROJECT_KEY="server"
 SONAR_TIMEOUT_SECONDS=60
-SONAR_TOKEN="squ_9f24ba1833985c641d702de3d8fe96dbc77ef194"
+SONAR_TOKEN="sqa_9a1afa17d8e26df82b709fd109a1d00762d6b3ab"
 # shellcheck disable=SC2034
 # just for UI login
 SONAR_PASSWORD="AdminPass123!"

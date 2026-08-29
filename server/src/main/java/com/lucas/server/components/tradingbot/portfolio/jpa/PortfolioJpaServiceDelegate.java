@@ -45,7 +45,7 @@ public abstract class PortfolioJpaServiceDelegate<T extends PortfolioBase, R ext
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = IllegalStateException.class)
     public PortfolioDomain executePortfolioAction(SymbolDomain symbol,
                                                   BigDecimal price,
                                                   BigDecimal quantity,

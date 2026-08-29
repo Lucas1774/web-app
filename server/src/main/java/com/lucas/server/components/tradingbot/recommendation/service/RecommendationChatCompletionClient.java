@@ -45,6 +45,9 @@ public class RecommendationChatCompletionClient {
     private static final int CLIENT_ROTATION_DEBOUNCE_MS = 200;
     private static final String PROMPTING_MODEL_INFO = "Prompting model {}";
     private static final String RECOMMENDATION_COMPLETION_ERROR = "Failed to get recommendations. Completion: {0}";
+    private static final String ENTRY_PRICE_WITH_PREMARKET =
+            "assess whether the sentiment is already priced in and adjust the entry accordingly.";
+    private static final String ENTRY_PRICE_WITHOUT_PREMARKET = "derive a fair entry from the provided data.";
     private final ObjectNode systemMessage;
     private final ObjectNode systemLongTermMessage;
     private final ObjectNode context;
@@ -111,7 +114,14 @@ public class RecommendationChatCompletionClient {
                                         ZonedDateTime.now(NY_ZONE)
                                                 .format(DateTimeFormatter.ofPattern("EEEE, yyyy-MM-dd HH:mm:ss z",
                                                         Locale.ENGLISH))));
-        ObjectNode usedSystemMessage = useOldNews ? systemLongTermMessage : systemMessage;
+        ObjectNode usedSystemMessage = useOldNews ? systemLongTermMessage.deepCopy() : systemMessage.deepCopy();
+        usedSystemMessage.put(CONTENT,
+                usedSystemMessage.get(CONTENT)
+                        .asString()
+                        .replace("{entryPriceInstruction}",
+                                payload.stream().anyMatch(p -> null != p.getPremarket())
+                                        ? ENTRY_PRICE_WITH_PREMARKET
+                                        : ENTRY_PRICE_WITHOUT_PREMARKET));
 
         log.info(RETRIEVING_DATA_INFO, RECOMMENDATION, symbols);
         AtomicReference<String> completion = new AtomicReference<>();
@@ -123,9 +133,11 @@ public class RecommendationChatCompletionClient {
                     if (Boolean.FALSE.equals(client.getConfig().fixMe())) {
                         reportMessage = rawReportMessage;
                     } else {
-                        reportMessage = objectMapper.readValue(fixMeMessage.get(CONTENT)
-                                .asString()
-                                .replace("{placeholder}", rawReportMessage.get(CONTENT).asString()), ObjectNode.class);
+                        reportMessage = fixMeMessage.deepCopy()
+                                .put(CONTENT,
+                                        fixMeMessage.get(CONTENT)
+                                                .asString()
+                                                .replace("{placeholder}", rawReportMessage.get(CONTENT).asString()));
                     }
                     OrderedIndexedSet<JsonNode> prompt =
                             OrderedIndexedSet.of(usedSystemMessage, contextMessage, fewShotMessage, reportMessage);
