@@ -1,6 +1,5 @@
 package com.lucas.server;
 
-import com.lucas.server.components.tradingbot.common.AiClient;
 import com.lucas.server.components.tradingbot.common.DailyScheduler;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolRepository;
@@ -31,6 +30,7 @@ import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -39,9 +39,9 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static com.lucas.server.common.Constants.BUY;
+import static com.lucas.server.common.Constants.FINE_GRAIN_CLIENT_NAMES;
 import static com.lucas.server.common.Constants.NY_ZONE;
 import static com.lucas.server.common.Constants.Sector;
-import static com.lucas.server.common.Constants.getFineGrainClientNames;
 import static com.lucas.server.common.Constants.isTradingDate;
 import static com.lucas.server.common.Constants.toPastOrFutureTradeDate;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -68,7 +68,7 @@ class ManualRunTest extends BaseTest {
 
     private static final Set<String> SYMBOL_NAMES =
             Set.of("AAPL", "NVDA", "MSFT", "AMZN", "META", "TSLA", "GOOGL", "GOOG", "IBM");
-    private static final LocalDate FROM = LocalDate.of(2026, Month.AUGUST, 18); // inclusive
+    private static final LocalDate FROM = LocalDate.of(2026, Month.SEPTEMBER, 1); // inclusive
     @SuppressWarnings("java:S8692")
     private static final LocalDate TO = LocalDate.now().plusDays(1); // exclusive
     private static Set<Recommendation> allRecommendations;
@@ -88,9 +88,6 @@ class ManualRunTest extends BaseTest {
 
     @Autowired
     private DailyScheduler dailyScheduler;
-
-    @Autowired
-    private Map<String, AiClient> allClients;
 
     @Autowired
     private MarketDataMapper marketDataMapper;
@@ -176,7 +173,8 @@ class ManualRunTest extends BaseTest {
                                         .setHigh(e.getValue().getHigh().max(next.getHigh()))
                                         .setLow(e.getValue().getLow().min(next.getLow()))
                                         .setPrice(next.getPrice())
-                                        .setVolume(e.getValue().getVolume() + next.getVolume())
+                                        .setVolume(Objects.<Long>requireNonNullElse(e.getValue().getVolume(), 0L)
+                                                   + Objects.<Long>requireNonNullElse(next.getVolume(), 0L))
                                         .setPreviousClose(e.getValue().getPreviousClose())))
                         .stream())
                 .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
@@ -463,13 +461,12 @@ class ManualRunTest extends BaseTest {
     }
 
     private Map<Recommendation, MarketDataDomain> getFiltered(Map<Recommendation, MarketDataDomain> baseline) {
-        Set<String> fineGrainClientNames = getFineGrainClientNames(allClients);
         return baseline.entrySet()
                 .stream()
                 // It is also possible to filter by gap, for instance (open - previousClose, as percentage)
                 .filter(e -> BUY.equals(e.getKey().getAction()) && 0 <= e.getKey()
                         .getConfidence()
-                        .compareTo(BigDecimal.valueOf(0.8)) && fineGrainClientNames.contains(e.getKey().getModel()))
+                        .compareTo(BigDecimal.valueOf(0.8)) && FINE_GRAIN_CLIENT_NAMES.contains(e.getKey().getModel()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 

@@ -25,12 +25,12 @@ import java.util.stream.Collectors;
 
 import static com.lucas.server.common.Constants.BUY;
 import static com.lucas.server.common.Constants.DEFAULT_USERNAME;
+import static com.lucas.server.common.Constants.FINE_GRAIN_CLIENT_NAMES;
+import static com.lucas.server.common.Constants.OPENROUTER_CLIENTS;
 import static com.lucas.server.common.Constants.PortfolioType;
-import static com.lucas.server.common.Constants.RecommendationMode;
 import static com.lucas.server.common.Constants.SP500_SYMBOLS;
 import static com.lucas.server.common.Constants.UTC_ZONE;
 import static com.lucas.server.common.Constants.filterClients;
-import static com.lucas.server.common.Constants.getFineGrainClientNames;
 
 @RestController
 @RequestMapping("/recommendations")
@@ -54,7 +54,7 @@ public class RecommendationsController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         Set<AiClient> selectedClients = null == models
-                ? filterClients(clients, RecommendationMode.NOT_RANDOM)
+                ? filterClients(clients, OPENROUTER_CLIENTS)
                 : models.stream().map(clients::get).collect(Collectors.toUnmodifiableSet());
         return ResponseEntity.ok(jpaService.getRecommendationsById(symbols,
                 selectedClients,
@@ -81,7 +81,7 @@ public class RecommendationsController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         Set<AiClient> selectedClients = null == models
-                ? filterClients(clients, RecommendationMode.RANDOM)
+                ? filterClients(clients, OPENROUTER_CLIENTS)
                 : models.stream().map(clients::get).collect(Collectors.toUnmodifiableSet());
         return ResponseEntity.ok(jpaService.getRandomRecommendations(SP500_SYMBOLS,
                 selectedClients,
@@ -112,7 +112,7 @@ public class RecommendationsController {
             @RequestParam(required = false) Set<String> models) {
         LocalDate selectedDate = null == date ? LocalDate.now(UTC_ZONE) : date;
         String selectedAction = null == action ? BUY : action;
-        Set<String> selectedClients = null == models ? getFineGrainClientNames(clients) : models;
+        Set<String> selectedClients = null == models ? FINE_GRAIN_CLIENT_NAMES : models;
         return ResponseEntity.ok(jpaService.getDailyRecommendations(confidenceThreshold,
                 selectedDate,
                 selectedAction,

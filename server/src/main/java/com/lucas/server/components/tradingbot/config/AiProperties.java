@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import static com.lucas.server.common.Constants.AiProvider.GITHUB;
 import static com.lucas.server.common.Constants.AiProvider.GOOGLE;
 import static com.lucas.server.common.Constants.AiProvider.OPENROUTER;
 
@@ -38,15 +37,6 @@ public class AiProperties {
 
         @SuppressWarnings("LoggingSimilarMessage")
         public DeploymentProperties {
-            if (null == provider) {
-                provider = GITHUB;
-            }
-            if (GITHUB.equals(provider)) {
-                if (null == temperature) {
-                    temperature = 0.0;
-                }
-                url = "https://models.github.ai/inference/chat/completions";
-            }
             if (OPENROUTER.equals(provider)) {
                 if (null == temperature) {
                     temperature = 0.0;
@@ -82,6 +72,10 @@ public class AiProperties {
                 maxTokens = 8000;
             }
 
+            Objects.requireNonNull(name);
+            Objects.requireNonNull(provider);
+            Objects.requireNonNull(apiKey);
+            Objects.requireNonNull(model);
             Objects.requireNonNull(requestsPerMinute);
             Objects.requireNonNull(concurrentRequests);
         }

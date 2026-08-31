@@ -3,7 +3,6 @@ package com.lucas.server.components.tradingbot.config;
 import com.lucas.server.common.Constants;
 import com.lucas.server.common.HttpRequestClient;
 import com.lucas.server.components.tradingbot.common.AiClient;
-import com.lucas.utils.ratelimiter.CompletionSlidingWindowRateLimiter;
 import com.lucas.utils.ratelimiter.DefaultSlidingWindowRateLimiter;
 import com.lucas.utils.ratelimiter.SlidingWindowRateLimiter;
 import io.netty.channel.ChannelOption;
@@ -21,7 +20,6 @@ import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
-import static com.lucas.server.common.Constants.AiProvider.GITHUB;
 import static com.lucas.server.common.Constants.AiProvider.GOOGLE;
 import static com.lucas.server.common.Constants.AiProvider.OPENROUTER;
 import static com.lucas.server.common.Constants.SPECIALIST;
@@ -38,16 +36,12 @@ public class HttpClientConfig {
             providerToPerMinuteRateLimiter = Map.of(OPENROUTER,
             config -> new DefaultSlidingWindowRateLimiter(config.requestsPerMinute(), Duration.ofMinutes(1)),
             GOOGLE,
-            config -> new DefaultSlidingWindowRateLimiter(config.requestsPerMinute(), Duration.ofMinutes(1)),
-            GITHUB,
-            config -> new CompletionSlidingWindowRateLimiter(config.requestsPerMinute(), Duration.ofMinutes(1)));
+            config -> new DefaultSlidingWindowRateLimiter(config.requestsPerMinute(), Duration.ofMinutes(1)));
     private static final Map<Constants.AiProvider, Function<AiProperties.DeploymentProperties, SlidingWindowRateLimiter>>
             providerToConcurrentRateLimiter = Map.of(OPENROUTER,
             config -> new DefaultSlidingWindowRateLimiter(config.concurrentRequests(), Duration.ofSeconds(1)),
             GOOGLE,
-            config -> new DefaultSlidingWindowRateLimiter(config.concurrentRequests(), Duration.ofSeconds(1)),
-            GITHUB,
-            config -> new CompletionSlidingWindowRateLimiter(config.concurrentRequests(), Duration.ofSeconds(1)));
+            config -> new DefaultSlidingWindowRateLimiter(config.concurrentRequests(), Duration.ofSeconds(1)));
 
     @Bean
     public WebClient webClient() {
@@ -72,13 +66,6 @@ public class HttpClientConfig {
     public Map<String, AiClient> clients(HttpRequestClient httpClient,
                                          AiProperties aiProps,
                                          ObjectMapper objectMapper) {
-        Map<String, DefaultSlidingWindowRateLimiter> rateLimiters = aiProps.getDeployments()
-                .stream()
-                .filter(d -> GITHUB.equals(d.provider()))
-                .map(AiProperties.DeploymentProperties::apiKey)
-                .collect(Collectors.toUnmodifiableMap(Function.identity(),
-                        _ -> new DefaultSlidingWindowRateLimiter(24, Duration.ofMinutes(1)),
-                        (a, _) -> a));
         Map<String, AiClient> res = aiProps.getDeployments()
                 .stream()
                 .filter(d -> !d.name().contains(SPECIALIST))
@@ -86,7 +73,7 @@ public class HttpClientConfig {
                         config -> new AiClient(config,
                                 providerToPerMinuteRateLimiter.get(config.provider()).apply(config),
                                 providerToConcurrentRateLimiter.get(config.provider()).apply(config),
-                                rateLimiters.get(config.apiKey()),
+                                null,
                                 objectMapper,
                                 httpClient,
                                 sanitizer(getModelsWithThinkingBlock().contains(config.name())))));

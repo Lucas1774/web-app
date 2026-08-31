@@ -30,9 +30,9 @@
 
     <suppress checks="LineLength"
               files=".*HttpClientConfig\.java$"
-              lines="37"/>
+              lines="35"/>
 
     <suppress checks="LineLength"
               files=".*HttpClientConfig\.java$"
-              lines="44"/>
+              lines="40"/>
 </suppressions>

@@ -24,10 +24,14 @@ import java.util.Set;
 
 import static com.lucas.server.common.Constants.AMERICA_NY;
 import static com.lucas.server.common.Constants.BUY;
+import static com.lucas.server.common.Constants.GEMINI_3_5_FLASH_CLIENTS;
+import static com.lucas.server.common.Constants.GEMINI_3_6_FLASH_CLIENTS;
+import static com.lucas.server.common.Constants.GEMINI_3_7_FLASH_CLIENTS;
+import static com.lucas.server.common.Constants.GEMINI_3_8_FLASH_CLIENTS;
+import static com.lucas.server.common.Constants.GEMINI_LITE_CLIENTS;
 import static com.lucas.server.common.Constants.MarketDataType;
 import static com.lucas.server.common.Constants.NY_ZONE;
 import static com.lucas.server.common.Constants.PortfolioType;
-import static com.lucas.server.common.Constants.RecommendationMode;
 import static com.lucas.server.common.Constants.SP500_SYMBOLS;
 import static com.lucas.server.common.Constants.UTC;
 import static com.lucas.server.common.Constants.UTC_ZONE;
@@ -115,12 +119,16 @@ public class DailyScheduler {
 
     @SuppressWarnings("SameParameterValue")
     private void doMorningTask(Set<String> symbolNames) {
+        Set<AiClient> gemini8Clients = filterClients(clients, GEMINI_3_8_FLASH_CLIENTS);
+        Set<AiClient> gemini7Clients = filterClients(clients, GEMINI_3_7_FLASH_CLIENTS);
+        Set<AiClient> gemini6Clients = filterClients(clients, GEMINI_3_6_FLASH_CLIENTS);
+        Set<AiClient> gemini5Clients = filterClients(clients, GEMINI_3_5_FLASH_CLIENTS);
+        Set<AiClient> geminiLiteClients = filterClients(clients, GEMINI_LITE_CLIENTS);
+
         Set<RecommendationDomain> updatedRecommendations = dataManager.getRandomRecommendations(symbolNames,
-                filterClients(clients, RecommendationMode.FIRST_ITERATION),
+                gemini7Clients,
                 DataManager.CheekyClients.empty(),
-                List.of(filterClients(clients, RecommendationMode.FIRST_ITERATION_BACKUP),
-                        filterClients(clients, RecommendationMode.FIRST_ITERATION_BACKUP_TWO),
-                        filterClients(clients, RecommendationMode.LITE)),
+                List.of(gemini6Clients, gemini5Clients, geminiLiteClients),
                 PortfolioType.REAL,
                 symbolNames.size(),
                 true,
@@ -137,10 +145,8 @@ public class DailyScheduler {
         Set<Long> topRecommendedSymbols =
                 dataManager.getTopRecommendedSymbols(BUY, RECOMMENDATION_MEDIUM_GRAIN_THRESHOLD, now);
         getRecommendations(topRecommendedSymbols,
-                filterClients(clients, RecommendationMode.SECOND_ITERATION),
-                List.of(filterClients(clients, RecommendationMode.SECOND_ITERATION_BACKUP),
-                        filterClients(clients, RecommendationMode.SECOND_ITERATION_BACKUP_TWO),
-                        filterClients(clients, RecommendationMode.LITE)),
+                gemini7Clients,
+                List.of(gemini6Clients, gemini5Clients, geminiLiteClients),
                 false);
         OrderedIndexedSet<Long> topRecommendedSymbolsAfterMediumGrain =
                 dataManager.getTopRecommendedSymbols(BUY, RECOMMENDATION_FINE_GRAIN_THRESHOLD, now)
@@ -148,9 +154,8 @@ public class DailyScheduler {
                         .limit(MAX_RECOMMENDATIONS_COUNT)
                         .collect(OrderedIndexedSet.toUnmodifiableOrderedIndexedSet());
         getRecommendations(topRecommendedSymbolsAfterMediumGrain,
-                filterClients(clients, RecommendationMode.FINE_GRAIN),
-                List.of(filterClients(clients, RecommendationMode.FINE_GRAIN_BACKUP),
-                        filterClients(clients, RecommendationMode.FINE_GRAIN_BACKUP_TWO)),
+                gemini8Clients,
+                List.of(gemini7Clients, gemini6Clients, gemini5Clients),
                 true);
         publisher.publish("jobs", "job done");
 

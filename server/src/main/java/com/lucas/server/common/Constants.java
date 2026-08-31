@@ -8,35 +8,13 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.ZoneId;
-import java.util.EnumMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.lucas.server.common.Constants.Clients.GEMINI_3_5_FLASH;
-import static com.lucas.server.common.Constants.Clients.GEMINI_3_5_FLASH_2;
-import static com.lucas.server.common.Constants.Clients.GEMINI_3_5_FLASH_3;
-import static com.lucas.server.common.Constants.Clients.GEMINI_3_5_FLASH_4;
-import static com.lucas.server.common.Constants.Clients.GEMINI_3_5_FLASH_LITE;
-import static com.lucas.server.common.Constants.Clients.GEMINI_3_5_FLASH_LITE_2;
-import static com.lucas.server.common.Constants.Clients.GEMINI_3_5_FLASH_LITE_3;
-import static com.lucas.server.common.Constants.Clients.GEMINI_3_5_FLASH_LITE_4;
-import static com.lucas.server.common.Constants.Clients.GEMINI_3_6_FLASH;
-import static com.lucas.server.common.Constants.Clients.GEMINI_3_6_FLASH_2;
-import static com.lucas.server.common.Constants.Clients.GEMINI_3_6_FLASH_3;
-import static com.lucas.server.common.Constants.Clients.GEMINI_3_6_FLASH_4;
-import static com.lucas.server.common.Constants.Clients.GEMINI_3_7_FLASH;
-import static com.lucas.server.common.Constants.Clients.GEMINI_3_7_FLASH_2;
-import static com.lucas.server.common.Constants.Clients.GEMINI_3_7_FLASH_3;
-import static com.lucas.server.common.Constants.Clients.GEMINI_3_7_FLASH_4;
-import static com.lucas.server.common.Constants.Clients.GPT_4_1;
-import static com.lucas.server.common.Constants.Clients.GPT_4_1_2;
-import static com.lucas.server.common.Constants.Clients.GPT_4_1_3;
-import static com.lucas.server.common.Constants.Clients.GPT_4_1_4;
-import static com.lucas.server.common.Constants.Clients.GPT_4_1_5;
-import static com.lucas.server.common.Constants.Clients.GPT_4_1_6;
 import static com.lucas.server.common.Constants.Sector.COMMUNICATION_SERVICES;
 import static com.lucas.server.common.Constants.Sector.CONSUMER_DISCRETIONARY;
 import static com.lucas.server.common.Constants.Sector.CONSUMER_STAPLES;
@@ -589,8 +567,44 @@ public final class Constants {
                     Map.entry("ZBH", HEALTH_CARE),
                     Map.entry("ZTS", HEALTH_CARE));
     public static final Set<String> SP500_SYMBOLS = Set.copyOf(SYMBOL_TO_SECTOR.keySet());
+    public static final Set<String> GEMINI_3_8_FLASH_CLIENTS = Set.of("gemini-3.8-flash",
+            "gemini-3.8-flash_2",
+            "gemini-3.8-flash_3",
+            "gemini-3.8-flash_4",
+            "gemini-3.8-flash_5",
+            "gemini-3.8-flash_6");
+    public static final Set<String> GEMINI_3_7_FLASH_CLIENTS = Set.of("gemini-3.7-flash",
+            "gemini-3.7-flash_2",
+            "gemini-3.7-flash_3",
+            "gemini-3.7-flash_4",
+            "gemini-3.7-flash_5",
+            "gemini-3.7-flash_6");
+    public static final Set<String> GEMINI_3_6_FLASH_CLIENTS = Set.of("gemini-3.6-flash",
+            "gemini-3.6-flash_2",
+            "gemini-3.6-flash_3",
+            "gemini-3.6-flash_4",
+            "gemini-3.6-flash_5",
+            "gemini-3.6-flash_6");
+    public static final Set<String> GEMINI_3_5_FLASH_CLIENTS = Set.of("gemini-3.5-flash",
+            "gemini-3.5-flash_2",
+            "gemini-3.5-flash_3",
+            "gemini-3.5-flash_4",
+            "gemini-3.5-flash_5",
+            "gemini-3.5-flash_6");
+    public static final Set<String> GEMINI_LITE_CLIENTS = Set.of("gemini-3.5-flash-lite",
+            "gemini-3.5-flash-lite_2",
+            "gemini-3.5-flash-lite_3",
+            "gemini-3.5-flash-lite_4",
+            "gemini-3.5-flash-lite_5",
+            "gemini-3.5-flash-lite_6");
+    public static final Set<String> OPENROUTER_CLIENTS =
+            Set.of("openrouter", "openrouter_2", "openrouter_3", "openrouter_4", "openrouter_5");
+    public static final Set<String> FINE_GRAIN_CLIENT_NAMES = Stream.of(GEMINI_3_8_FLASH_CLIENTS,
+            GEMINI_3_7_FLASH_CLIENTS,
+            GEMINI_3_6_FLASH_CLIENTS,
+            GEMINI_3_5_FLASH_CLIENTS).flatMap(Set::stream).collect(Collectors.toUnmodifiableSet());
     // If a model here has a specialist version, that one will be assumed to output a thinking block too
-    private static final Set<Clients> CLIENTS_WITH_THINKING_BLOCK = Set.of();
+    private static final Set<String> CLIENTS_WITH_THINKING_BLOCK = Set.of();
     private static final String FINNHUB_RATE_LIMITER = "finnhubRateLimiter";
     private static final String FINNHUB_RATE_LIMITER_2 = "finnhubRateLimiter2";
     private static final String FINNHUB_RATE_LIMITER_3 = "finnhubRateLimiter3";
@@ -612,42 +626,6 @@ public final class Constants {
                     LocalDate.of(2026, Month.NOVEMBER, 26), // Thanksgiving
                     LocalDate.of(2026, Month.DECEMBER, 25)  // Christmas Day
             );
-    private static final Set<Clients> GPT_4_1_CLIENTS =
-            Set.of(GPT_4_1, GPT_4_1_2, GPT_4_1_3, GPT_4_1_4, GPT_4_1_5, GPT_4_1_6);
-    private static final Set<Clients> GEMINI_3_7_FLASH_CLIENTS =
-            Set.of(GEMINI_3_7_FLASH, GEMINI_3_7_FLASH_2, GEMINI_3_7_FLASH_3, GEMINI_3_7_FLASH_4);
-    private static final Set<Clients> GEMINI_3_6_FLASH_CLIENTS =
-            Set.of(GEMINI_3_6_FLASH, GEMINI_3_6_FLASH_2, GEMINI_3_6_FLASH_3, GEMINI_3_6_FLASH_4);
-    private static final Set<Clients> GEMINI_3_5_FLASH_CLIENTS =
-            Set.of(GEMINI_3_5_FLASH, GEMINI_3_5_FLASH_2, GEMINI_3_5_FLASH_3, GEMINI_3_5_FLASH_4);
-    private static final Set<Clients> GEMINI_3_4_LITE_CLIENTS =
-            Set.of(GEMINI_3_5_FLASH_LITE, GEMINI_3_5_FLASH_LITE_2, GEMINI_3_5_FLASH_LITE_3, GEMINI_3_5_FLASH_LITE_4);
-    private static final Map<RecommendationMode, Set<String>> modeToClientNames = new EnumMap<>(Map.ofEntries(Map.entry(
-                    RecommendationMode.FIRST_ITERATION,
-                    GEMINI_3_7_FLASH_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet())),
-            Map.entry(RecommendationMode.FIRST_ITERATION_BACKUP,
-                    GEMINI_3_6_FLASH_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet())),
-            Map.entry(RecommendationMode.FIRST_ITERATION_BACKUP_TWO,
-                    GEMINI_3_5_FLASH_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet())),
-            Map.entry(RecommendationMode.SECOND_ITERATION,
-                    GEMINI_3_7_FLASH_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet())),
-            Map.entry(RecommendationMode.SECOND_ITERATION_BACKUP,
-                    GEMINI_3_6_FLASH_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet())),
-            Map.entry(RecommendationMode.SECOND_ITERATION_BACKUP_TWO,
-                    GEMINI_3_5_FLASH_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet())),
-            Map.entry(RecommendationMode.FINE_GRAIN,
-                    GEMINI_3_7_FLASH_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet())),
-            Map.entry(RecommendationMode.FINE_GRAIN_BACKUP,
-                    GEMINI_3_6_FLASH_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet())),
-            Map.entry(RecommendationMode.FINE_GRAIN_BACKUP_TWO,
-                    GEMINI_3_5_FLASH_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet())),
-            Map.entry(RecommendationMode.RANDOM,
-                    GPT_4_1_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet())),
-            Map.entry(RecommendationMode.NOT_RANDOM,
-                    GPT_4_1_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet())),
-            Map.entry(RecommendationMode.LITE,
-                    GEMINI_3_4_LITE_CLIENTS.stream().map(Clients::toString).collect(Collectors.toUnmodifiableSet()))));
-
     private static final Map<String, String> ENTITY_MAP = Map.ofEntries(Map.entry("&quot;", "\""),
             Map.entry("&#39;", "'"),
             Map.entry("&amp;", "&"),
@@ -686,27 +664,14 @@ public final class Constants {
     }
 
     public static Set<String> getModelsWithThinkingBlock() {
-        return CLIENTS_WITH_THINKING_BLOCK.stream().flatMap(client -> {
-            String label = client.toString();
-            return Stream.of(label, label + SPECIALIST);
-        }).collect(Collectors.toUnmodifiableSet());
-    }
-
-    public static Set<AiClient> filterClients(Map<String, AiClient> allClients, RecommendationMode recommendationMode) {
-        return allClients.entrySet()
-                .stream()
-                .filter(clientNameToClient -> modeToClientNames.get(recommendationMode)
-                        .contains(clientNameToClient.getKey()))
-                .map(Map.Entry::getValue)
+        return CLIENTS_WITH_THINKING_BLOCK.stream()
+                .flatMap(client -> Stream.of(client, client + SPECIALIST))
                 .collect(Collectors.toUnmodifiableSet());
     }
 
-    public static Set<String> getFineGrainClientNames(Map<String, AiClient> allClients) {
-        return Stream.of(RecommendationMode.FINE_GRAIN,
-                        RecommendationMode.FINE_GRAIN_BACKUP,
-                        RecommendationMode.FINE_GRAIN_BACKUP_TWO)
-                .flatMap(mode -> filterClients(allClients, mode).stream())
-                .map(c -> c.getConfig().name())
+    public static Set<AiClient> filterClients(Map<String, AiClient> allClients, Set<String> clientNames) {
+        return clientNames.stream()
+                .map(name -> Optional.ofNullable(allClients.get(name)).orElseThrow())
                 .collect(Collectors.toUnmodifiableSet());
     }
 
@@ -753,105 +718,6 @@ public final class Constants {
         MOCK
     }
 
-    public enum RecommendationMode {
-        FIRST_ITERATION,
-        FIRST_ITERATION_BACKUP,
-        FIRST_ITERATION_BACKUP_TWO,
-        SECOND_ITERATION,
-        SECOND_ITERATION_BACKUP,
-        SECOND_ITERATION_BACKUP_TWO,
-        FINE_GRAIN,
-        FINE_GRAIN_BACKUP,
-        FINE_GRAIN_BACKUP_TWO,
-        RANDOM,
-        NOT_RANDOM,
-        LITE
-    }
-
-    @SuppressWarnings("unused")
-    protected enum Clients {
-        GPT_4_1("gpt-4.1"),
-        GPT_4_1_2("gpt-4.1_2"),
-        GPT_4_1_3("gpt-4.1_3"),
-        GPT_4_1_4("gpt-4.1_4"),
-        GPT_4_1_5("gpt-4.1_5"),
-        GPT_4_1_6("gpt-4.1_6"),
-        GPT_4_1_SPECIALIST("gpt-4.1" + SPECIALIST),
-        GPT_4_1_2_SPECIALIST("gpt-4.1_2" + SPECIALIST),
-        GPT_4_1_3_SPECIALIST("gpt-4.1_3" + SPECIALIST),
-        GPT_4_1_4_SPECIALIST("gpt-4.1_4" + SPECIALIST),
-        GPT_4_1_5_SPECIALIST("gpt-4.1_5" + SPECIALIST),
-        GPT_4_1_6_SPECIALIST("gpt-4.1_6" + SPECIALIST),
-        GPT_4O("gpt-4o"),
-        GPT_4_1_MINI("gpt-4.1-mini"),
-        GPT_4O_MINI("gpt-4o-mini"),
-        GPT_4_1_NANO("gpt-4.1-nano"),
-        LLAMA_3_3_70B("llama-3.3-70b"),
-        COMMAND_A("command-a"),
-        MINISTRAL_3B("ministral-3b"),
-        PHI_4("phi-4"),
-
-        OPENROUTER("openrouter"),
-        OPENROUTER_2("openrouter_2"),
-        OPENROUTER_3("openrouter_3"),
-        OPENROUTER_4("openrouter_4"),
-        OPENROUTER_5("openrouter_5"),
-        NEMOTRON_3_ULTRA("nemotron-3-ultra"),
-        NEMOTRON_3_ULTRA_2("nemotron-3-ultra_2"),
-        NEMOTRON_3_ULTRA_3("nemotron-3-ultra_3"),
-        NEMOTRON_3_ULTRA_4("nemotron-3-ultra_4"),
-        NEMOTRON_3_ULTRA_5("nemotron-3-ultra_5"),
-        GPT_OSS("gpt-oss"),
-        GPT_OSS_2("gpt-oss_2"),
-        GPT_OSS_3("gpt-oss_3"),
-        GPT_OSS_4("gpt-oss_4"),
-        GPT_OSS_5("gpt-oss_5"),
-
-        GEMINI_3_7_FLASH("gemini-3.7-flash"),
-        GEMINI_3_7_FLASH_2("gemini-3.7-flash_2"),
-        GEMINI_3_7_FLASH_3("gemini-3.7-flash_3"),
-        GEMINI_3_7_FLASH_4("gemini-3.7-flash_4"),
-        GEMINI_3_7_FLASH_SPECIALIST("gemini-3.7-flash" + SPECIALIST),
-        GEMINI_3_7_FLASH_2_SPECIALIST("gemini-3.7-flash_2" + SPECIALIST),
-        GEMINI_3_7_FLASH_3_SPECIALIST("gemini-3.7-flash_3" + SPECIALIST),
-        GEMINI_3_7_FLASH_4_SPECIALIST("gemini-3.7-flash_4" + SPECIALIST),
-        GEMINI_3_6_FLASH("gemini-3.6-flash"),
-        GEMINI_3_6_FLASH_2("gemini-3.6-flash_2"),
-        GEMINI_3_6_FLASH_3("gemini-3.6-flash_3"),
-        GEMINI_3_6_FLASH_4("gemini-3.6-flash_4"),
-        GEMINI_3_6_FLASH_SPECIALIST("gemini-3.6-flash" + SPECIALIST),
-        GEMINI_3_6_FLASH_2_SPECIALIST("gemini-3.6-flash_2" + SPECIALIST),
-        GEMINI_3_6_FLASH_3_SPECIALIST("gemini-3.6-flash_3" + SPECIALIST),
-        GEMINI_3_6_FLASH_4_SPECIALIST("gemini-3.6-flash_4" + SPECIALIST),
-        GEMINI_3_5_FLASH("gemini-3.5-flash"),
-        GEMINI_3_5_FLASH_2("gemini-3.5-flash_2"),
-        GEMINI_3_5_FLASH_3("gemini-3.5-flash_3"),
-        GEMINI_3_5_FLASH_4("gemini-3.5-flash_4"),
-        GEMINI_3_5_FLASH_SPECIALIST("gemini-3.5-flash" + SPECIALIST),
-        GEMINI_3_5_FLASH_2_SPECIALIST("gemini-3.5-flash_2" + SPECIALIST),
-        GEMINI_3_5_FLASH_3_SPECIALIST("gemini-3.5-flash_3" + SPECIALIST),
-        GEMINI_3_5_FLASH_4_SPECIALIST("gemini-3.5-flash_4" + SPECIALIST),
-        GEMINI_3_5_FLASH_LITE("gemini-3.5-flash-lite"),
-        GEMINI_3_5_FLASH_LITE_2("gemini-3.5-flash-lite_2"),
-        GEMINI_3_5_FLASH_LITE_3("gemini-3.5-flash-lite_3"),
-        GEMINI_3_5_FLASH_LITE_4("gemini-3.5-flash-lite_4"),
-        GEMINI_3_5_FLASH_LITE_SPECIALIST("gemini-3.5-flash-lite" + SPECIALIST),
-        GEMINI_3_5_FLASH_LITE_2_SPECIALIST("gemini-3.5-flash-lite_2" + SPECIALIST),
-        GEMINI_3_5_FLASH_LITE_3_SPECIALIST("gemini-3.5-flash-lite_3" + SPECIALIST),
-        GEMINI_3_5_FLASH_LITE_4_SPECIALIST("gemini-3.5-flash-lite_4" + SPECIALIST);
-
-        private final String label;
-
-        Clients(String label) {
-            this.label = label;
-        }
-
-        @Override
-        public String toString() {
-            return label;
-        }
-    }
-
     public enum Sector {
         COMMUNICATION_SERVICES("Communication Services"),
         UTILITIES("Utilities"),
@@ -878,7 +744,6 @@ public final class Constants {
     }
 
     public enum AiProvider {
-        GITHUB,
         OPENROUTER,
         GOOGLE
     }
