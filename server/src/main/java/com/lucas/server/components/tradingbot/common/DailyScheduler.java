@@ -32,11 +32,11 @@ import static com.lucas.server.common.Constants.GEMINI_LITE_CLIENTS;
 import static com.lucas.server.common.Constants.MarketDataType;
 import static com.lucas.server.common.Constants.NY_ZONE;
 import static com.lucas.server.common.Constants.PortfolioType;
-import static com.lucas.server.common.Constants.SP500_SYMBOLS;
 import static com.lucas.server.common.Constants.UTC;
 import static com.lucas.server.common.Constants.UTC_ZONE;
 import static com.lucas.server.common.Constants.filterClients;
 import static com.lucas.server.common.Constants.isTradingDate;
+import static com.lucas.server.common.Sp500Symbols.SP500_SYMBOLS;
 
 @SuppressWarnings("LoggingSimilarMessage")
 @Profile("prod")

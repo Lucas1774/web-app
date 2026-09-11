@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Set;
 
 import static com.lucas.server.common.Constants.MarketDataType;
-import static com.lucas.server.common.Constants.SP500_SYMBOLS;
+import static com.lucas.server.common.Sp500Symbols.SP500_SYMBOLS;
 
 @RestController
 @RequestMapping("/market")

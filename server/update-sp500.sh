@@ -24,7 +24,7 @@ else
   echo -e "\033[0;31mWARNING: This script will deploy with uncommitted changes.\033[0m"
 fi
 
-CONSTANTS_FILE="src/main/java/com/lucas/server/common/Constants.java"
+CONSTANTS_FILE="src/main/java/com/lucas/server/common/Sp500Symbols.java"
 OLD_SYMBOLS=$(grep -oP 'Map\.entry\("\K[^"]+' "$CONSTANTS_FILE" | sort)
 
 python src/main/resources/python/update_sp500_tickers.py "$CONSTANTS_FILE"

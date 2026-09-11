@@ -1,5 +1,6 @@
 package com.lucas.server.components.tradingbot.common.dto;
 
+import com.lucas.server.common.Sp500Symbols;
 import com.lucas.server.common.dto.DomainEntity;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -10,8 +11,6 @@ import lombok.ToString;
 import lombok.experimental.Accessors;
 import tools.jackson.databind.annotation.JsonSerialize;
 import tools.jackson.databind.ser.std.ToStringSerializer;
-
-import static com.lucas.server.common.Constants.Sector;
 
 @Getter
 @Setter
@@ -27,5 +26,5 @@ public class SymbolDomain implements DomainEntity {
     @ToString.Include
     private String name;
     @JsonSerialize(using = ToStringSerializer.class)
-    private Sector sector;
+    private Sp500Symbols.Sector sector;
 }

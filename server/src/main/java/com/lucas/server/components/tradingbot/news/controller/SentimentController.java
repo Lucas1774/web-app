@@ -16,8 +16,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
 
-import static com.lucas.server.common.Constants.SP500_SYMBOLS;
 import static com.lucas.server.common.Constants.UTC_ZONE;
+import static com.lucas.server.common.Sp500Symbols.SP500_SYMBOLS;
 
 @RestController
 @RequestMapping("/sentiment")

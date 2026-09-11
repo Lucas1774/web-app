@@ -1,5 +1,6 @@
 package com.lucas.server;
 
+import com.lucas.server.common.Sp500Symbols;
 import com.lucas.server.components.tradingbot.common.DailyScheduler;
 import com.lucas.server.components.tradingbot.common.jpa.Symbol;
 import com.lucas.server.components.tradingbot.common.jpa.SymbolRepository;
@@ -41,7 +42,6 @@ import java.util.stream.Stream;
 import static com.lucas.server.common.Constants.BUY;
 import static com.lucas.server.common.Constants.FINE_GRAIN_CLIENT_NAMES;
 import static com.lucas.server.common.Constants.NY_ZONE;
-import static com.lucas.server.common.Constants.Sector;
 import static com.lucas.server.common.Constants.isTradingDate;
 import static com.lucas.server.common.Constants.toPastOrFutureTradeDate;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -127,7 +127,7 @@ class ManualRunTest extends BaseTest {
     @ParameterizedTest
     @MethodSource("daysAndSectors")
     @Transactional(readOnly = true)
-    void assertRecommendationsPrecisionAtCloseOfNthDay(int daysAfter, Sector sector) {
+    void assertRecommendationsPrecisionAtCloseOfNthDay(int daysAfter, Sp500Symbols.Sector sector) {
         assertTrue(true);
 
         initializeMarketData();
@@ -185,7 +185,7 @@ class ManualRunTest extends BaseTest {
     @ParameterizedTest
     @MethodSource("timesAndSectors")
     @Transactional(readOnly = true)
-    void assertRecommendationsPrecisionAtSnapshot(LocalTime time, Sector sector) {
+    void assertRecommendationsPrecisionAtSnapshot(LocalTime time, Sp500Symbols.Sector sector) {
         assertTrue(true);
 
         initializeMarketData();
@@ -247,8 +247,8 @@ class ManualRunTest extends BaseTest {
                 .flatMap(day -> sectorsWithNullFirst().map(sector -> Arguments.of(day, sector)));
     }
 
-    private static Stream<Sector> sectorsWithNullFirst() {
-        return Stream.concat(Stream.of((Sector) null), Arrays.stream(Sector.values()));
+    private static Stream<Sp500Symbols.Sector> sectorsWithNullFirst() {
+        return Stream.concat(Stream.of((Sp500Symbols.Sector) null), Arrays.stream(Sp500Symbols.Sector.values()));
     }
 
     private static Stream<Arguments> timesAndSectors() {
@@ -333,7 +333,7 @@ class ManualRunTest extends BaseTest {
         }
     }
 
-    private Set<Long> getSymbolIdsFor(Sector sector) {
+    private Set<Long> getSymbolIdsFor(Sp500Symbols.Sector sector) {
         return symbolRepository.findAll()
                 .stream()
                 .filter(s -> null == sector || sector.equals(s.getSector()))
@@ -344,7 +344,7 @@ class ManualRunTest extends BaseTest {
     private void processAndPrintResults(Map<SymDate, MarketDataDomain> mdByKey,
                                         LocalDate from,
                                         LocalDate to,
-                                        Sector sector,
+                                        Sp500Symbols.Sector sector,
                                         String exitLabel) {
         System.out.println("=================================================");
         System.out.println("SECTOR: " + (null == sector ? "GLOBAL" : sector.name()));

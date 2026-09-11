@@ -19,8 +19,8 @@ import lombok.experimental.Accessors;
 
 import java.util.Optional;
 
-import static com.lucas.server.common.Constants.SYMBOL_TO_SECTOR;
-import static com.lucas.server.common.Constants.Sector;
+import static com.lucas.server.common.Sp500Symbols.SYMBOL_TO_SECTOR;
+import static com.lucas.server.common.Sp500Symbols.Sector;
 
 @Getter
 @Setter

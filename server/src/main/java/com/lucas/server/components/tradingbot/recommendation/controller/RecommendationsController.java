@@ -28,9 +28,9 @@ import static com.lucas.server.common.Constants.DEFAULT_USERNAME;
 import static com.lucas.server.common.Constants.FINE_GRAIN_CLIENT_NAMES;
 import static com.lucas.server.common.Constants.OPENROUTER_CLIENTS;
 import static com.lucas.server.common.Constants.PortfolioType;
-import static com.lucas.server.common.Constants.SP500_SYMBOLS;
 import static com.lucas.server.common.Constants.UTC_ZONE;
 import static com.lucas.server.common.Constants.filterClients;
+import static com.lucas.server.common.Sp500Symbols.SP500_SYMBOLS;
 
 @RestController
 @RequestMapping("/recommendations")
