@@ -88,7 +88,7 @@ import static com.lucas.server.common.Constants.toPastOrFutureTradeDate;
 public class DataManager {
 
     private static final int RECOMMENDATION_MAX_ATTEMPTS = 5;
-    private static final String CLIENT_FAILED_BACKUP_WARN = "{} failed when trying to process {}";
+    private static final String CLIENT_FAILED_BACKUP_WARN = "{} failed when trying to process {}: {}";
     private static final String GENERATION_SUCCESSFUL_INFO = "Successfully generated {}";
     private static final String SYMBOL_NOT_FOUND_ERROR = "{0}: Unknown symbol";
     private static final LocalTime MARKET_CLOSE = LocalTime.of(16, 0);
@@ -450,7 +450,7 @@ public class DataManager {
                 log.warn(CLIENT_FAILED_BACKUP_WARN,
                         tier.stream().map(c -> c.getConfig().name()).toList(),
                         buffer.stream().map(SymbolPayload::getSymbol).toList(),
-                        e);
+                        e.getMessage());
             }
         }
         throw Objects.requireNonNull(last);
@@ -463,7 +463,10 @@ public class DataManager {
             try {
                 res.add(twelveDataMarketDataClient.retrieveMarketData(symbol, MarketDataType.LAST).getFirst());
             } catch (ClientException | MappingException e) {
-                log.warn(CLIENT_FAILED_BACKUP_WARN, twelveDataMarketDataClient.getClass().getSimpleName(), symbol, e);
+                log.warn(CLIENT_FAILED_BACKUP_WARN,
+                        twelveDataMarketDataClient.getClass().getSimpleName(),
+                        symbol,
+                        e.getMessage());
                 res.add(finnhubMarketDataClient.retrieveMarketData(symbol));
             }
         }
@@ -693,11 +696,8 @@ public class DataManager {
                     recommendationsService.createIgnoringDuplicates(partial);
                 }
                 Interrupts.runOrThrow(() -> resultsQueue.put(finalPartial), e -> log.error(e.getMessage(), e));
-            } catch (ClientException | MappingException e) {
-                log.warn(RETRIEVAL_FAILED_WARN,
-                        RECOMMENDATION,
-                        buffer.stream().map(SymbolPayload::getSymbol).toList(),
-                        e);
+            } catch (ClientException | MappingException _) {
+                log.warn(RETRIEVAL_FAILED_WARN, RECOMMENDATION, buffer.stream().map(SymbolPayload::getSymbol).toList());
                 Interrupts.runOrThrow(() -> resultsQueue.put(Set.of()), ie -> log.error(ie.getMessage(), ie));
             } catch (Exception e) {
                 log.error(e.getMessage(), e);

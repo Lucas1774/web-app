@@ -466,7 +466,7 @@ class ManualRunTest extends BaseTest {
                 // It is also possible to filter by gap, for instance (open - previousClose, as percentage)
                 .filter(e -> BUY.equals(e.getKey().getAction()) && 0 <= e.getKey()
                         .getConfidence()
-                        .compareTo(BigDecimal.valueOf(0.8)) && FINE_GRAIN_CLIENT_NAMES.contains(e.getKey().getModel()))
+                        .compareTo(BigDecimal.valueOf(0.85)) && FINE_GRAIN_CLIENT_NAMES.contains(e.getKey().getModel()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 

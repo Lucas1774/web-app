@@ -39,6 +39,7 @@ if [ -z "$ADDED_SYMBOLS" ]; then
 fi
 
 echo "New symbols detected: $ADDED_SYMBOLS"
+echo "If the file is not correctly formatted, deploy may fail on tests"
 read -p "Proceed with deployment and market data seeding? \
 If the trading day isn't over this is discouraged, \
 even if scheduled task will override the last entry (y/n): " -n 1 -r
