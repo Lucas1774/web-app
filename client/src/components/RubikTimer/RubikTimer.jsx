@@ -76,13 +76,17 @@ const RubikTimer = ({ onClose = () => { } }) => {
     const start = useCallback(() => {
         const now = performance.now(); // instant time fetch
         startTime.current = now;
-        timerInterval.current = setInterval(() => {
-            setElapsedTime(performance.now() - now);
-        }, constants.TIMER_REFRESH_RATE);
         setIsTimerPrepared(false);
         setIsTimerRunning(true);
         setSolution("");
         setIsShowSolution(false);
+
+        const tick = () => {
+            setElapsedTime(performance.now() - now);
+            timerInterval.current = requestAnimationFrame(tick);
+        };
+        timerInterval.current = requestAnimationFrame(tick);
+
         if (isAndroid) {
             setFocusTimer("center");
         }
@@ -90,7 +94,7 @@ const RubikTimer = ({ onClose = () => { } }) => {
 
     const stop = useCallback(() => {
         const now = performance.now(); // instant time fetch
-        clearInterval(timerInterval.current);
+        cancelAnimationFrame(timerInterval.current);
         const finalTime = now - startTime.current;
         setElapsedTime(finalTime);
         setRecentTimes((previousTimes) => [...previousTimes, finalTime]);
@@ -261,7 +265,7 @@ const RubikTimer = ({ onClose = () => { } }) => {
         } else {
             document.addEventListener("keydown", handleKeyDown, { passive: false });
             document.addEventListener("keyup", handleKeyUp, { passive: false });
-        };
+        }
         return () => {
             if (isAndroid) {
                 document.removeEventListener("touchstart", handleTouchStart, true);
