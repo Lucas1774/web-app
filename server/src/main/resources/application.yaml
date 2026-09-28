@@ -54,37 +54,37 @@ ai:
     - name: openrouter
       provider: openrouter
       api-key: ${OPENROUTER_KEY}
-      model: minimax/minimax-m3:free
+      model: nvidia/nemotron-3-ultra-550b-a55b:free
       fallback-models:
-        - nvidia/nemotron-3-ultra-550b-a55b:free
+        - qwen/qwen3.8-27b:free
         - nvidia/nemotron-3-super-120b-a12b:free
     - name: openrouter_2
       provider: openrouter
       api-key: ${OPENROUTER_KEY_2}
-      model: minimax/minimax-m3:free
+      model: nvidia/nemotron-3-ultra-550b-a55b:free
       fallback-models:
-        - nvidia/nemotron-3-ultra-550b-a55b:free
+        - qwen/qwen3.8-27b:free
         - nvidia/nemotron-3-super-120b-a12b:free
     - name: openrouter_3
       provider: openrouter
       api-key: ${OPENROUTER_KEY_3}
-      model: minimax/minimax-m3:free
+      model: nvidia/nemotron-3-ultra-550b-a55b:free
       fallback-models:
-        - nvidia/nemotron-3-ultra-550b-a55b:free
+        - qwen/qwen3.8-27b:free
         - nvidia/nemotron-3-super-120b-a12b:free
     - name: openrouter_4
       provider: openrouter
       api-key: ${OPENROUTER_KEY_4}
-      model: minimax/minimax-m3:free
+      model: nvidia/nemotron-3-ultra-550b-a55b:free
       fallback-models:
-        - nvidia/nemotron-3-ultra-550b-a55b:free
+        - qwen/qwen3.8-27b:free
         - nvidia/nemotron-3-super-120b-a12b:free
     - name: openrouter_5
       provider: openrouter
       api-key: ${OPENROUTER_KEY_5}
-      model: minimax/minimax-m3:free
+      model: nvidia/nemotron-3-ultra-550b-a55b:free
       fallback-models:
-        - nvidia/nemotron-3-ultra-550b-a55b:free
+        - qwen/qwen3.8-27b:free
         - nvidia/nemotron-3-super-120b-a12b:free
     - name: nemotron-3-ultra
       provider: openrouter
@@ -106,26 +106,26 @@ ai:
       provider: openrouter
       api-key: ${OPENROUTER_KEY_5}
       model: nvidia/nemotron-3-ultra-550b-a55b:free
-    - name: minimax-m3
+    - name: qwen-3.8
       provider: openrouter
       api-key: ${OPENROUTER_KEY}
-      model: minimax/minimax-m3:free
-    - name: minimax-m3_2
+      model: qwen/qwen3.8-27b:free
+    - name: qwen-3.8_2
       provider: openrouter
       api-key: ${OPENROUTER_KEY_2}
-      model: minimax/minimax-m3:free
-    - name: minimax-m3_3
+      model: qwen/qwen3.8-27b:free
+    - name: qwen-3.8_3
       provider: openrouter
       api-key: ${OPENROUTER_KEY_3}
-      model: minimax/minimax-m3:free
-    - name: minimax-m3_4
+      model: qwen/qwen3.8-27b:free
+    - name: qwen-3.8_4
       provider: openrouter
       api-key: ${OPENROUTER_KEY_4}
-      model: minimax/minimax-m3:free
-    - name: minimax-m3_5
+      model: qwen/qwen3.8-27b:free
+    - name: qwen-3.8_5
       provider: openrouter
       api-key: ${OPENROUTER_KEY_5}
-      model: minimax/minimax-m3:free
+      model: qwen/qwen3.8-27b:free
 
     # Google
     - name: gemini-3.8-flash
