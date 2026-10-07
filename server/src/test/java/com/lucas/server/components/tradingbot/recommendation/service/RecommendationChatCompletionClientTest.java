@@ -146,19 +146,34 @@ class RecommendationChatCompletionClientTest extends ConfiguredTest {
                                               - Prioritize last-few-hours news about unexpected events or analyst calls over the specified company or its sector; treat older or generic news as confirmation alongside technical indicators.
                                               """;
 
-        return """
-               You are TradeGPT, a trading oracle whose every recommendation directly impacts people's capital and survival.
-               Your task: analyze provided market data, technical indicators, and news summaries with precision and discipline. For each asset, output a clear recommendation (BUY, SELL or HOLD), a confidence score between 0 and 1, and a concise but complete rationale, including for BUY or SELL actions a suggested entry price: %s State the basis used.
-               %s- Do not hallucinate.
-               - Output in raw JSON format with fields: symbol, action, confidence, rationale.\
-               """.formatted(priceInstruction, newsLine);
+        String task = "Your task: analyze provided market data, technical indicators, and news summaries"
+                      + " with precision and discipline. For each asset, output a clear recommendation"
+                      + " (BUY, SELL or HOLD), a confidence score between 0 and 1, and a rationale of 2-4 sentences."
+                      + " BUY means enter long; SELL means enter short (or exit an existing long)."
+                      + " For BUY and SELL, include a suggested entry price in the rationale: " + priceInstruction
+                      + " State the basis used.";
+
+        return "You are TradeGPT, a trading oracle whose every recommendation directly impacts"
+               + " people's capital and survival.\n" + task + "\n" + newsLine + "- Do not hallucinate.\n"
+               + "- Output in raw JSON format with fields: symbol, action, confidence, rationale.";
     }
 
     private static String expectedFewShot() {
-        return "[{\"symbol\":\"MSFT\",\"action\":\"BUY\",\"confidence\":0.xx,\"rationale\":\"...\"},"
-               + "{\"symbol\":\"AAPL\",\"action\":\"SELL\",\"confidence\":0.xx,\"rationale\":\"...\"},"
-               + "{\"symbol\":\"GOOG\",\"action\":\"HOLD\",\"confidence\":0.xx,\"rationale\":\"..."
-               + " are not good / bad enough to justify a buy / sell\"}]";
+        String buy = "{\"symbol\":\"FOO\",\"action\":\"BUY\",\"confidence\":0.81,\"rationale\":\""
+                     + "Analyst upgrade posted 2 hours ago; price has not moved yet,"
+                     + " suggesting the catalyst is not priced in."
+                     + " RSI at 44 with price above the 20-day EMA confirms the uptrend is intact."
+                     + " Entry near last close.\"}";
+        String sell = "{\"symbol\":\"BAR\",\"action\":\"SELL\",\"confidence\":0.76,\"rationale\":\""
+                      + "CEO resignation broke this morning and the stock is up 1%,"
+                      + " which is inconsistent with the news - the move is not priced in bearishly."
+                      + " MACD histogram turned negative and RSI at 61 leaves room to fall."
+                      + " Short entry near last close.\"}";
+        String hold = "{\"symbol\":\"BAZ\",\"action\":\"HOLD\",\"confidence\":0.58,\"rationale\":\""
+                      + "News is a day old and the gap up at open suggests it is already priced in."
+                      + " RSI at 67 is elevated but MACD is still bullish,"
+                      + " so signals are not decisive enough to justify a new long or short.\"}";
+        return "[" + buy + "," + sell + "," + hold + "]";
     }
 
     private static String expectedReport(boolean hasPremarket) {
