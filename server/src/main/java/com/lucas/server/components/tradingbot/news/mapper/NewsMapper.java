@@ -5,6 +5,7 @@ import com.lucas.server.components.tradingbot.common.mapper.SymbolMapper;
 import com.lucas.server.components.tradingbot.news.dto.NewsDomain;
 import com.lucas.server.components.tradingbot.news.jpa.News;
 import lombok.RequiredArgsConstructor;
+import org.flywaydb.core.internal.util.StringUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.stream.Collectors;
@@ -49,7 +50,7 @@ public class NewsMapper implements EntityMapper<News, NewsDomain> {
                 .setSource(dto.getSource())
                 .setCategory(dto.getCategory())
                 .setImage(dto.getImage())
-                .setSentiment(dto.getSentiment())
+                .setSentiment(null == dto.getSentiment() ? null : StringUtils.left(dto.getSentiment(), 8))
                 .setSentimentConfidence(dto.getSentimentConfidence())
                 .setEmbeddings(dto.getEmbeddings());
 

@@ -69,6 +69,8 @@ public class RecommendationChatCompletionResponseMapper implements Mapper<JsonNo
             }
 
             return recommendations;
+        } catch (MappingException e) {
+            throw e;
         } catch (Exception e) {
             throw new MappingException(MessageFormat.format(MAPPING_ERROR, "recommendations"), e);
         }

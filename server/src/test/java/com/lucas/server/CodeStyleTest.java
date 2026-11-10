@@ -64,7 +64,7 @@ class CodeStyleTest {
 
             @Override
             public void addException(AuditEvent event, Throwable throwable) {
-                violations.add(String.format("%s: %s", event.getFileName(), throwable.getMessage()));
+                violations.add(event.getFileName() + ": " + throwable.getMessage());
             }
         };
 

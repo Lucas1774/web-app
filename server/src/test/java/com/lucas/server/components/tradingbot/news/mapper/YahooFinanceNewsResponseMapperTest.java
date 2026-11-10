@@ -294,7 +294,7 @@ class YahooFinanceNewsResponseMapperTest extends ConfiguredTest {
         // when & then
         assertThatThrownBy(() -> mapper.mapAll(doc,
                 symbolService.getOrCreateByName(Set.of("AAPL")).stream().findFirst().orElseThrow())).isInstanceOf(
-                MappingException.class).cause().hasMessageContaining(MessageFormat.format(NO_YAHOO_NEWS_ERROR, doc));
+                MappingException.class).hasMessageContaining(MessageFormat.format(NO_YAHOO_NEWS_ERROR, doc));
     }
 
     @Test

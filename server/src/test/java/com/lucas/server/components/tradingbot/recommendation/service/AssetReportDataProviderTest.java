@@ -89,7 +89,7 @@ class AssetReportDataProviderTest extends ConfiguredTest {
                     .setHeadline("Headline " + i)
                     .setSummary("Summary " + i)
                     .setDate(FIXED_DATE.minusDays(i - 1))
-                    .setSentiment(0 == i % 3 ? "positive" : 0 == i % 2 ? "neutral" : "negative")
+                    .setSentiment(0 == i % 3 ? "positive" : 0 == i % 2 ? "irreleva" : "negative")
                     .setSentimentConfidence(BigDecimal.valueOf((i * 6) % 100));
             articles.add(news);
         }
@@ -146,7 +146,7 @@ class AssetReportDataProviderTest extends ConfiguredTest {
                         today.minusDays(8),
                         today.minusDays(9));
 
-        assertThat(report.newsCount()).isEqualTo(10); // 5 have neutral sentiment
+        assertThat(report.newsCount()).isEqualTo(10); // 5 have irreleva sentiment
         assertThat(report.news()).hasSize(10)
                 .extracting(NewsItemRaw::headline)
                 .containsExactly("Headline 1",

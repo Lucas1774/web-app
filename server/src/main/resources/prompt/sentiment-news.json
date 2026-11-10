@@ -1,0 +1,4 @@
+{
+  "role": "user",
+  "content": "Company: {company}\n\nArticles:\n{articles}"
+}

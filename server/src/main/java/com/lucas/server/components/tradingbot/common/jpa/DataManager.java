@@ -65,6 +65,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.lucas.server.common.Constants.GEMINI_LITE_CLIENTS;
 import static com.lucas.server.common.Constants.MARKET_DATA;
 import static com.lucas.server.common.Constants.MARKET_DATA_RELEVANT_DAYS_COUNT;
 import static com.lucas.server.common.Constants.MARKET_SNAPSHOT;
@@ -78,7 +79,7 @@ import static com.lucas.server.common.Constants.RETRIEVAL_FAILED_WARN;
 import static com.lucas.server.common.Constants.RETRIEVING_DATA_INFO;
 import static com.lucas.server.common.Constants.SENTIMENT;
 import static com.lucas.server.common.Constants.UTC_ZONE;
-import static com.lucas.server.common.Constants.getFinnhubRateLimiterNames;
+import static com.lucas.server.common.Constants.filterClients;
 import static com.lucas.server.common.Constants.isTradingDate;
 import static com.lucas.server.common.Constants.toPastOrFutureTradeDate;
 
@@ -111,6 +112,7 @@ public class DataManager {
     private final TwelveDataMarketDataClient twelveDataMarketDataClient;
     private final PortfolioManager portfolioManager;
     private final RecommendationChatCompletionClient recommendationClient;
+    private final Deque<AiClient> sentimentClients;
     private final Map<MarketDataType, TypeToMarketDataFunction> typeToRunner;
     private final Map<PortfolioType, PortfolioService> portfolioTypeToService;
 
@@ -128,7 +130,8 @@ public class DataManager {
                        PortfolioJpaService portfolioService,
                        PortfolioMockJpaService portfolioMockService,
                        FinnhubNewsClient newsClient,
-                       PortfolioManager portfolioManager) {
+                       PortfolioManager portfolioManager,
+                       Map<String, AiClient> allClients) {
         this.symbolService = symbolService;
         this.marketDataService = marketDataService;
         this.marketSnapshotService = marketSnapshotService;
@@ -142,6 +145,7 @@ public class DataManager {
         this.recommendationClient = recommendationClient;
         finnhubNewsClient = newsClient;
         this.portfolioManager = portfolioManager;
+        this.sentimentClients = new ConcurrentLinkedDeque<>(filterClients(allClients, GEMINI_LITE_CLIENTS));
         typeToRunner = Map.of(MarketDataType.LAST,
                 this::retrieveMarketDataWithBackupStrategy,
                 MarketDataType.HISTORIC,
@@ -242,10 +246,11 @@ public class DataManager {
     @Transactional
     public Set<NewsDomain> generateSentiment(Set<String> symbolNames, LocalDateTime from, LocalDateTime to) {
         Set<SymbolDomain> symbols = symbolService.getOrCreateByName(symbolNames);
-        log.info(GENERATION_SUCCESSFUL_INFO, SENTIMENT);
-        return newsService.generateSentiment(symbols.stream()
+        Set<NewsDomain> result = newsService.generateSentiment(symbols.stream()
                 .map(SymbolDomain::getId)
                 .collect(Collectors.toUnmodifiableSet()), from, to);
+        log.info(GENERATION_SUCCESSFUL_INFO, SENTIMENT);
+        return result;
     }
 
     @Transactional(rollbackFor = {ClientException.class, MappingException.class})
@@ -525,7 +530,8 @@ public class DataManager {
             int submitted = 0;
             log.info(RETRIEVING_DATA_INFO, RECOMMENDATION, remainingSymbols.size());
             // fixed payload computer size to not overwhelm Hikari
-            int poolSize = getFinnhubRateLimiterNames().size();
+            int poolSize = // but enough for sentiment computation to not bottleneck (assume 20 seconds per request)
+                    sentimentClients.size() * sentimentClients.getFirst().getConfig().requestsPerMinute() * 20 / 60;
             // ExecutorService::close would block until tasks finish, so only a single try-with-resources
             try (ExecutorService payloadComputationExecutor = Executors.newFixedThreadPool(poolSize);
                  ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
@@ -642,6 +648,18 @@ public class DataManager {
                 news.addAll(retrieveYahooNews(symbols));
             } catch (ClientException | MappingException e) {
                 log.warn(RETRIEVAL_FAILED_WARN, NEWS, symbol, e);
+            }
+            if (!news.isEmpty()) {
+                sentimentClients.addLast(sentimentClients.pollFirst());
+                try {
+                    recommendationClient.generateSentiment(news, symbol, OrderedIndexedSet.copyOf(sentimentClients));
+                    log.info(GENERATION_SUCCESSFUL_INFO, SENTIMENT);
+                } catch (ClientException e) {
+                    log.warn(CLIENT_FAILED_BACKUP_WARN,
+                            sentimentClients.stream().map(c -> c.getConfig().name()).toList(),
+                            symbol,
+                            e.getMessage());
+                }
             }
             newsPersistenceOrchestrator.persistNews(news);
         }

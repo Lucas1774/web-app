@@ -79,6 +79,7 @@ public class News implements JpaEntity {
     private String image;
 
     @Column(length = 8)
+    // TODO: consider enum for sentiment values (positive, negative, neutral, irrelevant)
     private String sentiment;
 
     @Column(name = "sentiment_confidence", precision = 15, scale = 4)

@@ -37,6 +37,8 @@ public class YahooFinanceNewsResponseMapper implements Mapper<Element, NewsDomai
                 newsList.add(map((Element) items.item(i)).addSymbol(symbol));
             }
             return newsList;
+        } catch (MappingException e) {
+            throw e;
         } catch (Exception e) {
             throw new MappingException(MessageFormat.format(MAPPING_ERROR, NEWS), e);
         }

@@ -5,6 +5,8 @@ import com.lucas.server.common.exception.ConfigurationException;
 import com.lucas.server.components.tradingbot.common.AiClient;
 import com.lucas.server.components.tradingbot.common.dto.SymbolDomain;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;
+import com.lucas.server.components.tradingbot.news.dto.NewsDomain;
+import com.lucas.server.components.tradingbot.news.mapper.SentimentResponseMapper;
 import com.lucas.server.components.tradingbot.recommendation.dto.RecommendationDomain;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.AssetReportRaw;
@@ -31,11 +33,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static com.lucas.server.common.Constants.CONTENT;
 import static com.lucas.server.common.Constants.NY_ZONE;
 import static com.lucas.server.common.Constants.RECOMMENDATION;
 import static com.lucas.server.common.Constants.RETRIEVING_DATA_INFO;
+import static com.lucas.server.common.Constants.SENTIMENT;
 import static com.lucas.server.common.Constants.sanitizeHtml;
 
 @Component
@@ -44,7 +48,7 @@ public class RecommendationChatCompletionClient {
 
     private static final int CLIENT_ROTATION_DEBOUNCE_MS = 200;
     private static final String PROMPTING_MODEL_INFO = "Prompting model {}";
-    private static final String RECOMMENDATION_COMPLETION_ERROR = "Failed to get recommendations. Completion: {0}";
+    private static final String COMPLETION_ERROR = "Failed to generate {0}. Completion: {1}";
     private static final String ENTRY_PRICE_WITH_PREMARKET =
             "assess whether the sentiment is already priced in and adjust the entry accordingly.";
     private static final String ENTRY_PRICE_WITHOUT_PREMARKET = "derive a fair entry from the provided data.";
@@ -53,15 +57,19 @@ public class RecommendationChatCompletionClient {
     private final ObjectNode context;
     private final ObjectNode fewShotMessage;
     private final ObjectNode fixMeMessage;
+    private final ObjectNode sentimentSystemMessage;
+    private final ObjectNode sentimentNewsMessage;
     private final AssetReportDataProvider assertReportDataProvider;
     private final AssetReportToMustacheMapper assetReportToMustacheMapper;
     private final ObjectMapper objectMapper;
     private final RecommendationChatCompletionResponseMapper mapper;
+    private final SentimentResponseMapper sentimentMapper;
 
     public RecommendationChatCompletionClient(AssetReportDataProvider assertReportDataProvider,
                                               AssetReportToMustacheMapper assetReportToMustacheMapper,
                                               ObjectMapper objectMapper,
-                                              RecommendationChatCompletionResponseMapper mapper) {
+                                              RecommendationChatCompletionResponseMapper mapper,
+                                              SentimentResponseMapper sentimentMapper) {
         try (Reader contextReader = new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream(
                 "/prompt/context.json")), StandardCharsets.UTF_8);
              Reader systemReader = new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream(
@@ -71,12 +79,18 @@ public class RecommendationChatCompletionClient {
              Reader fewShotReader = new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream(
                      "/prompt/few-shot.json")), StandardCharsets.UTF_8);
              Reader fixMeReader = new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream(
-                     "/prompt/fix-me.json")), StandardCharsets.UTF_8)) {
+                     "/prompt/fix-me.json")), StandardCharsets.UTF_8);
+             Reader sentimentSystemReader = new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream(
+                     "/prompt/sentiment-system.json")), StandardCharsets.UTF_8);
+             Reader sentimentNewsReader = new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream(
+                     "/prompt/sentiment-news.json")), StandardCharsets.UTF_8)) {
             context = objectMapper.readValue(contextReader, ObjectNode.class);
             systemMessage = objectMapper.readValue(systemReader, ObjectNode.class);
             systemLongTermMessage = objectMapper.readValue(systemLongTermReader, ObjectNode.class);
             fewShotMessage = objectMapper.readValue(fewShotReader, ObjectNode.class);
             fixMeMessage = objectMapper.readValue(fixMeReader, ObjectNode.class);
+            sentimentSystemMessage = objectMapper.readValue(sentimentSystemReader, ObjectNode.class);
+            sentimentNewsMessage = objectMapper.readValue(sentimentNewsReader, ObjectNode.class);
         } catch (IOException e) {
             throw new ConfigurationException(e);
         }
@@ -84,6 +98,7 @@ public class RecommendationChatCompletionClient {
         this.assetReportToMustacheMapper = assetReportToMustacheMapper;
         this.objectMapper = objectMapper;
         this.mapper = mapper;
+        this.sentimentMapper = sentimentMapper;
     }
 
     /**
@@ -97,6 +112,7 @@ public class RecommendationChatCompletionClient {
      * @throws ClientException  if the AI client request fails
      * @throws MappingException if mapping the response fails
      */
+    @SuppressWarnings("LoggingSimilarMessage")
     public Set<RecommendationDomain> getRecommendations(Set<DataManager.SymbolPayload> payload,
                                                         OrderedIndexedSet<AiClient> clients,
                                                         boolean useOldNews) throws ClientException, MappingException {
@@ -164,8 +180,56 @@ public class RecommendationChatCompletionClient {
                 } catch (ClientException e) {
                     throw e;
                 } catch (Exception e) {
-                    throw new ClientException(MessageFormat.format(RECOMMENDATION_COMPLETION_ERROR, completion.get()),
+                    throw new ClientException(MessageFormat.format(COMPLETION_ERROR, RECOMMENDATION, completion.get()),
                             e);
+                }
+            }
+        }
+    }
+
+    public void generateSentiment(Set<NewsDomain> news, SymbolDomain symbol, OrderedIndexedSet<AiClient> clients)
+            throws ClientException {
+        OrderedIndexedSet<NewsDomain> candidates = news.stream()
+                .filter(n -> null == n.getSentiment() && null == n.getSentimentConfidence())
+                .collect(OrderedIndexedSet.toUnmodifiableOrderedIndexedSet());
+        if (candidates.isEmpty()) {
+            return;
+        }
+        OrderedIndexedSet<JsonNode> prompt = OrderedIndexedSet.of(sentimentSystemMessage,
+                sentimentNewsMessage.deepCopy()
+                        .put(CONTENT,
+                                sentimentNewsMessage.get(CONTENT)
+                                        .asString()
+                                        .replace("{company}", symbol.getName())
+                                        .replace("{articles}",
+                                                IntStream.range(0, candidates.size())
+                                                        .mapToObj(i -> (i + 1) + " | " + candidates.get(i).getHeadline()
+                                                                       + " | " + candidates.get(i).getSummary())
+                                                        .collect(Collectors.joining("\n")))));
+        AtomicReference<String> completion = new AtomicReference<>();
+        while (true) {
+            for (AiClient client : clients) {
+                try {
+                    Optional<Boolean> res = client.getMoreRestrictiveRateLimiter()
+                            .tryCall(() -> client.getLessRestrictiveRateLimiter().call(() -> {
+                                if (null != client.getApiKeyRateLimiter()) {
+                                    client.getApiKeyRateLimiter().acquirePermission();
+                                }
+                                log.info(PROMPTING_MODEL_INFO, client.getConfig().name());
+                                completion.set(client.complete(prompt));
+                                sentimentMapper.mapAll(candidates, objectMapper.readTree(completion.get()));
+                                return Boolean.TRUE;
+                            }));
+                    if (res.isPresent()) {
+                        return;
+                    }
+
+                    Interrupts.runOrSwallow(() -> Thread.sleep(CLIENT_ROTATION_DEBOUNCE_MS),
+                            e -> log.error(e.getMessage(), e));
+                } catch (ClientException e) {
+                    throw e;
+                } catch (Exception e) {
+                    throw new ClientException(MessageFormat.format(COMPLETION_ERROR, SENTIMENT, completion.get()), e);
                 }
             }
         }

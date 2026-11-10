@@ -35,4 +35,8 @@
     <suppress checks="LineLength"
               files=".*HttpClientConfig\.java$"
               lines="40"/>
+
+    <suppress checks="LineLength"
+              files=".*RecommendationChatCompletionClient\.java$"
+              lines="89"/>
 </suppressions>

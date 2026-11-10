@@ -1,6 +1,7 @@
 package com.lucas.server.components.tradingbot.recommendation.service;
 
 import com.lucas.server.ConfiguredTest;
+import com.lucas.server.common.exception.ClientException;
 import com.lucas.server.components.tradingbot.common.AiClient;
 import com.lucas.server.components.tradingbot.common.dto.SymbolDomain;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager.SymbolPayload;
@@ -10,22 +11,29 @@ import com.lucas.server.components.tradingbot.marketdata.dto.MarketDataDomain;
 import com.lucas.server.components.tradingbot.marketdata.dto.MarketSnapshotDomain;
 import com.lucas.server.components.tradingbot.news.dto.NewsDomain;
 import com.lucas.server.components.tradingbot.news.jpa.NewsPersistenceOrchestrator;
+import com.lucas.server.components.tradingbot.news.mapper.SentimentResponseMapper;
 import com.lucas.server.components.tradingbot.portfolio.dto.PortfolioDomain;
 import com.lucas.server.components.tradingbot.recommendation.dto.RecommendationDomain;
+import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.AssetReportRaw;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.NewsItemRaw;
 import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportToMustacheMapper.PricePointRaw;
+import com.lucas.server.components.tradingbot.recommendation.mapper.RecommendationChatCompletionResponseMapper;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSetImpl;
 import com.lucas.utils.ratelimiter.DefaultSlidingWindowRateLimiter;
+import com.lucas.utils.ratelimiter.SlidingWindowRateLimiter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -39,6 +47,7 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -47,9 +56,13 @@ import static com.lucas.server.common.Constants.FIXED_DATE;
 import static com.lucas.server.common.Constants.MARKET_DATA_RELEVANT_DAYS_COUNT;
 import static com.lucas.server.common.Constants.NY_ZONE;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
@@ -76,7 +89,7 @@ class RecommendationChatCompletionClientTest extends ConfiguredTest {
     @MockitoBean
     private AssetReportDataProvider assetReportDataProvider;
 
-    private SymbolDomain symbol;
+    private SymbolDomain someSymbol;
 
     static Stream<Arguments> promptCombinations() {
         return Stream.of(Arguments.of(false, false, false),
@@ -91,7 +104,7 @@ class RecommendationChatCompletionClientTest extends ConfiguredTest {
 
     @BeforeEach
     void setup() {
-        symbol = seedMarketData();
+        someSymbol = seedMarketData();
     }
 
     @ParameterizedTest(name = "useOldNews={0}, hasPremarket={1}, fixMe={2}")
@@ -134,6 +147,148 @@ class RecommendationChatCompletionClientTest extends ConfiguredTest {
 
         assertThat(messages).hasSize(4);
         assertThat(messages[3]).isEqualTo(expected);
+    }
+
+    @Test
+    void generateSentiment_shouldSkipAlreadyAnnotatedNews() throws Exception {
+        // given
+        SymbolDomain symbol = new SymbolDomain().setName("AAPL");
+        NewsDomain alreadyDone = new NewsDomain().setExternalId(1L)
+                .setHeadline("Already annotated")
+                .setSummary("Already annotated text")
+                .setSentiment("positive")
+                .setSentimentConfidence(BigDecimal.valueOf(80));
+        AiClient aiClient = passThroughAiClient();
+
+        // when
+        sentimentClient().generateSentiment(Set.of(alreadyDone), symbol, OrderedIndexedSet.of(aiClient));
+
+        // then
+        verify(aiClient, never()).complete(any());
+    }
+
+    @Test
+    void generateSentiment_shouldBuildPromptWithOnlyUnannotatedNewsInOrder() throws Exception {
+        // given
+        SymbolDomain symbol = new SymbolDomain().setName("MSFT");
+        NewsDomain first = new NewsDomain().setExternalId(2L)
+                .setHeadline("Microsoft launches AI chip")
+                .setSummary("Large cloud provider expands AI hardware capacity.");
+        NewsDomain alreadyDone = new NewsDomain().setExternalId(3L)
+                .setHeadline("Already annotated")
+                .setSummary("Already annotated text")
+                .setSentiment("neutral")
+                .setSentimentConfidence(BigDecimal.valueOf(50));
+        NewsDomain second = new NewsDomain().setExternalId(4L)
+                .setHeadline("Microsoft expands Azure")
+                .setSummary("Cloud infrastructure investment increases.");
+        AiClient aiClient = passThroughAiClient();
+        when(aiClient.complete(any())).thenReturn("""
+                                                  [
+                                                    {"id": 1, "sentiment": "positive", "score": 0.88},
+                                                    {"id": 2, "sentiment": "negative", "score": 0.42}
+                                                  ]
+                                                  """);
+
+        // when
+        sentimentClient().generateSentiment(OrderedIndexedSet.of(first, alreadyDone, second),
+                symbol,
+                OrderedIndexedSet.of(aiClient));
+
+        // then
+        @SuppressWarnings("unchecked") ArgumentCaptor<OrderedIndexedSet<JsonNode>> promptCaptor =
+                ArgumentCaptor.forClass(OrderedIndexedSet.class);
+        verify(aiClient).complete(promptCaptor.capture());
+
+        OrderedIndexedSet<JsonNode> prompt = promptCaptor.getValue();
+        assertThat(prompt).hasSize(2);
+
+        String systemPrompt = prompt.get(0).get("content").asString();
+        String newsPrompt = prompt.get(1).get("content").asString();
+
+        assertThat(systemPrompt).isNotBlank();
+        assertThat(newsPrompt).contains("MSFT")
+                .contains("1 | Microsoft launches AI chip | Large cloud provider expands AI hardware capacity.")
+                .contains("2 | Microsoft expands Azure | Cloud infrastructure investment increases.")
+                .doesNotContain("Already annotated");
+
+        assertThat(first.getSentiment()).isEqualTo("positive");
+        assertThat(first.getSentimentConfidence()).isEqualByComparingTo(new BigDecimal("88.00"));
+        assertThat(second.getSentiment()).isEqualTo("negative");
+        assertThat(second.getSentimentConfidence()).isEqualByComparingTo(new BigDecimal("42.00"));
+        assertThat(alreadyDone.getSentiment()).isEqualTo("neutral");
+        assertThat(alreadyDone.getSentimentConfidence()).isEqualByComparingTo(new BigDecimal("50"));
+    }
+
+    @Test
+    void generateSentiment_shouldPropagateAiFailureAndLeaveNewsUntouched() throws Exception {
+        // given
+        SymbolDomain symbol = new SymbolDomain().setName("NVDA");
+        NewsDomain pending = new NewsDomain().setExternalId(42L)
+                .setHeadline("NVIDIA launches new GPU")
+                .setSummary("The company expands AI capacity");
+        AiClient aiClient = passThroughAiClient();
+        when(aiClient.complete(any())).thenThrow(new RuntimeException("boom"));
+
+        // when / then
+        assertThatCode(() -> sentimentClient().generateSentiment(Set.of(pending),
+                symbol,
+                OrderedIndexedSet.of(aiClient))).isInstanceOf(ClientException.class);
+
+        assertThat(pending.getSentiment()).isNull();
+        assertThat(pending.getSentimentConfidence()).isNull();
+    }
+
+    @Test
+    void generateSentiment_shouldPropagateInvalidAiResponseShape() throws Exception {
+        // given
+        SymbolDomain symbol = new SymbolDomain().setName("GOOG");
+        NewsDomain pending =
+                new NewsDomain().setExternalId(99L).setHeadline("Google update").setSummary("Google update summary");
+        AiClient aiClient = passThroughAiClient();
+        when(aiClient.complete(any())).thenReturn("""
+                                                  [
+                                                    {"id": 1, "sentiment": "not-a-real-label", "score": 0.8}
+                                                  ]
+                                                  """);
+
+        // when / then
+        assertThatCode(() -> sentimentClient().generateSentiment(Set.of(pending),
+                symbol,
+                OrderedIndexedSet.of(aiClient))).isInstanceOf(ClientException.class);
+
+        assertThat(pending.getSentiment()).isNull();
+        assertThat(pending.getSentimentConfidence()).isNull();
+    }
+
+    private static RecommendationChatCompletionClient sentimentClient() {
+        return new RecommendationChatCompletionClient(mock(AssetReportDataProvider.class),
+                mock(AssetReportToMustacheMapper.class),
+                new ObjectMapper(),
+                mock(RecommendationChatCompletionResponseMapper.class),
+                new SentimentResponseMapper());
+    }
+
+    private static AiClient passThroughAiClient() throws Exception {
+        AiClient aiClient = mock(AiClient.class);
+        SlidingWindowRateLimiter limiter = mock(SlidingWindowRateLimiter.class);
+        AiProperties.DeploymentProperties config = mock(AiProperties.DeploymentProperties.class);
+
+        when(aiClient.getMoreRestrictiveRateLimiter()).thenReturn(limiter);
+        when(aiClient.getLessRestrictiveRateLimiter()).thenReturn(limiter);
+        when(aiClient.getApiKeyRateLimiter()).thenReturn(null);
+        when(aiClient.getConfig()).thenReturn(config);
+        when(config.name()).thenReturn("test");
+        when(limiter.call(any())).thenAnswer(invocation -> {
+            Callable<?> callable = invocation.getArgument(0);
+            return callable.call();
+        });
+        when(limiter.tryCall(any())).thenAnswer(invocation -> {
+            Callable<?> callable = invocation.getArgument(0);
+            return java.util.Optional.ofNullable(callable.call());
+        });
+
+        return aiClient;
     }
 
     private static String expectedSystem(boolean useOldNews, boolean hasPremarket) {
@@ -328,9 +483,9 @@ class RecommendationChatCompletionClientTest extends ConfiguredTest {
             throws Exception {
         AiClient stubbed = stubbedClient(fixMe);
 
-        SymbolPayload payload = new SymbolPayload(symbol,
-                marketDataService.getTopForSymbolId(symbol.getId(), MARKET_DATA_RELEVANT_DAYS_COUNT),
-                new PortfolioDomain().setSymbol(symbol)).setNews(OrderedIndexedSet.of())
+        SymbolPayload payload = new SymbolPayload(someSymbol,
+                marketDataService.getTopForSymbolId(someSymbol.getId(), MARKET_DATA_RELEVANT_DAYS_COUNT),
+                new PortfolioDomain().setSymbol(someSymbol)).setNews(OrderedIndexedSet.of())
                 .setPremarket(hasPremarket ? premarket() : null);
 
         RecommendationDomain recommendation =

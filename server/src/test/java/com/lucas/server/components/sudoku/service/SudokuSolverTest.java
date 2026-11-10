@@ -34,7 +34,7 @@ class SudokuSolverTest {
             int difficulty = random.nextInt(SUDOKU_SIZE) + 1;
             long generationStartTime = System.nanoTime();
             SudokuDomain sudoku = generator.generate(difficulty);
-            long startTime = System.nanoTime();
+            double startTime = (double) System.nanoTime();
             solver.solve(sudoku);
             long endTime = System.nanoTime();
             totalGenerationDuration += (startTime - generationStartTime);

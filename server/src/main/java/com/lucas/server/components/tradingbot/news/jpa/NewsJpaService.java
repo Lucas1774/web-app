@@ -41,7 +41,7 @@ public class NewsJpaService extends GenericJpaServiceDelegate<News, NewsDomain, 
     @Transactional(readOnly = true)
     public OrderedIndexedSet<NewsDomain> getTopForSymbolId(Long symbolId, int limit) {
         return repository.findBySymbols_IdAndSentimentNotOrSymbols_IdAndSentimentIsNull(symbolId,
-                        "neutral",
+                        "irreleva",
                         symbolId,
                         PageRequest.of(0, limit, Sort.by("date").descending()))
                 .stream()
@@ -58,6 +58,14 @@ public class NewsJpaService extends GenericJpaServiceDelegate<News, NewsDomain, 
                 .collect(Collectors.toUnmodifiableSet())), (oldEntity, newEntity) -> {
             for (Symbol symbol : newEntity.getSymbols()) {
                 oldEntity.getSymbols().add(symbol);
+            }
+            // do not override with null ever
+            if (newEntity.getSentiment() != null) {
+                oldEntity.setSentiment(newEntity.getSentiment());
+            }
+
+            if (newEntity.getSentimentConfidence() != null) {
+                oldEntity.setSentimentConfidence(newEntity.getSentimentConfidence());
             }
             return oldEntity;
         }, entitySet).stream().map(mapper::toDto).collect(Collectors.toUnmodifiableSet());

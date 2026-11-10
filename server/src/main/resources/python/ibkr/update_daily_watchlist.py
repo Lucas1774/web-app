@@ -149,20 +149,80 @@ while True:
 
 # wait for server go notification then fetch symbols
 client.loop_forever()
+data = []
 try:
     auth = (args.symbols_user, args.symbols_pass)
     rr = requests.get(SYMBOLS_URL, timeout=SYMBOLS_FETCH_TIMEOUT, auth=auth)
     rr.raise_for_status()
     data = rr.json()
-    symbols = [
-        item["symbol"]["name"].strip().replace(".", " ").upper()
-        for item in data
-        if item.get("symbol") and item["symbol"].get("name")
-    ]
+    if not isinstance(data, list):
+        raise ValueError("Symbols endpoint did not return a JSON array.")
 except Exception as e:
     print(f"Failed to fetch symbols from {SYMBOLS_URL}: {e}")
     exit()
-# noinspection PyUnboundLocalVariable
+
+# score sectors: net sentiment score = (sum positive confidence - sum negative confidence) / total relevant articles
+sector_pos = {}
+sector_neg = {}
+sector_total = {}
+seen_articles = {}
+
+for item in data:
+    sector_name = item["symbol"]["sector"]
+    for article in item.get("news", []):
+        sentiment = article.get("sentiment")
+        if sentiment not in ("positive", "negative", "neutral"):
+            continue
+
+        if sentiment == "neutral":
+            confidence = 0.0
+        else:
+            try:
+                confidence = float(article.get("sentimentConfidence"))
+            except (TypeError, ValueError):
+                continue
+            if not 0 <= confidence <= 100:
+                continue
+
+        article_key = article.get("externalId")
+        if article_key is None:
+            article_key = article.get("id")
+        if article_key is None:
+            article_key = article.get("url")
+        if article_key is None:
+            headline = article.get("headline")
+            article_date = article.get("date")
+            if headline is not None or article_date is not None:
+                article_key = (headline, article_date)
+
+        if article_key is not None:
+            sector_articles = seen_articles.setdefault(sector_name, set())
+            if article_key in sector_articles:
+                continue
+            sector_articles.add(article_key)
+
+        sector_total[sector_name] = sector_total.get(sector_name, 0) + 1
+        if sentiment == "positive":
+            sector_pos[sector_name] = sector_pos.get(sector_name, 0.0) + confidence
+        elif sentiment == "negative":
+            sector_neg[sector_name] = sector_neg.get(sector_name, 0.0) + confidence
+
+
+def sector_score(name):
+    return (sector_pos.get(name, 0.0) - sector_neg.get(name, 0.0)) / sector_total[name]
+
+
+ranked = sorted(sector_total, key=sector_score, reverse=True)
+print("Sector sentiment ranking (net confidence per relevant article):")
+for sector_name in ranked:
+    score = sector_score(sector_name)
+    print(f"  {sector_name}: {score:.1f} ({sector_total[sector_name]} articles)")
+
+symbols = [
+    item["symbol"]["name"].strip().replace(".", " ").upper()
+    for item in data
+    if item.get("symbol") and item["symbol"].get("name")
+]
 if not symbols:
     print("No symbols retrieved; exiting.")
     exit()
@@ -192,8 +252,8 @@ for sym in symbols:
         h
         for h in hits
         if h.get("secType") == "STK"
-        and ("NYSE" in h.get("companyHeader") or "NASDAQ" in h.get("companyHeader"))
-        and int(h.get("conid", -1)) != -1
+           and ("NYSE" in h.get("companyHeader") or "NASDAQ" in h.get("companyHeader"))
+           and int(h.get("conid", -1)) != -1
     ]
     if not stocks:
         print(f"No matches returned for {sym}")
