@@ -50,18 +50,18 @@ public final class Constants {
     public static final ZoneId UTC_ZONE = ZoneId.of(UTC);
     // for testing purposes
     public static final LocalDateTime FIXED_DATE = LocalDate.of(2025, Month.JANUARY, 1).atStartOfDay();
+    public static final Set<String> GEMINI_4_HYDROGEN_CLIENTS = Set.of("gemini-4-hydrogen",
+            "gemini-4-hydrogen_2",
+            "gemini-4-hydrogen_3",
+            "gemini-4-hydrogen_4",
+            "gemini-4-hydrogen_5",
+            "gemini-4-hydrogen_6");
     public static final Set<String> GEMINI_3_8_FLASH_CLIENTS = Set.of("gemini-3.8-flash",
             "gemini-3.8-flash_2",
             "gemini-3.8-flash_3",
             "gemini-3.8-flash_4",
             "gemini-3.8-flash_5",
             "gemini-3.8-flash_6");
-    public static final Set<String> GEMINI_3_7_FLASH_CLIENTS = Set.of("gemini-3.7-flash",
-            "gemini-3.7-flash_2",
-            "gemini-3.7-flash_3",
-            "gemini-3.7-flash_4",
-            "gemini-3.7-flash_5",
-            "gemini-3.7-flash_6");
     public static final Set<String> GEMINI_3_6_FLASH_CLIENTS = Set.of("gemini-3.6-flash",
             "gemini-3.6-flash_2",
             "gemini-3.6-flash_3",
@@ -82,10 +82,11 @@ public final class Constants {
             "gemini-3.5-flash-lite_6");
     public static final Set<String> OPENROUTER_CLIENTS =
             Set.of("openrouter", "openrouter_2", "openrouter_3", "openrouter_4", "openrouter_5");
-    public static final Set<String> FINE_GRAIN_CLIENT_NAMES = Stream.of(GEMINI_3_8_FLASH_CLIENTS,
-            GEMINI_3_7_FLASH_CLIENTS,
+    public static final Set<String> FINE_GRAIN_CLIENT_NAMES = Stream.of(GEMINI_4_HYDROGEN_CLIENTS,
+            GEMINI_3_8_FLASH_CLIENTS,
             GEMINI_3_6_FLASH_CLIENTS,
-            GEMINI_3_5_FLASH_CLIENTS).flatMap(Set::stream).collect(Collectors.toUnmodifiableSet());
+            GEMINI_3_5_FLASH_CLIENTS,
+            OPENROUTER_CLIENTS).flatMap(Set::stream).collect(Collectors.toUnmodifiableSet());
     // If a model here has a specialist version, that one will be assumed to output a thinking block too
     private static final Set<String> CLIENTS_WITH_THINKING_BLOCK = Set.of();
     private static final String FINNHUB_RATE_LIMITER = "finnhubRateLimiter";

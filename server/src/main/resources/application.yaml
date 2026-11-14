@@ -4,7 +4,7 @@ security:
 
 scheduler:
   market-data-cron: "0 0 0 * * *" # Every day at midnight UTC
-  news-recommendations-cron: "0 15 9 * * *" # Every day before the market opens
+  news-recommendations-cron: "0 0 9 * * *" # Every day before the market opens
   recommendation-inference-five-cron: "0 35 9 * * *" # Every day after the market opens
   recommendation-inference-fifteen-cron: "0 45 9 * * *" # Every day after the market opens
 
@@ -131,6 +131,72 @@ ai:
       model: nvidia/nemotron-3.5-lightning:free
 
     # Google
+    - name: gemini-4-hydrogen
+      provider: google
+      api-key: ${GOOGLE_KEY}
+      model: gemini-4-hydrogen
+      requests-per-minute: 5
+    - name: gemini-4-hydrogen_2
+      provider: google
+      api-key: ${GOOGLE_KEY_2}
+      model: gemini-4-hydrogen
+      requests-per-minute: 5
+    - name: gemini-4-hydrogen_3
+      provider: google
+      api-key: ${GOOGLE_KEY_3}
+      model: gemini-4-hydrogen
+      requests-per-minute: 5
+    - name: gemini-4-hydrogen_4
+      provider: google
+      api-key: ${GOOGLE_KEY_4}
+      model: gemini-4-hydrogen
+      requests-per-minute: 5
+    - name: gemini-4-hydrogen_5
+      provider: google
+      api-key: ${GOOGLE_KEY_5}
+      model: gemini-4-hydrogen
+      requests-per-minute: 5
+    - name: gemini-4-hydrogen_6
+      provider: google
+      api-key: ${GOOGLE_KEY_6}
+      model: gemini-4-hydrogen
+      requests-per-minute: 5
+    - name: gemini-4-hydrogen-specialist
+      provider: google
+      api-key: ${GOOGLE_KEY}
+      model: gemini-4-hydrogen
+      requests-per-minute: 5
+      chunk-size: 1
+    - name: gemini-4-hydrogen_2-specialist
+      provider: google
+      api-key: ${GOOGLE_KEY_2}
+      model: gemini-4-hydrogen
+      requests-per-minute: 5
+      chunk-size: 1
+    - name: gemini-4-hydrogen_3-specialist
+      provider: google
+      api-key: ${GOOGLE_KEY_3}
+      model: gemini-4-hydrogen
+      requests-per-minute: 5
+      chunk-size: 1
+    - name: gemini-4-hydrogen_4-specialist
+      provider: google
+      api-key: ${GOOGLE_KEY_4}
+      model: gemini-4-hydrogen
+      requests-per-minute: 5
+      chunk-size: 1
+    - name: gemini-4-hydrogen_5-specialist
+      provider: google
+      api-key: ${GOOGLE_KEY_5}
+      model: gemini-4-hydrogen
+      requests-per-minute: 5
+      chunk-size: 1
+    - name: gemini-4-hydrogen_6-specialist
+      provider: google
+      api-key: ${GOOGLE_KEY_6}
+      model: gemini-4-hydrogen
+      requests-per-minute: 5
+      chunk-size: 1
     - name: gemini-3.8-flash
       provider: google
       api-key: ${GOOGLE_KEY}
@@ -195,72 +261,6 @@ ai:
       provider: google
       api-key: ${GOOGLE_KEY_6}
       model: gemini-3.8-flash
-      requests-per-minute: 5
-      chunk-size: 1
-    - name: gemini-3.7-flash
-      provider: google
-      api-key: ${GOOGLE_KEY}
-      model: gemini-3.7-flash
-      requests-per-minute: 5
-    - name: gemini-3.7-flash_2
-      provider: google
-      api-key: ${GOOGLE_KEY_2}
-      model: gemini-3.7-flash
-      requests-per-minute: 5
-    - name: gemini-3.7-flash_3
-      provider: google
-      api-key: ${GOOGLE_KEY_3}
-      model: gemini-3.7-flash
-      requests-per-minute: 5
-    - name: gemini-3.7-flash_4
-      provider: google
-      api-key: ${GOOGLE_KEY_4}
-      model: gemini-3.7-flash
-      requests-per-minute: 5
-    - name: gemini-3.7-flash_5
-      provider: google
-      api-key: ${GOOGLE_KEY_5}
-      model: gemini-3.7-flash
-      requests-per-minute: 5
-    - name: gemini-3.7-flash_6
-      provider: google
-      api-key: ${GOOGLE_KEY_6}
-      model: gemini-3.7-flash
-      requests-per-minute: 5
-    - name: gemini-3.7-flash-specialist
-      provider: google
-      api-key: ${GOOGLE_KEY}
-      model: gemini-3.7-flash
-      requests-per-minute: 5
-      chunk-size: 1
-    - name: gemini-3.7-flash_2-specialist
-      provider: google
-      api-key: ${GOOGLE_KEY_2}
-      model: gemini-3.7-flash
-      requests-per-minute: 5
-      chunk-size: 1
-    - name: gemini-3.7-flash_3-specialist
-      provider: google
-      api-key: ${GOOGLE_KEY_3}
-      model: gemini-3.7-flash
-      requests-per-minute: 5
-      chunk-size: 1
-    - name: gemini-3.7-flash_4-specialist
-      provider: google
-      api-key: ${GOOGLE_KEY_4}
-      model: gemini-3.7-flash
-      requests-per-minute: 5
-      chunk-size: 1
-    - name: gemini-3.7-flash_5-specialist
-      provider: google
-      api-key: ${GOOGLE_KEY_5}
-      model: gemini-3.7-flash
-      requests-per-minute: 5
-      chunk-size: 1
-    - name: gemini-3.7-flash_6-specialist
-      provider: google
-      api-key: ${GOOGLE_KEY_6}
-      model: gemini-3.7-flash
       requests-per-minute: 5
       chunk-size: 1
     - name: gemini-3.6-flash
