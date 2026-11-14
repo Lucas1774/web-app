@@ -21,7 +21,7 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class HttpRequestClient {
 
-    private static final Duration RESPONSE_TIMEOUT = Duration.ofMinutes(1);
+    private static final Duration RESPONSE_TIMEOUT = Duration.ofMinutes(2);
 
     private final WebClient webClient;
     private final DocumentBuilderFactory documentBuilderFactory;
