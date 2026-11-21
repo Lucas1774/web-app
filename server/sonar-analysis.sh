@@ -6,7 +6,7 @@ SONAR_COMPOSE_FILE="docker/dev/compose.yaml"
 SONAR_URL="http://localhost:9000"
 SONAR_PROJECT_KEY="server"
 SONAR_TIMEOUT_SECONDS=60
-SONAR_TOKEN="squ_0d1867ddf5908ad68552e0cf4e35aedf9d4f9f54"
+SONAR_TOKEN="squ_490efb7f8eeb6d32ad782a81fadee99a5f272e75"
 # shellcheck disable=SC2034
 # just for UI login
 SONAR_PASSWORD="AdminPass123!"
@@ -20,7 +20,7 @@ fi
 
 # ——— Start SonarQube ———
 echo "Starting the SonarQube service from ${SONAR_COMPOSE_FILE}..."
-docker compose -f "${SONAR_COMPOSE_FILE}" --profile sonar up -d sonarqube
+docker compose -p sonar -f "${SONAR_COMPOSE_FILE}" --profile sonar up -d sonarqube
 
 echo "Waiting for SonarQube to be ready..."
 SECONDS=0
