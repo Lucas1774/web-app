@@ -22,7 +22,8 @@ seed__letter__pairs.sql
 # misc
 .vscode/
 .idea/
-client/.scannerwork/
+.sonar/
+.scannerwork/
 .lck
 server.iml
 server/docker/prod/mosquitto/

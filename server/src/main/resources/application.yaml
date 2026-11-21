@@ -4,7 +4,7 @@ security:
 
 scheduler:
   market-data-cron: "0 0 0 * * *" # Every day at midnight UTC
-  news-recommendations-cron: "0 10 9 * * *" # Every day before the market opens
+  news-recommendations-cron: "0 0 9 * * *" # Every day before the market opens
   recommendation-inference-five-cron: "0 35 9 * * *" # Every day after the market opens
   recommendation-inference-fifteen-cron: "0 45 9 * * *" # Every day after the market opens
 
@@ -51,7 +51,7 @@ ai:
   # temperature: 0 for openrouter, null otherwise
   # thinking-level: high for google, null otherwise
   # requests-per-minute: 20 for openrouter (not configurable here), null otherwise
-  # concurrent-requests: requests-per-minute for google and openrouter (not configurable here), null otherwise
+  # concurrent-requests: 1 (not configurable here for openrouter)
   deployments:
     # Openrouter
     - name: openrouter

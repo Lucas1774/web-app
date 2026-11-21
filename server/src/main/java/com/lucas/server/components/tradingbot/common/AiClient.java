@@ -31,9 +31,9 @@ public class AiClient {
     @Getter
     private final AiProperties.DeploymentProperties config;
     @Getter
-    private final SlidingWindowRateLimiter moreRestrictiveRateLimiter;
+    private final SlidingWindowRateLimiter quotaRateLimiter;
     @Getter
-    private final SlidingWindowRateLimiter lessRestrictiveRateLimiter;
+    private final SlidingWindowRateLimiter throughputRateLimiter;
     @Getter
     @Nullable
     private final DefaultSlidingWindowRateLimiter apiKeyRateLimiter;

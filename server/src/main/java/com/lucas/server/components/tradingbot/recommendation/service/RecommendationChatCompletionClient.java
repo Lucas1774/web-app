@@ -27,6 +27,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
@@ -49,6 +50,7 @@ public class RecommendationChatCompletionClient {
     private static final int CLIENT_ROTATION_DEBOUNCE_MS = 200;
     private static final String PROMPTING_MODEL_INFO = "Prompting model {}";
     private static final String COMPLETION_ERROR = "Failed to generate {0}. Completion: {1}";
+    private static final String CLIENT_FAILED_ROTATING_WARN = "Client {} failed: {}. Rotating to next client in tier";
     private static final String ENTRY_PRICE_WITH_PREMARKET =
             "assess whether the sentiment is already priced in and adjust the entry accordingly.";
     private static final String ENTRY_PRICE_WITHOUT_PREMARKET = "derive a fair entry from the provided data.";
@@ -141,9 +143,12 @@ public class RecommendationChatCompletionClient {
 
         log.info(RETRIEVING_DATA_INFO, RECOMMENDATION, symbols);
         AtomicReference<String> completion = new AtomicReference<>();
-
+        Set<AiClient> failedClientsInTier = new HashSet<>();
         while (true) {
             for (AiClient client : clients) {
+                if (failedClientsInTier.contains(client)) {
+                    continue;
+                }
                 try {
                     ObjectNode reportMessage;
                     if (Boolean.FALSE.equals(client.getConfig().fixMe())) {
@@ -157,8 +162,8 @@ public class RecommendationChatCompletionClient {
                     }
                     OrderedIndexedSet<JsonNode> prompt =
                             OrderedIndexedSet.of(usedSystemMessage, contextMessage, fewShotMessage, reportMessage);
-                    Optional<Set<RecommendationDomain>> res = client.getMoreRestrictiveRateLimiter()
-                            .tryCall(() -> client.getLessRestrictiveRateLimiter().call(() -> {
+                    Optional<Optional<Set<RecommendationDomain>>> attempt =
+                            client.getQuotaRateLimiter().tryCall(() -> client.getThroughputRateLimiter().tryCall(() -> {
                                 if (null != client.getApiKeyRateLimiter()) {
                                     client.getApiKeyRateLimiter().acquirePermission();
                                 }
@@ -171,19 +176,26 @@ public class RecommendationChatCompletionClient {
                                                 .collect(Collectors.joining("\n\n\n")),
                                         client.getConfig().name());
                             }));
+                    Optional<Set<RecommendationDomain>> res = attempt.flatMap(inner -> inner);
+                    if (attempt.isPresent() && attempt.get().isEmpty()) {
+                        client.getQuotaRateLimiter().refundPermission();
+                    }
                     if (res.isPresent()) {
                         return res.get();
                     }
-
-                    Interrupts.runOrSwallow(() -> Thread.sleep(CLIENT_ROTATION_DEBOUNCE_MS),
-                            e -> log.error(e.getMessage(), e));
                 } catch (ClientException e) {
-                    throw e;
+                    log.warn(CLIENT_FAILED_ROTATING_WARN, client.getConfig().name(), e.getMessage());
+                    failedClientsInTier.add(client);
+                    if (failedClientsInTier.size() >= clients.size()) {
+                        throw e;
+                    }
                 } catch (Exception e) {
                     throw new ClientException(MessageFormat.format(COMPLETION_ERROR, RECOMMENDATION, completion.get()),
                             e);
                 }
             }
+
+            Interrupts.runOrSwallow(() -> Thread.sleep(CLIENT_ROTATION_DEBOUNCE_MS), e -> log.error(e.getMessage(), e));
         }
     }
 
@@ -207,11 +219,15 @@ public class RecommendationChatCompletionClient {
                                                                        + " | " + candidates.get(i).getSummary())
                                                         .collect(Collectors.joining("\n")))));
         AtomicReference<String> completion = new AtomicReference<>();
+        Set<AiClient> failedClientsInTier = new HashSet<>();
         while (true) {
             for (AiClient client : clients) {
+                if (failedClientsInTier.contains(client)) {
+                    continue;
+                }
                 try {
-                    Optional<Boolean> res = client.getMoreRestrictiveRateLimiter()
-                            .tryCall(() -> client.getLessRestrictiveRateLimiter().call(() -> {
+                    Optional<Optional<Boolean>> attempt =
+                            client.getQuotaRateLimiter().tryCall(() -> client.getThroughputRateLimiter().tryCall(() -> {
                                 if (null != client.getApiKeyRateLimiter()) {
                                     client.getApiKeyRateLimiter().acquirePermission();
                                 }
@@ -220,18 +236,25 @@ public class RecommendationChatCompletionClient {
                                 sentimentMapper.mapAll(candidates, objectMapper.readTree(completion.get()));
                                 return Boolean.TRUE;
                             }));
+                    Optional<Boolean> res = attempt.flatMap(inner -> inner);
+                    if (attempt.isPresent() && attempt.get().isEmpty()) {
+                        client.getQuotaRateLimiter().refundPermission();
+                    }
                     if (res.isPresent()) {
                         return;
                     }
-
-                    Interrupts.runOrSwallow(() -> Thread.sleep(CLIENT_ROTATION_DEBOUNCE_MS),
-                            e -> log.error(e.getMessage(), e));
                 } catch (ClientException e) {
-                    throw e;
+                    log.warn(CLIENT_FAILED_ROTATING_WARN, client.getConfig().name(), e.getMessage());
+                    failedClientsInTier.add(client);
+                    if (failedClientsInTier.size() >= clients.size()) {
+                        throw e;
+                    }
                 } catch (Exception e) {
                     throw new ClientException(MessageFormat.format(COMPLETION_ERROR, SENTIMENT, completion.get()), e);
                 }
             }
+
+            Interrupts.runOrSwallow(() -> Thread.sleep(CLIENT_ROTATION_DEBOUNCE_MS), e -> log.error(e.getMessage(), e));
         }
     }
 }

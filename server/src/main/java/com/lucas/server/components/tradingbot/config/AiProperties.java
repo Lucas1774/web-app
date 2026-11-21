@@ -35,7 +35,6 @@ public class AiProperties {
                                        Constants.AiProvider provider,
                                        List<String> fallbackModels) {
 
-        @SuppressWarnings("LoggingSimilarMessage")
         public DeploymentProperties {
             if (OPENROUTER.equals(provider)) {
                 if (null == temperature) {
@@ -46,19 +45,18 @@ public class AiProperties {
                 }
                 requestsPerMinute = 20;
                 if (null != concurrentRequests) {
-                    log.warn("Overriding concurrentRequests to match requestsPerMinute");
+                    log.warn("Overriding concurrentRequests to 1 for OpenRouter");
                 }
-                concurrentRequests = requestsPerMinute;
+                concurrentRequests = 1;
                 url = "https://openrouter.ai/api/v1/chat/completions";
             }
             if (GOOGLE.equals(provider)) {
                 if (null == thinkingLevel) {
                     thinkingLevel = "high";
                 }
-                if (null != concurrentRequests) {
-                    log.warn("Overriding concurrentRequests to match requestsPerMinute");
+                if (null == concurrentRequests) {
+                    concurrentRequests = 1;
                 }
-                concurrentRequests = requestsPerMinute;
                 url = "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key="
                       + apiKey;
             }

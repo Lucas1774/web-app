@@ -513,7 +513,7 @@ public class DataManager {
             LocalDate lastTradeFinishedDate = !easternTime.toLocalTime().isBefore(MARKET_CLOSE) && isTradingDate(today)
                     ? today
                     : toPastOrFutureTradeDate(today, 1, d -> d.minusDays(1));
-            LocalTime close = !EARLY_CLOSE_DATES_2026.contains(lastTradeFinishedDate) ? MARKET_CLOSE : EARLY_CLOSE;
+            LocalTime close = EARLY_CLOSE_DATES_2026.contains(lastTradeFinishedDate) ? EARLY_CLOSE : MARKET_CLOSE;
             startUtc = ZonedDateTime.of(lastTradeFinishedDate, close, NY_ZONE)
                     .withZoneSameInstant(ZoneOffset.UTC)
                     .toLocalDateTime();

@@ -21,6 +21,7 @@ import com.lucas.server.components.tradingbot.recommendation.mapper.AssetReportT
 import com.lucas.server.components.tradingbot.recommendation.mapper.RecommendationChatCompletionResponseMapper;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSet;
 import com.lucas.utils.orderedindexedset.OrderedIndexedSetImpl;
+import com.lucas.utils.ratelimiter.CompletionSlidingWindowRateLimiter;
 import com.lucas.utils.ratelimiter.DefaultSlidingWindowRateLimiter;
 import com.lucas.utils.ratelimiter.SlidingWindowRateLimiter;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,7 +48,6 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -269,24 +269,17 @@ class RecommendationChatCompletionClientTest extends ConfiguredTest {
                 new SentimentResponseMapper());
     }
 
-    private static AiClient passThroughAiClient() throws Exception {
+    private static AiClient passThroughAiClient() {
         AiClient aiClient = mock(AiClient.class);
-        SlidingWindowRateLimiter limiter = mock(SlidingWindowRateLimiter.class);
+        SlidingWindowRateLimiter perMinuteLimiter = new DefaultSlidingWindowRateLimiter(100, Duration.ofSeconds(1));
+        SlidingWindowRateLimiter concurrencyLimiter = new CompletionSlidingWindowRateLimiter(100, Duration.ofMillis(1));
         AiProperties.DeploymentProperties config = mock(AiProperties.DeploymentProperties.class);
 
-        when(aiClient.getMoreRestrictiveRateLimiter()).thenReturn(limiter);
-        when(aiClient.getLessRestrictiveRateLimiter()).thenReturn(limiter);
+        when(aiClient.getQuotaRateLimiter()).thenReturn(perMinuteLimiter);
+        when(aiClient.getThroughputRateLimiter()).thenReturn(concurrencyLimiter);
         when(aiClient.getApiKeyRateLimiter()).thenReturn(null);
         when(aiClient.getConfig()).thenReturn(config);
         when(config.name()).thenReturn("test");
-        when(limiter.call(any())).thenAnswer(invocation -> {
-            Callable<?> callable = invocation.getArgument(0);
-            return callable.call();
-        });
-        when(limiter.tryCall(any())).thenAnswer(invocation -> {
-            Callable<?> callable = invocation.getArgument(0);
-            return java.util.Optional.ofNullable(callable.call());
-        });
 
         return aiClient;
     }
@@ -508,8 +501,9 @@ class RecommendationChatCompletionClientTest extends ConfiguredTest {
         doReturn(FAKE_COMPLETION).when(spied).complete(any());
         DefaultSlidingWindowRateLimiter rateLimiter = new DefaultSlidingWindowRateLimiter(100, Duration.ofSeconds(1));
         doReturn(rateLimiter).when(spied).getApiKeyRateLimiter();
-        doReturn(rateLimiter).when(spied).getMoreRestrictiveRateLimiter();
-        doReturn(rateLimiter).when(spied).getLessRestrictiveRateLimiter();
+        doReturn(rateLimiter).when(spied).getQuotaRateLimiter();
+        doReturn(new CompletionSlidingWindowRateLimiter(100, Duration.ofMillis(1))).when(spied)
+                .getThroughputRateLimiter();
         doReturn(spiedConfig).when(spied).getConfig();
 
         return spied;

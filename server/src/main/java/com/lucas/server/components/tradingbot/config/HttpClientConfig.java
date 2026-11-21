@@ -3,6 +3,7 @@ package com.lucas.server.components.tradingbot.config;
 import com.lucas.server.common.Constants;
 import com.lucas.server.common.HttpRequestClient;
 import com.lucas.server.components.tradingbot.common.AiClient;
+import com.lucas.utils.ratelimiter.CompletionSlidingWindowRateLimiter;
 import com.lucas.utils.ratelimiter.DefaultSlidingWindowRateLimiter;
 import com.lucas.utils.ratelimiter.SlidingWindowRateLimiter;
 import io.netty.channel.ChannelOption;
@@ -33,15 +34,15 @@ import static com.lucas.utils.Utils.EMPTY_STRING;
 public class HttpClientConfig {
 
     private static final Map<Constants.AiProvider, Function<AiProperties.DeploymentProperties, SlidingWindowRateLimiter>>
-            providerToPerMinuteRateLimiter = Map.of(OPENROUTER,
+            providerToQuotaRateLimiter = Map.of(OPENROUTER,
             config -> new DefaultSlidingWindowRateLimiter(config.requestsPerMinute(), Duration.ofMinutes(1)),
             GOOGLE,
             config -> new DefaultSlidingWindowRateLimiter(config.requestsPerMinute(), Duration.ofMinutes(1)));
     private static final Map<Constants.AiProvider, Function<AiProperties.DeploymentProperties, SlidingWindowRateLimiter>>
-            providerToConcurrentRateLimiter = Map.of(OPENROUTER,
+            providerToThroughputRateLimiter = Map.of(OPENROUTER,
             config -> new DefaultSlidingWindowRateLimiter(config.concurrentRequests(), Duration.ofSeconds(1)),
             GOOGLE,
-            config -> new DefaultSlidingWindowRateLimiter(config.concurrentRequests(), Duration.ofSeconds(1)));
+            config -> new CompletionSlidingWindowRateLimiter(config.concurrentRequests(), Duration.ofMillis(1)));
 
     @Bean
     public WebClient webClient() {
@@ -71,8 +72,8 @@ public class HttpClientConfig {
                 .filter(d -> !d.name().contains(SPECIALIST))
                 .collect(Collectors.toMap(AiProperties.DeploymentProperties::name,
                         config -> new AiClient(config,
-                                providerToPerMinuteRateLimiter.get(config.provider()).apply(config),
-                                providerToConcurrentRateLimiter.get(config.provider()).apply(config),
+                                providerToQuotaRateLimiter.get(config.provider()).apply(config),
+                                providerToThroughputRateLimiter.get(config.provider()).apply(config),
                                 null,
                                 objectMapper,
                                 httpClient,
@@ -84,8 +85,8 @@ public class HttpClientConfig {
                     String baseName = config.name().replace(SPECIALIST, EMPTY_STRING);
                     AiClient baseClient = res.get(baseName);
                     return new AiClient(config,
-                            baseClient.getMoreRestrictiveRateLimiter(),
-                            baseClient.getLessRestrictiveRateLimiter(),
+                            baseClient.getQuotaRateLimiter(),
+                            baseClient.getThroughputRateLimiter(),
                             baseClient.getApiKeyRateLimiter(),
                             objectMapper,
                             httpClient,
