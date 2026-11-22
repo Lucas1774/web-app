@@ -2,7 +2,6 @@ package com.lucas.server.components.tradingbot.common;
 
 import com.lucas.server.ConfiguredTest;
 import com.lucas.server.components.tradingbot.common.jpa.DataManager;
-import com.lucas.utils.Interrupts;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -83,20 +82,30 @@ class DailySchedulerTest extends ConfiguredTest {
 
         AtomicInteger maxConcurrentTasks = new AtomicInteger(0);
         AtomicInteger currentConcurrentTasks = new AtomicInteger(0);
+        CountDownLatch readyLatch = new CountDownLatch(4);
+        CountDownLatch releaseLatch = new CountDownLatch(1);
         CountDownLatch completionLatch = new CountDownLatch(4);
 
         for (int i = 0; i < 4; i++) {
             scheduler.execute(() -> {
                 int current = currentConcurrentTasks.incrementAndGet();
                 maxConcurrentTasks.updateAndGet(max -> Math.max(max, current));
-                Interrupts.runOrSwallow(() -> await().timeout(Duration.ofMillis(500)), _ -> {
-                });
-                currentConcurrentTasks.decrementAndGet();
-                completionLatch.countDown();
+                readyLatch.countDown();
+                try {
+                    releaseLatch.await();
+                } catch (InterruptedException _) {
+                    Thread.currentThread().interrupt();
+                } finally {
+                    currentConcurrentTasks.decrementAndGet();
+                    completionLatch.countDown();
+                }
             });
         }
 
+        boolean allStarted = readyLatch.await(5, TimeUnit.SECONDS);
+        releaseLatch.countDown();
         boolean completed = completionLatch.await(5, TimeUnit.SECONDS);
+        assertTrue(allStarted, "All tasks should start within timeout");
         assertTrue(completed, "All tasks should complete within timeout");
         assertEquals(4,
                 maxConcurrentTasks.get(),
